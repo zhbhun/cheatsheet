@@ -1,0 +1,5 @@
+- id: syntax
+- title: 语法
+- children:
+  - variables
+  - comment

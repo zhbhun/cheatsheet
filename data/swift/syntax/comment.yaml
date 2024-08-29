@@ -1,0 +1,26 @@
+id: comment
+title: 注释
+description: Swift 支持三种主要类型的注释：单行注释、多行注释和文档注释。单行注释以 `//` 开头，用于简短说明。多行注释以 `/* */` 包裹，用于较长的描述。而文档注释则使用 `///` 或 `/** */`，结合 Markdown 语法，可以生成更丰富的文档，并在 Xcode 中显示为 Quick Help 文档提示。文档注释通常用于描述函数、参数、返回值和抛出的错误等。
+example: |
+  // 单行注释：简短说明
+  let x = 10 // 定义变量 x 并赋值为 10
+
+  /* 
+   * 多行注释：用于更详细的解释
+   * 例如，这里可以详细描述函数的逻辑
+   */
+  func add(a: Int, b: Int) -> Int {
+      return a + b
+  }
+
+  /// 这是一个简单的加法函数
+  ///
+  /// - Parameter a: 第一个加数
+  /// - Parameter b: 第二个加数
+  /// - Returns: 两数之和
+  func add(a: Int, b: Int) -> Int {
+      return a + b
+  }
+references:
+  - title: Swift Documentation Comment Syntax
+    url: https://github.com/apple/swift/blob/main/docs/DocumentationComments.md

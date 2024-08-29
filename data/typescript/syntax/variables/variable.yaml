@@ -1,0 +1,12 @@
+id: variable
+title: 变量
+description: 变量是用于存储数据的命名容器。在 TypeScript 中，变量可以使用 `var`、`let` 和 `const` 关键字声明，其中 `let` 和 `const` 引入了块级作用域。`var` 具有函数作用域，因此它有时会导致意外的行为，推荐使用 `let` 和 `const`。
+example: |
+  let greeting = "Hello, World!"; // 使用 `let` 声明一个变量
+  greeting = "Hello, TypeScript!"; // 修改变量的值
+  
+  const pi = 3.14; // 使用 `const` 声明一个常量，不能重新赋值
+  // pi = 3.14159; // 错误：不能重新赋值
+references:
+  - title: Variable Declarations
+    url: https://www.typescriptlang.org/docs/handbook/variable-declarations.html

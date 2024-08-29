@@ -1,0 +1,32 @@
+id: comment
+title: 注释
+description: Kotlin 支持三种类型的注释：单行注释、多行注释和 KDoc 注释。单行注释使用 `//` 开始，用于简短说明。多行注释使用 `/* */` 包裹，用于描述更长的内容。KDoc 是 Kotlin 的文档注释格式，类似于 Java 的 Javadoc，但支持 Markdown 语法。KDoc 注释以 `/**` 开始，以 `*/` 结束，用于生成文档和描述函数、类及其参数等。
+example: |
+  // 单行注释：用于简短描述
+  val x = 10 // 定义变量 x 并赋值为 10
+
+  /* 
+   * 多行注释：用于较长的描述
+   * 例如，这里可以详细解释函数的逻辑
+   */
+  fun add(a: Int, b: Int): Int {
+      return a + b
+  }
+
+  /**
+   * 这是一个简单的加法函数
+   * 
+   * @param a 第一个加数
+   * @param b 第二个加数
+   * @return 两数之和
+   */
+  fun add(a: Int, b: Int): Int {
+      return a + b
+  }
+references:
+  - title: "Document Kotlin code: KDoc"
+    url: https://kotlinlang.org/docs/kotlin-doc.html
+  - title: Documentation comments﻿
+    url: https://kotlinlang.org/docs/coding-conventions.html#documentation-comments
+  - title: An Introduction to KDoc
+    url: https://www.baeldung.com/kotlin/kdoc

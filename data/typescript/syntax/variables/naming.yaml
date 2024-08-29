@@ -1,0 +1,18 @@
+id: naming
+title: 命名
+description: 在 TypeScript 中，变量和标识符的命名应遵循一套一致的命名约定，以提高代码的可读性和可维护性。常见的命名风格包括 `camelCase` 用于变量和函数，`PascalCase` 用于类和接口，`UPPER_CASE` 用于常量。
+example: |
+  // 变量命名使用 camelCase
+  let userName = 'Alice';
+
+  // 类和接口使用 PascalCase
+  class UserAccount {
+      private userId: number;
+  }
+
+  // 常量使用 UPPER_CASE
+  const MAX_RETRIES = 5;
+
+references:
+  - title: Naming - Google TypeScript Style Guide
+    url: https://google.github.io/styleguide/tsguide.html#naming

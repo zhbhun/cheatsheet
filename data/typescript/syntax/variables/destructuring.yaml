@@ -1,0 +1,26 @@
+id: destructuring
+title: 解构
+description: 解构是一种语法，允许从数组或对象中提取值，并将其赋值给独立的变量。TypeScript 中的解构不仅保留了 JavaScript 中的功能，还增加了类型注释支持，使代码更加健壮和易于维护。
+example: |
+  // 对象解构
+  const person = { name: 'John', age: 30 };
+  const { name: personName, age: personAge = 25 } = person;
+  // personName 是 'John'，personAge 是 30
+
+  // 数组解构
+  const array = [10, 20, 30];
+  const [first, , third] = array;
+  // first 是 10，third 是 30
+
+  // 函数参数解构
+  function greet({ name = 'Guest', age }: { name?: string; age: number }) {
+      console.log(`Hello, ${name}. You are ${age} years old.`);
+  }
+  greet({ age: 25 });
+  // 输出: Hello, Guest. You are 25 years old.
+
+references:
+  - title: Destructuring
+    url: https://www.typescriptlang.org/docs/handbook/variable-declarations.html#destructuring
+  - title: Destructuring Objects with Types
+    url: https://baransel.dev/post/typescript-destructuring-objects-with-types/

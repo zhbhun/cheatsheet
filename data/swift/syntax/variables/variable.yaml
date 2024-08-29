@@ -1,0 +1,12 @@
+id: variable
+title: 变量
+description: 在 Swift 中，`var` 用于声明可变变量，可以在声明后更改值；`let` 用于声明常量，一旦赋值后不可更改。Swift 提供类型安全机制，因此在变量声明时通常需要指定类型。
+example: |
+  var currentLanguage = "Swift" // 使用 var 声明可变变量
+  currentLanguage = "Objective-C" // 更改变量的值
+  
+  let maxLoginAttempts = 3 // 使用 let 声明常量
+  // maxLoginAttempts = 5 // 错误：常量的值不能被更改
+references:
+  - title: Constants and Variables
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics#Constants-and-Variables

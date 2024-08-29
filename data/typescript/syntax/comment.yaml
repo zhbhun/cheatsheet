@@ -1,0 +1,29 @@
+id: comment
+title: 注释
+description: 主要有三种注释类型：单行注释、多行注释和 JSDoc 注释。单行注释用于简短的说明，多行注释用于更详细的解释，而 JSDoc 注释则常用于为函数、变量和类型提供结构化文档，支持自动生成 API 文档。JSDoc 注释通常包含 `@param`、`@returns` 等标签，用于描述函数参数和返回值的类型信息。
+example: |
+  // 单行注释：用于简短描述
+  const x = 10; // 定义变量 x 并赋值为 10
+
+  /*
+   * 多行注释：
+   * 用于较长的解释或描述
+   */
+  function add(a: number, b: number): number {
+    return a + b;
+  }
+
+  /**
+   * JSDoc 注释：描述函数和参数
+   * @param {number} a - 第一个数字
+   * @param {number} b - 第二个数字
+   * @returns {number} 两个数字的和
+   */
+  function add(a: number, b: number): number {
+    return a + b;
+  }
+references:
+  - title: TypeScript JSDoc Reference
+    url: https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html
+  - title: Comments and documentation
+    url: https://google.github.io/styleguide/tsguide.html#comments-documentation
