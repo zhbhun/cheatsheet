@@ -1,0 +1,21 @@
+id: nothing
+alias:
+  - never
+title: Nothing
+description: "`Nothing` 是 Kotlin 中的一个特殊类型，表示不存在任何值的类型。它是所有类型的子类型，通常用于表示永远不会返回的函数或始终抛出异常的表达式。当一个函数的返回类型是 `Nothing` 时，意味着该函数永远不会成功完成（如抛出异常或进入无限循环）。这使得 `Nothing` 在 Kotlin 的类型系统中具有重要的作用，确保代码的类型安全性。"
+example: |
+  fun fail(): Nothing {
+      throw IllegalArgumentException("This function always fails.")
+  }
+
+  // 示例：永远不会返回的函数
+  fun infiniteLoop(): Nothing {
+      while (true) {
+          // 无限循环，永不返回
+      }
+  }
+references:
+  - title: Nothing Type - Kotlin Documentation
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing.html
+  - title: Introduction to the Nothing Type - Hyperskill
+    url: https://hyperskill.org/learn/step/39052

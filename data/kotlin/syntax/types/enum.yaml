@@ -1,0 +1,29 @@
+id: enum
+title: Enum
+description: Enum 类用于定义一组命名常量，通常用于表示一组固定的值。Kotlin 的 Enum 类不仅支持基本的枚举常量定义，还可以添加构造函数、属性和方法，甚至可以实现接口。每个枚举常量都是该类的实例，可以拥有自己的属性和方法。
+example: |
+  // 定义一个简单的枚举类
+  enum class Direction {
+      NORTH, SOUTH, EAST, WEST
+  }
+
+  // 使用枚举常量
+  val dir: Direction = Direction.NORTH
+
+  // 枚举类可以有属性和方法
+  enum class Color(val rgb: Int) {
+      RED(0xFF0000),
+      GREEN(0x00FF00),
+      BLUE(0x0000FF);
+
+      fun containsRed() = (this.rgb and 0xFF0000 != 0)
+  }
+
+  // 使用属性和方法
+  val color = Color.RED
+  println(color.containsRed()) // 输出: true
+references:
+  - title: Enum Classes in Kotlin
+    url: https://kotlinlang.org/docs/enum-classes.html
+  - title: A Complete Guide to Enum Classes in Kotlin
+    url: https://blog.logrocket.com/complete-guide-enum-classes-kotlin/

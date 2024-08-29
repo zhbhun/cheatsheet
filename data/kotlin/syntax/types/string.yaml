@@ -1,0 +1,29 @@
+id: string
+title: 字符串
+description: 字符串是表示字符序列的数据类型。在 Kotlin 中，字符串是不可变的，一旦创建，就无法更改其内容。字符串可以通过索引访问其单个字符，也可以通过各种内置函数进行操作。Kotlin 提供了丰富的字符串处理功能，包括字符串模板、原始字符串、字符串拼接等特性。
+example: |
+  // 声明和初始化字符串
+  val greeting: String = "Hello, Kotlin!"
+  
+  // 访问字符串中的字符
+  val firstChar: Char = greeting[0]  // 'H'
+  
+  // 字符串拼接
+  val name = "John"
+  val message = "Hello, " + name + "!"  // "Hello, John!"
+  
+  // 使用字符串模板
+  val age = 25
+  val info = "Name: $name, Age: $age"  // "Name: John, Age: 25"
+  
+  // 多行字符串
+  val multiline = """
+      Kotlin is a modern language.
+      It is concise and powerful.
+  """.trimIndent()
+
+references:
+  - title: Strings | Kotlin Documentation
+    url: https://kotlinlang.org/docs/strings.html
+  - title: Kotlin String and String Templates (With Examples) | Programiz
+    url: https://www.programiz.com/kotlin-programming/string

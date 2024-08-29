@@ -1,0 +1,16 @@
+- id: types
+- title: 数据类型
+- children:
+  - number
+  - boolean
+  - character
+  - string
+  - pair
+  - triple
+  - enum
+  - object
+  - nullable
+  - alias
+  - unit
+  - nothing
+  - any

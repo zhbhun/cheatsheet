@@ -1,0 +1,15 @@
+id: character
+title: 字符
+description: 
+  在 Kotlin 中，字符类型由 `Char` 表示，用于存储单个 16 位 Unicode 字符。字符字面量用单引号括起来，例如 `'a'`。Kotlin 还支持通过反斜杠 `\` 进行特殊字符的转义，如换行符 `\n`、制表符 `\t` 等。字符可以通过 `.toInt()` 方法转换为对应的整数值，常用于处理数字字符。此外，字符在 Kotlin 中可以调用与其他对象相同的成员函数。
+example: |
+  fun main() {
+      val letter: Char = 'K' // 声明一个字符变量 letter，值为 'K'
+      val digit: Char = '7'   // 声明一个字符变量 digit，值为 '7'
+      
+      println(letter)         // 输出: K
+      println(digit.toInt())  // 输出: 55，字符 '7' 对应的整数值
+  }
+references:
+  - title: Characters | Kotlin Documentation
+    url: https://kotlinlang.org/docs/characters.html

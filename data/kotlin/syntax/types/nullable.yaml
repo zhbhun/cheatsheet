@@ -1,0 +1,22 @@
+id: nullable
+title: Nullable Types
+description: |
+  在 Kotlin 中，nullable 类型允许变量存储 `null` 值，避免了传统的 `NullPointerException` 问题。默认情况下，Kotlin 的类型是非空的（non-nullable），无法赋值为 `null`。要允许变量持有 `null`，需要在类型后加上问号，例如 `String?`。在使用 nullable 类型时，Kotlin 提供了一些特性如安全调用操作符 `?.` 和 Elvis 操作符 `?:` 来安全地处理可能的 `null` 值。
+example: |
+  // 声明一个可以为 null 的变量
+  var nullableName: String? = "John"
+  
+  // 安全调用操作符：如果 nullableName 为 null，则返回 null，否则调用 toUpperCase()
+  println(nullableName?.toUpperCase()) // 输出: "JOHN"
+  
+  // Elvis 操作符：如果 nullableName 为 null，则返回 "Guest"
+  val name = nullableName ?: "Guest"
+  println(name) // 输出: "John"
+  
+  // 强制非空断言：如果 nullableName 为 null，抛出 NullPointerException
+  val length = nullableName!!.length // 若 nullableName 为 null 则抛异常
+references:
+  - title: Null safety | Kotlin Documentation
+    url: https://kotlinlang.org/docs/null-safety.html
+  - title: Nullable Types and Null Safety in Kotlin | CalliCoder
+    url: https://www.callicoder.com/kotlin-nullable-types-null-safety/

@@ -1,0 +1,26 @@
+id: unit
+alias:
+  - void
+title: Unit
+description: "`Unit` 是 Kotlin 中的一个类型，表示函数不返回有用的值。它类似于 Java 中的 `void` 类型，但在 Kotlin 中，`Unit` 是一个真正的类型，有且只有一个值，即 `Unit` 本身。当函数的返回类型为 `Unit` 时，编译器会隐式处理返回值，您也可以选择不显式地返回它。"
+example: |
+  fun printMessage(message: String?): Unit {
+      if (message != null) 
+          println(message)
+      else 
+          println("No message provided")
+      // `return Unit` 是可选的
+  }
+
+  // 等效于
+  fun printMessage(message: String?) {
+      if (message != null) 
+          println(message)
+      else 
+          println("No message provided")
+  }
+references:
+  - title: Unit - Kotlin API Reference
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/
+  - title: Functions - Kotlin Documentation
+    url: https://kotlinlang.org/docs/functions.html#unit-returning-functions

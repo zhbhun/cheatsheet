@@ -1,0 +1,23 @@
+id: number
+title: 数字
+description: 数字类型是 Kotlin 中用于表示整数和浮点数的基本数据类型。Kotlin 提供了几种不同的数字类型，如 `Int`、`Long`、`Float` 和 `Double`，分别用于表示不同范围和精度的数值。与某些语言不同，Kotlin 不支持隐式的数字类型转换，必须使用显式方法来进行类型转换。此外，Kotlin 中的数字类型在 JVM 平台上可以作为原始类型处理，但在需要使用可空引用或泛型时会被装箱处理。
+example: |
+  // 整数类型示例
+  val intVal: Int = 42
+  val longVal: Long = 3000000000L
+
+  // 浮点数类型示例
+  val doubleVal: Double = 3.14159
+  val floatVal: Float = 2.71828f
+
+  // 显式类型转换
+  val byteVal: Byte = 1
+  val intFromByte: Int = byteVal.toInt() // 将 Byte 转换为 Int
+
+  // 操作符示例
+  val sum = intVal + longVal // 运算结果为 Long 类型
+references:
+  - title: Numbers in Kotlin
+    url: https://kotlinlang.org/docs/numbers.html
+  - title: Number Class Documentation
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/
