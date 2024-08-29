@@ -1,0 +1,12 @@
+id: nil
+alias:
+  - null
+title: 空
+description: |
+  在 Swift 中，`nil` 表示一个不存在的值或“无值”。它常用于表示可选类型（`Optional`）中的“无效”状态。当一个可选类型的变量不包含任何值时，它会被设置为 `nil`。Swift 中的 `nil` 只能用于可选类型，这与一些其他编程语言不同，它们可能允许 `nil` 被赋值给任何变量。
+example: |
+  var optionalString: String? = "Hello, World!"  // 声明一个可选类型的字符串变量并赋值
+  optionalString = nil  // 将可选类型变量的值设置为 nil，表示该变量当前没有值
+references:
+  - title: Optionals in Swift
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Optionals

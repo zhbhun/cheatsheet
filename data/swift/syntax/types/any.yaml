@@ -1,0 +1,30 @@
+id: any
+title: Any
+description: |
+  `Any` 是 Swift 中用于表示任何类型的通用类型（类型擦除）。它可以表示任何数据类型，包括类、结构体、枚举、甚至函数。`Any` 是一种存在类型（existential type），可以存储不同类型的值在一个集合中。但请注意，使用 `Any` 会牺牲类型安全，您可能需要进行类型检查和转换（如使用 `as?` 或 `as!`）。
+
+  - 任意赋值: 您可以将任何类型的值赋值给一个 `Any` 类型的变量。
+  - nil 的处理: `Any` 类型不能直接存储 `nil`，因为 `nil` 不是一种类型，但可以通过使用 `Optional<Any>` 来实现。
+  - Any 数组: 一个包含不同类型的数组可以声明为 `[Any]`，这允许将不同类型的元素放入同一个数组中。
+
+example: |
+  // 任意赋值
+  var anything: Any = 42
+  anything = "Hello, World!"
+  anything = [1, 2, 3]
+  
+  // nil 处理 - 使用 Optional<Any>
+  var optionalAnything: Any? = 42
+  optionalAnything = nil
+  
+  // Any 数组示例
+  let mixedArray: [Any] = [1, "two", 3.0, [4, 5]]
+
+  // 类型转换
+  if let stringValue = anything as? String {
+      print("The string value is \(stringValue)")
+  }
+
+references:
+  - title: Type Casting for Any and AnyObject
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/typecasting/#Type-Casting-for-Any-and-AnyObject

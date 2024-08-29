@@ -1,0 +1,30 @@
+id: enum
+title: 枚举
+description: 枚举（`enum`）是一种类型，它定义了一组相关的值，这些值可以是原始值（如整数或字符串），也可以是关联值。Swift 的枚举比 C 或 Objective-C 更强大，支持方法、计算属性以及遵循协议等特性。枚举常用于表示一组相关的状态或选项，便于代码的组织和管理。
+example: |
+  // 定义一个简单的枚举类型，表示指南针的四个方向
+  enum CompassPoint {
+      case north
+      case south
+      case east
+      case west
+  }
+
+  // 使用枚举类型
+  var direction = CompassPoint.north // 变量 direction 的值为 north
+  direction = .east // 修改 direction 的值为 east
+
+  // 关联值的枚举
+  enum Barcode {
+      case upc(Int, Int, Int, Int)
+      case qrCode(String)
+  }
+
+  // 使用关联值的枚举
+  var productCode = Barcode.upc(8, 85909, 51226, 3) // 变量 productCode 的值为 UPC 条码
+  productCode = .qrCode("ABCDEFGHIJKLMNOP") // 修改为 QR 码
+references:
+  - title: Enumerations in Swift
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/enumerations/
+  - title: Enumeration Declaration
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/#Enumeration-Declaration

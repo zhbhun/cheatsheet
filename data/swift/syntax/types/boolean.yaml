@@ -1,0 +1,13 @@
+id: boolean
+title: 布尔值
+description: Swift 中的布尔类型使用 `Bool` 关键字表示，具有两个可能的值：`true` 和 `false`。布尔值常用于条件判断、循环控制等场景，帮助控制程序的执行流程。
+example: |
+  let isSunny = true  // 声明一个名为 isSunny 的布尔变量，并赋值为 true
+  if isSunny {
+      print("It's a sunny day!")  // 如果 isSunny 为 true，打印消息
+  } else {
+      print("It's not sunny today.")
+  }
+references:
+  - title: Booleans
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Booleans

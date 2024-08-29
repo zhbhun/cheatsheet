@@ -1,0 +1,11 @@
+id: character
+title: 字符
+description: Swift 的 `Character` 类型表示单个字符，是 `String` 类型的构建块。`Character` 类型支持存储并处理单个 Unicode 字符，使其能够表示几乎所有的人类语言符号，包括可组合的音符和表情符号。
+example: |
+  let letter: Character = "A" // 声明一个字符类型的变量
+  let emoji: Character = "🙂" // 支持 Unicode 字符，如表情符号
+  let combinedCharacter: Character = "é" // 字符可以是组合字符，如 é (e + `)
+  let string = "A" // 不是字符类型，而是字符串类型
+references:
+  - title: Strings and Characters
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/stringsandcharacters/

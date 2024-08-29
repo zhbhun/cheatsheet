@@ -1,0 +1,30 @@
+id: tuple
+title: 元组
+description: 元组（Tuple）是 Swift 中一种用于将多个值组合成一个复合值的数据结构。每个元组可以包含多个不同类型的值，且这些值可以通过位置或名称访问。元组在 Swift 中常用于函数返回多个值，或者在不需要为数据创建完整结构体的情况下临时组合多个值。元组的大小是固定的，不能动态添加或移除元素。
+example: |
+  // 不带名称的元组
+  let coordinates = (10, 20)
+  
+  // 通过位置访问元组的元素
+  print(coordinates.0) // 输出 10
+  print(coordinates.1) // 输出 20
+
+  // 带名称的元组
+  let person = (name: "Alice", age: 30)
+  
+  // 通过名称访问元组的元素
+  print(person.name) // 输出 "Alice"
+  print(person.age)  // 输出 "30"
+
+  // 函数返回多个值的示例
+  func getUser() -> (String, Int) {
+      return ("Bob", 25)
+  }
+  let user = getUser()
+  print(user.0) // 输出 "Bob"
+  print(user.1) // 输出 "25"
+references:
+  - title: Tuple Type
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/types/#Tuple-Type
+  - title: Tuples - Hacking with Swift
+    url: https://www.hackingwithswift.com/sixty/2/3/tuples

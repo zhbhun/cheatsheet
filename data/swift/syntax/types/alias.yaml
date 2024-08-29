@@ -1,0 +1,25 @@
+id: alias
+title: 类型别名
+description: |
+  在 Swift 中，类型别名（typealias）允许为现有类型定义一个新的名称。类型别名并不会创建新的类型，而是为现有类型提供一个更具语义意义的名称，从而提高代码的可读性和简洁性。它常用于简化长类型名称、为泛型类型提供具体类型，或使代码更具领域特定含义。
+example: |
+  // 定义一个类型别名
+  typealias Kilometers = Double
+
+  // 使用类型别名
+  let distance: Kilometers = 42.0
+  
+  // 简化泛型类型
+  typealias StringDict = [String: String]
+  let userInfo: StringDict = ["name": "Alice", "age": "30"]
+
+  // 提高代码可读性
+  typealias CompletionHandler = (Bool) -> Void
+
+  func fetchData(completion: CompletionHandler) {
+      // 处理数据获取逻辑
+      completion(true)
+  }
+references:
+  - title: Type Alias Declaration
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/#Type-Alias-Declaration

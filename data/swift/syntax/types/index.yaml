@@ -5,13 +5,11 @@
   - boolean
   - character
   - string
-  - pair
-  - triple
+  - tuple
   - enum
-  - object
-  - null
+  - struct
+  - nil
   - optional
   - alias
-  - unit
-  - nothing
+  - void
   - any

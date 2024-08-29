@@ -1,5 +1,5 @@
-id: nullable
-title: Nullable Types
+id: optional
+title: 可空
 description: |
   在 Kotlin 中，nullable 类型允许变量存储 `null` 值，避免了传统的 `NullPointerException` 问题。默认情况下，Kotlin 的类型是非空的（non-nullable），无法赋值为 `null`。要允许变量持有 `null`，需要在类型后加上问号，例如 `String?`。在使用 nullable 类型时，Kotlin 提供了一些特性如安全调用操作符 `?.` 和 Elvis 操作符 `?:` 来安全地处理可能的 `null` 值。
 example: |
