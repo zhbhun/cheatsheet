@@ -1,0 +1,22 @@
+id: symbol
+title: Symbol
+description: "`Symbol` 是 TypeScript 中表示唯一标识符的数据类型。每个通过 `Symbol()` 函数创建的 Symbol 值都是唯一的，甚至即使它们的描述相同。这使得 Symbol 适合作为对象属性的键，避免属性名冲突。Symbol 类型无法与其他类型（如字符串）进行隐式转换，因此它在需要确保唯一性和不可变性的场景中非常有用。"
+example: |
+  // 创建一个 Symbol
+  let uniqueId: symbol = Symbol('id');
+
+  // 将 Symbol 用作对象的键
+  let user: { [key: symbol]: string } = {
+    [uniqueId]: "Alice"
+  };
+
+  console.log(user[uniqueId]); // 输出: "Alice"
+
+  // 即使描述相同，Symbol 值也是唯一的
+  let anotherId: symbol = Symbol('id');
+  console.log(uniqueId === anotherId); // 输出: false
+references:
+  - title: "TypeScript: Handbook - Symbols"
+    url: https://www.typescriptlang.org/docs/handbook/symbols.html
+  - title: MDN Web Docs - Symbol
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol

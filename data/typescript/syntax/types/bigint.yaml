@@ -1,0 +1,12 @@
+
+id: bigint
+title: BigInt
+description: "`BigInt` 是 TypeScript 中用于表示任意精度整数的数据类型。与 `number` 类型不同，`BigInt` 可以表示非常大的整数而不会丢失精度。`BigInt` 值通过在整数后加 `n` 来表示，例如 `123n`。该类型适用于需要处理超出 `number` 类型最大值范围的大整数计算场景，但不能与 `number` 类型的值混合运算。"
+example: |
+  let big: bigint = 9007199254740991n; // 定义一个 BigInt
+  let anotherBig: bigint = BigInt(9007199254740991); // 使用 BigInt 构造函数
+  let sum: bigint = big + anotherBig; // BigInt 类型的加法操作
+  let difference: bigint = big - 1000n; // BigInt 类型的减法操作
+references:
+  - title: "TypeScript: Handbook - BigInt"
+    url: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-2.html#bigint

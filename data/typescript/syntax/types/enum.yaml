@@ -1,0 +1,35 @@
+id: enum
+title: 枚举
+description: 在 TypeScript 中，`enum`（枚举）是一种用于定义一组命名常量的类型。枚举允许开发者为一组相关值赋予友好的名称，从而提高代码的可读性和可维护性。默认情况下，枚举成员的值从 0 开始递增，但也可以手动指定每个成员的值。枚举可以是数字类型或字符串类型。
+example: |
+  // 数字枚举
+  enum Direction {
+    Up, // 默认值为 0
+    Down, // 默认值为 1
+    Left, // 默认值为 2
+    Right // 默认值为 3
+  }
+  let dir: Direction = Direction.Up;
+  console.log(dir); // 输出: 0
+
+  // 字符串枚举
+  enum Status {
+    Success = "SUCCESS",
+    Failure = "FAILURE",
+    Pending = "PENDING"
+  }
+  let currentStatus: Status = Status.Success;
+  console.log(currentStatus); // 输出: "SUCCESS"
+
+  // 手动指定枚举值
+  enum ResponseCode {
+    OK = 200,
+    BadRequest = 400,
+    Unauthorized = 401,
+    NotFound = 404
+  }
+  let code: ResponseCode = ResponseCode.OK;
+  console.log(code); // 输出: 200
+references:
+  - title: "TypeScript: Handbook - Enums"
+    url: https://www.typescriptlang.org/docs/handbook/enums.html

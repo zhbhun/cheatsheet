@@ -1,0 +1,12 @@
+id: number
+title: 数字
+description: 在 TypeScript 中，`number` 类型用于表示所有的数字，无论是整数还是浮点数。TypeScript 中的数字类型与 JavaScript 相同，支持十进制、十六进制、二进制和八进制表示法。`number` 类型常用于数学计算、计数、测量等场景。
+example: |
+  let integer: number = 42; // 整数
+  let float: number = 3.14; // 浮点数
+  let hex: number = 0xff; // 十六进制
+  let binary: number = 0b1010; // 二进制
+  let octal: number = 0o755; // 八进制
+references:
+  - title: "TypeScript: Handbook - Basic Types"
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#number

@@ -1,0 +1,15 @@
+id: undefined
+title: Undefined
+description: 在 TypeScript 中，`undefined` 是一个表示变量尚未被赋值的特殊值。声明变量但未赋值时，它的初始值就是 `undefined`。`undefined` 类型只能接受 `undefined` 值。在严格模式下（`strictNullChecks` 选项为 `true`），`undefined` 不能赋值给其他类型，除非使用联合类型。在 TypeScript 中，将 `undefined` 用作初始值，可以明确表达变量的状态，即它尚未被初始化或尚不存在。
+example: |
+  let notAssigned: undefined = undefined; // 明确地将变量设置为 undefined
+
+  // 在严格模式下，以下代码会导致类型错误：
+  // let age: number = undefined;
+
+  // 但在非严格模式下是允许的：
+  let age: number | undefined; // 声明变量时不赋值，默认为 undefined
+  age = 25; // 赋值后变为一个数字
+references:
+  - title: "TypeScript: Handbook - Null and Undefined"
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#null-and-undefined

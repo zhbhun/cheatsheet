@@ -1,0 +1,24 @@
+id: never
+title: Never
+description: 在 TypeScript 中，`never` 类型表示那些永远不存在值的类型。通常用于函数表达式或箭头函数，这些函数总是抛出错误或永远不会返回结果（例如，死循环）。因为 `never` 类型不能有任何可能的值，所以它是所有类型的子类型，可以赋值给任何类型，但没有类型可以赋值给 `never`（除了 `never` 自身）。`never` 类型通常用于类型检查，以确保代码路径不包含意外的返回。
+example: |
+  // 一个返回 never 的函数示例：抛出错误
+  function throwError(message: string): never {
+    throw new Error(message);
+  }
+
+  // 一个返回 never 的函数示例：死循环
+  function infiniteLoop(): never {
+    while (true) {
+      // 永远循环，永不返回
+    }
+  }
+
+  // `never` 类型也可用于类型检查
+  function checkType(x: never): never {
+    // 若 x 不是 never 类型，编译器会报错
+    return x;
+  }
+references:
+  - title: "TypeScript: Handbook - The never Type"
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#never

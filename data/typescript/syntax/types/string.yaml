@@ -1,0 +1,15 @@
+id: string
+title: 字符串
+description: 在 TypeScript 中，`string` 类型用于表示文本数据。字符串可以使用单引号 (`'`)、双引号 (`"`)、或反引号 (`` ` ``) 来定义。反引号允许多行字符串和内嵌表达式（模板字符串），可以通过 `${}` 语法插入变量或表达式的值。`string` 类型广泛用于文本处理、消息构建和模板生成等场景。
+example: |
+  let name: string = "Alice"; // 使用双引号定义字符串
+  let greeting: string = 'Hello, ' + name; // 使用单引号定义字符串并进行字符串拼接
+
+  // 使用模板字符串
+  let multiLineGreeting: string = `
+    Hello, ${name}!
+    Welcome to TypeScript.
+  `;
+references:
+  - title: "TypeScript: Handbook - Basic Types"
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#string

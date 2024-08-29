@@ -1,0 +1,21 @@
+id: tuple
+title: Tuple
+description: 在 TypeScript 中，`tuple`（元组）类型用于表示一个已知数量和类型的元素的数组。与数组类型不同，元组中的每个元素可以具有不同的类型，且类型顺序必须严格遵循定义。元组通常用于表示固定结构的数据，例如一个包含两个元素的数组，其中第一个是字符串，第二个是数字。
+example: |
+  // 定义一个包含字符串和数字的元组
+  let person: [string, number] = ["Alice", 30];
+
+  // 访问元组中的元素
+  let name: string = person[0]; // "Alice"
+  let age: number = person[1]; // 30
+
+  // 元组支持解构
+  let [firstName, years] = person;
+  console.log(firstName); // "Alice"
+  console.log(years); // 30
+
+  // 添加一个新元素到元组中 (此操作可能会导致类型推断的问题)
+  person.push("Developer"); // TypeScript 不会报错，但后续访问可能会出错
+references:
+  - title: "TypeScript: Handbook - Tuples"
+    url: https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types

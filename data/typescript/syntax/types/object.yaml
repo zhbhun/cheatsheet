@@ -1,0 +1,33 @@
+id: object
+title: 对象
+description: 在 TypeScript 中，`object` 类型用于表示非原始类型的值，即除了 `number`、`string`、`boolean`、`symbol`、`null` 和 `undefined` 之外的所有值。对象类型用于定义具有键值对的复杂数据结构，可以包含属性和方法。TypeScript 允许开发者定义对象的结构，并通过类型注解来确保对象的属性符合预期的类型。
+example: |
+  // 定义一个简单的对象
+  let person: { name: string; age: number } = {
+    name: "Alice",
+    age: 30
+  };
+
+  // 访问对象的属性
+  console.log(person.name); // 输出: "Alice"
+  console.log(person.age); // 输出: 30
+
+  // 对象类型也可以嵌套
+  let employee: { id: number; details: { name: string; role: string } } = {
+    id: 1,
+    details: {
+      name: "Bob",
+      role: "Developer"
+    }
+  };
+  console.log(employee.details.role); // 输出: "Developer"
+
+  // 使用索引签名定义动态属性
+  let ratings: { [key: string]: number } = {
+    Alice: 5,
+    Bob: 4
+  };
+  ratings["Charlie"] = 3;
+references:
+  - title: "TypeScript: Handbook - Object Types"
+    url: https://www.typescriptlang.org/docs/handbook/2/objects.html

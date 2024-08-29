@@ -1,0 +1,18 @@
+id: boolean
+title: 布尔值
+description: 在 TypeScript 中，`boolean` 类型表示逻辑上的真 (`true`) 或假 (`false`) 两个值。布尔值常用于条件判断、控制流程和状态标识等场景。`boolean` 类型确保只能赋值 `true` 或 `false`，避免了由于其他类型转换导致的潜在错误。
+example: |
+  let isCompleted: boolean = false; // 声明一个布尔值变量并赋值为 false
+  isCompleted = true; // 修改变量值为 true
+
+  // 在条件判断中使用布尔值
+  if (isCompleted) {
+    console.log("Task is completed");
+  } else {
+    console.log("Task is not completed");
+  }
+references:
+  - title: "TypeScript: Handbook - Basic Types"
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#boolean
+  - title: TypeScript - Booleans
+    url: https://www.tutorialsteacher.com/typescript/typescript-booleans

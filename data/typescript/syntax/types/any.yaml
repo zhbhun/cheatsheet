@@ -1,0 +1,19 @@
+id: any
+title: Any
+description: 在 TypeScript 中，`any` 类型表示可以是任意类型的值。使用 `any` 类型的变量可以绕过编译器的类型检查，允许赋值或操作不同类型的值。虽然 `any` 提供了极大的灵活性，但滥用它可能会导致类型安全问题，因此建议在确实需要时才使用。例如，在处理动态数据或第三方库时，`any` 可能是必要的，但最好尽量避免在静态类型明确的场景中使用 `any`。
+example: |
+  let value: any;
+
+  value = "Hello"; // 赋值为字符串
+  value = 42; // 赋值为数字
+  value = true; // 赋值为布尔值
+
+  // 可以任意访问属性或调用方法，但这可能会导致运行时错误
+  console.log(value.someMethod()); // 如果 value 不是对象，会在运行时出错
+  console.log(value.toUpperCase()); // 如果 value 不是字符串，会在运行时出错
+
+  // any 类型允许在没有类型检查的情况下进行操作
+  let result: any = value * 2; // 编译器不会报错，但这可能在运行时产生问题
+references:
+  - title: "TypeScript: Handbook - The any Type"
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any

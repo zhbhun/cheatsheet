@@ -1,0 +1,21 @@
+id: unknown
+title: Unknown
+description: 在 TypeScript 中，`unknown` 类型表示一个可以是任何类型的值。与 `any` 类型类似，`unknown` 可以接受任何类型的值，但在使用 `unknown` 类型的值之前，必须先进行类型检查或类型断言。这样可以更好地确保类型安全，因为在处理 `unknown` 类型的值时，TypeScript 会强制开发者执行必要的检查，以避免潜在的错误。`unknown` 类型通常用于处理动态输入、API 响应或任何类型不确定的场景。
+example: |
+  let value: unknown;
+
+  value = "Hello"; // 可以是字符串
+  value = 42; // 也可以是数字
+  value = true; // 或者布尔值
+
+  // 使用前进行类型检查
+  if (typeof value === "string") {
+    console.log(value.toUpperCase()); // 输出: "HELLO"
+  }
+
+  // 或使用类型断言
+  let num: number = value as number;
+  console.log(num.toFixed(2)); // 只能在确定 value 为数字后安全使用
+references:
+  - title: "TypeScript: Handbook - Unknown"
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown
