@@ -1,0 +1,30 @@
+id: switch
+title: Switch
+description: |
+  `switch` 语句是条件分支的一种，用于基于某个表达式的值执行不同的代码块。它是 `if-else` 语句的简洁替代方式，特别适合处理多种可能的情况。TypeScript 的 `switch` 语句与 JavaScript 类似，允许多种 `case`，并且可以有一个可选的 `default` 语句来处理未匹配的情况。TypeScript 提供了额外的类型检查支持，比如防止漏掉 `break` 语句的 `noFallthroughCasesInSwitch` 编译选项。
+example: |
+  function getDayName(dayNumber: number): string {
+      switch (dayNumber) {
+          case 0:
+              return "Sunday";
+          case 1:
+              return "Monday";
+          case 2:
+              return "Tuesday";
+          case 3:
+              return "Wednesday";
+          case 4:
+              return "Thursday";
+          case 5:
+              return "Friday";
+          case 6:
+              return "Saturday";
+          default:
+              return "Invalid day";
+      }
+  }
+
+  console.log(getDayName(3)); // 输出: "Wednesday"
+references:
+  - title: switch
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/switch

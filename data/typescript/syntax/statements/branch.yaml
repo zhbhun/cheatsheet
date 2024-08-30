@@ -1,0 +1,30 @@
+id: branch
+title: 条件分支
+description: |
+  条件分支语句用于根据指定条件的真假执行不同的代码块。在 TypeScript 中，`if` 语句用于判断一个布尔表达式的值，如果为真，则执行对应的代码块。`if...else` 语句可以在条件为假时执行备选代码块，`else if` 则允许链式检查多个条件。
+example: |
+  let num = 10;
+
+  // 简单的 if 语句
+  if (num > 5) {
+      console.log("num 大于 5");
+  }
+
+  // if...else 语句
+  if (num > 15) {
+      console.log("num 大于 15");
+  } else {
+      console.log("num 小于或等于 15"); // 该代码块会被执行
+  }
+
+  // if...else if...else 语句
+  if (num > 15) {
+      console.log("num 大于 15");
+  } else if (num > 5) {
+      console.log("num 大于 5 但小于等于 15"); // 该代码块会被执行
+  } else {
+      console.log("num 小于或等于 5");
+  }
+references:
+  - title: if...else
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/if...else

@@ -1,0 +1,19 @@
+id: try
+title: 异常处理
+description: |
+  在 TypeScript 中，`try...catch...finally` 语句用于处理运行时可能发生的异常。`try` 块包含可能引发错误的代码，`catch` 块用于捕获并处理这些错误，而 `finally` 块则包含无论是否发生错误都需要执行的代码。TypeScript 允许为 `catch` 子句中的错误参数指定类型，提供更强的类型安全性。
+example: |
+  try {
+    let result = JSON.parse(jsonString); // 可能引发 JSON 解析错误
+  } catch (error: unknown) {
+    if (typeof error === "string") {
+      console.log(`String error: ${error}`);
+    } else if (error instanceof Error) {
+      console.log(`Error: ${error.message}`);
+    }
+  } finally {
+    console.log("Cleanup actions, if any."); // 无论如何都会执行
+  }
+references:
+  - title: try...catch
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch

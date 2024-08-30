@@ -1,0 +1,56 @@
+id: loop
+title: Loop
+description: |
+  循环语句在 TypeScript 中用于反复执行一段代码，直到指定条件不再满足。TypeScript 提供了多种循环方式，包括 `for`、`while`、`do...while`、`for...in` 和 `for...of`，用于处理不同场景下的迭代需求。
+
+  - `for` 循环适用于已知循环次数的情况。
+  - `while` 和 `do...while` 循环在条件满足时持续执行代码块，`do...while` 则确保至少执行一次代码块。
+  - `for...in` 循环遍历对象的键名，用于对象属性的遍历。
+  - `for...of` 循环遍历可迭代对象（如数组），直接访问值。
+
+example: |
+  // for 循环示例：打印 0 到 4
+  for (let i = 0; i < 5; i++) {
+      console.log(i);
+  }
+
+  // while 循环示例：打印 0 到 2
+  let count = 0;
+  while (count < 3) {
+      console.log(count);
+      count++;
+  }
+
+  // do...while 循环示例：至少执行一次
+  let i = 0;
+  do {
+      console.log(i);
+      i++;
+  } while (i < 0);
+
+  // for...in 循环示例：遍历对象属性
+  const person = { name: "John", age: 30 };
+  for (let key in person) {
+      console.log(key, person[key]);
+  }
+
+  // for...of 循环示例：遍历数组元素
+  const fruits = ['apple', 'banana', 'cherry'];
+  for (let fruit of fruits) {
+      console.log(fruit);
+  }
+
+references:
+  - title: for
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for
+  - title: for...in
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in
+  - title: for...of
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+  - title: for await...of
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
+  - title: while
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/while
+  - title: do...while
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/do...while
+
