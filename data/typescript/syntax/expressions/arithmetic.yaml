@@ -1,0 +1,17 @@
+id: arithmetic
+title: 算术表达式
+description: 常见的算术运算符包括 `+`（加法）、`-`（减法）、`*`（乘法）和 `/`（除法）。TypeScript 还允许对 `number`、`bigint` 类型以及 `enum` 类型的值进行这些运算。
+example: |
+  let a: number = 10;
+  let b: number = 20;
+
+  let sum = a + b; // 加法，结果为 30
+  let difference = a - b; // 减法，结果为 -10
+  let product = a * b; // 乘法，结果为 200
+  let quotient = a / b; // 除法，结果为 0.5
+
+  let remainder = a % b; // 取模，结果为 10
+  let exponentiation = a ** 2; // 幂运算，结果为 100
+references:
+  - title: Expressions and operators
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators

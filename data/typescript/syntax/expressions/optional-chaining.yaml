@@ -1,0 +1,26 @@
+id: optional-chaining
+title: 可选链表达式
+description: 可选链表达式通过使用 `?.` 操作符来安全地访问对象的属性或调用函数，而不会因为 `null` 或 `undefined` 导致错误。它能够简化深层嵌套属性的访问，使代码更加简洁和易读。如果可选链中的任一部分为 `null` 或 `undefined`，表达式会立即返回 `undefined`，而不是抛出错误。
+example: |
+  // 示例 1: 可选属性访问
+  const album = {
+    title: "Greatest Hits",
+    artist: {
+      name: "Unknown Artist",
+      bio: "Some bio"
+    }
+  };
+  const artistBio = album?.artist?.bio; // 如果 artist 或 bio 为 null 或 undefined，则 artistBio 为 undefined
+
+  // 示例 2: 可选元素访问
+  const firstAlbum = album?.artist?.previousAlbums?.[0]; // 如果 previousAlbums 或第一个元素为 null 或 undefined，则 firstAlbum 为 undefined
+
+  // 示例 3: 可选函数调用
+  const callback = () => console.log("Callback invoked");
+  callback?.(); // 如果 callback 存在，则调用它
+
+references:
+  - title: TypeScript Documentation on Optional Chaining
+    url: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining
+  - title: Optional Chaining and Nullish Coalescing in TypeScript
+    url: https://blog.logrocket.com/optional-chaining-nullish-coalescing-typescript/

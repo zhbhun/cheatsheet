@@ -1,0 +1,11 @@
+id: non-null-assertion
+title: 非空断言表达式
+description: 非空断言表达式是在 TypeScript 中使用感叹号（`!`）来告诉编译器某个值肯定不是 `null` 或 `undefined` 的语法。这在编译器无法通过静态分析推断出某个变量不为空时特别有用，避免了额外的空值检查。
+example: |
+  let message: string | null = "Hello!";
+  console.log(message!.toUpperCase()); // 使用非空断言表达式，编译器不再提示 message 可能为空
+references:
+  - title: Non-null Assertion Operator (Postfix!)
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#non-null-assertion-operator-postfix-
+  - title: "TypeScript Non-Null Assertion Operator: A Complete Guide"
+    url: https://www.slingacademy.com/article/typescript-non-null-assertion-operator/

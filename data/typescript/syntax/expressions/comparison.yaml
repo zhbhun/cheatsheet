@@ -1,0 +1,22 @@
+id: comparison
+title: 比较表达式
+description: |
+  比较表达式用于比较两个值并返回布尔值 `true` 或 `false`。TypeScript 支持多种比较操作符，包括相等（`==` 和 `===`）、不相等（`!=` 和 `!==`）、大于（`>`）、大于等于（`>=`）、小于（`<`）和小于等于（`<=`）。这些操作符可以用于数值、字符串、布尔值等基本类型。TypeScript 在进行比较时，尤其是对于相等性比较，推荐使用严格相等性操作符（`===` 和 `!==`），以避免类型转换带来的潜在错误。
+example: |
+  let a = 10;
+  let b = '10';
+
+  // 严格相等性比较，不会进行类型转换
+  console.log(a === b); // 输出: false
+
+  // 宽松相等性比较，会进行类型转换
+  console.log(a == b); // 输出: true
+
+  // 数值比较
+  console.log(a > 5); // 输出: true
+
+  // 字符串比较（基于字典序）
+  console.log('apple' < 'banana'); // 输出: true
+references:
+  - title: Expressions and operators
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators

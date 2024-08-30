@@ -1,0 +1,13 @@
+id: assignment
+title: 赋值表达式
+description: |
+  赋值表达式用于将值分配给变量或属性。TypeScript 支持多种赋值运算符，包括简单赋值（=）、复合赋值运算符（如 +=、-= 等），以及逻辑赋值运算符（&&=、||=、??=）。这些运算符不仅能简化代码，还能结合类型系统提供更安全的赋值操作。
+example: |
+  let x = 10; // 简单赋值，将 10 赋值给变量 x
+  x += 5; // 复合赋值，x 现在为 15
+  let y = x || 20; // 如果 x 为 falsy 值，则 y 为 20
+  let z = null;
+  z ??= 10; // 如果 z 为 null 或 undefined，则赋值为 10
+references:
+  - title: Expressions and operators
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators

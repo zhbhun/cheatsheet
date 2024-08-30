@@ -1,0 +1,20 @@
+id: nullish-coalescing
+title: 空值合并表达式
+description: 空值合并表达式（`??`）是TypeScript中的一种逻辑运算符，用于在左操作数为 `null` 或 `undefined` 时返回右操作数。与逻辑或运算符（`||`）不同，`??` 只会在左操作数为 `null` 或 `undefined` 时返回右操作数，而不会对其他假值（如 `0`、`false`、`NaN` 等）产生误判。这使得 `??` 在处理可能为 `null` 或 `undefined` 的值时更加可靠，尤其是在设置默认值时。
+example: |
+  const userSettings = {
+    theme: null,
+    itemsPerPage: 0,
+    showNotifications: false
+  };
+
+  const theme = userSettings.theme ?? "default-theme"; // 结果: "default-theme"
+  const itemsPerPage = userSettings.itemsPerPage ?? 10; // 结果: 0
+  const showNotifications = userSettings.showNotifications ?? true; // 结果: false
+references:
+  - title: Nullish Coalescing
+    url: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#nullish-coalescing
+  - title: Understanding the Nullish Coalescing Operator in TypeScript
+    url: https://blog.vvauban.com/blog/understanding-the-nullish-coalescing-operator-in-typescript
+  - title: Optional Chaining and Nullish Coalescing in TypeScript
+    url: https://blog.logrocket.com/optional-chaining-nullish-coalescing-typescript/

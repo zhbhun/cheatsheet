@@ -1,0 +1,13 @@
+id: ternary
+title: 三元表达式
+description: "三元表达式（Ternary Operator）是一种简洁的条件语句，用于根据布尔条件返回不同的值。它的基本语法为 `condition ? expression1 : expression2`，其中 `condition` 是一个布尔表达式，如果为 `true`，则返回 `expression1`，否则返回 `expression2`。这种表达式常用于需要根据条件赋值或返回不同结果的场景。"
+example: |
+  const isEven = (num: number) => num % 2 === 0 ? "Even" : "Odd";
+  console.log(isEven(4));  // 输出: Even
+  console.log(isEven(7));  // 输出: Odd
+
+  const message = isLoggedIn ? "Welcome back!" : "Please log in.";
+  console.log(message);  // 根据 isLoggedIn 的值输出不同的消息
+references:
+  - title: Conditional (ternary) operator
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator

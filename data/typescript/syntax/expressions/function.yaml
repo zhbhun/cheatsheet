@@ -1,0 +1,24 @@
+id: function
+title: 函数表达式
+description: 函数表达式是一种定义函数的方式，它将一个函数作为表达式来使用。这类函数可以是匿名的，也可以命名。常见的函数表达式包括匿名函数表达式、箭头函数表达式和立即执行函数表达式（IIFE）。函数表达式可以动态创建，并在需要时调用。
+example: |
+  // 匿名函数表达式
+  let sum = function(x: number, y: number): number {
+      return x + y;
+  };
+
+  // 箭头函数表达式
+  let multiply = (a: number, b: number): number => a * b;
+
+  // 立即执行函数表达式 (IIFE)
+  (function(message: string) {
+      console.log(message);
+  })('Hello, world!');
+
+  // 箭头函数的 IIFE 形式
+  (() => {
+      console.log('This is an IIFE using an arrow function!');
+  })();
+references:
+  - title: function expression
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function

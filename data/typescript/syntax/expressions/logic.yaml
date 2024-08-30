@@ -1,0 +1,27 @@
+id: logic
+title: 逻辑表达式
+description: 主要的逻辑运算符包括 `&&`（与）、`||`（或）和 `!`（非）。这些运算符允许我们通过短路求值和其他逻辑操作来控制程序的执行流，适用于各种条件判断场景。
+example: |
+  let a = 10;
+  let b = 5;
+  
+  // 使用 &&（与）运算符，只有当两个表达式都为真时，结果才为真
+  console.log(a > 5 && b < 10); // 输出: true
+
+  // 使用 ||（或）运算符，只要一个表达式为真，结果即为真
+  console.log(a > 15 || b < 10); // 输出: true
+
+  // 使用 !（非）运算符，取反布尔值
+  console.log(!false); // 输出: true
+
+  // 短路求值示例
+  let c = null;
+  let d = c || '默认值'; 
+  console.log(d); // 输出: '默认值'
+references:
+  - title: Logical Operators in TypeScript
+    url: https://www.typescript.express/syntax/logical_operators
+  - title: Logical Operators and Assignment in TypeScript
+    url: https://www.typescriptlang.org/play?#code
+  - title: Mastering TypeScript Arithmetic and Logical Operations
+    url: https://learn.codesignal.com/typescript-arithmetic-and-logical-operations
