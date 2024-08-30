@@ -9,6 +9,8 @@ children:
   - spread
   - infix
   - when
+  - in
+  - is
   - non-null-assertion
   - nullish-coalescing
   - optional-chaining

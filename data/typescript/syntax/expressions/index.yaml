@@ -7,6 +7,8 @@ children:
   - logic
   - ternary
   - spread
+  - in
+  - is
   - non-null-assertion
   - nullish-coalescing
   - optional-chaining

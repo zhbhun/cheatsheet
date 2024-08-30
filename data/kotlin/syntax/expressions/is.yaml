@@ -1,0 +1,20 @@
+id: is
+title: 类型检查
+description: 在 Kotlin 中，类型检查用于在运行时验证对象是否属于某种类型。可以使用 `is` 操作符进行检查，`!is` 操作符则用于检查对象是否不属于某种类型。如果类型检查为真，Kotlin 编译器会自动将对象智能转换为该类型，无需显式转换。
+example: |
+  fun printLength(obj: Any) {
+      if (obj is String) {
+          println(obj.length) // obj 被智能转换为 String 类型
+      }
+  }
+
+  fun describeType(x: Any) {
+      when (x) {
+          is Int -> println("Integer: $x")
+          is String -> println("String of length ${x.length}")
+          else -> println("Unknown type")
+      }
+  }
+references:
+  - title: is and !is operators﻿
+    url: https://kotlinlang.org/docs/typecasts.html#is-and-is-operators

@@ -1,0 +1,34 @@
+id: is
+title: 类型检查
+description: "`instanceof` 是 TypeScript 中用于检查对象是否为特定类实例的关键字，适用于复杂对象而非原始数据类型。原始类型（例如 `string`、`number` 等）不能通过 `instanceof` 进行检测，此时应使用 `typeof`。 `instanceof` 主要用于在运行时进行类型缩小，从而提高代码的类型安全性。"
+example: |
+  class Dog {
+      bark() {
+          console.log("Woof!");
+      }
+  }
+
+  const pet = new Dog();
+
+  if (pet instanceof Dog) {
+      pet.bark(); // TypeScript 确认 pet 是 Dog 的实例，因此可以调用 bark 方法
+  }
+
+  // 错误示例：不能用 `instanceof` 检查原始类型
+  const name = "Buddy";
+  console.log(name instanceof String); // 输出 false，因为 `name` 是原始类型 string 而不是对象
+
+  // 正确示例：使用 `typeof` 检查原始类型
+  if (typeof name === "string") {
+      console.log("name 是一个字符串"); // 输出: name 是一个字符串
+  }
+
+references:
+  - title: instanceof
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
+  - title: typeof
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof
+  - title: instanceof narrowing
+    url: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#instanceof-narrowing
+  - title: typeof type guards
+    url: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#typeof-type-guards

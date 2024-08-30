@@ -1,0 +1,24 @@
+id: in
+title: 包含表达式
+description: "`in` 是 TypeScript 中用于检查对象或其原型链中是否具有特定属性的运算符。它不仅用于标准的对象属性检查，还可用作类型收窄表达式。通过 `in` 运算符，TypeScript 能根据属性的存在与否将类型缩小到更具体的子类型，这在处理联合类型时尤为有用。"
+example: |
+  interface Bird {
+    fly(): void;
+  }
+
+  interface Fish {
+    swim(): void;
+  }
+
+  function move(animal: Bird | Fish) {
+    if ("swim" in animal) {
+      animal.swim(); // 类型被收窄为 Fish
+    } else {
+      animal.fly(); // 类型被收窄为 Bird
+    }
+  }
+references:
+  - title: in
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in
+  - title: The in operator narrowing
+    url: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-in-operator-narrowing

@@ -9,6 +9,8 @@ children:
   - spread
   - range
   - infix
+  - in
+  - is
   - try
   - non-null-assertion
   - nullish-coalescing

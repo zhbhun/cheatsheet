@@ -1,0 +1,18 @@
+id: in
+title: 包含表达式
+description: "`in` 表达式用于判断某个值是否属于某个范围、集合或定义了 `contains` 方法的其他实体。相应地，`!in` 表达式则用于判断某个值是否不属于指定范围或集合。`in` 表达式常用于控制流语句中，例如 `when` 表达式。"
+example: |
+  val number = 5
+
+  // 检查 number 是否在 1 到 10 的范围内
+  if (number in 1..10) {
+      println("$number 在范围内")
+  }
+
+  // 检查 number 是否不在集合中
+  if (number !in listOf(1, 2, 3)) {
+      println("$number 不在集合中")
+  }
+references:
+  - title: in operator
+    url: https://kotlinlang.org/docs/operator-overloading.html#in-operator

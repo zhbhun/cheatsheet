@@ -1,0 +1,27 @@
+id: is
+title: 类型检查
+description: 类型检查是 Swift 中的一种机制，用于验证某个实例是否属于特定类型。使用 `is` 关键字可以检查一个实例是否为某个子类的实例，这有助于确保在代码中使用了正确的数据类型，从而减少错误的可能性。
+example: |
+  class Animal {}
+  class Dog: Animal {}
+
+  let pet: Animal = Dog()
+
+  if pet is Dog {
+      print("This is a dog.")
+  } else {
+      print("This is not a dog.")
+  }
+  // 输出: "This is a dog."
+
+  if pet !is Dog {
+      print("This is not a dog.")
+  } else {
+      print("This is a dog.")
+  }
+  // 输出: "This is a dog."
+references:
+  - title: Type Casting
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/typecasting/
+  - title: How to use Swift's type checking and casting
+    url: https://reintech.io/blog/understanding-swift-type-checking-casting
