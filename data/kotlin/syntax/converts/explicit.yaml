@@ -1,0 +1,19 @@
+id: explicit
+title: 显示类型转换
+description: |
+  在 Kotlin 中，显示类型转换用于将一个类型的对象强制转换为另一个类型。通常在编译器无法自动确定类型转换的安全性时使用。例如，您可以使用 `as` 操作符进行类型转换，但如果转换失败会抛出 `ClassCastException`。为了避免异常，可以使用安全的 `as?` 操作符，它会在转换失败时返回 `null`，从而避免程序崩溃。
+example: |
+  // 使用 as 进行强制转换
+  val obj: Any = "Kotlin"
+  val str: String = obj as String
+  println(str) // 输出: Kotlin
+
+  // 使用 as? 进行安全转换
+  val num: Any = 42
+  val safeStr: String? = num as? String
+  println(safeStr) // 输出: null
+references:
+  - title: Type checks and casts
+    url: https://kotlinlang.org/docs/typecasts.html
+  - title: Kotlin Type Conversion
+    url: https://www.programiz.com/kotlin-programming/type-conversion

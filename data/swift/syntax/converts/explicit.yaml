@@ -1,0 +1,39 @@
+id: explicit
+title: 显示类型转换
+description: 显示类型转换是 Swift 中将值从一种类型转换为另一种类型的方式。Swift 提供多种类型转换方法，包括使用初始化器的类型转换和使用 `as` 关键字的类型转换。显示转换在类型不兼容时尤为重要，能够确保类型安全。
+
+example: |
+  // 使用初始化器进行类型转换
+  let integer = 42
+  let doubleValue = Double(integer) // 将 Int 类型的值转换为 Double 类型
+
+  // 使用 `as?` 进行可选类型转换
+  let value: Any = "Hello"
+  if let stringValue = value as? String {
+      print(stringValue) // 输出: Hello
+  }
+
+  // 使用 `as!` 进行强制类型转换
+  let forcedStringValue = value as! String
+  print(forcedStringValue) // 输出: Hello
+
+  // 使用 `as` 进行向上类型转换
+  class Animal {}
+  class Dog: Animal {}
+  let dog: Dog = Dog()
+  let animal: Animal = dog as Animal
+
+  /*
+  Swift 中有三种主要的类型转换操作符：
+  1. `as`：用于进行向上类型转换，即将子类实例转换为父类类型。因为这种转换总是安全的，所以不需要处理失败情况。
+  2. `as?`：用于进行可选类型转换。这种转换可能失败，因此返回一个可选值（Optional）。如果转换成功，可选值包含转换后的值；如果失败，返回 `nil`。
+  3. `as!`：用于进行强制类型转换。此转换假定类型转换一定会成功，如果失败，程序会崩溃。所以仅在确定转换一定成功时使用。
+  */
+
+references:
+  - title: Type Casting
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/typecasting/
+  - title: Type Safety and Type Inference
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Type-Safety-and-Type-Inference
+  - title: Polymorphism and Typecasting
+    url: https://www.hackingwithswift.com/read/0/12/polymorphism-and-typecasting

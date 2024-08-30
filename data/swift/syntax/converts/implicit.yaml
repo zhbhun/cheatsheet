@@ -1,0 +1,18 @@
+id: implicit
+title: 隐式类型转换
+description: 
+  在 Swift 中，隐式类型转换的支持有限。与某些其他编程语言不同，Swift 倾向于避免自动转换以减少意外的行为和提高代码的可读性。然而，Swift 仍然支持一些特定情况下的隐式转换，例如从子类到父类、基本类型的数字提升（如 `Double` 和 `CGFloat` 之间的转换），以及某些集合类型（如 `Array` 和 `Dictionary`）与其元素类型的超类型之间的转换。对于其他类型的转换，通常需要显式地进行类型转换以避免编译错误。
+example: |
+  // 隐式类型转换的简单示例
+  let integer: Int = 42
+  let doubleValue: Double = 3.14
+  let combinedValue = integer + Int(doubleValue) // 需要显式转换
+
+  let strings: [String] = ["Hello", "World"]
+  let objects: [Any] = strings // `[String]` 隐式转换为 `[Any]`
+  
+  let cgValue: CGFloat = 5.0
+  let dblValue: Double = cgValue // CGFloat 隐式转换为 Double
+references:
+  - title: Type Casting
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/typecasting/

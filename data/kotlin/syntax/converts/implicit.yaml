@@ -1,0 +1,15 @@
+id: implicit
+title: 隐式类型转换
+description: 
+  在 Kotlin 中，不支持隐式类型转换。Kotlin 设计强调类型安全性和代码的明确性，因此所有类型转换都需要显式进行。唯一的例外是数字字面量（例如 `1` 可以分配给 `Long` 类型的变量），因为这不会导致精度损失。对于其他类型的转换，必须使用 Kotlin 提供的显式转换方法，如 `toInt()`、`toLong()` 等。
+example: |
+  // 明确的类型转换示例
+  val number: Int = 10
+  val longNumber: Long = number.toLong() // 必须使用 toLong() 进行显式转换
+references:
+  - title: Kotlin Type Conversion
+    url: https://www.programiz.com/kotlin-programming/type-conversion
+  - title: Type Conversion in Kotlin
+    url: https://discuss.kotlinlang.org/t/at-which-situations-does-implicit-conversion-happen/16394
+  - title: Type checks and casts
+    url: https://kotlinlang.org/docs/typecasts.html

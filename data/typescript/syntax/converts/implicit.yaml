@@ -1,0 +1,23 @@
+id: implicit
+title: 隐式类型转换
+description: 隐式类型转换（隐式类型强制转换）是指在某些情况下，TypeScript 会自动将一种数据类型转换为另一种类型。在处理类似布尔值等原始类型时，这些转换可能发生在条件语句、比较操作以及其他需要类型匹配的场景中。
+example: |
+  // 字符串和数字之间的隐式类型转换
+  let num = 5;
+  let str = 'The number is ' + num; // `num` 被隐式转换为字符串
+  console.log(str); // 输出: 'The number is 5'
+
+  // 布尔值与数字之间的隐式转换
+  let flag = true;
+  let result = flag + 1; // `true` 被隐式转换为 1
+  console.log(result); // 输出: 2
+
+  // 比较运算中的隐式类型转换
+  let isEqual = (5 == '5'); // 字符串 '5' 被隐式转换为数字 5
+  console.log(isEqual); // 输出: true
+
+references:
+  - title: TypeScript and Implicit Coercion
+    url: https://dmitryrogozhny.com/blog/typescript-and-implicit-coercion
+  - title: JavaScript Type Conversion
+    url: https://www.programiz.com/javascript/type-conversion

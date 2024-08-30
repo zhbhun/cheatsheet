@@ -1,0 +1,12 @@
+id: explicit
+title: 显示类型转换
+description: 常见的强制转换方法包括使用 `as` 关键字或尖括号语法 `<T>`, 其中 `as` 是推荐的方式，尤其是在使用 JSX 时。
+example: |
+  let value: unknown = "Hello, TypeScript";
+  let strLength: number = (value as string).length; // 使用 `as` 关键字将 unknown 类型转换为 string 类型
+  let anotherLength: number = (<string>value).length; // 使用尖括号语法进行转换，不建议在 JSX 中使用
+references:
+  - title: Type Assertion
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
+  - title: JavaScript Type Conversion
+    url: https://www.programiz.com/javascript/type-conversion
