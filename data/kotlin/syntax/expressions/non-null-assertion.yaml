@@ -1,0 +1,9 @@
+id: non-null-assertion
+title: 非空断言表达式
+description: 非空断言表达式（`!!` 操作符）用于将可空类型的值强制转换为非空类型。如果该值为 `null`，则会抛出 `NullPointerException`。这个操作符通常在您确信某个可空变量不会为 `null` 时使用，但如果错误使用可能导致运行时异常。
+example: |
+  val b: String? = "Kotlin"
+  val length: Int = b!!.length // 使用 `!!` 操作符强制转换为非空类型
+references:
+  - title: The !! operator﻿
+    url: https://kotlinlang.org/docs/null-safety.html#the-operator

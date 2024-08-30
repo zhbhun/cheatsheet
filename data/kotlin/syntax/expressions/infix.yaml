@@ -1,0 +1,19 @@
+id: infix
+title: 中缀操作符
+description: 
+  在 Kotlin 中，中缀操作符允许使用类似自然语言的语法来调用某些函数，而不需要使用点号和括号。这种操作符通常用于简化两个对象之间的操作。要定义一个中缀函数，需要使用 `infix` 关键字修饰，并且该函数必须是成员函数或扩展函数，且只能接受一个参数。
+
+example: |
+  class Person(val name: String) {
+      infix fun likes(other: Person) = "${this.name} likes ${other.name}"
+  }
+
+  val john = Person("John")
+  val jane = Person("Jane")
+  
+  // 使用中缀表示法调用 'likes' 函数
+  val message = john likes jane  // 结果: "John likes Jane"
+
+references:
+  - title: Infix notation
+    url: https://kotlinlang.org/docs/functions.html#infix-notation

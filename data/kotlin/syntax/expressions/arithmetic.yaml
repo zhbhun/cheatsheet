@@ -1,0 +1,27 @@
+id: arithmetic
+title: 算术表达式
+description: Kotlin支持基本的二元运算符，如加法（`+`）、减法（`-`）、乘法（`*`）、除法（`/`）、取余（`%`）等。Kotlin 中的运算符实际上是方法调用，因此可以通过重载来定义自定义的行为。
+example: |
+  val a = 10
+  val b = 3
+  
+  // 基本的算术操作
+  val sum = a + b         // 13
+  val difference = a - b  // 7
+  val product = a * b     // 30
+  val quotient = a / b    // 3
+  val remainder = a % b   // 1
+  
+  // 使用增强赋值运算符
+  var c = 5
+  c += 3  // 等价于 c = c + 3
+  
+  // 区间运算符
+  val rangeClosed = 1..5   // 创建区间 [1, 2, 3, 4, 5]
+  val rangeHalfOpen = 1..<5 // 创建区间 [1, 2, 3, 4]
+
+  // 结合其他表达式
+  val result = (a + b) * (c - 1) // 78
+references:
+  - title: Arithmetic operators
+    url: https://kotlinlang.org/docs/operator-overloading.html#arithmetic-operators

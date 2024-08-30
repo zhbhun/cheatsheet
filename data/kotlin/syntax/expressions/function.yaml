@@ -1,0 +1,40 @@
+id: function
+title: 函数表达式
+description: |
+  在 Kotlin 中，Lambda 表达式是一种匿名函数，通常用于简洁地表示可传递或可返回的函数。Lambda 表达式允许将函数作为一等公民来使用，并提供了一种轻量级的语法来处理函数。Lambda 常用于高阶函数的参数中，使代码更加简洁和易读。
+  
+  此外，Kotlin 还支持匿名函数，它们与 Lambda 类似，但语法更接近常规函数，并且可以显式声明返回类型。区别在于：
+
+  - Lambda 表达式：语法更加简洁，适合简短的代码片段。可以省略参数类型，Kotlin 编译器会自动推断。Lambda 表达式通常不显式声明返回类型，返回值是 Lambda 体中最后一个表达式的值。
+  - 匿名函数：语法更接近于常规函数定义，适合需要显式声明返回类型或包含复杂逻辑的场景。与 Lambda 不同，匿名函数可以直接使用 `return` 关键字来返回值。
+example: |
+  // 单行的 Lambda 表达式
+  val sum: (Int, Int) -> Int = { x, y -> x + y }
+  
+  // 使用 Lambda 表达式
+  val result = sum(3, 4) // result 是 7
+
+  // 使用 `it` 关键字引用单个参数的 Lambda 表达式
+  val square: (Int) -> Int = { it * it }
+  val squareResult = square(5) // squareResult 是 25
+
+  // 在函数调用中使用 Lambda 表达式作为参数
+  val list = listOf(1, 2, 3, 4)
+  val doubled = list.map { it * 2 } // doubled 是 [2, 4, 6, 8]
+
+  // 多行的 Lambda 表达式
+  val sumAndProduct: (Int, Int) -> Pair<Int, Int> = { x, y ->
+      val sum = x + y
+      val product = x * y
+      Pair(sum, product)  // 返回一对值：和与积
+  }
+  val resultPair = sumAndProduct(3, 4) // resultPair 是 Pair(7, 12)
+
+  // 使用匿名函数的写法
+  val multiply = fun(x: Int, y: Int): Int {
+      return x * y
+  }
+  val multiplyResult = multiply(2, 3) // multiplyResult 是 6
+references:
+  - title: Lambda expressions and anonymous functions﻿
+    url: https://kotlinlang.org/docs/lambdas.html#lambda-expressions-and-anonymous-functions

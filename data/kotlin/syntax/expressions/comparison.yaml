@@ -1,0 +1,21 @@
+id: comparison
+title: 比较表达式
+description: 比较表达式在 Kotlin 中用于比较两个值，并返回布尔值（`true` 或 `false`）。Kotlin 提供了多种比较运算符，包括 `==`、`!=`、`<`、`>`、`<=` 和 `>=`，用于比较数字、字符、字符串等。`==` 和 `!=` 主要用于检查值是否相等或不相等，而 `>`、`<`、`>=` 和 `<=` 则用于比较大小关系。对于对象，Kotlin 使用 `compareTo()` 方法进行顺序比较。
+example: |
+  val a = 10
+  val b = 5
+
+  println(a == b)  // 输出: false, 因为 10 不等于 5
+  println(a > b)   // 输出: true, 因为 10 大于 5
+  println(a <= b)  // 输出: false, 因为 10 不小于或等于 5
+
+  // 使用 compareTo 方法比较字符串
+  val string1 = "alpha"
+  val string2 = "beta"
+  
+  println(string1.compareTo(string2)) // 输出: -1, 因为 "alpha" 在字典顺序上小于 "beta"
+references:
+  - title: Comparison Operators in Kotlin
+    url: https://kotlinlang.org/docs/operator-overloading.html#comparison-operators
+  - title: compareTo - Kotlin Documentation
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-comparable/compare-to.html

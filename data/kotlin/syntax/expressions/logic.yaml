@@ -1,0 +1,28 @@
+id: logic
+title: 逻辑表达式
+description: Kotlin 提供了三种主要的逻辑运算符：`&&`（逻辑与）、`||`（逻辑或）和 `!`（逻辑非），它们用于对布尔值进行组合和反转，形成复杂的条件判断。这些运算符可以帮助控制程序的执行流程，例如在条件语句中决定代码块是否执行。
+example: |
+  fun main() {
+      val a = 10
+      val b = 20
+      val c = 30
+
+      // 使用 && 运算符，只有当两个条件都为 true 时，结果才为 true
+      val resultAnd = (a < b) && (b < c)
+      println(resultAnd) // 输出: true
+
+      // 使用 || 运算符，只要有一个条件为 true，结果即为 true
+      val resultOr = (a > b) || (b < c)
+      println(resultOr) // 输出: true
+
+      // 使用 ! 运算符反转布尔值
+      val resultNot = !(a > b)
+      println(resultNot) // 输出: true
+  }
+references:
+  - title: Kotlin Documentation - Booleans
+    url: https://kotlinlang.org/docs/booleans.html
+  - title: Comparison operators﻿
+    url: https://kotlinlang.org/docs/operator-overloading.html#equality-and-inequality-operators
+  - title: Logical operators in Kotlin
+    url: https://kotlintutorial.io/logical-operators/

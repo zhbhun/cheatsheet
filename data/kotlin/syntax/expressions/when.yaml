@@ -1,0 +1,44 @@
+id: when
+title: When Expression
+description: The `when` expression in Kotlin is a powerful control flow structure that is similar to the `switch` statement found in C-like languages. It allows you to match a value against multiple conditions and execute the corresponding branch of code. Unlike `switch`, the `when` expression can be used without an argument, making it a flexible replacement for `if-else` chains. It can be used both as an expression, where it returns a value, or as a statement, where it simply executes code.
+example: |
+  // Using `when` as an expression with a subject
+  val number = 2
+  val result = when (number) {
+      1 -> "One"
+      2 -> "Two"
+      3 -> "Three"
+      else -> "Unknown"
+  } // result is "Two"
+
+  // Using `when` as a replacement for `if-else` without a subject
+  val isOddOrEven = when {
+      number % 2 == 0 -> "Even"
+      else -> "Odd"
+  } // isOddOrEven is "Even"
+
+  // Using `when` with complex conditions
+  val response = when {
+      number in 1..10 -> "Within range"
+      number !in 1..10 -> "Outside range"
+      else -> "Unknown range"
+  } // response is "Within range"
+
+  // `when` with sealed classes to ensure exhaustive checks
+  sealed class Error {
+      object NetworkError : Error()
+      object FileNotFoundError : Error()
+  }
+
+  val error = Error.NetworkError
+  val message = when (error) {
+      is Error.NetworkError -> "Network error occurred"
+      is Error.FileNotFoundError -> "File not found"
+  } // message is "Network error occurred"
+references:
+  - title: When Expression
+    url: https://kotlinlang.org/docs/control-flow.html#when-expression
+  - title: Use sealed classes with when expression
+    url: https://kotlinlang.org/docs/sealed-classes.html#use-sealed-classes-with-when-expression
+  - title: When expression
+    url: https://www.kotlinprimer.com/basics/control-flow/when-expression/

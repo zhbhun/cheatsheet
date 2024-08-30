@@ -1,6 +1,6 @@
-- id: variables
-- title: 变量
-- children:
+id: variables
+title: 变量
+children:
   - variable
   - destructuring
   - naming

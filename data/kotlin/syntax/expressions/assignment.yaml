@@ -1,0 +1,13 @@
+id: assignment
+title: 赋值表达式
+description: 
+  Kotlin 支持常见的赋值操作符，如 `+=`、`-=`、`*=` 等，它们是通过对基本操作符（如 `+`、`-`、`*`）的扩展来实现的。这些操作符会对变量执行操作后再将结果赋值回该变量。ps：在 Kotlin 中，赋值操作符 `=` 用于将表达式的结果赋值给变量。与某些其他编程语言不同，赋值在 Kotlin 中**不是**表达式，因此不能将赋值操作嵌入到其他表达式中。这意味着不能在条件判断或循环控制语句中直接使用赋值操作的结果。
+example: |
+  var x = 10
+  x += 5  // 等价于 x = x + 5，x 现在的值是 15
+
+  // 错误示范：赋值操作不能作为表达式
+  // if (y = 10) { ... }  // 此代码在 Kotlin 中不可用
+references:
+  - title: Augmented assignments
+    url: https://kotlinlang.org/docs/operator-overloading.html#augmented-assignments

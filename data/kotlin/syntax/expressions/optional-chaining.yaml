@@ -1,0 +1,17 @@
+id: nullish-coalescing
+title: 可选链表达式
+description: 可选链表达式，也称为安全调用操作符，在Kotlin中通过`?.`符号实现。它用于在访问可能为空的对象的属性或方法时避免抛出空指针异常。当链中的任意一个属性为`null`时，整个表达式会返回`null`，而不会继续执行后续调用。这在处理复杂的对象层级时尤为有用，可避免多次进行空值检查。
+example: |
+  // 定义一个类层次结构
+  class Department(val head: Employee?)
+  class Employee(val name: String)
+
+  val department: Department? = Department(null)
+
+  // 使用可选链访问属性
+  val headName = department?.head?.name  // 如果任意属性为空，headName 将为 null
+  println(headName)  // 输出: null
+
+references:
+  - title: Safe calls
+    url: https://kotlinlang.org/docs/null-safety.html#safe-calls
