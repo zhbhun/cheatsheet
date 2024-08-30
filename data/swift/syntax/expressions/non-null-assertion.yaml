@@ -1,0 +1,13 @@
+id: non-null-assertion
+title: 非空断言表达式
+description: 
+  非空断言表达式是 Swift 中用于强制解包可选类型（Optional）的语法。它通过在可选值后添加感叹号（`!`），告诉编译器在使用该值时，您确信它不为 `nil`。如果在运行时发现该值为 `nil`，程序将会崩溃。因此，非空断言表达式通常用于您完全确定可选值一定存在的场景。
+example: |
+  var name: String? = "Alice"
+  let unwrappedName: String = name!  // 强制解包可选类型，假设 name 不为 nil
+
+  name = nil
+  // let anotherName: String = name!  // 如果在此时解包，将导致运行时崩溃
+references:
+  - title: Forced-Value Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Forced-Value-Expression

@@ -1,0 +1,36 @@
+id: function
+title: 函数表达式
+description: 在 Swift 中，匿名函数表达式通常称为闭包表达式。闭包是自包含的代码块，可以在代码中传递和使用。闭包表达式是一种简化语法的方式，适合用于编写简短的内联代码。它们通常用于函数参数、返回值，或者在函数内部定义行为，而不需要为每个函数显式命名。
+example: |
+  // 定义一个简单的闭包表达式并赋值给变量
+  let greeting = { (name: String) -> String in
+      return "Hello, \(name)!"
+  }
+
+  print(greeting("Swift")) // 输出：Hello, Swift!
+
+  // 使用类型推断和简化语法
+  let numbers = [1, 2, 3, 4, 5]
+  let doubled = numbers.map { $0 * 2 }
+  print(doubled) // 输出：[2, 4, 6, 8, 10]
+
+  // 单表达式闭包省略 return 关键字
+  let isEven = { (number: Int) -> Bool in number % 2 == 0 }
+  print(isEven(4)) // 输出：true
+
+  // 使用尾随闭包
+  func performOperation(operation: () -> Void) {
+      operation()
+  }
+
+  performOperation {
+      print("This is a trailing closure.")
+  }
+  // 输出：This is a trailing closure.
+references:
+  - title: Closures
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/closures/
+  - title: Closure Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Closure-Expression
+  - title: Function Call Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Function-Call-Expression

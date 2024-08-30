@@ -1,0 +1,12 @@
+id: ternary
+title: 三元表达式
+description: 三元表达式是 Swift 中的一个简洁的条件运算符，用于根据条件的真假来返回不同的值。它是 `if...else` 语句的简写，通常用于需要在一行代码中处理简单条件判断的场景。
+example: |
+  let marks = 75
+  let result = (marks >= 60) ? "合格" : "不合格"
+  print("考试结果: \(result)") // 输出: 考试结果: 合格
+references:
+  - title: Ternary Conditional Operator
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Ternary-Conditional-Operator
+  - title: Swift Ternary Operator
+    url: https://www.book2s.com/tutorials/swift-ternary-operator.html

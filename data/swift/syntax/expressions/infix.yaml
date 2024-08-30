@@ -1,0 +1,27 @@
+id: infix
+title: 中缀操作符
+description: |
+  中缀操作符是位于两个操作数之间的符号或函数。在 Swift 中，您可以使用 `infix` 关键字自定义中缀操作符，并为其定义优先级和结合性。中缀操作符可用于多种类型，例如数字、字符串等，通过自定义可以增加代码的可读性和表达能力。
+
+  除了内置的操作符，如 `+`、`*` 等，您还可以定义自己的中缀操作符，赋予其特定功能。例如，可以定义一个幂运算符 `**`，来计算一个数的幂。
+example: |
+  // 定义自定义的幂运算符
+  infix operator ** : MultiplicationPrecedence // 定义优先级为 MultiplicationPrecedence
+
+  func **(lhs: Double, rhs: Double) -> Double {
+      return pow(lhs, rhs)
+  }
+
+  let result = 2 ** 3  // result 为 8.0
+
+  // 自定义字符串重复操作符
+  infix operator * : MultiplicationPrecedence // 定义优先级为 MultiplicationPrecedence
+
+  func *(left: String, right: Int) -> String {
+      return String(repeating: left, count: right)
+  }
+
+  let repeatedStr = "Hi! " * 3  // repeatedStr 为 "Hi! Hi! Hi! "
+references:
+  - title: Precedence for Custom Infix Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/advancedoperators/#Precedence-for-Custom-Infix-Operators

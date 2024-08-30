@@ -1,0 +1,27 @@
+id: keypath
+title: KeyPath
+description: KeyPath 是 Swift 中的一种类型，用于存储对属性或下标的间接引用，而不是直接访问值。通过 KeyPath，您可以动态地获取或设置对象属性的值，而无需在编译时硬编码属性的访问路径。
+example: |
+  struct User {
+      var name: String
+      var age: Int
+  }
+
+  let nameKeyPath = \User.name  // 创建一个 KeyPath，指向 User 类型的 name 属性
+  let ageKeyPath = \User.age    // 创建一个 KeyPath，指向 User 类型的 age 属性
+
+  let user = User(name: "Alice", age: 25)
+  
+  // 使用 KeyPath 读取属性值
+  let userName = user[keyPath: nameKeyPath]  // "Alice"
+  
+  // 使用 KeyPath 修改属性值
+  var mutableUser = user
+  mutableUser[keyPath: ageKeyPath] = 26  // mutableUser.age 现在是 26
+references:
+  - title: Key-Path Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Key-Path-Expression
+  - title: KeyPath
+    url: https://developer.apple.com/documentation/swift/keypath
+  - title: Key-Path Expressions 
+    url: https://developer.apple.com/documentation/swift/key-path-expressions

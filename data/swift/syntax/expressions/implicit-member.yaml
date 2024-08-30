@@ -1,0 +1,12 @@
+id: implicit-member
+title: 隐式成员表达式
+description: 隐式成员表达式是 Swift 中一种用于简化语法的表达方式。当类型由上下文推断时，您可以通过省略类型名并仅使用点语法来访问枚举成员、静态属性或静态方法。这在处理枚举和某些链式调用时尤为常见，能使代码更加简洁明了。
+example: |
+  enum Color {
+      case red, green, blue
+  }
+
+  let favoriteColor: Color = .red  // 使用隐式成员表达式，省略了类型名
+references:
+  - title: Implicit Member Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Implicit-Member-Expression

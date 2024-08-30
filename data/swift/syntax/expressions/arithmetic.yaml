@@ -1,0 +1,22 @@
+id: arithmetic
+title: 算术表达式
+description: |
+  Swift 提供了常见的算术运算符，如加法（`+`）、减法（`-`）、乘法（`*`）、除法（`/`）以及取余（`%`）。这些运算符通常用于数值类型，如 `Int` 和 `Double`，并且可以与变量、常量或直接的数值字面量一起使用。
+example: |
+  let a = 10
+  let b = 3
+
+  let sum = a + b // 加法：结果为 13
+  let difference = a - b // 减法：结果为 7
+  let product = a * b // 乘法：结果为 30
+  let quotient = a / b // 除法：结果为 3 (整数除法)
+  let remainder = a % b // 取余：结果为 1
+
+  let c = 10.0
+  let d = 3.0
+  let preciseQuotient = c / d // 浮点数除法：结果为 3.3333...
+references:
+  - title: Arithmetic Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Arithmetic-Operators
+  - title: Arithmetic operators in Swift
+    url: https://www.hackingwithswift.com/sixty/3/1/arithmetic-operators

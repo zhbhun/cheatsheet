@@ -1,0 +1,36 @@
+id: comparison
+title: 比较表达式
+description: |
+  在 Swift 中，比较表达式用于比较两个值或表达式，结果为布尔值 `true` 或 `false`。Swift 支持的基本比较运算符包括：
+  
+  - `==`: 判断两个值是否相等。
+  - `!=`: 判断两个值是否不相等。
+  - `>`: 判断左侧值是否大于右侧值。
+  - `<`: 判断左侧值是否小于右侧值。
+  - `>=`: 判断左侧值是否大于或等于右侧值。
+  - `<=`: 判断左侧值是否小于或等于右侧值。
+
+  这些运算符适用于整数、浮点数、字符串及其他遵循 `Comparable` 协议的类型。比较表达式常用于条件判断、循环等场景中。
+example: |
+  ```swift
+  let a = 5
+  let b = 10
+
+  // 判断是否相等
+  let isEqual = (a == b)  // false
+
+  // 判断是否不相等
+  let isNotEqual = (a != b)  // true
+
+  // 判断大小关系
+  let isGreater = (a > b)  // false
+  let isLess = (a < b)  // true
+
+  // 判断是否大于或等于
+  let isGreaterOrEqual = (a >= b)  // false
+
+  // 判断是否小于或等于
+  let isLessOrEqual = (a <= b)  // true
+references:
+  - title: Comparison Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Comparison-Operators

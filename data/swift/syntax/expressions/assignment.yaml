@@ -1,0 +1,12 @@
+id: assignment
+title: 赋值表达式
+description: Swift 提供了简单赋值和计算赋值两种形式。简单赋值使用 `=` 操作符直接将右侧表达式的值赋给左侧的变量或常量；而计算赋值则使用运算符结合赋值，例如 `+=`、`-=` 等，它们会先进行相应的运算，然后将结果赋给左侧的变量。
+example: |
+  var x = 10   // 简单赋值，将 10 赋值给变量 x
+  x = 20       // 将 x 重新赋值为 20
+  x += 5       // 计算赋值，等同于 x = x + 5，结果为 25
+references:
+  - title: Assignment Operator
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Assignment-Operator
+  - title: Compound Assignment Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Compound-Assignment-Operators

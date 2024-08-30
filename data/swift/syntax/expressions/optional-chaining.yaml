@@ -1,0 +1,24 @@
+id: optional-chaining
+title: 可选链表达式
+description: 可选链表达式是 Swift 中的一种语法，用于安全地访问可选值的属性、方法或下标。如果可选值为 `nil`，整个表达式会返回 `nil`，并且后续的调用不会执行。如果可选值存在，则可以像对非可选值一样正常调用属性、方法或下标。这种语法常用于避免因为 `nil` 引发的运行时错误，并简化了代码。
+example: |
+  class Person {
+      var residence: Residence?
+  }
+
+  class Residence {
+      var numberOfRooms = 1
+  }
+
+  let john = Person()
+
+  // 使用可选链表达式安全地访问属性
+  if let roomCount = john.residence?.numberOfRooms {
+      print("John's residence has \(roomCount) rooms.")
+  } else {
+      print("Unable to retrieve the number of rooms.")
+  }
+  // 输出: Unable to retrieve the number of rooms.
+references:
+  - title: Optional-Chaining Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Optional-Chaining-Expression

@@ -1,0 +1,38 @@
+id: try
+title: Try 操作符
+description: 
+  "Swift 中的 `try` 操作符用于处理可能抛出异常的函数。调用可能抛出错误的函数时，使用 `try` 关键字表示你意识到可能会发生错误。Swift 提供了三种 `try` 变体：`try`、`try?` 和 `try!`，它们的用途各不相同：
+  
+  - `try`: 在 `do-catch` 块中使用，用于显式处理错误。
+  - `try?`: 将错误转换为可选值，如果发生错误则返回 `nil`。
+  - `try!`: 假设不会发生错误，如果发生错误，会导致运行时崩溃。"
+example: |
+  // 使用 `try` 和 do-catch 处理错误
+  enum FileError: Error {
+      case fileNotFound
+  }
+
+  func loadFile(filename: String) throws -> String {
+      guard filename == "valid.txt" else { throw FileError.fileNotFound }
+      return "文件内容"
+  }
+
+  do {
+      let content = try loadFile(filename: "invalid.txt")
+      print(content)
+  } catch {
+      print("加载文件失败: \(error)")
+  }
+
+  // 使用 `try?` 返回可选值
+  let content = try? loadFile(filename: "invalid.txt")
+  print(content) // 输出 nil
+
+  // 使用 `try!` 强制执行，假设不会发生错误
+  let content = try! loadFile(filename: "valid.txt")
+  print(content) // 输出 "文件内容"
+references:
+  - title: Try Operator
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#In-Out-Expression
+  - title: Try Statement (Try vs Try? vs Try!) in SWift
+    url: https://mahigarg.github.io/blogs/try-statement-in-swift/

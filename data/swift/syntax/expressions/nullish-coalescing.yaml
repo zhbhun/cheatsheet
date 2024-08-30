@@ -1,0 +1,9 @@
+id: nullish-coalescing
+title: 空值合并表达式
+description: 通过使用 `??` 运算符，当可选值为 `nil` 时，会返回右侧的默认值，否则返回可选值本身。这在处理可选类型时非常有用，尤其是当你希望避免 `nil` 导致的程序崩溃时。
+example: |
+  let optionalName: String? = nil
+  let fullName: String = optionalName ?? "John Doe" // 当 optionalName 为 nil 时，fullName 将被赋值为 "John Doe"
+references:
+  - title: Providing a Fallback Value
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Tuples

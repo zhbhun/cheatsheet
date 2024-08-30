@@ -1,0 +1,21 @@
+id: range
+title: 范围表达式
+description: |
+  在 Swift 中，范围表达式用于表示一系列连续的值。范围表达式通常用于迭代、数组切片以及检查值是否在特定范围内。Swift 提供了多种范围操作符，包括闭区间操作符 (`...`)，用于表示从起始值到结束值的所有值；半开区间操作符 (`..<`)，表示从起始值到结束值，但不包括结束值；以及单侧范围操作符，用于表示一个开放端的范围。范围表达式可以用于数字、字符等可排序的类型。
+example: |
+  // 闭区间范围表达式，包含1到5的所有值
+  for number in 1...5 {
+      print(number) // 输出 1, 2, 3, 4, 5
+  }
+
+  // 半开区间范围表达式，包含1到4，不包含5
+  let array = [1, 2, 3, 4, 5]
+  let slice = array[1..<4] // [2, 3, 4]
+
+  // 单侧范围表达式，表示从0开始的所有值
+  let partialArray = array[2...] // [3, 4, 5]
+references:
+  - title: Range Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/basicoperators/#Range-Operators
+  - title: Range operators
+    url: https://www.hackingwithswift.com/sixty/3/9/range-operators

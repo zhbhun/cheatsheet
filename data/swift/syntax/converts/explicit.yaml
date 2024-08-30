@@ -31,6 +31,8 @@ example: |
   */
 
 references:
+  - title: Type-Casting Operators
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Type-Casting-Operators
   - title: Type Casting
     url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/typecasting/
   - title: Type Safety and Type Inference

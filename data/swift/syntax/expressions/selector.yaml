@@ -1,0 +1,27 @@
+id: selector
+title: 选择器表达式
+description: |
+  在 Swift 中，选择器表达式（Selector Expression）用于获取并引用 Objective-C 方法的选择器。通过 `#selector` 语法，您可以将方法的引用传递给 Objective-C API，例如 `UIButton` 的 `addTarget(_:action:for:)` 方法。选择器表达式通常用于支持动态方法调用或在运行时通过字符串匹配方法名称。
+
+example: |
+  import UIKit
+
+  class MyViewController: UIViewController {
+      override func viewDidLoad() {
+          super.viewDidLoad()
+
+          let button = UIButton(type: .system)
+          button.setTitle("Tap me", for: .normal)
+          button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+          view.addSubview(button)
+      }
+
+      @objc func buttonTapped() {
+          print("Button was tapped!")
+      }
+  }
+
+  // `#selector(buttonTapped)` 将 `buttonTapped` 方法的选择器传递给 `UIButton` 的 `addTarget(_:action:for:)` 方法。
+references:
+  - title: Selector Expression
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/expressions/#Selector-Expression
