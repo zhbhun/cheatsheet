@@ -1,6 +1,6 @@
-- id: syntax
-- title: 语法
-- children:
+id: syntax
+title: 语法
+children:
   - variables
   - comment
   - types

@@ -1,12 +1,12 @@
-- id: expressions
-- title: 表达式
-- children:
+id: expressions
+title: 表达式
+children:
   - arithmetic
   - assignment
   - comparison
   - logic
-  - spread
   - ternary
+  - spread
   - non-null-assertion
   - nullish-coalescing
   - optional-chaining
