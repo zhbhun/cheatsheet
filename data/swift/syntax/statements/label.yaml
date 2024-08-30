@@ -1,0 +1,24 @@
+id: label
+title: 标签
+description: 标签（Label）是Swift语言中的一种控制流语句，允许你为循环、条件语句（如 `if`、`switch`）或 `do` 语句添加标签，从而在代码中使用 `break` 或 `continue` 时更灵活地控制程序的执行流程。通过使用标签，你可以显式地指定跳出或继续哪个循环或代码块，特别是在处理嵌套结构时非常有用。
+example: |
+  outerLoop: for i in 1...5 {
+      innerLoop: for j in 1...5 {
+          if i * j > 10 {
+              break outerLoop; // 当乘积大于10时，跳出 outerLoop 循环
+          }
+          print("i: \(i), j: \(j)")
+      }
+  }
+  // 输出结果：
+  // i: 1, j: 1
+  // i: 1, j: 2
+  // i: 1, j: 3
+  // i: 1, j: 4
+  // i: 1, j: 5
+  // i: 2, j: 1
+  // i: 2, j: 2
+  // i: 2, j: 3
+references:
+  - title: Labeled Statements
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow#Labeled-Statements

@@ -1,0 +1,75 @@
+id: if
+title: 条件语句
+description: |
+  Swift 中的 `if` 条件语句用于根据表达式的布尔值执行不同的代码块。它通常用于判断程序逻辑的分支，并可以与 `else` 和 `else if` 搭配使用。此外，Swift 还引入了 `if let` 和 `guard let` 语法，用于安全地解包可选值（Optional），确保程序不会因为未解包的可选值导致崩溃。
+example: |
+  // 基本的 `if` 语句
+  let score = 85
+  if score > 80 {
+      print("Great job!")
+  } else {
+      print("Keep trying!")
+  }
+
+  // `if let` 语句用于解包可选值，它会在可选值包含实际数据时将其解包并赋值给一个新的常量，从而避免解包时可能导致的程序崩溃。
+  var name: String? = "John"
+  if let unwrappedName = name {
+      print("Hello, \(unwrappedName)!")
+  } else {
+      print("No name provided.")
+  }
+  
+  // 多个 `if let` 语句用于解包多个可选值
+  var firstName: String? = "John"
+  var lastName: String? = "Doe"
+  if let first = firstName, let last = lastName {
+      print("Full name is \(first) \(last).")
+  } else {
+      print("Name is incomplete.")
+  }
+
+  // `guard let` 语句用于解包可选值，通常用于提前退出函数或循环。如果解包失败，`guard` 语句会立即执行 `else` 分支并退出当前代码块（例如通过 `return`、`break` 或 `continue`）。
+  func greet(person: String?) {
+      guard let unwrappedPerson = person else {
+          print("No name provided.")
+          return
+      }
+      print("Hello, \(unwrappedPerson)!")
+  }
+
+  // 多个 `guard let` 语句用于解包多个可选值
+  func processPerson(firstName: String?, lastName: String?) {
+      guard let first = firstName, let last = lastName else {
+          print("Incomplete name provided.")
+          return
+      }
+      print("Processing \(first) \(last).")
+  }
+
+  // 模式匹配中的 `if case` 语句，用于匹配枚举值或其他类型的模式
+  let result: Result<Int, Error> = .success(42) // Result 是一个枚举类型，用于处理可能成功或失败的操作。
+  if case .success(let value) = result { // .success(Value)：表示操作成功，并携带成功的值。
+      print("The result is \(value).")
+  }
+  ps: .failure(Error)：表示操作失败，并携带失败的错误值。
+
+  // if case 来检查 age 是否在 18...35 这个范围内
+  let age = 25
+  if case 18...35 = age, age >= 21 { //
+      print("You are eligible.")
+  }
+
+  // 模式匹配中的 `guard case` 语句
+  func handleResult(_ result: Result<Int, Error>) {
+      guard case .success(let value) = result else {
+          print("The operation failed.")
+          return
+      }
+      print("The operation succeeded with result \(value).")
+  }
+
+references:
+  - title: Conditional Statements
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow/#Conditional-Statements
+  - title: Branch Statements
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/statements#Branch-Statements

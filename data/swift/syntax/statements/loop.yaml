@@ -1,0 +1,62 @@
+id: loop
+title: 循环语句
+description: Swift 提供了多种循环结构，包括 `for-in` 循环、`while` 循环和 `repeat-while` 循环，以处理不同的需求场景。
+example: |
+  // for-in 循环：用于遍历序列，如数组、字典或范围
+  let array = [1, 2, 3, 4, 5]
+  for number in array {
+      print(number)
+  }
+
+  // 区间操作符: 遍历从1到5的所有整数（包含5）
+  for i in 1...5 {
+      print(i)
+  }
+
+  // 半开区间操作符: 遍历从1到4的所有整数（不包含5）
+  for i in 1..<5 {
+      print(i)
+  }
+  
+  // stride 函数：指定步长，从0开始每隔2个数打印一次，直到小于10
+  for i in stride(from: 0, to: 10, by: 2) {
+      print(i)
+  }
+
+  // stride 函数（闭区间）：指定步长，从0开始每隔2个数打印一次，直到并包括10
+  for i in stride(from: 0, through: 10, by: 2) {
+      print(i)
+  }
+
+  // 使用 break 跳出循环
+  for i in 1...5 {
+      if i == 3 {
+          break // 当 i 等于 3 时，跳出循环
+      }
+      print(i)
+  }
+
+  // 使用 continue 跳过本次循环
+  for i in 1...5 {
+      if i % 2 == 0 {
+          continue // 跳过偶数的打印
+      }
+      print(i)
+  }
+  
+  // while 循环：在条件为 true 时重复执行代码块
+  var counter = 5
+  while counter > 0 {
+      print(counter)
+      counter -= 1
+  }
+  
+  // repeat-while 循环：类似于 while，但至少执行一次代码块
+  repeat {
+      print("This will print at least once")
+  } while false
+references:
+  - title: Control Flow - The Swift Programming Language
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow/
+  - title: Swift Statements Documentation
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/statements/

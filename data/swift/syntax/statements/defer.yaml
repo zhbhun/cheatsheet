@@ -1,0 +1,29 @@
+id: defer
+title: Defer
+description: |
+  `defer` 是 Swift 中用于延迟执行代码块的语句。它会将代码块的执行推迟到当前作用域结束时，无论是通过正常的函数返回还是抛出异常。常用于清理资源或确保某些操作在函数结束前一定会执行，例如关闭文件或释放内存。`defer` 语句尤其适合在多处可能提前返回的函数中使用，以避免重复编写清理代码。多个 `defer` 语句按逆序执行。
+example: |
+  func processFile() {
+      let file = openFile()
+      defer { closeFile(file) }  // 确保文件在函数结束时关闭
+
+      guard let data = readFile(file) else {
+          return  // 在此处提前返回时也会关闭文件
+      }
+
+      // 处理数据
+      processData(data)
+  }
+
+  // 示例：多个 `defer` 语句逆序执行
+  func multipleDefer() {
+      defer { print("First defer") }
+      defer { print("Second defer") }
+      defer { print("Third defer") }
+      // 打印顺序将是: Third defer, Second defer, First defer
+  }
+references:
+  - title: Deferred Actions
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow#Deferred-Actions
+  - title: The Defer Statement in Swift
+    url: https://devtut.github.io/swift/the-defer-statement.html
