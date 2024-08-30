@@ -1,0 +1,41 @@
+id: try
+title: 异常处理
+description: 
+  在 Kotlin 中，`try` 是一个用于处理异常的表达式。它可以搭配 `catch` 和 `finally` 块使用，允许你捕获在 `try` 块中可能发生的异常并进行处理。`try` 表达式的返回值是 `try` 块或 `catch` 块中的最后一个表达式的结果。如果 `try` 块中没有异常抛出，则返回 `try` 块的结果；如果发生了异常且被 `catch` 块捕获，则返回 `catch` 块的结果。`finally` 块中的代码无论是否发生异常都会执行，但不会改变 `try-catch` 表达式的结果。
+example: |
+  ```kotlin
+  fun parseIntOrNull(str: String): Int? {
+      return try {
+          str.toInt() // 尝试将字符串转换为整数
+      } catch (e: NumberFormatException) {
+          null // 如果转换失败，返回 null
+      }
+  }
+
+  fun validateAge(age: Int) {
+      if (age < 18) {
+          throw IllegalArgumentException("年龄必须大于或等于 18 岁")
+      }
+      println("年龄符合要求")
+  }
+
+  fun main() {
+      val number = parseIntOrNull("123") // 成功返回 123
+      println(number) // 输出: 123
+
+      val invalidNumber = parseIntOrNull("abc") // 失败返回 null
+      println(invalidNumber) // 输出: null
+
+      try {
+          validateAge(15)  // 这里会抛出 IllegalArgumentException 异常
+      } catch (e: IllegalArgumentException) {
+          println("发生异常: ${e.message}")
+      }
+  }
+references:
+  - title: Exceptions
+    url: https://kotlinlang.org/docs/exceptions.html
+  - title: Kotlin try/catch/finally Expressions
+    url: https://kotlin-quick-reference.com/075-R-try-catch-finally-syntax.html
+  - title: Exception Handling in Kotlin
+    url: https://www.baeldung.com/kotlin/exception-handling

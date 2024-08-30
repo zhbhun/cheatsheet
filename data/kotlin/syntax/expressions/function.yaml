@@ -35,6 +35,15 @@ example: |
       return x * y
   }
   val multiplyResult = multiply(2, 3) // multiplyResult 是 6
+
+  // 在 Lambda 表达式中使用 return，将从最近的外层函数返回
+  fun foo() {
+    listOf(1, 2, 3, 4, 5).forEach {
+        if (it == 3) return // 从 foo 函数返回
+        print(it)
+    }
+    println("这里不会被执行")
+  }
 references:
-  - title: Lambda expressions and anonymous functions﻿
+  - title: Lambda expressions and anonymous functions
     url: https://kotlinlang.org/docs/lambdas.html#lambda-expressions-and-anonymous-functions

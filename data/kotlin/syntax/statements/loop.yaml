@@ -1,0 +1,55 @@
+id: loop
+title: 循环
+description: Kotlin 支持 `for` 循环、`while` 循环和 `do-while` 循环三种基本循环结构。`for` 循环通常用于遍历集合或区间，而 `while` 和 `do-while` 循环则根据给定的布尔条件反复执行代码块。
+example: |
+  // 1. for 循环遍历集合
+  val items = listOf("apple", "banana", "kiwifruit")
+  for (item in items) {
+      println(item) // 输出集合中的每个元素
+  }
+
+  // 2. 使用索引遍历集合
+  for (index in items.indices) {
+      println("Item at $index is ${items[index]}") // 按索引输出集合中的元素
+  }
+
+  // 3. 遍历特定范围
+  for (index in 0 until 100) {
+      println(index) // 输出 0 到 99 的所有数字
+  }
+
+  // 4. 遍历特定范围并设置步长
+  for (index in 0 until 100 step 2) {
+      println(index) // 输出 0, 2, 4, ..., 98
+  }
+
+  // 5. 逆序遍历
+  for (index in 100 downTo 1) {
+      println(index) // 输出 100 到 1 的所有数字
+  }
+
+  // 6. 遍历区间 (range) 的简单写法
+  for (index in 1..5) {
+      println(index) // 输出 1, 2, 3, 4, 5
+  }
+
+  // 7. while 循环
+  var index = 0
+  while (index < items.size) {
+      println("Item at $index is ${items[index]}") // 按索引输出集合中的元素
+      index++
+  }
+
+  // 8. do-while 循环
+  var count = 3
+  do {
+      println("Countdown: $count")
+      count--
+  } while (count > 0) // 直到 count 不大于 0，循环结束
+references:
+  - title: For loops
+    url: https://kotlinlang.org/docs/control-flow.html#for-loops
+  - title: While loops
+    url: https://kotlinlang.org/docs/control-flow.html#while-loops
+  - title: Iterators
+    url: https://kotlinlang.org/docs/iterators.html
