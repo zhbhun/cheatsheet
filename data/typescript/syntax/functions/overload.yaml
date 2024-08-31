@@ -1,0 +1,22 @@
+id: overload
+title: 重载
+description: 函数重载是一种在 TypeScript 中允许同一函数根据不同的参数类型或数量来实现多种行为的特性。重载通过定义多个函数签名，然后实现一个与这些签名兼容的函数体来实现。在处理多种输入类型、简化复杂逻辑时，函数重载非常有用。
+example: |
+  // 定义重载签名
+  function greet(person: string): string;
+  function greet(person: string, age: number): string;
+
+  // 实现函数
+  function greet(person: string, age?: number): string {
+    if (age !== undefined) {
+      return `Hello, ${person}. You are ${age} years old.`;
+    } else {
+      return `Hello, ${person}.`;
+    }
+  }
+
+  const greeting1 = greet("Alice"); // "Hello, Alice."
+  const greeting2 = greet("Bob", 30); // "Hello, Bob. You are 30 years old."
+references:
+  - title: Function Overloads
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#function-overloads

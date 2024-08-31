@@ -1,0 +1,54 @@
+id: parameter
+title: 函数参数
+description: 函数参数是函数定义中的一个重要部分，允许开发者定义函数在调用时所需的输入数据。TypeScript 提供了多种方式来声明和使用函数参数，包括必需参数、可选参数、默认参数、解构参数和剩余参数。通过合理使用这些参数类型，可以编写更灵活和健壮的代码。
+example: |
+  // 1. 无参数
+  function greet(): void {
+    console.log("Hello, world!");
+  }
+
+  // 2. 必需参数
+  function greet(name: string): void {
+    console.log(`Hello, ${name}!`);
+  }
+
+  // 3. 可选参数
+  function greet(name: string, greeting?: string): void {
+    console.log(`${greeting || "Hello"}, ${name}!`);
+  }
+  greet("Alice"); // 输出: Hello, Alice!
+
+  // 4. 默认参数
+  function greet(name: string, greeting: string = "Hello"): void {
+    console.log(`${greeting}, ${name}!`);
+  }
+  greet("Bob"); // 输出: Hello, Bob!
+
+  // 5. 剩余参数
+  function greet(name: string, ...nicknames: string[]): void {
+    console.log(`Hello, ${name}. You are also known as ${nicknames.join(", ")}.`);
+  }
+  greet("Charlie", "Chuck", "Chaz"); // 输出: Hello, Charlie. You are also known as Chuck, Chaz.
+
+  // 6. 解构参数
+  function displayUser({ name, age }: { name: string; age: number }): void {
+    console.log(`User: ${name}, Age: ${age}`);
+  }
+  displayUser({ name: "Dave", age: 30 }); // 输出: User: Dave, Age: 30
+
+  // 7. 带默认值的解构参数
+  function displayUser({ name, age }: { name: string; age?: number } = { name: "Anonymous" }): void {
+    console.log(`User: ${name}, Age: ${age || "Unknown"}`);
+  }
+  displayUser(); // 输出: User: Anonymous, Age: Unknown
+references:
+  - title: Optional Parameters
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#optional-parameters
+  - title: Rest Parameters and Arguments
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#rest-parameters-and-arguments
+  - title: Parameter Destructuring
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#parameter-destructuring
+  - title: TypeScript Optional Parameters
+    url: https://www.typescripttutorial.net/typescript-tutorial/typescript-optional-parameters/
+  - title: Strongly-typed destructuring and rest parameters
+    url: https://www.carlrippon.com/strongly-typed-destructuring-and-rest-parameters/

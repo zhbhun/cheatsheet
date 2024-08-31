@@ -1,0 +1,22 @@
+id: anonymous
+title: 匿名函数
+description: 匿名函数是在没有名字的情况下定义的函数。它们通常用于作为回调函数传递给其他函数，也可以赋值给变量以便后续调用。匿名函数可以通过两种形式书写：传统的函数表达式和箭头函数。它们允许灵活地定义和使用一次性函数，而不必为每个函数显式命名。
+example: |
+  // 使用匿名函数作为回调
+  const names = ["Alice", "Bob", "Eve"];
+  names.forEach(function (name) {
+      console.log(name.toUpperCase()); // 输出: ALICE, BOB, EVE
+  });
+
+  // 将匿名函数赋值给变量
+  const sum = function(a: number, b: number): number {
+      return a + b;
+  };
+  console.log(sum(5, 3)); // 输出: 8
+
+  // 使用箭头函数简化匿名函数
+  const multiply = (x: number, y: number): number => x * y;
+  console.log(multiply(4, 2)); // 输出: 8
+references:
+  - title: Anonymous Functions
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#anonymous-functions

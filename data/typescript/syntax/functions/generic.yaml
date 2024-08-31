@@ -1,0 +1,27 @@
+id: generic
+title: 泛型
+description: 泛型（Generics）允许我们创建可以在不同类型上工作的函数，而无需在编写代码时指定具体的类型。这样可以提高代码的复用性和灵活性，同时保持类型的安全性。
+example: |
+  // 泛型函数示例
+  function identity<Type>(arg: Type): Type {
+    return arg;
+  }
+
+  let output1 = identity<string>("Hello, TypeScript!"); // 显式指定类型
+  let output2 = identity(42); // 类型推断为 number
+
+  // 泛型约束示例
+  interface Lengthwise {
+    length: number;
+  }
+
+  function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
+    console.log(arg.length); // 因为受限于 Lengthwise，arg 必须有 length 属性
+    return arg;
+  }
+
+  loggingIdentity({ length: 10, value: "Test" }); // 正确
+  // loggingIdentity(3); // 错误：数字类型没有 length 属性
+references:
+  - title: Generic Functions
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#generic-functions

@@ -1,0 +1,31 @@
+id: return
+title: 返回值
+description: TypeScript 允许显式声明函数的返回类型，也可以通过类型推断来确定返回类型。除了普通的返回值类型，还可以使用 `void` 表示函数不返回任何值，或使用 `never` 表示函数永远不会正常完成。
+
+example: |
+  // 返回指定类型的函数
+  function getMessage(): string {
+      return 'Hello, TypeScript!'; // 返回字符串类型的值
+  }
+
+  // 使用 void 返回类型的函数
+  function logMessage(message: string): void {
+      console.log(message); // 这个函数没有返回值
+  }
+
+  // 使用 never 返回类型的函数
+  function throwError(message: string): never {
+      throw new Error(message); // 这个函数永远不会正常返回
+  }
+
+  // 类型推断自动识别返回类型
+  function add(a: number, b: number) {
+      return a + b; // 推断返回类型为 number
+  }
+references:
+  - title: Functions
+    url: https://www.typescriptlang.org/docs/handbook/functions.html
+  - title: Void
+    url: https://www.typescriptlang.org/docs/handbook/basic-types.html#void
+  - title: Never
+    url: https://www.typescriptlang.org/docs/handbook/basic-types.html#never

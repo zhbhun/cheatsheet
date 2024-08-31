@@ -1,0 +1,19 @@
+id: type
+title: 类型
+description: 在 TypeScript 中，函数类型用于定义函数的参数和返回值类型，从而确保函数在使用过程中遵循特定的类型约束。函数类型可以通过接口、类型别名或直接在函数声明中定义，以保证代码的类型安全性和可读性。
+example: |
+  // 使用类型别名定义函数类型
+  type Add = (x: number, y: number) => number;
+  
+  // 使用接口定义函数类型
+  interface SearchFunc {
+    (source: string, subString: string): boolean;
+  }
+
+  // 将函数赋值给变量时指定类型
+  const add: Add = (a, b) => a + b;
+  
+  const search: SearchFunc = (src, sub) => src.includes(sub);
+references:
+  - title: Call Signatures
+    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#call-signatures
