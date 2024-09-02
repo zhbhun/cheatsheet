@@ -1,0 +1,22 @@
+id: extension
+title: 扩展
+description: 
+  Kotlin 中的扩展（Extension）功能允许开发者为现有的类添加新功能，而无需继承该类或使用装饰模式。通过扩展，您可以添加新的方法或属性到一个已经存在的类，即使您无法修改该类的源代码。扩展的最常见形式是扩展函数和扩展属性。
+example: |
+  // 扩展函数示例：为 String 类添加一个新的函数 isValidEmail
+  fun String.isValidEmail(): Boolean {
+      return this.contains("@") && this.contains(".")
+  }
+
+  val email = "example@example.com"
+  println(email.isValidEmail()) // 输出 true
+
+  // 扩展属性示例：为 List 类添加一个只读属性 lastIndex
+  val <T> List<T>.lastIndex: Int
+      get() = this.size - 1
+
+  val list = listOf(1, 2, 3)
+  println(list.lastIndex) // 输出 2
+references:
+  - title: Kotlin Extensions
+    url: https://kotlinlang.org/docs/extensions.html

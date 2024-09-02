@@ -1,0 +1,24 @@
+id: static
+title: Companion
+description: |
+  在 Kotlin 中，`companion object` 是一种特殊的对象声明，它伴随类一起声明，并允许在没有类实例的情况下调用类的成员。通常用于定义工厂方法或将类的某些功能与类本身关联的静态成员类似的功能。虽然 Kotlin 没有 Java 中的 `static` 关键字，但 `companion object` 提供了类似的功能，可以在 JVM 上通过 `@JvmStatic` 注解将其成员转换为真正的静态方法或字段。
+example: |
+  class MyClass {
+      companion object {
+          fun create(): MyClass = MyClass()
+      }
+  }
+  
+  // 通过类名直接访问 companion object 的成员
+  val instance = MyClass.create()
+  
+  // 如果定义了名字，可以通过类名和 companion object 的名字访问
+  class MyClass {
+      companion object Named {
+          fun greet() = "Hello from Named!"
+      }
+  }
+  val greeting = MyClass.Named.greet()
+references:
+  - title: Companion objects
+    url: https://kotlinlang.org/docs/object-declarations.html#companion-objects

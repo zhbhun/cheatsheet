@@ -8,3 +8,4 @@ children:
   - expressions
   - statements
   - functions
+  - classes

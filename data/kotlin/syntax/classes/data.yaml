@@ -1,0 +1,19 @@
+id: data
+title: Data
+description: 在 Kotlin 中，数据类（data class）是一种专门用于保存数据的类。与普通类不同，数据类自动生成了一些常用函数，如 `equals()`、`hashCode()`、`toString()`、`copy()` 和 `componentN()`，从而减少了样板代码，使代码更简洁。数据类的主构造函数必须至少有一个参数，并且这些参数必须标记为 `val` 或 `var`。
+example: |
+  data class User(val name: String, val age: Int)
+
+  val user1 = User("Alice", 30)
+  println(user1) // 输出：User(name=Alice, age=30)
+
+  // 使用 copy() 函数创建副本并修改部分属性
+  val user2 = user1.copy(age = 31)
+  println(user2) // 输出：User(name=Alice, age=31)
+
+  // 解构声明
+  val (name, age) = user1
+  println("$name, $age years old") // 输出：Alice, 30 years old
+references:
+  - title: Data classes
+    url: https://kotlinlang.org/docs/data-classes.html

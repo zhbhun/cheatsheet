@@ -1,0 +1,63 @@
+id: property
+title: 类属性
+description: 属性可以使用 `var` 关键字声明为可变的，或使用 `val` 关键字声明为只读的。每个属性都可以有一个可选的初始值，并且 Kotlin 会自动生成对应的 getter 和 setter 方法。您还可以为属性定义自定义的 getter 和 setter 方法，以控制属性的读写行为。此外，Kotlin 支持使用“后备字段”来存储属性的实际值，并通过 `field` 标识符在自定义的 getter 或 setter 中访问这个字段。
+example: |
+  // 基本属性声明
+  class Person {
+      var name: String = "John"  // 可变属性，具有默认的 getter 和 setter
+      val age: Int = 30          // 只读属性，只有默认的 getter
+
+      // 自定义 setter 方法，确保地址不为空
+      var address: String = "Unknown"
+          set(value) {
+              field = if (value.isNotEmpty()) value else "Unknown"
+          }
+  }
+
+  // 使用自定义 getter 计算面积
+  class Rectangle(val width: Int, val height: Int) {
+      val area: Int
+          get() = width * height  // 自定义 getter，用于计算面积
+  }
+
+  // 延迟初始化的属性
+  class MyTest {
+      lateinit var subject: TestSubject  // 延迟初始化的属性
+
+      fun setup() {
+          subject = TestSubject()  // 在构造函数之外初始化属性
+      }
+
+      fun test() {
+          println(subject.method())  // 确保属性已初始化
+      }
+  }
+
+  // 使用 `by lazy` 实现懒加载
+  class LazyExample {
+      val lazyValue: String by lazy {
+          println("Computed!") 
+          "Hello"
+      }
+  }
+
+  fun main() {
+      val person = Person()
+      println(person.name)  // 输出：John
+      person.name = "Alice"
+      println(person.name)  // 输出：Alice
+
+      val rect = Rectangle(3, 4)
+      println("Area: ${rect.area}")  // 输出：Area: 12
+
+      val test = MyTest()
+      test.setup()
+      test.test()  // 输出 TestSubject 的方法结果
+
+      val lazyEx = LazyExample()
+      println(lazyEx.lazyValue)  // 首次访问时，输出：Computed! 和 Hello
+      println(lazyEx.lazyValue)  // 再次访问时，只输出：Hello
+  }
+references:
+  - title: Properties
+    url: https://kotlinlang.org/docs/properties.html

@@ -1,0 +1,59 @@
+id: interface
+title: 接口
+description: 
+  在 Kotlin 中，接口是一种定义类行为约定的结构。接口可以包含抽象方法的声明，以及方法的默认实现。与抽象类不同，接口不能存储状态。接口中的属性必须是抽象的，或者为访问器提供实现。接口是通过关键字 `interface` 定义的，类或对象可以实现一个或多个接口，并且可以选择性地覆盖接口中的方法。
+example: |
+  // 定义一个接口
+  interface MyInterface {
+      val test: Int  // 抽象属性
+      fun foo(): String  // 抽象方法
+      fun hello() {  // 带默认实现的方法
+          println("Hello there!")
+      }
+  }
+
+  // 实现接口的类
+  class InterfaceImp : MyInterface {
+      override val test: Int = 25
+      override fun foo() = "Hello, Kotlin"
+  }
+
+  // 多接口实现
+  interface A {
+      fun foo() { print("A") }
+      fun bar()
+  }
+
+  interface B {
+      fun foo() { print("B") }
+      fun bar() { print("bar") }
+  }
+
+  class C : A {
+      override fun bar() { print("bar") }
+  }
+
+  class D : A, B {
+      override fun foo() {
+          super<A>.foo() // 调用 A 接口的实现
+          super<B>.foo() // 调用 B 接口的实现
+      }
+      override fun bar() {
+          super<B>.bar() // 调用 B 接口的实现
+      }
+  }
+
+  // 使用实现接口的类
+  fun main() {
+      val obj = InterfaceImp()
+      println("test = ${obj.test}")
+      obj.hello()
+      println(obj.foo())
+
+      val obj = C()
+      obj.foo() // 输出: A 和 B
+      obj.bar() // 输出: bar
+  }
+references:
+  - title: Interfaces
+    url: https://kotlinlang.org/docs/interfaces.html

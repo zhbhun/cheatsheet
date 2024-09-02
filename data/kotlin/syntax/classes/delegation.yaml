@@ -1,0 +1,86 @@
+id: delegation
+title: 代理
+description: 代理是一种设计模式，用于替代继承实现接口的功能。Kotlin 原生支持类代理，允许一个类通过将接口的实现委托给另一个对象来简化代码。通过使用 `by` 关键字，Kotlin 能够自动生成接口方法的实现，并将调用转发给代理对象。这种方式减少了样板代码，使类的组合更加灵活。此外，类代理也支持方法的重写，允许在委托的基础上添加或修改行为。
+example: |
+  // 接口代理
+  interface SoundBehavior {
+        fun makeSound()
+  }
+  class ScreamBehavior(val n:String): SoundBehavior {
+      override fun makeSound() = println("${n.uppercase()} !!!")
+  }
+  // Tom Araya is the "singer" of Slayer
+  class TomAraya(n:String): SoundBehavior by ScreamBehavior(n)
+  fun main() {
+      val tomAraya = TomAraya("Thrash Metal")
+      tomAraya.makeSound() // 输出: THRASH METAL !!!
+  }
+
+  // 内置属性代理 - lazy, observable
+  class Example {
+      val lazyValue: String by lazy {
+          println("Computed!")
+          "Hello"
+      }
+
+      var observedValue: String by Delegates.observable("<no value>") { prop, old, new ->
+          println("${prop.name} 从 $old 变为 $new")
+      }
+  }
+
+  fun main() {
+      val example = Example()
+      println(example.lazyValue)  // 第一次访问时计算，输出: Computed! Hello
+      println(example.lazyValue)  // 已经计算过，不再输出 Computed!
+      
+      example.observedValue = "Kotlin"  // 输出: observedValue 从 <no value> 变为 Kotlin
+  }
+
+  // 内置属性代理：map
+  class User(map: Map<String, Any?>) {
+      // 使用 `by map` 将属性的值委托给 map 中的键值对
+      val name: String by map
+      val age: Int by map
+      val email: String by map
+  }
+
+  fun main() {
+      val userMap = mapOf(
+          "name" to "Alice",
+          "age" to 25,
+          "email" to "alice@example.com"
+      )
+      
+      val user = User(userMap)
+      
+      // 访问属性会直接从 map 中获取对应的值
+      println(user.name)  // 输出: Alice
+      println(user.age)   // 输出: 25
+      println(user.email) // 输出: alice@example.com
+  }
+
+  // 自定义属性代理
+  class EncryptedString : ReadWriteProperty<Any?, String> {
+      private var encryptedValue: String = ""
+
+      override fun getValue(thisRef: Any?, property: KProperty<*>): String {
+          // 模拟解密操作
+          return encryptedValue.reversed()
+      }
+
+      override fun setValue(thisRef: Any?, property: KProperty<*>, value: String) {
+          // 模拟加密操作
+          encryptedValue = value.reversed()
+      }
+  }
+  class User {
+      var password: String by EncryptedString()
+  }
+  fun main() {
+      val user = User()
+      user.password = "mySecretPassword"
+      println(user.password)  // 输出: mySecretPassword（原文未加密）
+  }
+references:
+  - title: Delegation
+    url: https://kotlinlang.org/docs/delegation.html

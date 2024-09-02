@@ -1,0 +1,21 @@
+id: visibility
+title: 可见性
+description: Kotlin 提供四种可见性修饰符：`public`、`private`、`protected` 和 `internal`。默认情况下，声明的可见性为 `public`，意味着它可以在任何地方访问。
+example: |
+  // 示例：类成员的可见性
+  class Example {
+      private val x = 1       // 仅在类内部可见
+      protected val y = 2     // 在类和其子类中可见
+      internal val z = 3      // 在同一模块中可见
+      val w = 4               // 默认 public，在任何地方可见
+  }
+
+  // 示例：顶层函数和属性的可见性
+  package com.example
+
+  private fun foo() { }        // 仅在当前文件中可见
+  internal val bar = 5         // 在同一模块中的任何地方可见
+  val baz = 6                  // 默认 public，在任何地方可见
+references:
+  - title: Visibility modifiers
+    url: https://kotlinlang.org/docs/visibility-modifiers.html

@@ -1,0 +1,15 @@
+id: definition
+title: 定义
+description: 类通过 `class` 关键字定义，可以包含属性和方法。
+example: |
+  // 定义一个简单的类
+  class Rectangle(val height: Double, val width: Double) {
+      val area = height * width
+  }
+
+  // 创建 Rectangle 类的实例
+  val rectangle = Rectangle(5.0, 2.0)
+  println("Area is ${rectangle.area}") // 输出: Area is 10.0
+references:
+  - title: Classes
+    url: https://kotlinlang.org/docs/classes.html

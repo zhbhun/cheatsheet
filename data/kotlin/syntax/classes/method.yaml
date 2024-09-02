@@ -1,0 +1,34 @@
+id: method
+title: 类方法
+description: 类方法是定义在 Kotlin 类中的函数，用于实现类的行为逻辑。类方法可以是实例方法，必须通过类的实例调用；也可以定义在伴生对象中，从而类似于静态方法，可以直接通过类名调用。
+example: |
+  // 定义一个类和它的实例方法
+  class SmartDevice {
+      fun turnOn() {
+          println("Smart device is turned on.")
+      }
+
+      fun turnOff() {
+          println("Smart device is turned off.")
+      }
+  }
+
+  // 通过类实例调用方法
+  val device = SmartDevice()
+  device.turnOn()  // 输出: Smart device is turned on.
+  device.turnOff() // 输出: Smart device is turned off.
+
+  // 定义伴生对象中的类方法
+  class Logger {
+      companion object {
+          fun logInfo() {
+              println("Logging information")
+          }
+      }
+  }
+
+  // 通过类名调用伴生对象中的方法
+  Logger.logInfo()  // 输出: Logging information
+references:
+  - title: Functions in Kotlin
+    url: https://kotlinlang.org/docs/functions.html

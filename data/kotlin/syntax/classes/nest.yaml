@@ -1,0 +1,30 @@
+id: nest
+title: 嵌套类
+description: 嵌套类是指在一个类内部定义的另一个类。嵌套类默认是静态的，这意味着它不能直接访问外部类的成员。如果需要访问外部类的成员，可以使用内部类（Inner Class）。
+example: |
+  // 定义一个嵌套类
+  class Outer {
+      private val bar: Int = 1
+
+      // 嵌套类，默认是静态的
+      class Nested {
+          fun foo() = 2
+      }
+  }
+
+  val demo = Outer.Nested().foo() // 调用嵌套类的方法，结果为 2
+
+  // 定义一个内部类
+  class OuterWithInner {
+      private val bar: Int = 1
+
+      // 使用 `inner` 关键字定义内部类
+      inner class Inner {
+          fun foo() = bar // 内部类可以访问外部类的成员
+      }
+  }
+
+  val demoInner = OuterWithInner().Inner().foo() // 调用内部类的方法，结果为 1
+references:
+  - title: Nested and inner classes
+    url: https://kotlinlang.org/docs/nested-classes.html

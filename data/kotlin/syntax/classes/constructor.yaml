@@ -1,0 +1,43 @@
+id: constructors
+title: 构造函数
+description: 在 Kotlin 中，构造函数用于创建类的实例并初始化类的属性。Kotlin 提供了主要构造函数（primary constructor）和次要构造函数（secondary constructor）。主要构造函数是在类头中声明的，并且可以直接初始化属性。次要构造函数允许类定义多个不同的初始化方法，并且需要委托给主要构造函数进行最终初始化。此外，`init` 函数用于在类实例化时执行初始化逻辑，它在主要构造函数之后执行，通常用于对类属性进行进一步的初始化或执行其他初始化任务。如果类中有多个 `init` 块，它们将按照在类体中出现的顺序依次执行。
+example: |
+  // 主要构造函数示例
+  class Person(val name: String, var age: Int = 0) {
+      init {
+          println("Person initialized with name: $name and age: $age")
+      }
+  }
+
+  val john = Person("John", 25) // 输出: Person initialized with name: John and age: 25
+
+  // 次要构造函数示例
+  class Car(val brand: String, val model: String) {
+      constructor(brand: String) : this(brand, "Unknown")
+  }
+
+  val car = Car("Toyota") // 使用次要构造函数，model 为 "Unknown"
+
+  // 使用 init 函数进行进一步初始化
+  class User(val firstName: String, val lastName: String) {
+      val fullName: String
+
+      init {
+          fullName = "$firstName $lastName"
+          println("User's full name is $fullName")
+      }
+
+      init {
+          println("User object for $fullName has been created.")
+      }
+  }
+
+  val user = User("Jane", "Doe")
+  // 输出:
+  // User's full name is Jane Doe
+  // User object for Jane Doe has been created.
+references:
+  - title: Constructors
+    url: https://kotlinlang.org/docs/classes.html#constructors
+  - title: Kotlin Constructors Explained
+    url: https://www.baeldung.com/kotlin/constructors
