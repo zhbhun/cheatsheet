@@ -1,0 +1,58 @@
+id: class-implements-interface
+title: 类实现接口
+description: 在 TypeScript 中，类可以使用 `implements` 关键字实现接口。这种实现允许类在编译时被检查是否符合接口的定义。TypeScript 中的接口不仅可以用于约束类的结构，还可以用于描述函数类型，甚至支持“鸭子类型”检查，即对象只要“看起来像”接口，就可以被认为是实现了该接口。这与许多强类型语言（如 Java 或 C#）的接口机制有所不同。
+example: |
+  // 1. 类实现接口的基础示例
+  interface Animal {
+    name: string;
+    makeSound(): void;
+  }
+
+  class Dog implements Animal {
+    name: string;
+    
+    constructor(name: string) {
+      this.name = name;
+    }
+
+    makeSound(): void {
+      console.log(`${this.name} says: Woof!`);
+    }
+  }
+
+  const myDog = new Dog("Buddy");
+  myDog.makeSound(); // 输出: Buddy says: Woof!
+
+  // 2. 接口与“鸭子类型”的结合
+  interface Logger {
+    log(message: string): void;
+  }
+
+  function logMessage(logger: Logger) {
+    logger.log('This is a message');
+  }
+
+  const consoleLogger = {
+    log: (message: string) => console.log(message),
+  };
+
+  logMessage(consoleLogger); // 输出: This is a message
+
+  // 3. 使用接口定义函数类型
+  interface StringFormatter {
+    (str: string, isUpperCase: boolean): string;
+  }
+
+  const formatString: StringFormatter = (str, isUpperCase) => {
+    return isUpperCase ? str.toUpperCase() : str.toLowerCase();
+  };
+
+  console.log(formatString("Hello, World!", true)); // 输出: HELLO, WORLD!
+  console.log(formatString("Hello, World!", false)); // 输出: hello, world!
+references:
+  - title: Interfaces
+    url: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces
+  - title: Interfaces
+    url: https://www.typescriptlang.org/docs/handbook/typescript-tooling-in-5-minutes.html#interfaces
+  - title: implements Clauses
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses

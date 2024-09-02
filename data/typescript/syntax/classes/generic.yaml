@@ -1,0 +1,27 @@
+id: generic
+title: 泛型
+description: |
+  泛型是 TypeScript 中的一种强大工具，允许你在类、函数、接口等定义中使用类型参数，以增强代码的复用性和类型安全性。
+example: |
+  // 定义一个泛型类
+  class Box<T> {
+    contents: T;
+
+    constructor(value: T) {
+      this.contents = value;
+    }
+
+    getContents(): T {
+      return this.contents;
+    }
+  }
+
+  // 使用泛型类
+  const stringBox = new Box<string>("hello");
+  console.log(stringBox.getContents()); // 输出: hello
+
+  const numberBox = new Box<number>(123);
+  console.log(numberBox.getContents()); // 输出: 123
+references:
+  - title: Generic Classes
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#generic-classes

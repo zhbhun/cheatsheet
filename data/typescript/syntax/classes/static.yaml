@@ -1,0 +1,17 @@
+id: static
+title: 静态属性
+description: 静态属性是属于类本身的属性，而不是某个类的实例。它们常用于定义与类关联但不依赖于特定对象的值或方法。静态属性在类加载时初始化，可以通过类名直接访问，而无需创建类的实例。
+example: |
+  class MyClass {
+    static staticProperty = "I am a static property";
+
+    static staticMethod() {
+      return "I am a static method";
+    }
+  }
+
+  console.log(MyClass.staticProperty); // 输出: I am a static property
+  console.log(MyClass.staticMethod()); // 输出: I am a static method
+references:
+  - title: Static Members
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#static-members

@@ -1,0 +1,40 @@
+id: inheritance
+title: 继承
+description: |
+  在 TypeScript 中，继承是通过 `extends` 关键字实现的，允许一个类继承另一个类的属性和方法。继承使得我们可以重用现有的类，创建更具体的子类。子类可以继承父类的所有成员，并且可以通过方法覆盖来自定义或扩展这些成员的行为。方法覆盖（Method Overriding）允许子类提供自己对父类方法的实现。子类的构造函数需要调用 `super()` 来执行父类的构造函数，从而确保父类的成员正确初始化。
+example: |
+  class Animal {
+    move(distanceInMeters: number = 0) {
+      console.log(`Animal moved ${distanceInMeters}m.`);
+    }
+  }
+
+  class Dog extends Animal {
+    bark() {
+      console.log("Woof! Woof!");
+    }
+
+    // 覆盖父类的 move 方法
+    move(distanceInMeters: number = 5) {
+      console.log("Dog runs...");
+      super.move(distanceInMeters);
+    }
+  }
+
+  const dog = new Dog();
+  dog.bark(); // 输出: Woof! Woof!
+  dog.move(10); // 输出: Dog runs... \n Animal moved 10m.
+
+  class Cat extends Animal {
+    // 覆盖父类的 move 方法
+    move(distanceInMeters: number = 3) {
+      console.log("Cat slinks...");
+      super.move(distanceInMeters);
+    }
+  }
+
+  const cat = new Cat();
+  cat.move(5); // 输出: Cat slinks... \n Animal moved 5m.
+references:
+  - title: Class Heritage
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#class-heritage

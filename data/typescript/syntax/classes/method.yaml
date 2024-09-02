@@ -1,0 +1,22 @@
+id: method
+title: 类方法
+description: |
+  类方法是在类中定义的函数，用于实现类的行为。它们可以访问和操作类的实例属性，并且可以使用 TypeScript 的类型注解来定义参数和返回值的类型。类方法在使用时，通常通过类的实例调用，方法内部可以通过 `this` 关键字访问实例属性和其他方法。
+example: |
+  class Animal {
+      name: string;
+      
+      constructor(name: string) {
+          this.name = name;
+      }
+      
+      speak(): void {
+          console.log(`${this.name} makes a noise.`);
+      }
+  }
+
+  const dog = new Animal('Dog');
+  dog.speak(); // 输出: Dog makes a noise.
+references:
+  - title: Methods
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#methods

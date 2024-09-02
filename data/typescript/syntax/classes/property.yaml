@@ -1,0 +1,48 @@
+id: property
+title: 类属性
+description: 类属性是绑定到类实例上的变量或常量，用于存储与该类相关的数据。TypeScript 支持使用标准属性声明，也支持通过构造函数参数属性简化类属性的定义。属性可以通过 `public`、`private`、`protected` 等修饰符来控制访问权限，确保数据的封装和安全性。
+example: |
+  class Car {
+    readonly id: number; // 只读属性
+    public brand: string;
+    private _speed: number;
+
+    constructor(id: number, brand: string, private year: number) {
+      this.id = id;
+      this.brand = brand;
+      this.year = year;
+      this._speed = 0;
+    }
+
+    // Getter 用于访问私有属性 _speed
+    get speed(): number {
+      return this._speed;
+    }
+
+    // Setter 用于更新私有属性 _speed，并添加验证逻辑
+    set speed(value: number) {
+      if (value < 0) {
+        console.error('Speed cannot be negative');
+      } else {
+        this._speed = value;
+      }
+    }
+
+    // Getters 也可以用于计算属性值
+    get carInfo(): string {
+      return `${this.brand} (${this.year})`;
+    }
+  }
+
+  const myCar = new Car(1, 'Toyota', 2022);
+  console.log(myCar.carInfo); // 输出: 'Toyota (2022)'
+  myCar.speed = 50; // 设置 speed 属性
+  console.log(myCar.speed); // 输出: 50
+  // myCar.id = 2; // 错误: 不能修改只读属性
+references:
+  - title: Fields
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
+  - title: Getters / Setters
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#getters--setters
+  - title: Index Signatures
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#index-signatures

@@ -1,0 +1,29 @@
+id: definition
+title: 类定义
+description: |
+  在 TypeScript 中，类是一种基于原型继承的面向对象编程结构。它允许您定义一组属性和方法，通过实例化类来创建对象。
+example: |
+  class Animal {
+    name: string;
+    
+    constructor(name: string) {
+      this.name = name;
+    }
+    
+    move(distance: number = 0) {
+      console.log(`${this.name} moved ${distance}m.`);
+    }
+  }
+
+  class Dog extends Animal {
+    bark() {
+      console.log('Woof! Woof!');
+    }
+  }
+
+  const dog = new Dog('Rex');
+  dog.bark(); // 输出: Woof! Woof!
+  dog.move(10); // 输出: Rex moved 10m.
+references:
+  - title: Classes
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html

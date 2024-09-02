@@ -1,0 +1,49 @@
+id: visibility
+title: 可见性
+description: |
+  在 TypeScript 中，类成员的可见性由访问修饰符（如 `public`、`private` 和 `protected`）来控制。这些修饰符决定了类的属性和方法在类的内部、子类或外部代码中是否可见和可访问。
+
+  - `public`: 公有修饰符，类的成员默认是 `public`，可以在任何地方访问。
+  - `private`: 私有修饰符，类的成员只能在定义它的类内部访问。
+  - `protected`: 受保护修饰符，类的成员可以在定义它的类及其子类中访问。
+
+  此外，构造函数参数也可以通过添加这些修饰符直接定义为类的属性。
+example: |
+  class Animal {
+    private name: string;
+    protected speed: number;
+    public type: string;
+
+    constructor(name: string, speed: number, type: string) {
+      this.name = name;       // 只能在 Animal 类内部访问
+      this.speed = speed;     // 可在 Animal 类及其子类中访问
+      this.type = type;       // 任何地方都可以访问
+    }
+
+    private move() {
+      console.log(`${this.name} is moving.`);
+    }
+
+    protected accelerate(amount: number) {
+      this.speed += amount;
+    }
+  }
+
+  class Cheetah extends Animal {
+    constructor(name: string, speed: number) {
+      super(name, speed, "Cheetah");
+    }
+
+    public run() {
+      this.accelerate(50);  // 可以访问受保护成员
+      console.log(`${this.type} runs at ${this.speed} km/h`);
+    }
+  }
+
+  const cheetah = new Cheetah("FastCheetah", 80);
+  cheetah.run();   // 允许
+  // cheetah.move(); // 错误，move 是私有的
+  // cheetah.speed; // 错误，speed 是受保护的
+references:
+  - title: Member Visibility
+    url: https://www.typescriptlang.org/docs/handbook/2/classes.html#member-visibility
