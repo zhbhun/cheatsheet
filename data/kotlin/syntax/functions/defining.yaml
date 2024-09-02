@@ -1,0 +1,26 @@
+id: defining
+title: 函数定义
+description: |
+  在 Kotlin 中，函数是可以在顶层（不依赖于类）或类内部定义的代码块。函数通常用于封装可重复使用的逻辑。函数定义包括函数名、参数列表、返回类型（可选）以及函数体。Kotlin 允许定义具有默认参数的函数、单表达式函数以及可变参数的函数等多种特性。
+example: |
+  // 简单的函数定义
+  fun greet(name: String): String {
+      return "Hello, $name"
+  }
+  val message = greet("Kotlin")  // 返回 "Hello, Kotlin"
+
+  // 单表达式函数（返回类型可推断）
+  fun square(x: Int) = x * 2
+  var result = square(5)  // 返回 10
+
+  // 函数引用的示例
+  fun isOdd(x: Int) = x % 2 != 0
+  val numbers = listOf(1, 2, 3)
+  val oddNumbers = numbers.filter(::isOdd)  // 返回 [1, 3]
+references:
+  - title: Function usage
+    url: https://kotlinlang.org/docs/functions.html
+  - title: Kotlin Functions, Default and Named Arguments, Varargs and Function Scopes
+    url: https://www.callicoder.com/kotlin-functions/
+  - title: Function types & literals | The Kotlin Primer
+    url: https://www.kotlinprimer.com/articles/function-types-literals/

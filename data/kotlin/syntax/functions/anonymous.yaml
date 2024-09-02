@@ -1,0 +1,27 @@
+id: anonymous
+title: 匿名函数
+description: 匿名函数通常用作替代 lambda 表达式，并可以作为参数传递给其他函数。与 lambda 表达式相比，匿名函数支持指定返回类型，并允许在函数体内使用 `return` 语句。
+example: |
+  // 使用匿名函数计算两个整数的和
+  val sum = fun(x: Int, y: Int): Int {
+      return x + y
+  }
+  println(sum(3, 5)) // 输出 8
+  
+  // 匿名函数可以直接作为参数传递
+  val list = listOf(1, 2, 3, 4)
+  val doubledList = list.map(fun(item): Int {
+      return item * 2
+  })
+  println(doubledList) // 输出 [2, 4, 6, 8]
+
+  // 直接调用匿名函数实现 IIFE
+  val result = (fun(): Int {
+      val x = 3
+      val y = 7
+      return x + y
+  })()
+  println(result) // 输出 10
+references:
+  - title: Anonymous functions
+    url: https://kotlinlang.org/docs/lambdas.html#anonymous-functions

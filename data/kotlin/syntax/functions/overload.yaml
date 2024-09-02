@@ -1,0 +1,23 @@
+id: overload
+title: 函数重载
+description: 函数重载是指在同一个类中可以定义多个具有相同名称但参数类型或数量不同的函数。这允许在不同的上下文中使用相同的函数名称，从而提高代码的可读性和灵活性。Kotlin 支持函数重载，并且能够根据传入的参数自动选择合适的重载版本。
+example: |
+  // 定义一个具有不同参数的 `printMessage` 函数
+  fun printMessage(message: String) {
+      println(message)
+  }
+
+  fun printMessage(message: String, times: Int) {
+      repeat(times) {
+          println(message)
+      }
+  }
+
+  fun printMessage(message: String, suffix: String) {
+      println("$message $suffix")
+  }
+
+  // 调用不同的重载版本
+  printMessage("Hello") // 输出: Hello
+  printMessage("Hello", 3) // 输出: Hello (重复 3 次)
+  printMessage("Hello", "World") // 输出: Hello World

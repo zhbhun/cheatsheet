@@ -1,0 +1,44 @@
+id: parameter
+title: 函数参数
+description: Kotlin 支持多种参数类型，包括常规参数、默认参数、命名参数、可变参数（vararg）、函数类型参数以及尾随 lambda 表达式。这些参数机制为开发者提供了极大的灵活性，以便根据需要设计函数接口。
+example: |
+  // 常规参数
+  fun greet(name: String) {
+      println("Hello, $name")
+  }
+  greet("Kotlin") // 输出: Hello, Kotlin
+
+  // 默认参数
+  fun greetWithDefault(name: String = "World") {
+      println("Hello, $name")
+  }
+  greetWithDefault() // 输出: Hello, World
+
+  // 命名参数
+  fun reformat(str: String, upperCaseFirst: Boolean = true, separator: Char = ' ') {
+      // 函数体
+  }
+  reformat("kotlin", separator = '_') // 使用命名参数
+
+  // 可变参数
+  fun printAll(vararg strings: String) {
+      for (str in strings) {
+          println(str)
+      }
+  }
+  printAll("Hello", "World", "from", "Kotlin")
+
+  // 函数类型参数
+  fun calculate(x: Int, y: Int, operation: (Int, Int) -> Int): Int {
+      return operation(x, y)
+  }
+  val sum = calculate(3, 4) { a, b -> a + b } // 使用 lambda 表达式
+references:
+  - title: Parameters
+    url: https://kotlinlang.org/docs/functions.html#parameters
+  - title: Default arguments
+    url: https://kotlinlang.org/docs/functions.html#default-arguments
+  - title: Named arguments
+    url: https://kotlinlang.org/docs/functions.html#named-arguments
+  - title: Variable number of arguments
+    url: https://kotlinlang.org/docs/functions.html#variable-number-of-arguments-varargs

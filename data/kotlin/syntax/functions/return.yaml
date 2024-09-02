@@ -1,0 +1,29 @@
+id: return
+title: 返回值
+description: 返回值是指函数在执行完成后返回给调用者的结果。在 Kotlin 中，使用 `return` 关键字来返回一个值并结束函数的执行。如果函数没有显式返回值，Kotlin 默认返回 `Unit` 类型，这相当于 Java 中的 `void`。`Unit` 是一种特殊类型，只有一个值 `Unit`，可以被省略。如果需要显式声明无返回值的函数，可以将返回类型声明为 `Unit`，这通常用于提高代码的可读性。
+example: |
+  // 返回一个整数和的函数
+  fun add(a: Int, b: Int): Int {
+      return a + b // 返回两个整数的和
+  }
+
+  // 主动声明无返回值的函数
+  fun printMessage(message: String): Unit {
+      println(message) // 函数返回 Unit
+  }
+
+  // 省略返回值声明的函数
+  fun logError(error: String) {
+      println("Error: $error") // 函数返回 Unit
+  }
+
+  fun main() {
+      val sum = add(3, 4) // sum 将会是 7
+      println(sum)
+
+      printMessage("Hello, Kotlin!") // 输出 "Hello, Kotlin!"
+      logError("Something went wrong!") // 输出 "Error: Something went wrong!"
+  }
+references:
+  - title: Unit-returning functions
+    url: https://kotlinlang.org/docs/functions.html#unit-returning-functions

@@ -1,27 +1,32 @@
 id: generic
-title: 泛型
-description: 泛型（Generics）允许我们创建可以在不同类型上工作的函数，而无需在编写代码时指定具体的类型。这样可以提高代码的复用性和灵活性，同时保持类型的安全性。
+title: 函数泛型
+description: |
+  函数泛型允许在 Kotlin 中编写能够处理多种数据类型的函数，而不牺牲类型安全性。通过在函数声明中使用类型参数，您可以编写更加灵活和可重用的代码。Kotlin 泛型可以分为普通泛型和具有约束的泛型，前者适用于任何类型，后者则对类型参数施加了特定的条件。
 example: |
-  // 泛型函数示例
-  function identity<Type>(arg: Type): Type {
-    return arg;
+  // 普通泛型函数：不对类型参数进行任何限制
+  fun <T> identity(item: T): T {
+      return item
   }
 
-  let output1 = identity<string>("Hello, TypeScript!"); // 显式指定类型
-  let output2 = identity(42); // 类型推断为 number
-
-  // 泛型约束示例
-  interface Lengthwise {
-    length: number;
+  fun main() {
+      val intItem = identity(42) // 适用于 Int 类型
+      val stringItem = identity("Hello") // 适用于 String 类型
+      println(intItem) // 输出: 42
+      println(stringItem) // 输出: Hello
   }
 
-  function loggingIdentity<Type extends Lengthwise>(arg: Type): Type {
-    console.log(arg.length); // 因为受限于 Lengthwise，arg 必须有 length 属性
-    return arg;
+  // 泛型约束：类型参数必须实现 Comparable 接口
+  fun <T : Comparable<T>> maxOf(a: T, b: T): T {
+      return if (a > b) a else b
   }
 
-  loggingIdentity({ length: 10, value: "Test" }); // 正确
-  // loggingIdentity(3); // 错误：数字类型没有 length 属性
+  fun main() {
+      val maxInt = maxOf(10, 67) // 适用于 Int 类型
+      println(maxInt) // 输出: 67
+
+      val maxString = maxOf("apple", "banana") // 适用于 String 类型
+      println(maxString) // 输出: banana
+  }
 references:
-  - title: Generic Functions
-    url: https://www.typescriptlang.org/docs/handbook/2/functions.html#generic-functions
+  - title: Generic functions
+    url: https://kotlinlang.org/docs/generics.html#generic-functions

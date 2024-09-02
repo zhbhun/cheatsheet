@@ -1,0 +1,36 @@
+id: lambda
+title: Lambda
+description: Lambda 表达式是 Kotlin 中用于创建匿名函数的语法。Lambda 可以声明参数和返回值类型，但这通常是可选的，编译器可以自动推导它们的类型。Lambda 表达式广泛用于高阶函数、集合操作和事件回调等场景。此外，Lambda 中使用 `return` 语句时要特别小心，它可能会导致外层函数的提前返回。
+example: |
+  // 1. 参数类型声明与推导
+  val sum: (Int, Int) -> Int = { x, y -> x + y } // 参数类型由编译器推导
+  val sumExplicit: (Int, Int) -> Int = { x: Int, y: Int -> x + y } // 显式声明参数类型
+
+  // 2. 使用多行 Lambda 表达式，并自动返回最后一行表达式的值
+  val complexOperation = { x: Int, y: Int ->
+      val result = x * y
+      result + 10 // 这行的值会自动成为 Lambda 的返回值
+  }
+  val result = complexOperation(2, 3) // 结果: 16
+
+  // 3. Lambda 中使用 return 
+  fun processNumbers(numbers: List<Int>): List<Int> {
+      return numbers.map {
+          if (it == 2) return emptyList() // 非局部返回：终止 processNumbers 函数
+          it * 2
+      }
+  }
+
+  // 4. 使用 return 标签在 Lambda 中返回，而不退出外层函数
+  fun processNumbersCorrectly(numbers: List<Int>): List<Int> {
+      return numbers.map {
+          if (it == 2) return@map 0 // 局部返回：仅从 Lambda 中返回值，不影响外层函数
+          it * 2
+      }
+  }
+
+  // 5. 使用 `it` 作为单个参数的隐式名称
+  val squaredNumbers = numbers.map { it * it } // 结果: [1, 4, 9, 16, 25]
+references:
+  - title: Higher-order functions and lambdas
+    url: https://kotlinlang.org/docs/lambdas.html

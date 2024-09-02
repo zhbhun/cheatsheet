@@ -1,0 +1,67 @@
+id: scope
+title: 作用域
+description: 作用域定义了变量和函数的可见性和生命周期。在 Kotlin 中，函数的作用域可以是全局的（顶级函数）、类成员、或者局部函数。局部函数定义在另一个函数的内部，可以访问外部函数的局部变量。此外，Kotlin 提供了一组“作用域函数”（例如 `let`、`run`、`apply`、`also` 和 `with`），它们用于在对象的上下文中执行代码块，使代码更简洁和易读。下面演示了顶级函数、成员函数以及各种作用域函数的用法和差异。
+example: |
+  // 顶级函数和全局变量
+  var globalVar = 10
+
+  fun topLevelFunction() {
+      println("Global variable: $globalVar") // 引用全局变量
+  }
+
+  // 成员函数演示引用自身属性和父类属性
+  open class ParentClass {
+      open val parentProperty = "Parent Property"
+  }
+
+  class ChildClass : ParentClass() {
+      val childProperty = "Child Property"
+      
+      fun printProperties() {
+          println(parentProperty) // 引用父类属性
+          println(this.childProperty) // 使用 this 关键字引用自身属性
+          println(childProperty) // 省略 this 引用自身属性
+      }
+  }
+
+  // 作用域函数示例
+
+  data class Person(var name: String, var age: Int)
+
+  fun main() {
+      val person = Person("John", 25)
+
+      // let: 常用于非空判断和返回表达式结果
+      val nameLength = person.name?.let {
+          println("Name length is ${it.length}")
+          it.length
+      }
+
+      // run: 在对象的上下文中执行代码块并返回结果
+      val greeting = person.run {
+          "Hello, my name is $name and I am $age years old."
+      }
+      println(greeting)
+
+      // apply: 用于在对象上执行一系列操作，返回对象本身
+      val updatedPerson = person.apply {
+          age = 26
+          name = "John Doe"
+      }
+      println("Updated person: $updatedPerson") // 打印更新后的 person 对象
+
+      // also: 返回对象本身，但使用 it 作为上下文对象，适合在操作对象后执行额外操作
+      val alsoResult = person.also {
+          println("Updated person details: $it")
+      }
+      println("Result of also: $alsoResult") // 打印 also 的返回值
+
+      // with: 非扩展函数，适合用于操作对象但不返回对象本身
+      val introduction = with(person) {
+          "My name is $name and I am $age years old."
+      }
+      println(introduction)
+  }
+references:
+  - title: Function scope
+    url: https://kotlinlang.org/docs/functions.html#local-functions

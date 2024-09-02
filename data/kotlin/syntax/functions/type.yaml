@@ -1,0 +1,21 @@
+id: type
+title: 类型
+description: |
+  在 Kotlin 中，函数类型是一种用于表示函数签名的类型。它描述了函数的参数类型和返回值类型，使得函数能够像其他数据类型一样被存储在变量中、作为参数传递或用作返回值。函数类型通过箭头符号 `->` 连接参数列表和返回类型，格式为 `(ParameterType1, ParameterType2) -> ReturnType`。函数类型的常见场景包括高阶函数、lambda 表达式和可空函数类型。
+example: |
+  // 定义一个接受两个 Int 参数并返回它们和的函数类型
+  val sum: (Int, Int) -> Int = { a, b -> a + b }
+  
+  // 调用函数类型
+  val result = sum(3, 4) // 返回 7
+  
+  // 带有接收者的函数类型
+  val repeatFun: String.(Int) -> String = { times -> this.repeat(times) }
+  val str = "Hi".repeatFun(3) // 返回 "HiHiHi"
+  
+  // 可空函数类型，如果 nullableFunc 为 null，返回 "Function is null"
+  val nullableFunc: ((Int) -> String)? = null
+  val output = nullableFunc?.invoke(5) ?: "Function is null" 
+references:
+  - title: Function types
+    url: https://kotlinlang.org/docs/lambdas.html#function-types

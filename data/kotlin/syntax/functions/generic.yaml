@@ -1,0 +1,22 @@
+id: generic
+title: 函数泛型
+description: |
+  函数泛型允许在 Kotlin 中编写能够处理多种数据类型的函数，而不牺牲类型安全性。通过在函数声明中使用类型参数，您可以编写更加灵活和可重用的代码，而不需要为每种数据类型分别编写多个函数。
+example: |
+  // 使用泛型函数来比较两个可比较类型的值
+  fun <T : Comparable<T>> maxOf(a: T, b: T): T {
+      return if (a > b) a else b
+  }
+
+  fun main() {
+      val maxInt = maxOf(10, 67) // 适用于 Int 类型
+      println(maxInt) // 输出: 67
+
+      val maxString = maxOf("apple", "banana") // 适用于 String 类型
+      println(maxString) // 输出: banana
+  }
+references:
+  - title: Generics in Kotlin
+    url: https://kotlinlang.org/docs/generics.html
+  - title: Generic Functions in Kotlin
+    url: https://www.bigknol.com/generic-functions-in-kotlin
