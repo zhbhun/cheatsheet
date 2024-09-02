@@ -1,0 +1,56 @@
+id: anonymous
+title: 闭包
+description: "闭包是自包含的功能块，能够捕获并存储其所在上下文中的常量和变量。闭包可以作为函数的参数或返回值，甚至可以在某些场景下用作属性或方法。Swift 中的闭包语法简洁且灵活，支持多种写法，如表达式写法、尾随闭包、自动推断类型、单行隐式返回、参数缩写、操作符方法，以及 Escaping 和 Autoclosures。"
+example: |
+  // 1. 基本闭包表达式：显式指定参数类型和返回类型
+  let multiply = { (a: Int, b: Int) -> Int in
+      return a * b
+  }
+  print(multiply(3, 4))  // 输出 12
+
+  // 2. 通过上下文推断类型
+  let subtract: (Int, Int) -> Int = { a, b in
+      return a - b
+  }
+  print(subtract(10, 4))  // 输出 6
+
+  // 3. 单行闭包的隐式返回
+  let add = { (a: Int, b: Int) in a + b }
+  print(add(3, 5))  // 输出 8
+
+  // 4. 使用参数缩写
+  let numbers = [1, 2, 3, 4, 5]
+  let doubled = numbers.map { $0 * 2 }
+  print(doubled)  // 输出 [2, 4, 6, 8, 10]
+
+  // 5. 使用操作符方法
+  let sortedNumbers = numbers.sorted(by: >)
+  print(sortedNumbers)  // 输出 [5, 4, 3, 2, 1]
+
+  // 6. 尾随闭包
+  func performOperation(a: Int, b: Int, operation: (Int, Int) -> Int) -> Int {
+      return operation(a, b)
+  }
+  let result = performOperation(a: 10, b: 20) { $0 + $1 }
+  print(result)  // 输出 30
+
+  // 7. 当闭包在函数返回之后才会被执行时，这个闭包被称为逃逸闭包（Escaping Closure）。为了标记这种闭包，Swift 使用 @escaping 关键字。
+  var completionHandlers: [() -> Void] = []
+  func someFunctionWithEscapingClosure(completionHandler: @escaping () -> Void) {
+      completionHandlers.append(completionHandler)
+  }
+  someFunctionWithEscapingClosure {
+      print("This is an escaping closure.")
+  }
+  completionHandlers.first?()  // 输出 "This is an escaping closure."
+
+  // 8. 自动闭包（Autoclosures）是指由表达式自动创建的闭包。这种闭包不接受任何参数，而是自动将传入的表达式包装成一个闭包。
+  func logIfTrue(_ predicate: @autoclosure () -> Bool) {
+      if predicate() {
+          print("It's true!")
+      }
+  }
+  logIfTrue(2 > 1)  // 输出 "It's true!"
+references:
+  - title: Closures
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/closures

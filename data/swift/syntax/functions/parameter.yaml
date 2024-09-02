@@ -1,0 +1,66 @@
+id: parameter
+title: 函数参数
+description: Swift 提供了丰富的函数参数特性，包括位置参数、参数标签、默认参数、可变参数、inout 参数、尾随闭包等。这些功能使函数调用更加灵活和可读。
+example: |
+  // 1. 参数名称
+  // 只使用参数名称，调用时需要按顺序传递参数
+  func greet(person: String, hometown: String) -> String {
+      return "Hello \(person)! Glad you could visit from \(hometown)."
+  }
+  let greeting = greet(person: "Alice", hometown: "New York")
+  // 调用时按顺序传递参数，但无标签，提高代码简洁性
+
+  // 2. 参数标签与参数名称
+  // 使用参数标签来增强函数调用的可读性
+  func greet(person: String, from hometown: String) -> String {
+      return "Hello \(person)! Glad you could visit from \(hometown)."
+  }
+  let labeledGreeting = greet(person: "Alice", from: "New York")
+  // 参数标签 `from` 提示调用者该参数的含义，增强可读性
+
+  // 3. 位置参数与省略参数标签
+  // 使用下划线 `_` 来省略参数标签
+  func multiply(_ a: Int, _ b: Int) -> Int {
+      return a * b
+  }
+  let result = multiply(3, 4) // 按顺序传递参数，无需标签
+
+  // 4. 默认参数值
+  // 在函数定义中为参数提供默认值，在调用时可以选择性省略
+  func greet(person: String, day: String = "Sunday") -> String {
+      return "Hello \(person), today is \(day)."
+  }
+  let defaultGreeting = greet(person: "Bob") // "Hello Bob, today is Sunday."
+
+  // 5. 可变数量参数
+  // 使用 `...` 语法定义可变数量的参数，可以传递任意数量的值
+  func average(_ numbers: Double...) -> Double {
+      let total = numbers.reduce(0, +)
+      return total / Double(numbers.count)
+  }
+  let avg = average(1, 2, 3, 4, 5) // 3.0
+  
+  // 6. inout 参数
+  // 使用 `inout` 关键字，使得函数可以在内部修改外部传入的参数
+  func swapValues(a: inout Int, b: inout Int) {
+      let temp = a
+      a = b
+      b = temp
+  }
+  var x = 3, y = 7
+  swapValues(a: &x, b: &y) // 交换后 x 为 7, y 为 3
+  
+  // 7. 尾随闭包
+  // 如果函数的最后一个参数是闭包，则可以将闭包表达式写在函数调用的括号后面
+  func doWork(completion: () -> Void) {
+      // 执行一些工作
+      completion()
+  }
+  doWork {
+      print("Work completed!")
+  }
+references:
+  - title: Function Parameters and Return Values
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Function-Parameters-and-Return-Values
+  - title: Function Argument Labels and Parameter Names
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Function-Argument-Labels-and-Parameter-Names

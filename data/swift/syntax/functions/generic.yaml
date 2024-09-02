@@ -1,0 +1,23 @@
+id: generic
+title: 函数泛型
+description: |
+  Swift 的函数泛型允许你编写可以处理任意类型的函数，而不需要为每种类型编写单独的函数。
+example: |
+  // 创建一个泛型函数，用于显示任意类型的数据
+  func displayData<T>(data: T) {
+      print("数据:", data)
+  }
+
+  displayData(data: "Hello, Swift!") // 处理字符串
+  displayData(data: 42)              // 处理整数
+
+  // 泛型函数带有类型约束
+  func addition<T: Numeric>(num1: T, num2: T) -> T {
+      return num1 + num2
+  }
+
+  print(addition(num1: 3, num2: 5))      // 处理整数
+  print(addition(num1: 2.5, num2: 4.5))  // 处理浮点数
+references:
+  - title: Generic Functions
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/generics#Generic-Functions

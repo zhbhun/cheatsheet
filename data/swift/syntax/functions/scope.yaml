@@ -1,0 +1,23 @@
+id: scope
+title: 函数作用域
+description: 函数作用域是指在 Swift 中，变量和常量的可访问范围。函数内声明的变量和常量具有局部作用域，仅在函数内部可访问，而函数外部无法访问这些变量。这种作用域控制有助于避免变量名冲突，确保代码的清晰性和可维护性。
+example: |
+  var globalVariable = "Global Scope" // 全局作用域
+
+  func demonstrateScope() {
+      let localVariable = "Local Scope" // 局部作用域
+      print(localVariable) // 可以访问
+      print(globalVariable) // 可以访问全局变量
+  }
+
+  demonstrateScope()
+
+  print(globalVariable) // 可以访问全局变量
+  // print(localVariable) // 错误：localVariable 在函数外不可访问
+references:
+  - title: Functions
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions/
+  - title: Scope and Context Explained in Swift
+    url: https://www.appypie.com/scope-and-context-explained-in-swift
+  - title: Understanding Function Scope in Swift
+    url: https://learn.codesignal.com/preview/lessons/2408/understanding-function-scope

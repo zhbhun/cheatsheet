@@ -1,0 +1,17 @@
+id: overload
+title: 函数重载
+description: Swift 通过函数重载支持在不同上下文中使用相同的函数名，从而提高代码的可读性和灵活性。重载的函数必须在参数类型或数量上有所区别，但它们可以具有相同或不同的返回类型。
+example: |
+  func greet() {
+      print("Hello!")
+  }
+
+  func greet(person: String) {
+      print("Hello, \(person)!")
+  }
+
+  greet()              // 输出 "Hello!"
+  greet(person: "Tom") // 输出 "Hello, Tom!"
+references:
+  - title: Functions
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions/

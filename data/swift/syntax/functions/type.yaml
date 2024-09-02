@@ -1,0 +1,22 @@
+id: type
+title: 函数类型
+description: 函数类型在 Swift 中是由函数的参数类型和返回类型组成的类型。这种类型描述了函数的输入和输出，可以像其他类型一样使用。
+example: |
+  // 定义一个可选的函数类型
+  var operation: ((Int, Int) -> Int)?
+
+  // 将函数赋值给可选类型变量
+  operation = { (a: Int, b: Int) -> Int in
+      return a + b
+  }
+
+  // 调用可选的函数类型变量（使用可选绑定）
+  if let op = operation {
+      let result = op(2, 3) // result 为 5
+  }
+
+  // 或者直接调用并处理可能的 nil
+  let result = operation?(2, 3) // result 为可选 Int 类型
+references:
+  - title: Function Types
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Function-Types

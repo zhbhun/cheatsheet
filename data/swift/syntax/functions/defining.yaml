@@ -1,0 +1,23 @@
+id: defining
+title: 函数定义
+description: 函数通过 `func` 关键字定义，后跟函数名称、参数列表（如果有）和返回类型（如果有）。函数的定义可以包括参数，这些参数可以用于在函数内部执行计算，并且可以选择性地返回值。
+example: |
+  // 定义一个无参数且无返回值的函数
+  func sayHello() {
+      print("Hello, world!")
+  }
+  
+  // 调用函数
+  sayHello() // 输出: "Hello, world!"
+
+  // 定义一个带参数且有返回值的函数
+  func add(a: Int, b: Int) -> Int {
+      return a + b
+  }
+
+  // 调用带参数和返回值的函数
+  let sum = add(a: 3, b: 5)
+  print(sum) // 输出: 8
+references:
+  - title: Defining and Calling Functions
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Defining-and-Calling-Functions

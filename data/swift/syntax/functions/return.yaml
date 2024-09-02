@@ -1,0 +1,48 @@
+id: return
+title: 返回值
+description: 在 Swift 中，函数可以返回一个或多个值，返回值的类型在函数定义时指定。要返回值，通常使用 `return` 关键字，并紧随其后要返回的表达式。如果函数没有返回值，可以在声明时明确指定返回类型为 `Void` 或空的 `()`，这表示函数不会返回任何值。在函数体内，可以使用 `return` 关键字提前退出函数。对于只有一个表达式的返回值函数，`return` 关键字可以省略。返回值可以是基本类型、对象或元组。
+example: |
+  // 一个没有返回值的函数，隐式声明
+  func greet(name: String) {
+      print("Hello, \(name)!")
+  }
+  greet(name: "Alice")  // 输出 "Hello, Alice!"
+  
+  // 一个主动声明没有返回值的函数
+  func logMessage(_ message: String) -> Void {
+      print("Log: \(message)")
+  }
+  logMessage("This is a log message")  // 输出 "Log: This is a log message"
+
+  // 提前退出的函数
+  func checkEven(number: Int) {
+      if number % 2 != 0 {
+          return  // 如果不是偶数，提前退出
+      }
+      print("\(number) is even")  // 只有偶数时才输出
+  }
+  checkEven(number: 3)  // 没有输出
+  checkEven(number: 4)  // 输出 "4 is even"
+
+  // 一个返回整数的函数
+  func rollDice() -> Int {
+      return Int.random(in: 1...6)  // 返回一个 1 到 6 之间的随机数
+  }
+  let result = rollDice()
+  print(result) // 输出随机数
+
+  // 一个返回多个值的函数
+  func getMinMax(numbers: [Int]) -> (min: Int, max: Int) {
+      let min = numbers.min()!
+      let max = numbers.max()!
+      return (min, max)  // 返回元组包含最小值和最大值
+  }
+  let bounds = getMinMax(numbers: [8, 3, 9, 4])
+  print("min is \(bounds.min) and max is \(bounds.max)")  // 输出 "min is 3 and max is 9"
+references:
+  - title: Functions Without Return Values
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Functions-Without-Return-Values
+  - title: Functions with Multiple Return Values
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Functions-with-Multiple-Return-Values
+  - title: Functions With an Implicit Return
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/functions#Functions-With-an-Implicit-Return
