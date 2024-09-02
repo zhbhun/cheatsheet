@@ -1,0 +1,33 @@
+id: inline
+title: Inline
+description: |
+  在 Kotlin 中，`inline` 函数用于提高性能，尤其是在高频调用或使用 lambda 表达式时。将函数标记为 `inline` 后，编译器会在编译时将函数的代码直接插入到调用点，从而避免了函数调用的开销。除了函数本身外，传递给 `inline` 函数的 lambda 表达式也会被内联。为了防止内联特定的 lambda，可以使用 `noinline` 关键字；而对于需要非局部返回但禁止跨局部函数调用的情况，可以使用 `crossinline` 关键字。
+example: |
+  // 定义一个简单的内联函数
+  inline fun greet(name: String, action: (String) -> Unit) {
+      println("Preparing to greet...")
+      action(name)
+      println("Greeting completed.")
+  }
+
+  // 使用内联函数
+  greet("Kotlin") { name ->
+      println("Hello, $name!")
+  }
+  // 输出：
+  // Preparing to greet...
+  // Hello, Kotlin!
+  // Greeting completed.
+
+  // 使用 noinline 关键字
+  inline fun example(inlined: () -> Unit, noinline notInlined: () -> Unit) {
+      inlined()    // 将被内联
+      notInlined() // 不会被内联
+  }
+references:
+  - title: Inline Functions
+    url: https://kotlinlang.org/docs/inline-functions.html
+  - title: Functions in Kotlin
+    url: https://kotlinlang.org/docs/functions.html
+  - title: What's New in Kotlin 2.0.0
+    url: https://kotlinlang.org/docs/whatsnew20.html
