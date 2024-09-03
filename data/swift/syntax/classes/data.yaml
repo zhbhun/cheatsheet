@@ -1,0 +1,48 @@
+id: struct
+title: Struct
+description: |
+  在 Swift 中，结构体（struct）是一种用于定义数据模型的构造类型。与类（class）不同，结构体是值类型，这意味着在赋值或传递给函数时会被复制。结构体适用于封装轻量级数据模型和简单的功能逻辑。虽然结构体不支持继承，但可以通过扩展来增强功能。此外，Swift 结构体默认提供成员逐一初始化器，使得实例创建更加方便。
+example: |
+  struct Book {
+      var title: String
+      var author: String
+      var pages: Int
+
+      func description() -> String {
+          return "\(title) by \(author), \(pages) pages"
+      }
+  }
+
+  // 使用结构体
+  var myBook = Book(title: "Swift Programming", author: "Apple Inc.", pages: 500)
+  print(myBook.description()) // 输出: Swift Programming by Apple Inc., 500 pages
+
+  // 1. 结构体 vs 类 (值类型 vs 引用类型)
+  struct StructExample {
+      var value: Int
+  }
+
+  class ClassExample {
+      var value: Int
+      init(value: Int) {
+          self.value = value
+      }
+  }
+
+  var structA = StructExample(value: 10)
+  var structB = structA // 复制 structA
+  structB.value = 20
+  print(structA.value) // 输出 10, 由于是值类型，structA 未被修改
+
+  var classA = ClassExample(value: 10)
+  var classB = classA // 引用 classA
+  classB.value = 20
+  print(classA.value) // 输出 20, 由于是引用类型，classA 被修改
+
+  // 2. 修改结构体数据
+  myBook.title = "Advanced Swift"
+  myBook.pages = 600
+  print(myBook.description()) // 输出: Advanced Swift by Apple Inc., 600 pages
+references:
+  - title: Structures and Classes
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/classesandstructures/

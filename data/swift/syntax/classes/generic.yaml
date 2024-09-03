@@ -1,0 +1,37 @@
+id: generic
+title: 泛型
+description: |
+  Swift 的泛型可以用于函数、类型（如类、结构体和枚举）和协议等多个场景。它通过类型参数化的方式，使得代码在保持类型安全的同时具有高度的抽象性和通用性。
+example: |
+  // 一个简单的泛型类，带有泛型约束
+  class Stack<Element: Equatable> {
+      var items = [Element]()
+      
+      func push(_ item: Element) {
+          items.append(item)
+      }
+      
+      func pop() -> Element {
+          return items.removeLast()
+      }
+      
+      // 通过泛型约束，定义了一个只能比较相等的泛型函数
+      func isTop(_ item: Element) -> Bool {
+          return items.last == item
+      }
+  }
+
+  // 使用泛型类
+  let intStack = Stack<Int>()
+  intStack.push(1)
+  intStack.push(2)
+  print(intStack.isTop(2)) // 输出: true
+
+  let stringStack = Stack<String>()
+  stringStack.push("Hello")
+  stringStack.push("World")
+  print(stringStack.isTop("Hello")) // 输出: false
+
+references:
+  - title: Swift Programming Language - Generics
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/generics/

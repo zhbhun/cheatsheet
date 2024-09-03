@@ -1,0 +1,73 @@
+id: delegation
+title: 代理
+description: 
+  在 Swift 中，代理（Delegation）是一种设计模式，允许一个对象将其某些职责委托给另一个对象来处理。这通过定义协议（protocol）来实现，协议定义了代理对象需要实现的方法和属性。代理模式通常用于 iOS 开发中，用于在视图控制器与其他对象之间传递数据或事件。这种模式可以帮助解耦代码，使得对象更加模块化和可重用。
+
+  Swift 中有两种常见的代理形式：类代理和属性代理。类代理通过协议定义一组方法，委托者类通过 `delegate` 属性引用实现这些方法的对象。属性代理则允许对象将属性的读写操作委托给另一个对象，通过 `@propertyWrapper` 实现。
+example: |
+  // 类代理示例
+  protocol TaskDelegate: AnyObject {
+      func taskDidStart()
+      func taskDidFinish()
+  }
+
+  class Task {
+      weak var delegate: TaskDelegate?
+      
+      func start() {
+          delegate?.taskDidStart()
+          // 执行任务
+          delegate?.taskDidFinish()
+      }
+  }
+
+  class TaskHandler: TaskDelegate {
+      func taskDidStart() {
+          print("任务开始")
+      }
+      
+      func taskDidFinish() {
+          print("任务结束")
+      }
+  }
+
+  let task = Task()
+  let handler = TaskHandler()
+  task.delegate = handler
+  task.start()
+
+  // 属性代理示例
+  @propertyWrapper
+  struct Capitalized {
+      private var value: String = ""
+      
+      var wrappedValue: String {
+          get { value }
+          set { value = newValue.capitalized }
+      }
+      
+      init(wrappedValue: String) {
+          self.wrappedValue = wrappedValue
+      }
+  }
+
+  class User {
+      @Capitalized var name: String
+      
+      init(name: String) {
+          self.name = name
+      }
+  }
+
+  let user = User(name: "john doe")
+  print(user.name) // 输出：John Doe
+
+references:
+  - title: Using Delegates to Customize Object Behavior
+    url: https://developer.apple.com/documentation/swift/using-delegates-to-customize-object-behavior
+  - title: Protocols and Delegation in Swift
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/protocols/#Delegation
+  - title: Delegation in Swift by Sundell
+    url: https://www.swiftbysundell.com/articles/delegation-in-swift/
+  - title: Swift delegate design pattern - The.Swift.Dev.
+    url: https://theswiftdev.com/swift-delegate-design-pattern/

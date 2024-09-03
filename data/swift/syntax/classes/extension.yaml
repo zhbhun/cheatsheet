@@ -1,0 +1,61 @@
+id: extension
+title: 扩展
+description: |
+  扩展（Extensions）是 Swift 中的一项功能，允许你为现有的类、结构体、枚举或协议添加新的功能，而无需继承或修改原始代码。扩展可以为类型添加计算属性、构造函数、方法、下标，以及为协议提供默认实现等。这种功能使得代码更模块化和可维护，同时也能轻松为已有类型添加特定于应用的功能。
+example: |
+  // 1. 添加计算属性
+  extension Double {
+      var squared: Double {
+          return self * self
+      }
+  }
+
+  let number: Double = 4.0
+  print("Squared: \(number.squared)") // 输出: Squared: 16.0
+
+  // 2. 添加构造函数
+  struct Point {
+      var x = 0.0, y = 0.0
+  }
+
+  extension Point {
+      // 添加新的构造函数，接受单个参数，并设置 x 和 y 为相同的值
+      init(value: Double) {
+          self.x = value
+          self.y = value
+      }
+  }
+
+  let point = Point(value: 5.0)
+  print("Point: (\(point.x), \(point.y))") // 输出: Point: (5.0, 5.0)
+
+  // 3. 添加方法
+  extension String {
+      func reversed() -> String {
+          return String(self.reversed())
+      }
+  }
+
+  let message = "Hello"
+  print("Reversed: \(message.reversed())") // 输出: Reversed: olleH
+
+  // 4. 添加下标
+  extension Array {
+      // 为数组添加一个下标，返回数组中元素的平方
+      subscript(index: Int, squared: Bool) -> Element? {
+          guard index >= 0 && index < count else { return nil }
+          if squared, let value = self[index] as? Int {
+              return value * value as? Element
+          }
+          return self[index]
+      }
+  }
+
+  let numbers = [1, 2, 3, 4]
+  print("Element at index 2 squared: \(numbers[2, true] ?? 0)") // 输出: Element at index 2 squared: 9
+
+references:
+  - title: Extensions in Swift
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/extensions/
+  - title: "Extensions in Swift: How and when to use them"
+    url: https://www.avanderlee.com/swift/extensions/

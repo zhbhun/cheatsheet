@@ -1,0 +1,44 @@
+id: inheritance
+title: 继承
+description: |
+  Kotlin 的类默认是不可继承的，必须使用 `open` 关键字标记类，使其可被继承。此外，Kotlin 还支持方法和属性的覆盖（override），需要显式使用 `override` 关键字进行标记。Kotlin 不支持多重继承，但可以通过实现多个接口来达到类似的效果。
+example: |
+  // 定义一个可以被继承的基类，并包含一个可被覆盖的属性
+  open class Animal(val name: String) {
+      open val sound: String = "Some sound"
+      
+      init {
+          println("Animal initialized: $name")
+      }
+
+      open fun makeSound() {
+          println("The animal makes a sound: $sound")
+      }
+  }
+
+  // 继承自 Animal 类的子类，覆盖属性和方法
+  class Dog(name: String) : Animal(name) {
+      override val sound: String = "Bark"
+      
+      init {
+          println("Dog initialized: $name")
+      }
+
+      override fun makeSound() {
+          super.makeSound() // 调用父类方法
+          println("$name barks")
+      }
+  }
+
+  fun main() {
+      val myDog = Dog("Buddy")
+      myDog.makeSound()
+      // 输出：
+      // Animal initialized: Buddy
+      // Dog initialized: Buddy
+      // The animal makes a sound: Bark
+      // Buddy barks
+  }
+references:
+  - title: Inheritance in Kotlin
+    url: https://kotlinlang.org/docs/inheritance.html

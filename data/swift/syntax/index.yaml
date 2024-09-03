@@ -7,3 +7,4 @@ children:
   - converts
   - expressions
   - functions
+  - classes

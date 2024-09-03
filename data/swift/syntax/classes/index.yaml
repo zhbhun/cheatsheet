@@ -2,7 +2,7 @@ id: classes
 title: 类
 children:
   - definition
-  - constructors
+  - constructor
   - property
   - method
   - visibility
@@ -10,8 +10,8 @@ children:
   - interface
   - delegation
   - static
-  - nest
   - extension
   - data
   - sealed
+  - nest
   - generic

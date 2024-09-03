@@ -1,0 +1,36 @@
+id: constructors
+title: 构造函数
+description: Swift 支持多种构造函数，包括指定构造函数、便捷构造函数以及多个构造函数的定义。便捷构造函数是辅助的构造函数，可以简化常见的初始化过程，通常会调用指定构造函数来完成初始化。
+example: |
+  class Vehicle {
+      var numberOfWheels: Int
+      var color: String
+
+      // 指定构造函数
+      init(wheels: Int, color: String) {
+          self.numberOfWheels = wheels
+          self.color = color
+      }
+
+      // 便捷构造函数
+      convenience init(wheels: Int) {
+          self.init(wheels: wheels, color: "Black")
+      }
+
+      // 另一个便捷构造函数
+      convenience init() {
+          self.init(wheels: 4)
+      }
+  }
+
+  let car = Vehicle(wheels: 4, color: "Red")
+  // 使用指定构造函数创建一个 Vehicle 实例，带有 4 个轮子，颜色为红色。
+
+  let bike = Vehicle(wheels: 2)
+  // 使用便捷构造函数创建一个 Vehicle 实例，带有 2 个轮子，颜色为黑色。
+
+  let defaultVehicle = Vehicle()
+  // 使用另一个便捷构造函数创建一个默认的 Vehicle 实例，带有 4 个轮子，颜色为黑色。
+references:
+  - title: Class Inheritance and Initialization
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/initialization/#Designated-and-Convenience-Initializers-in-Action

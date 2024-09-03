@@ -1,0 +1,28 @@
+id: visibility
+title: 可见性
+description: | 
+  Swift 的可见性控制是通过访问控制符来管理类成员的访问权限。Swift 提供五种访问级别：`open`、`public`、`internal`、`fileprivate` 和 `private`。这些访问级别用于限制类、属性、方法等的可见性，从而保护数据和内部实现，并定义类与外部代码之间的接口。
+
+  - `open` 和 `public`: 允许在模块外部访问，其中 `open` 还允许在外部继承和重写。
+  - `internal`: 只能在模块内部访问，是默认的访问级别。
+  - `fileprivate`: 限制访问到声明所在的文件内部。
+  - `private`: 最严格的访问级别，限制访问到声明所在的作用域内。
+
+  这些访问控制符用于实现封装，确保类的内部细节不被外部随意访问或修改，从而提高代码的安全性和可维护性。
+example: |
+  class MyClass {
+      private var secret = "This is private" // 仅在 MyClass 内部可见
+      internal var internalProperty = "This is internal" // 在整个模块中可见
+      public var publicProperty = "This is public" // 在模块外部可见
+      open func doSomething() {
+          print("This can be overridden outside the module")
+      }
+  }
+
+  let myClass = MyClass()
+  // myClass.secret 无法访问
+  print(myClass.internalProperty) // 可以访问
+  print(myClass.publicProperty) // 可以访问
+references:
+  - title: Access Control
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/accesscontrol/

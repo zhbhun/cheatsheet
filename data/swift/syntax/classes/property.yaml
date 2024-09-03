@@ -1,0 +1,33 @@
+id: property
+title: 属性
+description: 属性是 Swift 类和结构体的核心部分，用于存储和管理值。Swift 中有两种属性：存储属性和计算属性。存储属性将常量或变量值存储为实例的一部分，计算属性则不直接存储值，而是提供 getter 和可选的 setter 来间接获取和设置其他属性或值。类属性可以使用 `static` 关键字声明为类型属性，或使用 `class` 关键字来让子类能够重写它们。此外，Swift 还提供了类似 Kotlin 的 `lazy` 机制，允许在属性被首次使用时才初始化。
+example: |
+  class Person {
+      var name: String // 存储属性
+      var age: Int = 0 // 存储属性带默认值
+
+      var description: String { // 计算属性
+          return "\(name) is \(age) years old."
+      }
+
+      static var species: String = "Homo sapiens" // 类型存储属性
+
+      class var identifier: String { // 类型计算属性，允许子类重写
+          return "Person"
+      }
+
+      lazy var fullName: String = { // 使用 lazy 的存储属性
+          return "\(name) Smith"
+      }()
+  }
+
+  let person = Person()
+  person.name = "Alice"
+  person.age = 30
+  print(person.description) // 输出: "Alice is 30 years old."
+  print(Person.species) // 输出: "Homo sapiens"
+  print(Person.identifier) // 输出: "Person"
+  print(person.fullName) // 第一次访问时才初始化 fullName 属性，输出: "Alice Smith"
+references:
+  - title: Properties
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/properties/

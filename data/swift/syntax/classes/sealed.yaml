@@ -1,0 +1,25 @@
+id: sealed
+title: 密封类
+description: 密封类（Sealed Class）是一种特殊的类，用于表示受限的类层次结构，确保类型层次在编译时是已知且固定的。密封类的所有子类必须在相同的包或模块内定义，且编译器能够验证是否涵盖了所有可能的子类，尤其适合用于表达有限的状态或操作集合。
+example: |
+  // 定义一个密封类
+  sealed class Operation {
+      data class Add(val value: Int) : Operation()
+      data class Subtract(val value: Int) : Operation()
+      object Clear : Operation()
+  }
+
+  // 使用密封类的示例
+  fun evaluate(operation: Operation): Int = when (operation) {
+      is Operation.Add -> operation.value + 10
+      is Operation.Subtract -> 10 - operation.value
+      Operation.Clear -> 0
+  }
+
+  fun main() {
+      val result = evaluate(Operation.Add(5))
+      println(result) // 输出: 15
+  }
+references:
+  - title: Sealed classes and interfaces
+    url: https://kotlinlang.org/docs/sealed-classes.html

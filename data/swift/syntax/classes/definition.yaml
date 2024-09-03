@@ -1,0 +1,28 @@
+id: definition
+title: 类定义
+description: |
+  Swift 类的定义使用 `class` 关键字，并包含一组属性（用于存储数据）和方法（用于定义行为）。与结构体不同，类可以继承自其他类，并可以在其中重写父类的方法或属性。类还可以实现协议，以扩展其功能。
+example: |
+  // 定义一个名为 `Animal` 的类
+  class Animal {
+      var name: String
+      var age: Int
+      
+      init(name: String, age: Int) {
+          self.name = name
+          self.age = age
+      }
+      
+      func makeSound() {
+          print("\(name) makes a sound")
+      }
+  }
+  
+  let myDog = Animal(name: "Buddy", age: 3)
+  myDog.makeSound() // 输出：Buddy barks
+
+references:
+  - title: Structures and Classes
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/classesandstructures
+  - title: Class Declaration
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/#Class-Declaration

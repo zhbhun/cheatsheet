@@ -1,0 +1,218 @@
+id: interface
+title: 协议
+description: |
+  在 Swift 中，协议（Protocol）定义了必须遵循的属性、方法或其他要求。协议可以被类、结构体和枚举实现，用于定义接口、实现多态性和代码复用。
+example: |
+  // 1. 基本协议
+  protocol Greetable {
+      var name: String { get }
+      func greet() -> String
+  }
+
+  struct Person: Greetable {
+      var name: String
+      func greet() -> String {
+          return "Hello, \(name)!"
+      }
+  }
+  // Greetable 协议要求实现一个只读的 `name` 属性和一个 `greet()` 方法。
+  // Person 结构体遵循该协议，实现了这些要求。
+
+  // 2. 属性要求
+  protocol Ageable {
+      var age: Int { get set } // get set 说明属性必须可读写
+  }
+
+  class User: Ageable {
+      var age: Int
+      init(age: Int) {
+          self.age = age
+      }
+  }
+  // Ageable 协议要求实现一个可读写的 `age` 属性，User 类实现了该要求。
+
+  // 3. 方法要求
+  protocol Drivable {
+      func drive()
+  }
+
+  class Car: Drivable {
+      func drive() {
+          print("Car is driving")
+      }
+  }
+  // Drivable 协议要求实现一个 `drive()` 方法，Car 类实现了该方法。
+
+  // 4. 异变方法要求（mutating）
+  protocol Togglable {
+      mutating func toggle() // mutating 允许结构体或枚举在方法中修改自身属性
+  }
+
+  struct Switch: Togglable {
+      var isOn: Bool = false
+      mutating func toggle() {
+          isOn.toggle()
+      }
+  }
+  // Togglable 协议要求实现一个 `toggle()` 方法，并允许改变属性状态。
+  // Switch 结构体遵循协议，提供了具体实现。
+
+  // 5. 构造器要求
+  protocol Initializable {
+      init(name: String) // 协议可以要求遵循类型实现指定的构造器
+  }
+
+  class Product: Initializable {
+      var name: String
+      required init(name: String) { // required 关键字确保子类也必须实现该构造器
+          self.name = name
+      }
+  }
+  // Initializable 协议要求实现一个指定的构造器，Product 类实现了该要求。
+
+  // 6. 默认实现
+  protocol Flyable {
+      func fly()
+  }
+
+  extension Flyable {
+      func fly() {
+          print("Flying by default") // 提供默认实现，所有遵循协议的类型都可使用
+      }
+  }
+
+  struct Bird: Flyable {}
+  let bird = Bird()
+  bird.fly()  // 输出 "Flying by default"
+  // Flyable 协议通过扩展提供了 `fly()` 方法的默认实现。
+  // Bird 结构体遵循协议，自动获得该方法的实现。
+
+  // 7. 协议继承
+  protocol Named {
+      var name: String { get }
+  }
+
+  protocol Describable: Named {
+      var description: String { get }
+  }
+
+  struct Item: Describable {
+      var name: String
+      var description: String
+  }
+  // Describable 协议继承了 Named 协议，要求额外实现 `description` 属性。
+  // Item 结构体实现了所有继承来的要求。
+
+  // 8. 协议组合
+  protocol Payable {
+      func pay() -> String
+  }
+
+  struct Employee: Payable, Describable {
+      var name: String
+      var description: String
+      func pay() -> String {
+          return "Paid \(name)"
+      }
+  }
+  // Employee 结构体同时遵循 Payable 和 Describable 协议。
+  // 协议组合允许类型实现多个协议的要求。
+
+  // 9. 有条件地遵循协议
+  extension Array: Describable where Element: Describable {
+      var description: String {
+          return self.map { $0.description }.joined(separator: ", ")
+      }
+  }
+  // 扩展允许 Array 在其元素遵循 Describable 协议时也遵循该协议。
+  // 这称为“有条件地遵循协议”。
+
+  // 10. 在扩展里声明采纳协议
+  struct Vehicle {
+      var speed: Int
+  }
+
+  extension Vehicle: Drivable {
+      func drive() {
+          print("Vehicle driving at \(speed) mph")
+      }
+  }
+  // Vehicle 结构体通过扩展声明遵循 Drivable 协议，并实现 `drive()` 方法。
+
+  // 11. 类专属的协议
+  protocol Identifiable: AnyObject { // AnyObject 约束协议只能由类实现
+      var id: String { get }
+  }
+
+  class UserClass: Identifiable {
+      var id: String
+      init(id: String) {
+          self.id = id
+      }
+  }
+  // Identifiable 是一个类专属协议，只能被类（而非结构体或枚举）实现。
+
+  // 12. 检查协议一致性
+  let user = UserClass(id: "123")
+  if let identifiable = user as? Identifiable {
+      print("User id is \(identifiable.id)")
+  }
+  // 使用 `as?` 操作符检查对象是否遵循某个协议。
+
+  // 13. 可选的协议要求
+  @objc protocol OptionalProtocol {
+      @objc optional func optionalMethod() // @objc optional 允许协议方法可选实现
+  }
+
+  class MyClass: OptionalProtocol {
+      func optionalMethod() {
+          print("Implemented optional method")
+      }
+  }
+  // OptionalProtocol 使用 @objc 和 optional 关键字，使方法 `optionalMethod` 可选。
+  // MyClass 类实现了该方法，但这并非强制要求。
+
+  // 14. 作为类型使用
+  protocol Greetable {
+      func greet() -> String
+  }
+
+  let greeters: [Greetable] = [Person(name: "Alice"), Person(name: "Bob")]
+  for greeter in greeters {
+      print(greeter.greet())
+  }
+  // 可以将 Greetable 协议作为数组的元素类型，允许不同的类型统一处理。
+
+  // 15. 关联类型
+  protocol Container {
+      associatedtype Item
+      var items: [Item] { get }
+      func add(item: Item)
+  }
+
+  struct Box: Container {
+      var items = [String]()
+      func add(item: String) {
+          items.append(item)
+      }
+  }
+  // Container 协议使用关联类型，使得 Box 结构体可以处理不同类型的 items。
+
+  // 16. Self 类型
+  protocol Copyable {
+      func copy() -> Self
+  }
+
+  class Document: Copyable {
+      func copy() -> Self {
+          return self
+      }
+  }
+  // Copyable 协议要求实现一个返回 Self 类型的方法。
+references:
+  - title: Protocols
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/protocols
+  - title: Understanding Protocols in Swift - LogRocket Blog
+    url: https://blog.logrocket.com/understanding-protocols-in-swift/
+  - title: Protocols - Hacking with Swift
+    url: https://www.hackingwithswift.com/sixty/9/1/protocols

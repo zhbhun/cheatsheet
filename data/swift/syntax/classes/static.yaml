@@ -1,0 +1,22 @@
+id: static
+title: 静态属性
+description: 
+  静态属性使用 `static` 关键字声明在结构体或类中。
+example: |
+  struct Person {
+      static let greeting = "Hello" // 声明一个静态属性，属于类型本身
+      let name: String
+
+      init(name: String) {
+          self.name = name
+      }
+  }
+
+  print(Person.greeting) // 通过类型本身访问静态属性，输出 "Hello"
+  let person = Person(name: "John")
+  print(person.name) // 访问实例属性，输出 "John"
+references:
+  - title: Type Property Syntax
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/properties/
+  - title: Swift Properties Overview - Swiftly.dev
+    url: https://swiftly.dev/properties

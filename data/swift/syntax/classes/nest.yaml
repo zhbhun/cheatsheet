@@ -1,0 +1,32 @@
+id: nest
+title: 嵌套类
+description: 嵌套类是在 Swift 中将一个类定义在另一个类的内部，从而将相关的功能和数据紧密地组织在一起。嵌套类能够有效地封装逻辑，并减少全局命名空间的污染。外部类可以访问其嵌套类的属性和方法，反之亦然。嵌套类的一个典型应用场景是在需要将多个类的逻辑进行分组、并保持它们的访问局部化时。
+example: |
+  class OuterClass {
+      var outerProperty = "I am Outer"
+
+      class NestedClass {
+          var nestedProperty = "I am Nested"
+          
+          func nestedMethod() {
+              print("Nested Method")
+          }
+      }
+      
+      func outerMethod() {
+          let nestedInstance = NestedClass()
+          print(nestedInstance.nestedProperty)
+          nestedInstance.nestedMethod()
+      }
+  }
+
+  let outerInstance = OuterClass()
+  outerInstance.outerMethod()
+  // 输出：
+  // I am Nested
+  // Nested Method
+references:
+  - title: Nested Types
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/nestedtypes/
+  - title: Nested Classes - Swift Forums
+    url: https://forums.swift.org/t/nested-classes/15727

@@ -1,0 +1,32 @@
+id: method
+title: 方法
+description: 
+  在 Swift 中，方法是定义在类、结构体或枚举中的函数，用于封装特定的功能或行为。方法分为实例方法和类型方法（类方法）。实例方法是与某个类型的实例关联的函数，而类型方法则与类型本身关联，可以在不创建实例的情况下调用。类型方法通过 `static` 关键字定义。
+example: |
+  // 示例：实例方法
+  class Person {
+      var name: String
+
+      init(name: String) {
+          self.name = name
+      }
+
+      func greet() {
+          print("Hello, \(name)!")
+      }
+  }
+
+  let person = Person(name: "Alice")
+  person.greet() // 输出: Hello, Alice!
+
+  // 示例：类型方法
+  class MathUtility {
+      static func add(_ a: Int, _ b: Int) -> Int {
+          return a + b
+      }
+  }
+
+  let sum = MathUtility.add(3, 5) // 输出: 8
+references:
+  - title: Methods - Swift Documentation
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/methods/
