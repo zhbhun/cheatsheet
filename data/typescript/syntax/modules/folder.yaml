@@ -1,4 +1,121 @@
 id: folder
-title: 文件夹
+title: 文件夹模块
 query: 文件夹模块
-comment: 如何引入不同文件夹下的模块，如何导出文件夹下的模块。。。
+comment: 如何引入不同文件夹下的模块，如何导出文件夹下的模块，使用 `index.ts` 文件来集中导出文件夹内模块的最佳实践。
+description: |
+  在 TypeScript 中，文件夹模块指的是通过组织不同文件夹下的多个文件来创建模块结构。通常，可以通过以下方式实现：
+  
+  1. **引入文件夹下的模块**：可以通过相对路径或绝对路径来引入文件夹下的模块。如果文件夹内包含一个 `index.ts` 文件，TypeScript 会自动查找并使用该文件。
+  
+  2. **导出文件夹下的模块**：可以使用 `index.ts` 文件作为文件夹模块的集中出口。在 `index.ts` 文件中，可以导出该文件夹内其他文件中的模块，简化对外的导入路径。
+
+  使用 `index.ts` 文件不仅可以减少导入时的复杂路径，还能更好地组织代码，方便代码管理和维护。
+
+example:
+  - title: "从不同文件夹引入模块"
+    content: |
+      ```typescript
+      // 文件结构
+      // src/
+      //   utils/
+      //     index.ts
+      //     helper.ts
+      //   app.ts
+
+      // src/utils/helper.ts
+      export const greet = (name: string) => `Hello, ${name}!`;
+
+      // src/utils/index.ts
+      export * from './helper';  // 导出 utils 文件夹中的所有模块
+
+      // src/app.ts
+      import { greet } from './utils';  // 从 utils 文件夹直接导入
+
+      console.log(greet('TypeScript'));  // 输出 "Hello, TypeScript!"
+      ```
+
+  - title: "从文件夹导出多个模块"
+    content: |
+      ```typescript
+      // 文件结构
+      // src/
+      //   math/
+      //     add.ts
+      //     subtract.ts
+      //     index.ts
+      //   app.ts
+
+      // src/math/add.ts
+      export const add = (a: number, b: number) => a + b;
+
+      // src/math/subtract.ts
+      export const subtract = (a: number, b: number) => a - b;
+
+      // src/math/index.ts
+      export { add } from './add';
+      export { subtract } from './subtract';  // 集中导出 math 文件夹中的所有模块
+
+      // src/app.ts
+      import { add, subtract } from './math';
+
+      console.log(add(5, 3));       // 输出 8
+      console.log(subtract(5, 3));  // 输出 2
+      ```
+
+  - title: "通过相对路径引入模块"
+    content: |
+      ```typescript
+      // 文件结构
+      // src/
+      //   services/
+      //     user.ts
+      //     product.ts
+      //   app.ts
+
+      // src/services/user.ts
+      export const getUser = (id: number) => `User with ID: ${id}`;
+
+      // src/services/product.ts
+      export const getProduct = (id: number) => `Product with ID: ${id}`;
+
+      // src/app.ts
+      import { getUser } from './services/user';
+      import { getProduct } from './services/product';
+
+      console.log(getUser(1));    // 输出 "User with ID: 1"
+      console.log(getProduct(10));  // 输出 "Product with ID: 10"
+      ```
+
+  - title: "使用绝对路径引入模块"
+    content: |
+      ```typescript
+      // 通过 tsconfig.json 设置 baseUrl 实现绝对路径
+      // tsconfig.json
+      {
+        "compilerOptions": {
+          "baseUrl": "./src"  // 允许从 src 文件夹开始的绝对路径
+        }
+      }
+
+      // 文件结构
+      // src/
+      //   utils/
+      //     helper.ts
+      //   app.ts
+
+      // src/utils/helper.ts
+      export const greet = (name: string) => `Hello, ${name}!`;
+
+      // src/app.ts
+      import { greet } from 'utils/helper';  // 使用绝对路径引入
+
+      console.log(greet('TypeScript'));  // 输出 "Hello, TypeScript!"
+      ```
+
+references:
+  - title: "Modules in TypeScript"
+    url: https://www.typescriptlang.org/docs/handbook/modules.html
+  - title: "Working with ES Modules in Node.js"
+    url: https://nodejs.org/docs/latest-v16.x/api/esm.html
+  - title: "TypeScript Import Path Aliases"
+    url: https://khalilstemmler.com/blogs/typescript/relative-imports/

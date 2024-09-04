@@ -1,4 +1,123 @@
 id: file
 title: 模块
 query: 文件模块
-comment: 如何声明模块、导出模块、导入模块。。。。。
+comment: 如何在 TypeScript 中声明、导出和导入模块
+description: "TypeScript 使用 ES 模块语法来组织代码。模块通过 `export` 语法导出成员，如变量、函数、类等，其他模块可以通过 `import` 语法导入这些成员。每个文件默认就是一个模块。TypeScript 的模块系统帮助开发者创建可重用、可维护的代码片段，避免全局命名空间冲突。常见的导出方式包括命名导出和默认导出，导入时可以按需引入特定成员或整个模块。"
+example:
+  - title: "命名导出和导入"
+    content: |
+      ```typescript
+      // math.ts - 导出模块
+      export function add(a: number, b: number): number {
+          return a + b;
+      }
+
+      export const PI = 3.14;
+      ```
+
+      ```typescript
+      // app.ts - 导入模块
+      import { add, PI } from './math';
+
+      console.log(add(2, 3)); // 输出 5
+      console.log(PI); // 输出 3.14
+      ```
+  - title: "默认导出和导入"
+    content: |
+      ```typescript
+      // logger.ts - 导出默认模块
+      export default function log(message: string): void {
+          console.log(message);
+      }
+      ```
+
+      ```typescript
+      // app.ts - 导入默认模块
+      import log from './logger';
+
+      log("Hello World!"); // 输出 "Hello World!"
+      ```
+  - title: "导出和导入类型"
+    content: |
+      ```typescript
+      // types.ts - 导出类型
+      export interface User {
+          id: number;
+          name: string;
+      }
+
+      export type ID = string | number;
+      ```
+
+      ```typescript
+      // app.ts - 导入类型
+      import { User, ID } from './types';
+
+      const user: User = { id: 1, name: 'Alice' };
+      const userId: ID = user.id; // 可以是 string 或 number
+      ```
+  - title: "重新导出模块"
+    content: |
+      ```typescript
+      // mathUtils.ts - 重新导出
+      export { add, PI } from './math';
+      ```
+
+      ```typescript
+      // app.ts - 从重新导出的模块导入
+      import { add, PI } from './mathUtils';
+
+      console.log(add(2, 3)); // 输出 5
+      console.log(PI); // 输出 3.14
+      ```
+  - title: "使用 `as` 进行导入重命名"
+    content: |
+      ```typescript
+      // math.ts
+      export function add(a: number, b: number): number {
+          return a + b;
+      }
+
+      export function subtract(a: number, b: number): number {
+          return a - b;
+      }
+      ```
+
+      ```typescript
+      // app.ts - 重命名导入
+      import { add as sum, subtract as diff } from './math';
+
+      console.log(sum(10, 5)); // 输出 15
+      console.log(diff(10, 5)); // 输出 5
+      ```
+  - title: "导入整个模块"
+    content: |
+      ```typescript
+      // math.ts - 导出多个成员
+      export function add(a: number, b: number): number {
+          return a + b;
+      }
+
+      export function subtract(a: number, b: number): number {
+          return a - b;
+      }
+      ```
+
+      ```typescript
+      // app.ts - 导入整个模块
+      import * as MathFunctions from './math';
+
+      console.log(MathFunctions.add(10, 5)); // 输出 15
+      console.log(MathFunctions.subtract(10, 5)); // 输出 5
+      ```
+references:
+  - title: "Modules"
+    url: https://www.typescriptlang.org/docs/handbook/modules.html
+  - title: "TypeScript Module System"
+    url: https://www.typescriptlang.org/docs/handbook/module-resolution.html
+  - title: "ES6 Modules in TypeScript"
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+  - title: "Re-exporting in TypeScript"
+    url: https://www.typescriptlang.org/docs/handbook/modules.html#re-exports
+  - title: "Default exports"
+    url: https://www.typescriptlang.org/docs/handbook/modules.html#default-exports
