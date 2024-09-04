@@ -1,0 +1,98 @@
+id: file
+title: 文件
+query: 文件模块
+comment: 介绍 Kotlin 文件中类、函数、变量的导入导出机制及可见性修饰符的使用
+description: |
+  在 Kotlin 中，文件通过 `package` 和 `import` 机制组织和管理代码。每个文件可以声明自己的包，如果不显式声明包，内容会自动放入默认包。Kotlin 支持导入单个声明或整个包的内容，同时支持通过 `as` 关键字重命名导入内容以避免名称冲突。
+  
+  Kotlin 提供了四种可见性修饰符来控制类、函数、变量等的访问权限：
+  - `public`（默认）：任何地方都可见。
+  - `private`：仅在声明它的文件内可见。
+  - `internal`：仅在同一模块内可见。
+  - `protected`：仅对类和其子类可见，不能用于顶级声明。
+
+  `internal` 修饰符特别适合在模块内共享代码，避免模块外部访问。对于不同文件中的代码使用，可以结合 `import` 语句导入所需的函数、类等。注意，Kotlin 的 `protected` 不能用于顶级声明，只能用于类内部。
+
+example:
+  - title: "文件级函数和类的导入与导出"
+    content: |
+      ```kotlin
+      // 文件 fileA.kt
+      package com.example
+
+      private fun privateFunction() = println("仅 fileA.kt 可见")
+      internal fun internalFunction() = println("仅同一模块内可见")
+      fun publicFunction() = println("任何地方可见")
+
+      class PublicClass {
+          fun greet() = println("Hello from PublicClass")
+      }
+
+      // 文件 fileB.kt
+      package com.example.another
+
+      import com.example.publicFunction
+      import com.example.PublicClass
+
+      fun useFunctions() {
+          publicFunction() // 可以调用 publicFunction
+          val obj = PublicClass()
+          obj.greet() // 可以创建 PublicClass 对象
+      }
+      ```
+
+  - title: "可见性修饰符的使用"
+    content: |
+      ```kotlin
+      // 文件 file.kt
+      package com.example
+
+      internal class InternalClass {
+          internal val message: String = "模块内可见"
+      }
+
+      private class PrivateClass {
+          val secret = "仅在 file.kt 内可见"
+      }
+
+      class OuterClass {
+          protected class NestedClass {
+              val nestedMessage = "仅子类可见"
+          }
+      }
+      ```
+
+  - title: "使用 `as` 关键字重命名导入"
+    content: |
+      ```kotlin
+      // 文件 fileA.kt
+      package com.example
+
+      fun functionA() = println("Function A from com.example")
+
+      // 文件 fileB.kt
+      package com.another
+
+      fun functionA() = println("Function A from com.another")
+
+      // 文件 main.kt
+      import com.example.functionA as exampleFunctionA
+      import com.another.functionA as anotherFunctionA
+
+      fun main() {
+          exampleFunctionA()  // 输出: Function A from com.example
+          anotherFunctionA()  // 输出: Function A from com.another
+      }
+      ```
+
+references:
+  - title: "Visibility Modifiers"
+    url: https://kotlinlang.org/docs/visibility-modifiers.html
+  - title: "Packages and imports"
+    url: https://kotlinlang.org/docs/packages.html
+  - title: "Kotlin Visibility Modifiers - GeeksforGeeks"
+    url: https://www.geeksforgeeks.org/kotlin-visibility-modifiers/
+  - title: "Understanding the Spectrum of Kotlin Visibility Modifiers - DhiWise"
+    url: https://www.dhiwise.com/post/kotlin-visibility-modifiers
+  - title: "Kotlin Visibility Modifiers - DigitalOcean"
+    url: https://www.digitalocean.com/community/tutorials/kotlin-visibility-modifiers

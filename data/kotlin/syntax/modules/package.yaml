@@ -1,0 +1,43 @@
+id: package
+title: 模块
+description: "Kotlin 项目中使用 Gradle 进行模块管理与依赖处理。可以通过 `build.gradle.kts` 文件声明第三方依赖，并使用本地模块。Kotlin 支持多平台项目中的依赖管理，包括 Kotlin/JS 项目与多平台库。在 Gradle 构建系统中，可以引入本地模块、远程库，以及通过 `npm` 函数导入 JavaScript 依赖。"
+example:
+  - title: "添加第三方依赖"
+    content: |
+      ```kotlin
+      // 在 build.gradle.kts 中添加依赖
+      dependencies {
+          implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1") // 远程库
+      }
+      ```
+  - title: "添加本地模块依赖"
+    content: |
+      ```kotlin
+      // 在 settings.gradle.kts 中引用本地模块
+      include(":my-local-module")
+      project(":my-local-module").projectDir = File("../my-local-module")
+
+      // 在主项目的 build.gradle.kts 中添加依赖
+      dependencies {
+          implementation(project(":my-local-module")) // 本地模块依赖
+      }
+      ```
+  - title: "Kotlin/JS 中引入 npm 依赖"
+    content: |
+      ```kotlin
+      // 在 build.gradle.kts 中使用 npm 引入 JavaScript 库
+      dependencies {
+          implementation(npm("is-sorted", "1.0.5")) // npm 依赖
+      }
+      ```
+references:
+  - title: "Add build dependencies"
+    url: https://developer.android.com/studio/build/dependencies
+  - title: "How to import local modules in Kotlin Multiplatform"
+    url: https://discuss.kotlinlang.org/t/how-do-you-import-a-module-of-a-local-multiplatform-library-using-gradle/11752
+  - title: "Use dependencies from npm"
+    url: https://kotlinlang.org/docs/using-packages-from-npm.html
+  - title: "Adding dependencies on multiplatform libraries"
+    url: https://kotlinlang.org/docs/multiplatform-add-dependencies.html
+  - title: "Building Kotlin applications with libraries"
+    url: https://docs.gradle.org/current/samples/sample_building_kotlin_applications_with_libraries.html

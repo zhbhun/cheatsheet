@@ -1,0 +1,72 @@
+id: folder
+title: 包
+query: 模块里的包划分
+comment: 如何创建、导入和组织模块中的包
+description: |
+  在 Kotlin 中，包（package）用于组织代码，将相关的类、函数、属性等放在同一个命名空间下。包声明是文件的第一条非注释语句，格式为 `package package_name`。包名通常是小写的，不一定与文件所在的目录匹配，但为了良好的代码风格，建议保持一致。
+
+  Kotlin 提供了灵活的 `import` 机制，可以导入单个类、函数或整个包的内容。还可以通过 `as` 关键字为导入的元素定义别名，避免命名冲突。在多模块项目中，通过使用包和导入，可以有效管理代码的结构和依赖。
+example:
+  - title: 创建和使用包
+    content: |
+      ```kotlin
+      // 定义一个包 'finance' 并在其中创建类和函数
+      package finance
+
+      class Invoice(val amount: Double)
+
+      fun payment(invoice: Invoice, accountNumber: String) {
+          println("Invoice for \${invoice.amount} Euro has been paid from account \${accountNumber}")
+      }
+      ```
+
+  - title: 导入整个包
+    content: |
+      ```kotlin
+      // 导入整个包的内容
+      import finance.*
+
+      fun main() {
+          val invoice = Invoice(123.45)
+          payment(invoice, "AB1234567890")
+      }
+      ```
+
+  - title: 导入特定类和函数
+    content: |
+      ```kotlin
+      // 导入特定的类和函数
+      import finance.Invoice
+      import finance.payment
+
+      fun main() {
+          val invoice = Invoice(123.45)
+          payment(invoice, "AB1234567890")
+      }
+      ```
+
+  - title: 使用别名避免命名冲突
+    content: |
+      ```kotlin
+      // 为导入的类和函数定义别名以避免冲突
+      import finance.Invoice as FinanceInvoice
+      import finance.payment as financePayment
+      import mailbox.Invoice as MailboxInvoice
+      import mailbox.payment as mailboxPayment
+
+      fun main() {
+          val invoiceFromFinance = FinanceInvoice(123.45)
+          financePayment(invoiceFromFinance, "AB1234567890")
+
+          val invoiceFromMailbox = MailboxInvoice(200.00)
+          mailboxPayment(invoiceFromMailbox, "IN987654")
+      }
+      ```
+
+references:
+  - title: "Packages and imports | Kotlin Documentation"
+    url: https://kotlinlang.org/docs/packages.html
+  - title: "Imports and packages · Kotlin Quick Reference"
+    url: https://kotlin-quick-reference.com/#imports-and-packages
+  - title: "Kotlin Package Create"
+    url: https://www.demo2s.com/kotlin/kotlin-package-create.html
