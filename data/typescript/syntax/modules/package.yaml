@@ -1,0 +1,72 @@
+id: package
+title: 包
+query: 项目的包管理
+comment: 如何安装第三方依赖，本地依赖，本地 workspace 依赖。。。
+description: TypeScript 项目的包管理涉及使用包管理器（如 npm、yarn 或 pnpm）来处理项目依赖项，包括安装、更新、审计和发布包。包管理器简化了依赖管理，自动处理依赖关系、版本控制和文件系统操作，确保项目在不同环境中的一致性和可移植性。
+example:
+  - title: 初始化项目
+    content: |
+      ```bash
+      # 使用 npm 初始化项目
+      npm init -y
+
+      # 使用 yarn 初始化项目
+      yarn init -y
+      ```
+  - title: 安装依赖
+    content: |
+      ```bash
+      # 使用 npm 安装 date-fns 包
+      npm install date-fns
+
+      # 使用 yarn 安装 date-fns 包
+      yarn add date-fns
+      ```
+  - title: 更新依赖
+    content: |
+      ```bash
+      # 使用 npm 更新所有依赖
+      npm update
+
+      # 使用 yarn 更新所有依赖
+      yarn upgrade
+      ```
+  - title: 漏洞审查
+    content: |
+      ```bash
+      # 使用 npm 进行漏洞审查
+      npm audit
+
+      # 使用 yarn 进行漏洞审查
+      yarn audit
+      ```
+  - title: 检查依赖
+    content: |
+      ```bash
+      # 使用 npm 检查 date-fns 依赖
+      npm ls date-fns
+
+      # 使用 yarn 检查 date-fns 依赖
+      yarn why date-fns
+      ```
+  - title: 创建自定义命令
+    content: |
+      ```json
+      // 在 package.json 文件中添加自定义脚本
+      "scripts": {
+        "dev": "parcel serve index.html"
+      }
+      ```
+      ```bash
+      # 运行自定义 dev 命令
+      npm run dev
+      ```
+references:
+  - title: "软件包管理基础"
+    url: https://developer.mozilla.org/zh-CN/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Package_management
+  - title: "第五十四章：TypeScript的包管理策略"
+    url: https://www.maxiaoke.com/manual/typescript_qmjjzn/9286.html
+  - title: "ts 项目中，如何使用node_modules 里面定义的全局类型包到 ..."
+    url: https://github.com/pro-collection/interview-question/issues/728
+  - title: "前端性能优化六十：纯typescript项目npm打包原创"
+    url: https://blog.csdn.net/wanmeijuhao/article/details/135262007

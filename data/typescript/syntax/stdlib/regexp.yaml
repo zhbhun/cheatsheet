@@ -1,0 +1,68 @@
+id: regexp
+title: 正则表达式
+query: 正则表达式的用法
+description: 正则表达式是用于匹配字符串中字符组合的模式。它可以用于验证输入、查找和替换文本、提取数据等。
+example:
+  - title: 创建一个正则表达式
+    content: |
+      ```typescript
+      // 使用正则表达式字面量
+      let regex1 = /pattern/flags;
+
+      // 使用 RegExp 构造函数
+      let regex2 = new RegExp("pattern", "flags"); 
+      ```
+  - title: 测试字符串是否匹配正则表达式
+    content: |
+      ```typescript
+      let regex = /hello/i;
+      let str = "Hello World";
+      console.log(regex.test(str)); // true
+      ```
+  - title: 在字符串中查找匹配的正则表达式
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      let str = "Hello World";
+      console.log(regex.exec(str)); // ['Hello']
+      ```
+  - title: 在字符串中查找匹配的正则表达式，返回一个数组
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      let str = "Hello World";
+      console.log(str.match(regex)); // ['Hello']
+      ```
+  - title: 替换字符串中匹配的正则表达式
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      let str = "Hello World";
+      console.log(str.replace(regex, "Hi")); // 'Hi World'
+      ```
+  - title: 在字符串中查找匹配的正则表达式，返回匹配的位置
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      let str = "Hello World";
+      console.log(str.search(regex)); // 0
+      ```
+  - title: 获取正则表达式的源代码
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      console.log(regex.source); // 'hello'
+      ```
+  - title: 获取正则表达式的标志
+    content: |
+      ```typescript
+      let regex = /hello/gi;
+      console.log(regex.flags); // 'gi'
+      ```
+references:
+  - title: "正则表达式 - JavaScript - MDN Web Docs"
+    url: "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Regular_expressions"
+  - title: "RegExp - JavaScript - MDN Web Docs"
+    url: "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/RegExp"
+  - title: "RegExp.prototype.test() - JavaScript - MDN Web Docs"
+    url: "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test"

@@ -1,0 +1,41 @@
+id: http
+title: HTTP
+description: TypeScript 本身不提供 HTTP 请求的功能，需要借助浏览器内置的 `fetch` API 或第三方库 (如 `axios`、`request`) 来实现。
+example:
+  - title: 使用 fetch API 发送 GET 请求
+    content: |
+      ```typescript
+      fetch('https://api.example.com/data')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); // 解析 JSON 响应
+        })
+        .then(data => {
+          console.log(data); // 处理响应数据
+        })
+        .catch(error => {
+          console.error('There has been a problem with your fetch operation:', error);
+        });
+      ```
+  - title: 使用 fetch API 发送 POST 请求
+    content: |
+      ```typescript
+      fetch('https://api.example.com/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ key: 'value' }) // 发送 JSON 数据
+      })
+        .then(response => {
+          // ... 处理响应
+        })
+        .catch(error => {
+          // ... 处理错误
+        });
+      ```
+references:
+  - title: Fetch API
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API

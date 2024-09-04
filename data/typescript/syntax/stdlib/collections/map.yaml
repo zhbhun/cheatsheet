@@ -1,0 +1,100 @@
+id: map
+title: Map
+description: "`Map` 对象保存键值对，其中键和值可以是任何类型。与 `Object` 不同的是，`Map` 中的键不会被强制转换为字符串类型，并且可以使用 `for...of` 循环迭代 `Map`。"
+example:
+  - title: 创建 Map
+    content: |
+      ```typescript
+      // 使用构造函数创建 Map
+      const map1 = new Map();
+
+      // 使用键值对数组创建 Map
+      const map2 = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+      ```
+  - title: 添加元素
+    content: |
+      ```typescript
+      const map = new Map();
+      map.set('key1', 'value1'); // 添加键值对 ('key1', 'value1')
+      ```
+  - title: 获取元素
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+
+      console.log(map.get('key1')); // 输出 'value1'
+      console.log(map.get('key3')); // 输出 undefined，因为 'key3' 不存在
+      ```
+  - title: 检查键是否存在
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+      ]);
+
+      console.log(map.has('key1')); // 输出 true
+      console.log(map.has('key2')); // 输出 false
+      ```
+  - title: 删除元素
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+
+      map.delete('key1'); // 删除键为 'key1' 的键值对
+
+      console.log(map.has('key1')); // 输出 false
+      ```
+  - title: 遍历 Map
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+
+      // 使用 for...of 循环遍历键值对
+      for (const [key, value] of map) {
+        console.log(`Key: ${key}, Value: ${value}`);
+      }
+
+      // 使用 forEach() 方法遍历键值对
+      map.forEach((value, key) => {
+        console.log(`Key: ${key}, Value: ${value}`);
+      });
+      ```
+  - title: 获取 Map 的大小
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+
+      console.log(map.size); // 输出 2
+      ```
+  - title: 清空 Map
+    content: |
+      ```typescript
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
+
+      map.clear();
+
+      console.log(map.size); // 输出 0
+      ```
+references:
+  - title: Map - JavaScript | MDN
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+  - title: Maps and Sets - Exploring JS
+    url: https://exploringjs.com/es6/ch_maps-sets.html#_maps

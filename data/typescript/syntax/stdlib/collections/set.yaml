@@ -1,0 +1,69 @@
+id: set
+title: Set
+description: Set 对象允许存储任何类型的唯一值，无论是原始值或者是对象引用。
+example:
+  - title: 创建 Set
+    content: |
+      ```typescript
+      // 创建一个空的 Set
+      const emptySet = new Set();
+      console.log(emptySet); // Output: Set(0) {}
+
+      // 使用数组创建 Set
+      const mySet = new Set(['foo', 'bar', 'baz', 'foo']);
+      console.log(mySet); // Output: Set(3) {'foo', 'bar', 'baz'}
+      ```
+  - title: 添加元素
+    content: |
+      ```typescript
+      const mySet = new Set();
+
+      // 添加元素
+      mySet.add(1);
+      mySet.add('foo');
+      mySet.add({ name: 'John' });
+
+      console.log(mySet); // Output: Set(3) {1, 'foo', { name: 'John' }}
+      ```
+  - title: 检查元素是否存在
+    content: |
+      ```typescript
+      const mySet = new Set(['foo', 'bar', 'baz']);
+
+      console.log(mySet.has('foo')); // Output: true
+      console.log(mySet.has('qux')); // Output: false
+      ```
+  - title: 删除元素
+    content: |
+      ```typescript
+      const mySet = new Set(['foo', 'bar', 'baz']);
+
+      mySet.delete('bar');
+
+      console.log(mySet); // Output: Set(2) {'foo', 'baz'}
+      ```
+  - title: 遍历 Set
+    content: |
+      ```typescript
+      const mySet = new Set(['foo', 'bar', 'baz']);
+
+      // 使用 for...of 循环
+      for (const item of mySet) {
+        console.log(item);
+      }
+
+      // 使用 forEach() 方法
+      mySet.forEach((value) => {
+        console.log(value);
+      });
+      ```
+  - title: 获取 Set 的大小
+    content: |
+      ```typescript
+      const mySet = new Set(['foo', 'bar', 'baz']);
+
+      console.log(mySet.size); // Output: 3
+      ```
+references:
+  - title: Set - JavaScript | MDN
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set

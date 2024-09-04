@@ -1,0 +1,62 @@
+id: time
+title: 时间
+description: TypeScript 中并没有内置的日期和时间类型。 然而，你可以使用 JavaScript 中的 Date 对象来处理日期和时间。 Date 对象提供了一系列用于操作日期和时间的方法，例如获取年份、月份、日期、小时、分钟、秒等。
+example:
+  - title: 创建 Date 对象
+    content: |
+      ```typescript
+      // 创建表示当前日期和时间的 Date 对象
+      const now = new Date();
+
+      // 创建指定日期和时间的 Date 对象
+      const date = new Date(2023, 10, 26, 10, 30, 0); // 注意：月份从 0 开始，10 表示 11 月
+
+      // 从日期字符串创建 Date 对象
+      const dateFromString = new Date("2023-11-26T10:30:00"); 
+      ```
+  - title: 获取日期和时间信息
+    content: |
+      ```typescript
+      const date = new Date();
+
+      console.log(date.getFullYear()); // 获取年份，例如：2023
+      console.log(date.getMonth()); // 获取月份 (0-11)，例如：10 (表示 11 月)
+      console.log(date.getDate()); // 获取日期 (1-31)，例如：26
+      console.log(date.getDay()); // 获取星期几 (0-6)，例如：0 (表示星期日)
+
+      console.log(date.getHours()); // 获取小时 (0-23)，例如：10
+      console.log(date.getMinutes()); // 获取分钟 (0-59)，例如：30
+      console.log(date.getSeconds()); // 获取秒数 (0-59)，例如：0
+      console.log(date.getMilliseconds()); // 获取毫秒数 (0-999)，例如：500
+      ```
+  - title: 设置日期和时间信息
+    content: |
+      ```typescript
+      const date = new Date();
+
+      date.setFullYear(2024); // 设置年份
+      date.setMonth(0); // 设置月份 (0-11)
+      date.setDate(1); // 设置日期 (1-31)
+
+      date.setHours(12); // 设置小时 (0-23)
+      date.setMinutes(0); // 设置分钟 (0-59)
+      date.setSeconds(0); // 设置秒数 (0-59)
+      date.setMilliseconds(0); // 设置毫秒数 (0-999)
+      ```
+  - title: 格式化日期
+    content: |
+      ```typescript
+      const date = new Date();
+
+      // 使用 toLocaleDateString() 方法格式化日期
+      console.log(date.toLocaleDateString()); // 输出本地格式的日期，例如：2023/11/26
+
+      // 使用 toLocaleString() 方法格式化日期和时间
+      console.log(date.toLocaleString()); // 输出本地格式的日期和时间，例如：2023/11/26 下午4:30:00
+
+      // 使用 toISOString() 方法格式化日期为 ISO 8601 格式
+      console.log(date.toISOString()); // 输出 ISO 8601 格式的日期和时间，例如：2023-11-26T06:30:00.000Z
+      ```
+references:
+  - title: JavaScript Date 对象
+    url: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Date

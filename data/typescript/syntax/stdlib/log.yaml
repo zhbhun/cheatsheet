@@ -1,0 +1,33 @@
+id: log
+title: 日志
+description: TypeScript 使用 console 对象打印日志信息，提供不同级别的日志输出，例如：调试信息、警告、错误等。
+example:
+  - title: 打印不同级别的日志信息
+    content: |
+      ```typescript
+      console.log("这是一条普通日志信息"); // 打印普通日志信息
+      console.info("这是一条信息提示"); // 打印信息提示
+      console.warn("这是一条警告信息"); // 打印警告信息
+      console.error("这是一条错误信息"); // 打印错误信息
+      console.debug("这是一条调试信息"); // 打印调试信息
+      ```
+  - title: 格式化输出日志信息
+    content: |
+      ```typescript
+      const name = "Alice";
+      const age = 25;
+      console.log("姓名：%s，年龄：%d", name, age); // 使用占位符格式化输出
+      ```
+  - title: 使用 console.table() 打印表格数据
+    content: |
+      ```typescript
+      const data = [
+        { name: "Alice", age: 25 },
+        { name: "Bob", age: 30 },
+        { name: "Charlie", age: 35 },
+      ];
+      console.table(data); // 打印表格数据
+      ```
+references:
+  - title: Console - Web APIs | MDN
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Console
