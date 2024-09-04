@@ -1,0 +1,77 @@
+id: package
+title: 包
+query: 包管理
+comment: 如何在 Swift 中使用包管理工具，安装第三方包，创建本地模块，并将它们集成到项目中
+description: |
+  Swift 包管理器（SPM）是 Swift 原生的包管理工具，用于管理项目中的依赖。SPM 支持添加第三方包、创建本地模块并将其集成到项目中。使用 `Package.swift` 文件可以定义依赖项、版本约束以及模块之间的依赖关系。
+example:
+  - title: "安装第三方库"
+    content: |
+      ```swift
+      // Package.swift 文件示例
+      import PackageDescription
+
+      let package = Package(
+          name: "MyApp",
+          dependencies: [
+              // 引入 Alamofire 第三方库
+              .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.4.0"),
+          ],
+          targets: [
+              .target(
+                  name: "MyApp",
+                  dependencies: ["Alamofire"]
+              )
+          ]
+      )
+      ```
+  - title: "添加本地包作为依赖"
+    content: |
+      ```swift
+      // Package.swift 文件示例，添加本地模块
+      import PackageDescription
+
+      let package = Package(
+          name: "MyApp",
+          dependencies: [
+              // 引入本地模块 ResourcesUI
+              .package(path: "../ResourcesUI"),
+          ],
+          targets: [
+              .target(
+                  name: "MyApp",
+                  dependencies: ["ResourcesUI"]
+              )
+          ]
+      )
+      ```
+  - title: "在项目中使用包"
+    content: |
+      ```swift
+      // 在代码中使用引入的包
+      import Alamofire
+
+      Alamofire.request("https://example.com").response { response in
+          print(response)
+      }
+      ```
+  - title: "使用版本约束"
+    content: |
+      ```swift
+      // 指定版本范围或具体版本
+      let package = Package(
+          name: "MyApp",
+          dependencies: [
+              // 从 5.4.0 版本开始，向后兼容所有小版本更新
+              .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.4.0"),
+              // 锁定到 5.4.3 版本
+              .package(url: "https://github.com/Alamofire/Alamofire.git", .exact("5.4.3"))
+          ]
+      )
+      ```
+
+references:
+  - title: "Managing dependencies using the Swift Package Manager"
+    url: https://www.swiftbysundell.com/articles/managing-dependencies-using-the-swift-package-manager/
+  - title: "Package — Swift Package Manager"
+    url: https://docs.swift.org/package-manager/

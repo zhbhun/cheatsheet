@@ -1,0 +1,96 @@
+id: file
+title: 文件
+query: 文件模块
+comment: 介绍 Swift 文件中类、函数、变量的导入导出机制及可见性修饰符的使用
+description: |
+  Swift 提供了多种访问控制级别，包括 `open`、`public`、`internal`、`fileprivate` 和 `private`，用于控制类、结构体、枚举、函数、变量等的可见性。默认情况下，声明的实体为 `internal` 级别，意味着只能在模块内访问。如果要在其他模块中访问，需要使用 `public` 或 `open`。`fileprivate` 和 `private` 则用于控制文件内或类内的可访问性。此外，从 Swift 6.0 开始，导入声明也可以使用访问控制修饰符，如 `private import` 和 `internal import`，从而限制模块的导入范围。
+example:
+  - title: "类和函数的 `public` 导出"
+    content: |
+      ```swift
+      // 文件 A.swift
+      public class Person {
+          public var name: String
+          public init(name: String) {
+              self.name = name
+          }
+          public func greet() {
+              print("Hello, \(name)!")
+          }
+      }
+      ```
+
+  - title: "在不同文件中导入类"
+    content: |
+      ```swift
+      // 文件 B.swift
+      import Foundation
+
+      let person = Person(name: "John")  // 来自 A.swift 文件的 public 类
+      person.greet()  // 输出 "Hello, John!"
+      ```
+
+  - title: "文件私有变量的示例"
+    content: |
+      ```swift
+      // 文件 A.swift
+      class PrivatePerson {
+          fileprivate var age: Int = 30
+          func showAge() {
+              print("Age: \(age)")
+          }
+      }
+
+      // 文件 B.swift
+      import Foundation
+
+      let person = PrivatePerson()
+      person.showAge()  // 可以调用，因为 showAge 没有限制，但不能直接访问 age 变量
+      // print(person.age) // 错误，age 是 fileprivate
+      ```
+
+  - title: "模块内访问控制"
+    content: |
+      ```swift
+      // 文件 A.swift
+      internal class InternalClass {
+          internal func sayHello() {
+              print("Hello from InternalClass")
+          }
+      }
+
+      // 文件 B.swift
+      let internalClass = InternalClass()
+      internalClass.sayHello()  // 在同一模块内可以访问
+      ```
+
+  - title: "使用 `fileprivate` 隐藏实现细节"
+    content: |
+      ```swift
+      // 文件 A.swift
+      class MyClass {
+          fileprivate func privateMethod() {
+              print("This is a fileprivate method")
+          }
+      }
+
+      // 文件 B.swift
+      let obj = MyClass()
+      // obj.privateMethod()  // 错误：无法在不同文件中访问 fileprivate 方法
+      ```
+
+  - title: "在 Swift 6 中的导入控制"
+    content: |
+      ```swift
+      // BankingLibrary.swift
+      internal import Transactions
+
+      public func transferMoney() {
+          // 调用内部模块 Transactions 中的代码，但不会暴露给使用 BankingLibrary 的其他模块
+      }
+      ```
+references:
+  - title: "Access Control in Swift"
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/accesscontrol/
+  - title: "Access control - Hacking with Swift"
+    url: https://www.hackingwithswift.com/read/0/12/access-control

@@ -1,0 +1,66 @@
+id: folder
+title: 子模块
+query: swift 模块文件夹划分
+comment: Swift 中，文件夹层级结构用于组织代码，但不影响模块划分。模块通过 `target` 定义，子文件夹不会影响模块的引入方式。
+description: |
+  在 Swift 中，文件夹和子文件夹仅用于代码的逻辑组织，模块化和依赖关系由 **Package.swift** 文件中的 **targets** 定义，文件夹层级不会影响模块的引入方式。例如，你可以将一个模块的代码分布在多个子文件夹中，但通过 `import 模块名` 即可引用整个模块，文件夹结构对引入没有影响。Swift 不像其他语言（如 Kotlin）那样使用文件夹层级来定义包。
+example:
+  - title: 子文件夹中的代码不影响模块引入
+    content: |
+      ```swift
+      // Package.swift
+      import PackageDescription
+
+      let package = Package(
+          name: "MyApp",
+          products: [
+              .library(name: "MyLibrary", targets: ["Core", "Networking"]),
+          ],
+          targets: [
+              .target(
+                  name: "Core", 
+                  path: "Sources/Core", // 核心代码放在 Sources/Core 文件夹
+                  dependencies: []
+              ),
+              .target(
+                  name: "Networking",
+                  path: "Sources/Networking", // 网络相关代码放在 Sources/Networking 文件夹
+                  dependencies: ["Core"]
+              ),
+          ]
+      )
+      ```
+
+      ```
+      // 项目结构
+      MyApp/
+      ├── Package.swift
+      ├── Sources/
+      │   ├── Core/
+      │   │   ├── Models/
+      │   │   │   └── User.swift
+      │   │   └── Services/
+      │   │       └── AuthService.swift
+      │   ├── Networking/
+      │       ├── HTTPClient.swift
+      │       └── API/
+      │           └── APIClient.swift
+      ```
+
+      // 即使 `Core` 模块的代码分布在多个子文件夹中，例如 Models 和 Services 文件夹，模块的引入不受影响
+      import Core // 引入整个 Core 模块，无需关心具体的文件夹层级
+      import Networking // 引入 Networking 模块
+
+      // 引入后可以直接使用子文件夹中的类型和方法
+      let user = User() // 来自 Core/Models
+      let authService = AuthService() // 来自 Core/Services
+      let client = HTTPClient() // 来自 Networking
+      ```
+
+references:
+  - title: Swift Package Manager Documentation
+    url: https://www.swift.org/package-manager/
+  - title: Custom folder structure for Swift Package - Stack Overflow
+    url: https://stackoverflow.com/questions/48102219/custom-folder-structure-for-swift-package
+  - title: How to manage a custom module.modulemap for a package - Swift Forums
+    url: https://forums.swift.org/t/how-to-manage-a-custom-module-modulemap-for-a-package/38165
