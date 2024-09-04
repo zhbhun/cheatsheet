@@ -1,0 +1,75 @@
+id: set
+title: Set
+query: Kotlin Set usage examples
+comment: Demonstrates how to work with immutable and mutable sets in Kotlin, covering creation, operations, and key methods.
+description: |
+  In Kotlin, a `Set` is a collection that contains unique elements and does not maintain a specific order. There are two types of sets:
+  
+  1. **Immutable Set**: Created using `setOf()`, the elements of an immutable set cannot be modified after its creation.
+  2. **Mutable Set**: Created using `mutableSetOf()`, this type of set allows adding or removing elements.
+
+  Common operations on sets include adding/removing elements, checking for membership, set operations (like union, intersection), and iterating over the elements.
+
+example:
+  - title: Creating an Immutable Set
+    content: |
+      ```kotlin
+      // Creating an immutable set
+      val numbers: Set<Int> = setOf(1, 2, 3, 4, 5)
+      println(numbers) // Output: [1, 2, 3, 4, 5]
+      ```
+  
+  - title: Creating a Mutable Set
+    content: |
+      ```kotlin
+      // Creating a mutable set
+      val mutableFruits = mutableSetOf("apple", "banana", "orange")
+      mutableFruits.add("grape")
+      println(mutableFruits) // Output: [apple, banana, orange, grape]
+      ```
+
+  - title: Checking for Element Existence
+    content: |
+      ```kotlin
+      val colors = setOf("red", "green", "blue")
+      println(colors.contains("green"))  // Output: true
+      println("yellow" in colors)  // Output: false
+      ```
+
+  - title: Set Operations (Union, Intersection)
+    content: |
+      ```kotlin
+      val setA = setOf(1, 2, 3)
+      val setB = setOf(3, 4, 5)
+
+      val unionSet = setA.union(setB)
+      println(unionSet)  // Output: [1, 2, 3, 4, 5]
+
+      val intersectionSet = setA.intersect(setB)
+      println(intersectionSet)  // Output: [3]
+      ```
+
+  - title: Removing Elements from a Mutable Set
+    content: |
+      ```kotlin
+      val mutableSet = mutableSetOf("apple", "banana", "cherry")
+      mutableSet.remove("banana")
+      println(mutableSet)  // Output: [apple, cherry]
+      ```
+
+  - title: Iterating over a Set
+    content: |
+      ```kotlin
+      val numbers = setOf(1, 2, 3, 4, 5)
+      for (num in numbers) {
+          println(num)  // Output: 1 2 3 4 5
+      }
+      ```
+
+references:
+  - title: Working with Kotlin Sets
+    url: https://zetcode.com/kotlin/set/
+  - title: Kotlin Sets Overview
+    url: https://www.tutorialspoint.com/kotlin/kotlin_sets.htm
+  - title: Kotlin Documentation - Sets
+    url: https://kotlinlang.org/docs/collections-overview.html#sets

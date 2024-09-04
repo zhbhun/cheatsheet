@@ -1,0 +1,52 @@
+id: regexp
+title: 正则表达式
+query: 正则表达式的用法
+comment: 演示 Kotlin 中的 Regex 类常见操作及其实际使用场景
+description: |
+  Kotlin 使用 `Regex` 类来支持正则表达式处理。正则表达式是一种强大的文本处理工具，适用于字符串匹配、查找、替换、拆分等操作。Kotlin 提供与 Java 相似的正则表达式 API，但使用起来更加简洁。正则表达式可以用于验证格式（如电子邮件或电话号码）、从文本中提取信息或批量替换。常用的正则表达式方法包括 `matches()`、`containsMatchIn()`、`find()`、`replace()` 和 `split()`。
+
+example:
+  - title: 基本匹配示例
+    content: |
+      ```kotlin
+      val pattern = "kotlin".toRegex()
+      val input = "I love kotlin programming"
+      println(pattern.containsMatchIn(input)) // 输出 true
+      ```
+  - title: 查找并提取匹配的子字符串
+    content: |
+      ```kotlin
+      val emailPattern = """\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6}""".toRegex()
+      val text = "Contact us at support@example.com"
+      val email = emailPattern.find(text)?.value
+      println(email) // 输出 "support@example.com"
+      ```
+  - title: 替换匹配的字符串
+    content: |
+      ```kotlin
+      val pattern = "\\d+".toRegex()  // 匹配所有数字
+      val result = pattern.replace("My phone number is 12345", "XXXXX")
+      println(result) // 输出 "My phone number is XXXXX"
+      ```
+  - title: 拆分字符串
+    content: |
+      ```kotlin
+      val pattern = "\\s+".toRegex()  // 匹配一个或多个空白符
+      val result = pattern.split("Kotlin is a modern language")
+      println(result) // 输出 [Kotlin, is, a, modern, language]
+      ```
+  - title: 匹配完整字符串
+    content: |
+      ```kotlin
+      val pattern = "^kotlin$".toRegex()  // 匹配整个字符串是否为 "kotlin"
+      println(pattern.matches("kotlin")) // 输出 true
+      println(pattern.matches("i love kotlin")) // 输出 false
+      ```
+
+references:
+  - title: Regex
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/
+  - title: Regular Expressions in Kotlin
+    url: https://www.baeldung.com/kotlin/regular-expressions
+  - title: Regular Expressions(Regex) in Kotlin
+    url: https://betulnecanli.medium.com/regular-expressions-regex-in-kotlin-a2eaeb2cd113

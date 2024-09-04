@@ -1,0 +1,69 @@
+id: httpurlconnection
+title: 使用 HttpURLConnection 发起请求
+query: HttpURLConnection Kotlin
+comment: 通过 HttpURLConnection 发起 GET 和 POST 请求的示例，展示如何设置请求头、处理响应等。
+description: |
+  `HttpURLConnection` 是 Java 标准库的一部分，适用于 Kotlin 发起 HTTP 请求。它提供了处理 HTTP GET、POST、PUT 等请求的方法。使用时需要手动处理连接、输入输出流，并设置必要的请求头和参数。适合在不需要外部库的情况下发起简单的 HTTP 请求。
+example:
+  - title: 使用 HttpURLConnection 发起 GET 请求
+    content: |
+      ```kotlin
+      import java.net.HttpURLConnection
+      import java.net.URL
+
+      fun main() {
+          val url = URL("http://httpbin.org/get")
+          with(url.openConnection() as HttpURLConnection) {
+              // 设置请求方法
+              requestMethod = "GET"
+
+              // 获取响应码
+              println("Response Code: $responseCode")
+
+              // 读取响应
+              inputStream.bufferedReader().use {
+                  it.lines().forEach { line -> println(line) }
+              }
+          }
+      }
+      ```
+
+  - title: 使用 HttpURLConnection 发起 POST 请求
+    content: |
+      ```kotlin
+      import java.io.OutputStream
+      import java.net.HttpURLConnection
+      import java.net.URL
+
+      fun main() {
+          val url = URL("http://httpbin.org/post")
+          val postData = "name=JohnDoe&occupation=gardener"
+
+          with(url.openConnection() as HttpURLConnection) {
+              // 设置请求方法
+              requestMethod = "POST"
+              doOutput = true
+
+              // 设置请求头
+              setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+              setRequestProperty("Content-Length", postData.toByteArray().size.toString())
+
+              // 发送 POST 数据
+              outputStream.use { os: OutputStream ->
+                  os.write(postData.toByteArray())
+              }
+
+              // 获取响应码
+              println("Response Code: $responseCode")
+
+              // 读取响应
+              inputStream.bufferedReader().use {
+                  it.lines().forEach { line -> println(line) }
+              }
+          }
+      }
+      ```
+
+references:
+  - title: "Kotlin HttpURLConnection Example"
+    url: https://zetcode.com/kotlin/getpostrequest/

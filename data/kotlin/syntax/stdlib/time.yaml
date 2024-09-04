@@ -1,0 +1,72 @@
+id: time
+title: 时间
+query: Kotlin time date handling
+comment: Kotlin 处理时间和日期的多种方法，适用于不同的应用场景。
+description: |
+  在 Kotlin 中处理日期和时间有两种主要方式：一是通过 Java 的 `java.time` 包，二是使用 Kotlin 的 `kotlinx-datetime` 库。
+
+  1. **java.time 包**：继承自 Java 8 引入的日期时间 API，`java.time` 提供类如 `LocalDate`, `LocalDateTime`, `ZonedDateTime` 等来处理不同的时间相关操作。适用于大多数 JVM 项目，包括 Android 开发。
+  
+  2. **kotlinx-datetime 库**：Kotlin 多平台项目中推荐使用 `kotlinx-datetime`，它提供了 `Instant`, `LocalDate`, `LocalTime`, `TimeZone` 等类型，并可以轻松地处理时间计算、转换和格式化等操作，尤其适合多时区、跨平台应用。
+
+example:
+  - title: 获取当前日期和时间
+    content: |
+      ```kotlin
+      // 使用 java.time 包
+      import java.time.LocalDateTime
+      val currentDateTime = LocalDateTime.now()
+      println("当前日期和时间: $currentDateTime")
+
+      // 使用 kotlinx-datetime 库
+      import kotlinx.datetime.Clock
+      val currentInstant = Clock.System.now()
+      println("当前时刻: $currentInstant")
+      ```
+
+  - title: 将日期格式化为指定模式
+    content: |
+      ```kotlin
+      // 使用 java.time 包
+      import java.time.LocalDateTime
+      import java.time.format.DateTimeFormatter
+
+      val currentDateTime = LocalDateTime.now()
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+      val formattedDate = currentDateTime.format(formatter)
+      println("格式化后的日期: $formattedDate")
+      ```
+
+  - title: 计算日期之间的差值
+    content: |
+      ```kotlin
+      // 使用 kotlinx-datetime 计算两日期的天数差
+      import kotlinx.datetime.LocalDate
+      import kotlinx.datetime.daysUntil
+
+      val date1 = LocalDate(2023, 1, 1)
+      val date2 = LocalDate(2023, 12, 31)
+      val daysBetween = date1.daysUntil(date2)
+      println("两日期之间的天数: $daysBetween")
+      ```
+
+  - title: 不同时区之间的转换
+    content: |
+      ```kotlin
+      // 使用 kotlinx-datetime 进行时区转换
+      import kotlinx.datetime.Clock
+      import kotlinx.datetime.TimeZone
+      import kotlinx.datetime.toLocalDateTime
+
+      val currentMoment = Clock.System.now()
+      val berlinTime = currentMoment.toLocalDateTime(TimeZone.of("Europe/Berlin"))
+      val tokyoTime = currentMoment.toLocalDateTime(TimeZone.of("Asia/Tokyo"))
+      println("柏林时间: $berlinTime")
+      println("东京时间: $tokyoTime")
+      ```
+
+references:
+  - title: kotlinx-datetime GitHub repository
+    url: https://github.com/Kotlin/kotlinx-datetime
+  - title: Working with Dates in Kotlin
+    url: https://www.baeldung.com/kotlin/dates

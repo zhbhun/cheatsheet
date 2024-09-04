@@ -9,3 +9,5 @@ children:
   - statements
   - functions
   - classes
+  - modules
+  - stdlib

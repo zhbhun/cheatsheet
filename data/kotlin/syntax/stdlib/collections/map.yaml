@@ -1,0 +1,64 @@
+id: map
+title: Map
+query: Kotlin Map usage and examples
+comment: 介绍 Kotlin Map 的基本使用，区别可变和不可变的 Map，并展示常用操作
+description: |
+  在 Kotlin 中，`Map` 是一种存储键值对（key-value pairs）的集合类型。键是唯一的，而每个键都关联一个值。Kotlin 提供两种类型的 `Map`：不可变的 `Map`（使用 `mapOf()` 创建）和可变的 `MutableMap`（使用 `mutableMapOf()` 创建）。不可变 `Map` 的内容一旦创建后就不能修改，而可变 `Map` 可以添加、删除或更新键值对。
+example:
+  - title: 创建不可变的 Map
+    content: |
+      ```kotlin
+      val map = mapOf("Jack" to "Mercedes", "John" to "Audi", "Will" to "Jaguar")
+      println(map["John"])  // 输出: Audi
+      ```
+
+  - title: 创建可变的 MutableMap
+    content: |
+      ```kotlin
+      val user = mutableMapOf("name" to "John Doe", "occupation" to "programmer")
+      user["location"] = "USA"  // 添加新的键值对
+      user.remove("occupation")  // 删除键值对
+      println(user)  // 输出: {name=John Doe, location=USA}
+      ```
+
+  - title: 获取 Map 中的值
+    content: |
+      ```kotlin
+      val items = mapOf("coins" to 12, "books" to 45, "cups" to 33)
+      println(items["coins"])  // 输出: 12
+      println(items.getOrDefault("pens", 0))  // 输出: 0 (默认值)
+      ```
+
+  - title: 遍历 Map
+    content: |
+      ```kotlin
+      val items = mapOf("coins" to 12, "books" to 45, "cups" to 33)
+      items.forEach { (k, v) -> println("There are $v $k") }
+      // 输出:
+      // There are 12 coins
+      // There are 45 books
+      // There are 33 cups
+      ```
+
+  - title: 过滤 Map
+    content: |
+      ```kotlin
+      val items = mapOf("A" to 90, "B" to 80, "C" to 70, "D" to 60, "E" to 50)
+      val filtered = items.filterValues { it >= 70 }
+      println(filtered)  // 输出: {A=90, B=80, C=70}
+      ```
+
+  - title: 修改可变 Map
+    content: |
+      ```kotlin
+      val map = mutableMapOf("Apple" to 50, "Banana" to 100)
+      map["Apple"] = 60  // 修改键 "Apple" 的值
+      map.put("Orange", 120)  // 添加新键值对
+      println(map)  // 输出: {Apple=60, Banana=100, Orange=120}
+      ```
+
+references:
+  - title: Map
+    url: https://kotlinlang.org/docs/collections-overview.html#map
+  - title: "Kotlin Map - working with maps in Kotlin"
+    url: https://zetcode.com/kotlin/map

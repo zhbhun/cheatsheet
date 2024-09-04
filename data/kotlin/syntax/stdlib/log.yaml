@@ -1,0 +1,37 @@
+id: log
+title: Log
+query: 打印日志
+comment: print, println, 日志库
+description: |
+  在 Kotlin 中，最基础的输出操作可以通过 `print()` 和 `println()` 函数完成。`print()` 不换行，而 `println()` 在输出后换行。除此之外，Kotlin 还支持通过第三方库（如 kotlin-logging）进行更高级的日志记录。
+example:
+  - title: 使用 `print` 和 `println` 打印
+    content: |
+      ```kotlin
+      fun main() {
+          print("Hello, ")
+          print("World!")
+          // 输出结果: Hello, World!
+          
+          println("Hello, ")
+          println("World!")
+          // 输出结果:
+          // Hello,
+          // World!
+      }
+      ```
+
+  - title: 打印变量和字符串模板
+    content: |
+      ```kotlin
+      fun main() {
+          val score = 42
+          println("Score: $score")  // 使用字符串模板，输出: Score: 42
+          println("Double score: ${score * 2}")  // 计算表达式并输出: Double score: 84
+      }
+      ```
+references:
+  - title: Kotlin Standard Library - print and println
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.io/print.html
+  - title: Kotlin Print Functions and String Templates
+    url: https://www.programiz.com/kotlin-programming/input-output
