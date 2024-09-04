@@ -1,8 +1,11 @@
 id: stdlib
 title: 标准库
 children:
-  - log
+  - print
   - collections
   - http
   - regexp
   - time
+  - uuid
+  - binary
+  - url

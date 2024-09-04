@@ -1,5 +1,5 @@
-id: httpurlconnection
-title: 使用 HttpURLConnection 发起请求
+id: http
+title: HTTP 请求
 query: HttpURLConnection Kotlin
 comment: 通过 HttpURLConnection 发起 GET 和 POST 请求的示例，展示如何设置请求头、处理响应等。
 description: |

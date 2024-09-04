@@ -1,0 +1,46 @@
+id: uuid
+title: UUID
+query: Swift UUID 使用
+comment: 介绍如何在 Swift 中生成和使用 UUID，以及将 UUID 转换为字符串或从字符串中初始化 UUID。
+description: 在 Swift 中，`UUID` 是用于生成和表示全局唯一标识符的类型，由 Foundation 框架提供。
+example:
+  - title: "生成新的 UUID"
+    content: |
+      ```swift
+      import Foundation
+
+      let newUUID = UUID()
+      print(newUUID)  // 示例输出: E621E1F8-C36C-495A-93FC-0C247A3E6E5F
+      ```
+
+  - title: "将 UUID 转换为字符串"
+    content: |
+      ```swift
+      let uuidString = newUUID.uuidString
+      print(uuidString)  // 示例输出: "E621E1F8-C36C-495A-93FC-0C247A3E6E5F"
+      ```
+
+  - title: "从字符串初始化 UUID"
+    content: |
+      ```swift
+      if let uuidFromString = UUID(uuidString: "E621E1F8-C36C-495A-93FC-0C247A3E6E5F") {
+          print(uuidFromString)
+      } else {
+          print("无效的 UUID 字符串")
+      }
+      ```
+
+  - title: "处理可选的 UUID 初始化"
+    content: |
+      ```swift
+      let possibleUUID = UUID(uuidString: "invalid-string")
+      if let validUUID = possibleUUID {
+          print("有效的 UUID: \(validUUID)")
+      } else {
+          print("无效的 UUID 字符串")
+      }
+      ```
+
+references:
+  - title: "UUID | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/foundation/uuid

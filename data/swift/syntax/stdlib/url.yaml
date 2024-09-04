@@ -1,0 +1,62 @@
+id: url
+title: URL
+query: Swift URL 统一资源定位符使用
+comment: 介绍如何在 Swift 中创建、解析和操作 URL
+description: |
+  在 Swift 中，`URL` 和 `URLComponents` 是处理 URL 的核心工具。`URL` 类用于表示完整的 URL（绝对 URL），而 `URLComponents` 则用于更加灵活地构建或解析 URL 的各个部分（如协议、主机、路径、查询参数等）。`URLComponents` 还可以确保查询参数正确编码，适合处理需要动态构造的 URL（例如 REST API 请求）。这两个类广泛应用于网络请求、文件路径处理、以及 app 内部的资源定位等场景。
+example:
+  - title: 创建简单的 URL
+    content: |
+      ```swift
+      if let url = URL(string: "https://www.apple.com") {
+          print(url.absoluteURL)  // 输出: https://www.apple.com
+      }
+      ```
+
+  - title: 使用 URLComponents 构建带查询参数的 URL
+    content: |
+      ```swift
+      var components = URLComponents()
+      components.scheme = "https"
+      components.host = "api.example.com"
+      components.path = "/search"
+      components.queryItems = [
+          URLQueryItem(name: "query", value: "swift"),
+          URLQueryItem(name: "page", value: "1")
+      ]
+      let url = components.url!
+      print(url)  // 输出: https://api.example.com/search?query=swift&page=1
+      ```
+
+  - title: 解析 URL 获取查询参数
+    content: |
+      ```swift
+      let url = URL(string: "https://api.example.com/search?query=swift&page=1")!
+      if let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+          let queryItems = components.queryItems!
+          let query = queryItems.first { $0.name == "query" }?.value
+          let page = queryItems.first { $0.name == "page" }?.value
+          print("查询内容: \(query ?? "")，页码: \(page ?? "")")  // 输出: 查询内容: swift，页码: 1
+      }
+      ```
+
+  - title: 创建文件路径 URL
+    content: |
+      ```swift
+      let fileURL = URL(fileURLWithPath: "/Users/username/Documents/file.txt")
+      print(fileURL.isFileURL)  // 输出: true
+      ```
+
+  - title: 解析相对 URL
+    content: |
+      ```swift
+      let baseURL = URL(string: "https://example.com")!
+      let relativeURL = URL(string: "docs/tutorial.html", relativeTo: baseURL)!
+      print(relativeURL.absoluteURL)  // 输出: https://example.com/docs/tutorial.html
+      ```
+
+references:
+  - title: URL
+    url: https://developer.apple.com/documentation/foundation/url
+  - title: Swift 中构建 URL 的方法 - Swift by Sundell
+    url: https://www.swiftbysundell.com/articles/constructing-urls-in-swift/

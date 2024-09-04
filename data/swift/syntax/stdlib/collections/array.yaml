@@ -1,0 +1,76 @@
+id: array
+title: 数组
+query: Swift arrays usage and examples
+comment: 介绍 Swift 数组的基本用法，包括创建、访问、修改和删除元素等操作。
+description: 
+  Swift 中的数组（Array）是一种有序集合，能够存储同一类型的多个值。数组的类型可以使用 `Array<Element>` 或其简写 `[Element]` 来表示。数组支持多种操作，例如创建、访问、修改和删除元素。Swift 数组具有自动内存管理的特性，并且采用“拷贝写入”机制来优化性能，即在进行修改操作时会创建数组的独立副本。数组还支持与 Objective-C 的 `NSArray` 进行桥接，方便与其他框架协作。
+example:
+  - title: 创建数组
+    content: |
+      ```swift
+      // 创建一个整型数组
+      var numbers: [Int] = [2, 4, 6, 8]
+      print(numbers) // 输出: [2, 4, 6, 8]
+
+      // 创建一个空数组
+      var emptyArray = [String]()
+      print(emptyArray.isEmpty) // 输出: true
+      ```
+  
+  - title: 访问数组元素
+    content: |
+      ```swift
+      var languages = ["Swift", "Python", "Java"]
+      
+      // 访问第一个元素
+      print(languages[0]) // 输出: Swift
+      
+      // 修改第三个元素
+      languages[2] = "C++"
+      print(languages) // 输出: ["Swift", "Python", "C++"]
+      ```
+
+  - title: 添加元素到数组
+    content: |
+      ```swift
+      var numbers = [1, 2, 3]
+
+      // 添加一个元素到数组末尾
+      numbers.append(4)
+      print(numbers) // 输出: [1, 2, 3, 4]
+
+      // 添加多个元素
+      numbers.append(contentsOf: [5, 6])
+      print(numbers) // 输出: [1, 2, 3, 4, 5, 6]
+      ```
+
+  - title: 插入元素到指定位置
+    content: |
+      ```swift
+      var numbers = [10, 20, 30]
+      
+      // 在索引1处插入元素
+      numbers.insert(15, at: 1)
+      print(numbers) // 输出: [10, 15, 20, 30]
+      ```
+
+  - title: 删除数组元素
+    content: |
+      ```swift
+      var fruits = ["Apple", "Banana", "Cherry"]
+
+      // 删除第二个元素
+      fruits.remove(at: 1)
+      print(fruits) // 输出: ["Apple", "Cherry"]
+
+      // 删除最后一个元素
+      fruits.removeLast()
+      print(fruits) // 输出: ["Apple"]
+      ```
+references:
+  - title: Arrays
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/collectiontypes/#Arrays
+  - title: "Swift Array - Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/swift/array
+  - title: "Swift Arrays - Swiftdoc.org"
+    url: https://swiftdoc.org/v4.2/type/Array/

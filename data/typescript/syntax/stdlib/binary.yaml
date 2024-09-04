@@ -1,0 +1,79 @@
+id: binary
+title: 二进制数据
+query: TypeScript binary data
+comment: 介绍 TypeScript 中处理二进制数据的核心工具及其常见使用场景。
+description: TypeScript 使用 `ArrayBuffer` 和 `TypedArray` 来处理二进制数据。`ArrayBuffer` 是一个固定长度的字节数组，可以表示原始的二进制数据。`TypedArray` 是 `ArrayBuffer` 的一种视图，允许我们以特定的数据类型（如 `Int8Array`、`Uint8Array`、`Float32Array` 等）操作其中的数据。`ArrayBuffer` 和 `TypedArray` 主要用于处理底层数据，如音视频处理、文件操作、网络传输等场景，尤其是在 Web API 需要发送或接收二进制数据时非常有用。
+example:
+  - title: 创建并使用 ArrayBuffer 和 TypedArray
+    content: |
+      ```typescript
+      // 创建一个长度为 8 字节的 ArrayBuffer
+      const buffer = new ArrayBuffer(8);
+
+      // 创建一个 8 位无符号整数的 TypedArray (Uint8Array)
+      const uint8View = new Uint8Array(buffer);
+      
+      // 给 TypedArray 赋值
+      uint8View[0] = 255; // 最大值 255
+      uint8View[1] = 128; // 任意值
+
+      console.log(uint8View); // 输出 [255, 128, 0, 0, 0, 0, 0, 0]
+      ```
+
+  - title: 使用 DataView 读取和写入 ArrayBuffer 数据
+    content: |
+      ```typescript
+      // 创建一个 8 字节的 ArrayBuffer
+      const buffer = new ArrayBuffer(8);
+
+      // 使用 DataView 进行操作
+      const view = new DataView(buffer);
+
+      // 在偏移量 0 写入 32 位整数
+      view.setInt32(0, 2147483647); // 最大的 32 位整数
+
+      // 在偏移量 4 读取 32 位整数
+      const value = view.getInt32(4);
+      console.log(value); // 输出 0（默认值）
+      ```
+
+  - title: 发送二进制数据（通过 XMLHttpRequest）
+    content: |
+      ```typescript
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/upload", true);
+      xhr.responseType = "arraybuffer";
+
+      const data = new Uint8Array([1, 2, 3, 4]);
+
+      // 发送二进制数据
+      xhr.send(data);
+      ```
+
+  - title: 接收二进制数据（通过 XMLHttpRequest）
+    content: |
+      ```typescript
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", "/image.png", true);
+      xhr.responseType = "arraybuffer";
+
+      xhr.onload = function() {
+        const arrayBuffer = xhr.response;
+        if (arrayBuffer) {
+          const byteArray = new Uint8Array(arrayBuffer);
+          console.log(byteArray); // 输出图像的二进制数据
+        }
+      };
+
+      xhr.send();
+      ```
+
+references:
+  - title: Sending and Receiving Binary Data - Web APIs | MDN
+    url: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
+  - title: TypedArray in ES7 and TypeScript - C# Corner
+    url: https://www.c-sharpcorner.com/article/typedarray-in-es7-and-typescript
+  - title: BinaryData | Typescript Library Declarations (DOM)
+    url: https://typhonjs-typedoc.github.io/ts-lib-docs/2023/dom/types/BinaryData.html
+  - title: How to Work with Binary Data in JavaScript
+    url: https://javascript.info/arraybuffer-binary-arrays

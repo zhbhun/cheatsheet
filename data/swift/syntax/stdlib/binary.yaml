@@ -1,0 +1,55 @@
+id: binary
+title: 二进制数据
+query: Swift binary data handling
+comment: 介绍如何在 Swift 中处理二进制数据，并提供读写及处理二进制文件的示例
+description: |
+  在 Swift 中，二进制数据通常由 `Data` 类型表示，它是一种通用的字节序列。`Data` 适用于文件读取、网络传输等需要处理原始字节的场景。可以通过将文件内容读入 `Data` 或者将字符串等数据编码为二进制。为了处理复杂的二进制数据，Swift 提供了基本的字节操作功能，包括读取、解析和修改字节，还支持压缩和解压缩等操作。常见的压缩算法有 LZFSE、zlib 等。
+example:
+  - title: 从文件读取二进制数据
+    content: |
+      ```swift
+      let fileURL = URL(fileURLWithPath: "path/to/your/file")
+      do {
+          let data = try Data(contentsOf: fileURL)
+          print("Data length: \(data.count) bytes")
+      } catch {
+          print("Failed to read file: \(error)")
+      }
+      ```
+  - title: 将字符串转换为二进制数据
+    content: |
+      ```swift
+      let string = "Hello, world!"
+      if let data = string.data(using: .utf8) {
+          print("Binary data: \(data)")
+      } else {
+          print("Failed to convert string to data")
+      }
+      ```
+  - title: 处理二进制数据压缩
+    content: |
+      ```swift
+      let data = "Sample Data".data(using: .utf8)!
+      do {
+          let compressedData = try (data as NSData).compressed(using: .lzfse)
+          print("Compressed data length: \(compressedData.count) bytes")
+      } catch {
+          print("Compression failed: \(error)")
+      }
+      ```
+  - title: 解析二进制数据
+    content: |
+      ```swift
+      let byteArray: [UInt8] = [0x00, 0x01, 0x02, 0xFF]
+      let data = Data(byteArray)
+      data.forEach { byte in
+          print("Byte: \(byte)")
+      }
+      ```
+references:
+  - title: Data
+    url: https://developer.apple.com/documentation/foundation/data
+  - title: "Swift String to Data | Convert Data to String"
+    url: https://vikingskullapps.com/swift-programming/swift-string-to-data/
+  - title: "How to compress and decompress data in Swift"
+    url: https://www.hackingwithswift.com/example-code/system/how-to-compress-and-decompress-data

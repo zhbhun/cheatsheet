@@ -1,0 +1,69 @@
+id: http
+title: HTTP 请求
+query: Swift HTTP 请求, URLSession, URLRequest
+comment: 演示如何在 Swift 中使用 URLSession 进行 HTTP 请求，包括 GET 和 POST 请求的示例
+description: |
+  在 Swift 中，使用 `URLSession` 类来进行 HTTP 请求，它提供了对网络任务的支持，包括 GET 和 POST 请求。最常见的操作是创建 `URLRequest` 来配置请求的 URL、HTTP 方法、请求头等。通过 `URLSessionDataTask` 发起请求并异步接收响应，Swift 还支持使用 async/await 进行简洁的并发处理。URLSession 适合于执行从简单的 API 调用到更复杂的网络任务。
+example:
+  - title: "GET 请求示例"
+    content: |
+      ```swift
+      import Foundation
+
+      let url = URL(string: "https://api.example.com/data")!
+      let task = URLSession.shared.dataTask(with: url) { data, response, error in
+          if let data = data {
+              // 处理获取到的数据
+              print("Received data: \(data)")
+          } else if let error = error {
+              // 处理错误
+              print("Error: \(error)")
+          }
+      }
+      task.resume()
+      ```
+  - title: "POST 请求示例"
+    content: |
+      ```swift
+      import Foundation
+
+      let url = URL(string: "https://api.example.com/data")!
+      var request = URLRequest(url: url)
+      request.httpMethod = "POST"
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+      let jsonBody = ["key": "value"]
+      request.httpBody = try? JSONSerialization.data(withJSONObject: jsonBody)
+
+      let task = URLSession.shared.dataTask(with: request) { data, response, error in
+          if let data = data {
+              // 处理响应数据
+              print("Received data: \(data)")
+          } else if let error = error {
+              // 处理错误
+              print("Error: \(error)")
+          }
+      }
+      task.resume()
+      ```
+  - title: "使用 async/await 的 GET 请求"
+    content: |
+      ```swift
+      import Foundation
+
+      let url = URL(string: "https://api.example.com/data")!
+
+      Task {
+          do {
+              let (data, _) = try await URLSession.shared.data(from: url)
+              // 处理数据
+              print("Received data: \(data)")
+          } catch {
+              // 处理错误
+              print("Error: \(error)")
+          }
+      }
+      ```
+references:
+  - title: "Making HTTP Requests in Swift with URLSession"
+    url: https://www.advancedswift.com/http-requests-in-swift/

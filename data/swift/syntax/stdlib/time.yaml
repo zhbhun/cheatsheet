@@ -1,0 +1,61 @@
+id: time
+title: 时间
+query: Swift 时间处理，DateFormatter，Timer 用法
+comment: 介绍 Swift 语言中时间处理的核心功能，包括日期格式化、时区管理、定时器使用等。
+description: |
+  Swift 提供了丰富的工具来处理时间和日期，主要通过 `Date`、`DateFormatter`、`Timer` 和 `TimeZone` 类来实现。常见的操作包括获取当前日期时间、在时区之间进行转换、格式化日期时间为字符串以及使用定时器执行延时或重复任务。
+
+  - **Date**：`Date` 类表示一个特定的时间点，用于获取当前时间或进行时间计算。
+  - **DateFormatter**：用于将 `Date` 对象格式化为可读字符串或解析字符串为 `Date` 对象，支持多种预设和自定义格式。
+  - **Timer**：用于调度延时或定时任务，可以是一次性或重复触发。
+  - **TimeZone**：处理时区转换，简化跨时区的时间调整。
+
+example:
+  - title: 创建并格式化当前日期
+    content: |
+      ```swift
+      let currentDate = Date()
+      let dateFormatter = DateFormatter()
+      dateFormatter.dateStyle = .medium
+      dateFormatter.timeStyle = .short
+      let formattedDate = dateFormatter.string(from: currentDate)
+      print("格式化后的日期: \(formattedDate)")
+      ```
+  - title: 自定义日期格式
+    content: |
+      ```swift
+      let dateFormatter = DateFormatter()
+      dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+      let customFormattedDate = dateFormatter.string(from: Date())
+      print("自定义格式化日期: \(customFormattedDate)")
+      ```
+  - title: 定时器每秒执行任务
+    content: |
+      ```swift
+      var timer: Timer?
+      var runCount = 0
+      timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+          runCount += 1
+          print("定时器触发 \(runCount) 次")
+          if runCount == 5 {
+              timer?.invalidate()
+          }
+      }
+      ```
+  - title: 时区转换
+    content: |
+      ```swift
+      let sourceTimeZone = TimeZone(identifier: "America/New_York")!
+      let destinationTimeZone = TimeZone(identifier: "Europe/London")!
+      let now = Date()
+      let offset = destinationTimeZone.secondsFromGMT(for: now) - sourceTimeZone.secondsFromGMT(for: now)
+      print("时区间的时间差（秒）: \(offset)")
+      ```
+
+references:
+  - title: Dates and Times
+    url: https://developer.apple.com/documentation/foundation/dates_and_times
+  - title: 在 Swift 中格式化 UTC 和本地日期
+    url: https://www.advancedswift.com/local-utc-date-format-swift/
+  - title: SwiftDate - 处理日期和时区的最佳方式
+    url: https://malcommac.github.io/SwiftDate/

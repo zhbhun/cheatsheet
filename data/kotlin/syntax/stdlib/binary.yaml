@@ -1,0 +1,43 @@
+id: binary
+title: 二进制数据
+query: Kotlin ByteArray 二进制数据处理
+comment: 介绍 Kotlin 中如何处理二进制数据，包括 `ByteArray` 的使用和常见操作，如与十六进制的转换
+description: |
+  Kotlin 提供了 `ByteArray` 来处理二进制数据。`ByteArray` 是一个高效的字节数组，常用于处理图像、音频文件、网络数据流等原始二进制数据。Kotlin 也支持无符号字节 `UByte` 及其数组 `UByteArray`，用于需要处理无符号数据的场景。
+example:
+  - title: 创建和初始化 ByteArray
+    content: |
+      ```kotlin
+      // 创建一个长度为5的 ByteArray，每个元素值为对应索引的字节
+      val byteArray = ByteArray(5) { it.toByte() }
+      println(byteArray.joinToString()) // 输出: 0, 1, 2, 3, 4
+      ```
+  - title: 将 ByteArray 转换为十六进制字符串
+    content: |
+      ```kotlin
+      fun ByteArray.toHex(): String = joinToString(separator = "") { "%02x".format(it) }
+
+      val byteArray = byteArrayOf(0x1A, 0xFF.toByte(), 0x3C)
+      println(byteArray.toHex()) // 输出: 1aff3c
+      ```
+  - title: 读取文件并转换为 ByteArray
+    content: |
+      ```kotlin
+      import java.io.File
+
+      // 读取文件的二进制数据并转换为 ByteArray
+      val file = File("path/to/file")
+      val byteArray: ByteArray = file.readBytes()
+      println("File length in bytes: ${byteArray.size}")
+      ```
+  - title: ByteArray 与 UByteArray 的转换
+    content: |
+      ```kotlin
+      // 将 ByteArray 转换为 UByteArray
+      val byteArray = byteArrayOf(-1, 0, 1)
+      val uByteArray = byteArray.toUByteArray()
+      println(uByteArray.joinToString()) // 输出: 255, 0, 1
+      ```
+references:
+  - title: ByteArray - Kotlin 官方文档
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/

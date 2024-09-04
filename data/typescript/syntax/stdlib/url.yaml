@@ -1,0 +1,63 @@
+id: url
+title: URL
+query: TypeScript URL handling
+comment: 介绍 TypeScript 中 URL 的处理方式，解析、构造和管理 URL 及其参数。
+description: |
+  在 TypeScript 中，URL 处理可以通过内置的 `URL` 类和 `URLSearchParams` 对象实现。`URL` 类提供了一种结构化的方式来解析和操作 URL，它能确保 URL 的正确性，并在无效的 URL 上抛出错误。`URLSearchParams` 对象则用于处理 URL 中的查询参数，便于构造和读取 URL 中的参数。通过这些工具，开发者能够安全、高效地管理动态 URL，尤其是在构建 API 请求时。
+example:
+  - title: 使用 URL 类创建和解析 URL
+    content: |
+      ```typescript
+      const url = new URL("https://example.com/path?query=123#hash");
+      console.log(url.href); // 输出完整 URL: "https://example.com/path?query=123#hash"
+      console.log(url.protocol); // 输出协议: "https:"
+      console.log(url.host); // 输出主机名: "example.com"
+      console.log(url.pathname); // 输出路径: "/path"
+      console.log(url.searchParams.get("query")); // 输出查询参数: "123"
+      ```
+
+  - title: 动态构造 URL 并处理查询参数
+    content: |
+      ```typescript
+      const baseUrl = new URL("https://jsonplaceholder.typicode.com/users");
+      const params = new URLSearchParams({ id: "1", name: "John" });
+      baseUrl.search = params.toString();
+      
+      console.log(baseUrl.toString()); 
+      // 输出: "https://jsonplaceholder.typicode.com/users?id=1&name=John"
+      ```
+
+  - title: URLSearchParams 处理查询字符串
+    content: |
+      ```typescript
+      const searchParams = new URLSearchParams("key1=value1&key2=value2");
+      console.log(searchParams.get("key1")); // 输出: "value1"
+      searchParams.append("key3", "value3");
+      console.log(searchParams.toString()); 
+      // 输出: "key1=value1&key2=value2&key3=value3"
+      ```
+
+  - title: 使用 TypeScript 构建类型安全的 URL 工具
+    content: |
+      ```typescript
+      enum Routes {
+        User = "/users/[userId]",
+      }
+
+      type Params<Path extends string> = { [K in Path as K extends `[${infer Param}]` ? Param : never]: string };
+
+      function buildUrl<Route extends Routes>(route: Route, params: Params<Route>) {
+        let url = route;
+        for (const key in params) {
+          url = url.replace(`[${key}]`, params[key]);
+        }
+        return url;
+      }
+
+      const userUrl = buildUrl(Routes.User, { userId: "123" });
+      console.log(userUrl); // 输出: "/users/123"
+      ```
+
+references:
+  - title: "URL: URL() constructor - Web APIs | MDN"
+    url: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL

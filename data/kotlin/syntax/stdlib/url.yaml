@@ -1,0 +1,75 @@
+id: url
+title: URL
+query: Kotlin URL usage examples
+comment: 介绍 Kotlin 中的 URL 使用，涵盖创建、解析、编码等常见操作
+description: |
+  Kotlin 中可以使用 Java 的 `java.net.URL` 类来处理 URL。这包括创建 URL 实例、解析 URL、获取 URL 的组件（如协议、主机、路径等）以及处理查询参数。对于网络请求，`URL` 类可与 `HttpURLConnection` 结合使用。此外，`URLEncoder` 可用于对 URL 进行编码，确保特殊字符正确传输。
+example:
+  - title: 创建 URL 实例并解析
+    content: |
+      ```kotlin
+      import java.net.URL
+
+      fun main() {
+          val url = URL("https://www.example.com:8080/path?query=hello#fragment")
+          println("Protocol: ${url.protocol}")  // 输出 "https"
+          println("Host: ${url.host}")          // 输出 "www.example.com"
+          println("Port: ${url.port}")          // 输出 8080
+          println("Path: ${url.path}")          // 输出 "/path"
+          println("Query: ${url.query}")        // 输出 "query=hello"
+          println("Fragment: ${url.ref}")       // 输出 "fragment"
+      }
+      ```
+  - title: 使用 `URLEncoder` 编码 URL
+    content: |
+      ```kotlin
+      import java.net.URLEncoder
+
+      fun main() {
+          val url = "https://www.example.com/search?q=hello world"
+          val encodedUrl = URLEncoder.encode(url, "UTF-8")
+          println(encodedUrl)  // 输出 "https%3A%2F%2Fwww.example.com%2Fsearch%3Fq%3Dhello%2520world"
+      }
+      ```
+  - title: 使用 `HttpURLConnection` 进行 HTTP GET 请求
+    content: |
+      ```kotlin
+      import java.net.URL
+      import java.io.BufferedReader
+      import java.io.InputStreamReader
+
+      fun main() {
+          val url = URL("https://reqres.in/api/users?page=1")
+          val connection = url.openConnection()
+
+          BufferedReader(InputStreamReader(connection.getInputStream())).use { input ->
+              var line: String?
+              while (input.readLine().also { line = it } != null) {
+                  println(line)  // 输出 API 返回的响应数据
+              }
+          }
+      }
+      ```
+  - title: 解析 URL 并提取查询参数
+    content: |
+      ```kotlin
+      import java.net.URL
+
+      fun URL.findQueryParameter(paramName: String): String? {
+          return this.query?.split("&")?.map {
+              val (name, value) = it.split("=")
+              name to value
+          }?.firstOrNull { it.first == paramName }?.second
+      }
+
+      fun main() {
+          val url = URL("https://www.example.com/search?query=hello&lang=en")
+          println(url.findQueryParameter("query"))  // 输出 "hello"
+          println(url.findQueryParameter("lang"))   // 输出 "en"
+      }
+      ```
+references:
+  - title: URL
+    url: https://developer.android.com/reference/kotlin/java/net/URL
+  - title: "URL - Kotlin Programming Language"
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom.url/-u-r-l/

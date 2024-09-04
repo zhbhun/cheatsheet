@@ -1,0 +1,61 @@
+id: map
+title: 字典
+query: Swift dictionary map
+comment: 介绍 Swift 中的字典的基本使用和通过 `map` 与 `mapValues` 进行转换的几种常见方式。
+description: >
+  在 Swift 中，字典是通过键值对（key-value pairs）来存储数据的集合。字典的键是唯一的，且键必须是可哈希的。字典支持使用 `map(_:)` 和 `mapValues(_:)` 方法进行转换。`map(_:)` 会遍历字典的每个键值对，并将其转换为一个数组，而 `mapValues(_:)` 只会转换字典中的值，并返回一个新字典。
+example:
+  - title: 使用 `map(_:)` 转换键值对为数组
+    content: |
+      ```swift
+      let fruits = ["Apple": 1, "Banana": 2, "Peach": 3]
+      let transformedArray = fruits.map { (key, value) in
+          return "\(key) has \(value)"
+      }
+      print(transformedArray) 
+      // 输出: ["Apple has 1", "Banana has 2", "Peach has 3"]
+      ```
+
+  - title: 使用 `mapValues(_:)` 转换字典的值
+    content: |
+      ```swift
+      let fruits = ["Apple": 1, "Banana": 2, "Peach": 3]
+      let doubledValues = fruits.mapValues { $0 * 2 }
+      print(doubledValues)
+      // 输出: ["Apple": 2, "Banana": 4, "Peach": 6]
+      ```
+
+  - title: 同时转换字典的键和值
+    content: |
+      ```swift
+      let fruits = ["apple": 1, "banana": 2, "peach": 3]
+      let transformedDict = Dictionary(uniqueKeysWithValues: fruits.map { (key, value) in
+          return (key.uppercased(), value + 1)
+      })
+      print(transformedDict)
+      // 输出: ["APPLE": 2, "BANANA": 3, "PEACH": 4]
+      ```
+
+  - title: 将字典值转换为数组
+    content: |
+      ```swift
+      let fruits = ["Apple": 1, "Banana": 2, "Peach": 3]
+      let valuesArray = fruits.map { $0.value }
+      print(valuesArray)
+      // 输出: [1, 2, 3]
+      ```
+
+  - title: 通过键访问字典值
+    content: |
+      ```swift
+      let fruits = ["Apple": 1, "Banana": 2, "Peach": 3]
+      if let value = fruits["Apple"] {
+          print("Apple 的数量是 \(value)")
+      }
+      // 输出: Apple 的数量是 1
+      ```
+references:
+  - title: Dictionaries
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/collectiontypes#Dictionaries
+  - title: Transforming a Dictionary using mapValues()
+    url: https://www.hackingwithswift.com/example-code/language/how-to-transform-a-dictionary-using-mapvalues

@@ -1,0 +1,56 @@
+id: uuid
+title: UUID
+query: TypeScript UUID 生成
+comment: TypeScript 提供多种方式生成 UUID，主要通过外部库（如 `uuid`）或内置方法 `crypto.randomUUID()`。
+description: TypeScript 可以使用使用内置的 `crypto.randomUUID()` 或外部库 `uuid` 生成 UUID。
+example:
+  - title: 使用 `uuid` 库生成 UUID（版本 4）
+    content: |
+      ```typescript
+      import { v4 as uuidv4 } from 'uuid';
+
+      const myUuid = uuidv4();
+      console.log(myUuid);  // 输出随机的 UUID，例如 '16f2e8d7-6d03-45c5-9aa2-9d20f1651de1'
+      ```
+
+  - title: 使用 `crypto.randomUUID()` 生成 UUID
+    content: |
+      ```typescript
+      const myUuid = crypto.randomUUID();
+      console.log(myUuid);  // 输出随机的 UUID，例如 '8a6e0804-2bd0-4672-b79d-d97027f9071a'
+      ```
+
+  - title: 使用 `Math.random()` 自定义生成 UUID
+    content: |
+      ```typescript
+      function generateUUID(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      console.log(generateUUID());  // 输出类似 UUID 的字符串，例如 '12b6e07b-6d03-4f85-9aa1-9b15f1d25d21'
+      ```
+
+  - title: 使用自定义 `Uuid` 类型确保类型安全
+    content: |
+      ```typescript
+      export function NewUuid(): Uuid {
+        return crypto.randomUUID() as Uuid;
+      }
+
+      export type Uuid = string & { [TYPE: symbol]: 'Uuid' };
+
+      const userId: Uuid = NewUuid();
+      console.log(userId);  // 输出 UUID，例如 '7a6e0804-1bc0-4672-b70d-d91027f90231'
+      ```
+references:
+  - title: 如何在 TypeScript 中生成 UUID
+    url: https://generateuuid.online/developers/typescript
+  - title: 使用 TypeScript 内置的 UUID 生成器
+    url: https://htomar.dev/posts/using-typescripts-in-built-uuid
+  - title: 在 TypeScript 中生成 UUID
+    url: https://www.uuidgenerator.net/dev-corner/typescript
+  - title: "Crypto: randomUUID() method"
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID

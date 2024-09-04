@@ -1,0 +1,52 @@
+id: print
+title: 日志
+query: 打印日志
+comment: print
+description: |
+  在 Swift 中，`print` 是最常用的日志输出函数之一，能够将文本或变量内容打印到控制台。`print` 可以用于调试目的，并支持多个参数、指定分隔符（`separator`）以及自定义行结尾符（`terminator`）。除了 `print`，Swift 还提供 `debugPrint` 和 `dump` 等函数，帮助开发者更深入地了解数据结构。对于更复杂的日志记录，Swift 提供了 `NSLog` 和 `os_log`（Unified Logging API），前者用于较旧的日志系统，而后者支持多种日志级别，并且性能更佳，适用于生产环境。
+
+example:
+  - title: 使用 print 打印变量
+    content: |
+      ```swift
+      let name = "Swift"
+      print("Hello, \(name)!")  // 输出: Hello, Swift!
+      ```
+
+  - title: 自定义分隔符与终止符
+    content: |
+      ```swift
+      print("Apple", "Banana", "Cherry", separator: "-", terminator: " End")
+      // 输出: Apple-Banana-Cherry End
+      ```
+
+  - title: 使用 debugPrint 输出调试信息
+    content: |
+      ```swift
+      struct Foo { let name = "Sample" }
+      debugPrint(Foo())  // 输出: Foo(name: "Sample")
+      ```
+
+  - title: 使用 dump 输出详细信息
+    content: |
+      ```swift
+      let array = [1, 2, 3]
+      dump(array)  
+      // 输出详细的数组信息，包括每个元素的结构
+      ```
+
+  - title: 使用 os_log 进行系统日志记录
+    content: |
+      ```swift
+      import os
+      let log = OSLog(subsystem: "com.example.app", category: "networking")
+      os_log("Network request started", log: log, type: .info)
+      ```
+
+references:
+  - title: print(_:separator:terminator:) | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/swift/print(_:separator:terminator:)
+  - title: Logging for beginners in Swift
+    url: https://theswiftdev.com/logging-for-beginners-in-swift/
+  - title: Basic debugging using logging for Swift and Objective-C apps
+    url: https://developer.apple.com/library/archive/technotes/tn2347/_index.html

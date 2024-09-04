@@ -1,0 +1,71 @@
+id: set
+title: 集合
+query: Swift Set Collection 使用
+comment: Swift 的集合 (Set) 是一种无序的、唯一元素的集合，适用于需要保证元素不重复且不关心顺序的场景。它支持插入、删除、查找、迭代等操作，还可以进行常见的集合运算。
+description: |
+  Swift 的 `Set` 是一个无序的集合类型，其中的每个元素都是唯一的，适合在不需要元素顺序且元素必须唯一的情况下使用。与数组不同，集合没有固定顺序，因此每次迭代的顺序可能不同。集合支持许多常见操作，如插入、删除、查找、以及集合运算 (例如并集、交集、差集等)。
+example:
+  - title: 创建和遍历集合
+    content: |
+      ```swift
+      // 创建一个整数集合
+      var numberSet: Set<Int> = [1, 2, 3, 4, 5]
+      
+      // 使用 for 循环遍历集合
+      for number in numberSet {
+          print(number) // 输出元素，顺序不定
+      }
+      ```
+  - title: 插入和删除元素
+    content: |
+      ```swift
+      var fruitSet: Set<String> = ["Apple", "Banana", "Orange"]
+      
+      // 插入新元素
+      fruitSet.insert("Mango")
+      print(fruitSet) // 插入后集合中的元素
+
+      // 删除元素
+      if let removedFruit = fruitSet.remove("Banana") {
+          print("Removed: \(removedFruit)") // 成功删除的元素
+      } else {
+          print("Element not found")
+      }
+      ```
+  - title: 检查元素是否存在
+    content: |
+      ```swift
+      let colors: Set = ["Red", "Green", "Blue"]
+      
+      if colors.contains("Green") {
+          print("Green is in the set") // 如果元素存在
+      }
+      ```
+  - title: 集合运算 - 并集、交集、差集
+    content: |
+      ```swift
+      let setA: Set = [1, 2, 3]
+      let setB: Set = [3, 4, 5]
+      
+      // 并集
+      let unionSet = setA.union(setB)
+      print("Union: \(unionSet)") // 输出 [1, 2, 3, 4, 5]
+
+      // 交集
+      let intersectionSet = setA.intersection(setB)
+      print("Intersection: \(intersectionSet)") // 输出 [3]
+
+      // 差集
+      let differenceSet = setA.subtracting(setB)
+      print("Difference: \(differenceSet)") // 输出 [1, 2]
+      ```
+  - title: 查找集合中的元素数量
+    content: |
+      ```swift
+      let letters: Set = ["a", "b", "c", "d"]
+      print("Set contains \(letters.count) elements.") // 输出元素数量
+      ```
+
+references:
+  - title: Sets
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/collectiontypes#Sets

@@ -1,0 +1,56 @@
+id: uuid
+title: UUID
+query: Kotlin UUID generation
+comment: 介绍 Kotlin 中如何生成唯一标识符 (UUID) 以及可选的多平台支持
+description: |
+  在 Kotlin 中，可以通过与 Java 的互操作性，使用 `java.util.UUID` 类生成 UUID。Kotlin 还提供了多平台库 `kotlinx-uuid`，允许在不同平台上生成和操作 UUID。UUID 的常见版本包括随机生成的 UUID v4 和基于名称的 UUID v5。
+example:
+  - title: 使用 `java.util.UUID` 生成随机 UUID
+    content: |
+      ```kotlin
+      import java.util.UUID
+
+      fun main() {
+          val myUuid = UUID.randomUUID()
+          println("Generated UUID: $myUuid") // 输出类似 "550e8400-e29b-41d4-a716-446655440000"
+      }
+      ```
+  - title: 将字符串转换为 UUID
+    content: |
+      ```kotlin
+      import java.util.UUID
+
+      fun main() {
+          val uuidString = "550e8400-e29b-41d4-a716-446655440000"
+          val uuid = UUID.fromString(uuidString)
+          println(uuid)  // 输出同样的 UUID 对象
+      }
+      ```
+  - title: 使用 `kotlinx-uuid` 库生成随机 UUID
+    content: |
+      ```kotlin
+      import kotlin.uuid.*
+
+      fun main() {
+          val uuid = Uuid.random()  // 生成随机 UUID
+          println("Generated UUID: $uuid")  // 输出类似 "550e8400-e29b-41d4-a716-446655440000"
+      }
+      ```
+  - title: 使用自定义字节数组生成 UUID
+    content: |
+      ```kotlin
+      import kotlin.uuid.*
+
+      fun main() {
+          val byteArray = byteArrayOf(0x55, 0x0e, 0x84.toByte(), 0x00, 0xe2.toByte(), 0x9b.toByte(), 0x41, 0xd4.toByte(),
+                                      0xa7.toByte(), 0x16, 0x44, 0x66, 0x55, 0x44, 0x00, 0x00)
+          val uuid = Uuid.fromByteArray(byteArray)
+          println(uuid)  // 输出解析自字节数组的 UUID
+      }
+      ```
+
+references:
+  - title: Generate UUID in Kotlin
+    url: https://www.uuid.site/docs/kotlin
+  - title: Kotlin UUID Class - Kotlin Programming Language
+    url: https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.uuid/-uuid/
