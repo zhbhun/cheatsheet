@@ -1,0 +1,99 @@
+id: serialization
+title: 序列化
+query: Swift Codable 序列化
+comment: Swift 中通过 Codable 协议进行序列化和反序列化，可以方便地将对象编码为 JSON 等格式，或从 JSON 解析为对象。
+description: |
+  在 Swift 中，`Codable` 协议结合了 `Encodable` 和 `Decodable`，允许对象的序列化（编码）和反序列化（解码）。通过实现 `Codable`，你可以轻松地将自定义类型转换为 JSON 或从 JSON 中恢复数据。`Codable` 适用于许多常见的数据格式，如 JSON 和属性列表（Property List）。编码时通常使用 `JSONEncoder`，而解码时使用 `JSONDecoder`。此外，`Codable` 支持嵌套数据、数组及自定义键和日期格式。
+example:
+  - title: 将对象编码为 JSON
+    content: |
+      ```swift
+      struct User: Codable {
+          var name: String
+          var age: Int
+      }
+
+      let user = User(name: "Alice", age: 25)
+      let encoder = JSONEncoder()
+      if let jsonData = try? encoder.encode(user) {
+          print(String(data: jsonData, encoding: .utf8)!) // 输出 JSON 字符串
+      }
+      ```
+
+  - title: 从 JSON 反序列化为对象
+    content: |
+      ```swift
+      let json = """
+      {
+          "name": "Alice",
+          "age": 25
+      }
+      """.data(using: .utf8)!
+
+      struct User: Codable {
+          var name: String
+          var age: Int
+      }
+
+      let decoder = JSONDecoder()
+      if let user = try? decoder.decode(User.self, from: json) {
+          print(user.name)  // 输出 "Alice"
+      }
+      ```
+
+  - title: 自定义键名的编码解码
+    content: |
+      ```swift
+      struct Product: Codable {
+          var productID: Int
+          var productName: String
+
+          enum CodingKeys: String, CodingKey {
+              case productID = "id"
+              case productName = "name"
+          }
+      }
+
+      let json = """
+      {
+          "id": 123,
+          "name": "iPhone"
+      }
+      """.data(using: .utf8)!
+
+      let decoder = JSONDecoder()
+      if let product = try? decoder.decode(Product.self, from: json) {
+          print(product.productName)  // 输出 "iPhone"
+      }
+      ```
+
+  - title: 使用自定义日期格式进行编码解码
+    content: |
+      ```swift
+      struct Event: Codable {
+          var name: String
+          var date: Date
+      }
+
+      let json = """
+      {
+          "name": "Conference",
+          "date": "2024-09-01T10:30:00Z"
+      }
+      """.data(using: .utf8)!
+
+      let formatter = DateFormatter()
+      formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .formatted(formatter)
+      if let event = try? decoder.decode(Event.self, from: json) {
+          print(event.date)  // 输出日期对象
+      }
+      ```
+
+references:
+  - title: "Encoding, Decoding, and Serialization - Apple Developer"
+    url: https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types
+  - title: "Simplify JSON parsing in Swift using Codable - LogRocket Blog"
+    url: https://blog.logrocket.com/simplify-json-parsing-swift-using-codable

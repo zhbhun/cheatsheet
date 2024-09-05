@@ -1,0 +1,73 @@
+id: serialization
+title: 序列化
+query: TypeScript serialization
+comment: 展示 TypeScript 中对象的序列化和反序列化操作，尤其是如何保持类型安全。
+description: |
+  在 TypeScript 中，序列化指的是将对象转换为字符串格式（通常是 JSON），而反序列化则是将字符串转换回对象。虽然 TypeScript 本身提供了基础的 `JSON.stringify` 和 `JSON.parse` 来进行序列化与反序列化操作，但这些方法会丢失对象的类型信息。为了处理这个问题，可以使用像 `class-transformer` 和 `ts-serializer` 等库，保持类型安全并支持复杂的对象结构。
+
+  - `JSON.stringify`: 将对象转为 JSON 字符串，但不保留类型信息。
+  - `class-transformer`: 使用装饰器将对象转换为类实例，并保留类方法和类型。
+  - `ts-serializer`: 提供更精细的序列化控制，支持复杂对象和属性映射。
+
+  这些库在处理前后端通信、数据存储（如数据库、缓存）、或需要持久化复杂对象时非常有用。
+example:
+  - title: 使用 `JSON.stringify` 和 `JSON.parse` 进行简单序列化
+    content: |
+      ```typescript
+      class User {
+        constructor(public name: string, public age: number) {}
+      }
+
+      const user = new User("Alice", 30);
+      const serialized = JSON.stringify(user);
+      console.log(serialized); // 输出: {"name":"Alice","age":30}
+
+      const deserialized = JSON.parse(serialized);
+      console.log(deserialized); // 输出: { name: 'Alice', age: 30 }
+      ```
+  - title: 使用 `class-transformer` 保留类实例信息
+    content: |
+      ```typescript
+      import { plainToInstance, serialize } from 'class-transformer';
+
+      class User {
+        constructor(public name: string, public age: number) {}
+
+        getDescription() {
+          return `${this.name} is ${this.age} years old.`;
+        }
+      }
+
+      const plainUser = { name: 'Bob', age: 25 };
+      const user = plainToInstance(User, plainUser);
+      console.log(user.getDescription()); // 输出: "Bob is 25 years old."
+
+      const json = serialize(user);
+      console.log(json); // 输出: {"name":"Bob","age":25}
+      ```
+  - title: 使用 `ts-serializer` 自定义序列化
+    content: |
+      ```typescript
+      import { Serialize, SerializeProperty, Serializable } from 'ts-serializer';
+
+      @Serialize({})
+      class User extends Serializable {
+        @SerializeProperty({ map: 'first_name' })
+        firstName: string;
+
+        @SerializeProperty({ map: 'last_name' })
+        lastName: string;
+      }
+
+      const data = { first_name: 'John', last_name: 'Doe' };
+      const user = new User().deserialize(data);
+      console.log(user.firstName); // 输出: "John"
+      console.log(user.serialize()); // 输出: {"first_name":"John","last_name":"Doe"}
+      ```
+references:
+  - title: "Understanding TypeScript object serialization"
+    url: https://blog.logrocket.com/understanding-typescript-object-serialization
+  - title: "Using ts-serializer to serialize and deserialize JSON Objects"
+    url: https://dpopescu.me/using-ts-serializer-to-serialize-and-deserialize-json-objects
+  - title: "Class-transformer GitHub repository"
+    url: https://github.com/typestack/class-transformer

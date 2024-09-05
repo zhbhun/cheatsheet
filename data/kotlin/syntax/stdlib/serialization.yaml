@@ -1,0 +1,94 @@
+id: serialization
+title: 序列化
+query: Kotlin 序列化 kotlinx.serialization JSON
+comment: 介绍 Kotlin 中的序列化与反序列化的使用，涵盖常用格式如 JSON，并提供实际代码示例。
+description: |
+  在 Kotlin 中，`kotlinx.serialization` 是一个多平台、多格式的序列化框架，支持将数据类对象序列化为 JSON、CBOR、ProtoBuf 等多种格式，并通过反序列化恢复为对象。要实现序列化，首先需要使用 `@Serializable` 注解标记数据类，随后可通过 `Json.encodeToString()` 和 `Json.decodeFromString()` 等方法完成序列化和反序列化操作。该框架支持标准的 Kotlin 类型，且允许自定义序列化器以处理复杂或第三方类的序列化。
+example:
+  - title: 序列化数据类为 JSON
+    content: |
+      ```kotlin
+      import kotlinx.serialization.Serializable
+      import kotlinx.serialization.encodeToString
+      import kotlinx.serialization.json.Json
+
+      @Serializable
+      data class User(val name: String, val age: Int)
+
+      fun main() {
+          val user = User("Alice", 25)
+          val jsonString = Json.encodeToString(user)
+          println(jsonString)  // 输出: {"name":"Alice","age":25}
+      }
+      ```
+  - title: 从 JSON 反序列化为数据类
+    content: |
+      ```kotlin
+      import kotlinx.serialization.Serializable
+      import kotlinx.serialization.decodeFromString
+      import kotlinx.serialization.json.Json
+
+      @Serializable
+      data class User(val name: String, val age: Int)
+
+      fun main() {
+          val jsonString = """{"name":"Alice", "age":25}"""
+          val user = Json.decodeFromString<User>(jsonString)
+          println(user)  // 输出: User(name=Alice, age=25)
+      }
+      ```
+  - title: 序列化列表对象
+    content: |
+      ```kotlin
+      import kotlinx.serialization.Serializable
+      import kotlinx.serialization.encodeToString
+      import kotlinx.serialization.json.Json
+
+      @Serializable
+      data class Post(val author: String, val title: String)
+
+      fun main() {
+          val posts = listOf(
+              Post("Alice", "Kotlin Serialization"),
+              Post("Bob", "Advanced Kotlin")
+          )
+          val jsonString = Json.encodeToString(posts)
+          println(jsonString)  // 输出: [{"author":"Alice","title":"Kotlin Serialization"},{"author":"Bob","title":"Advanced Kotlin"}]
+      }
+      ```
+  - title: 自定义序列化器
+    content: |
+      ```kotlin
+      import kotlinx.serialization.*
+      import kotlinx.serialization.json.*
+      import kotlinx.serialization.encoding.*
+      import kotlinx.serialization.descriptors.*
+
+      @Serializable(with = LocalDateSerializer::class)
+      data class Event(val name: String, val date: String)
+
+      object LocalDateSerializer : KSerializer<String> {
+          override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Date", PrimitiveKind.STRING)
+
+          override fun serialize(encoder: Encoder, value: String) {
+              encoder.encodeString(value)
+          }
+
+          override fun deserialize(decoder: Decoder): String {
+              return decoder.decodeString()
+          }
+      }
+
+      fun main() {
+          val event = Event("KotlinConf", "2024-09-01")
+          val jsonString = Json.encodeToString(event)
+          println(jsonString)  // 输出: {"name":"KotlinConf","date":"2024-09-01"}
+      }
+      ```
+references:
+  - title: Serialization | Kotlin Documentation
+    url: https://kotlinlang.org/docs/serialization.html
+  - title: An Introduction to kotlinx-serialization Project
+    url: https://www.baeldung.com/kotlin/kotlinx-serialization
+  - title: Serialization Guide | GitHub - kotlinx.serialization
+    url: https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md
