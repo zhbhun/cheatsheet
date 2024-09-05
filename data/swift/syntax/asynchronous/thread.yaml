@@ -1,0 +1,142 @@
+id: thread
+title: 线程
+query: Swift threading GCD OperationQueue example
+comment: 介绍 Swift 中常用的线程和并发处理方式，不考虑 Swift 的 `async/await` 特性。
+description: |
+  Swift 的多线程实现主要依靠 Grand Central Dispatch (GCD) 和 OperationQueue 来管理并发任务。
+
+  - **GCD (Grand Central Dispatch)**: GCD 提供了一种底层的 API，用于通过 `DispatchQueue` 将任务分配到系统的线程池。可以使用串行队列（`serial`）确保任务按顺序执行，或使用并发队列（`concurrent`）以并行方式运行多个任务。任务可以是同步执行（`sync`）或异步执行（`async`），后者不会阻塞调用线程。
+  
+  - **OperationQueue**: 比 GCD 更高层的并发抽象，支持任务依赖、优先级控制、取消操作等高级功能。你可以通过 `BlockOperation` 创建任务，并将其添加到 `OperationQueue` 中。
+
+  在这两者之间，GCD 通常适用于需要轻量级并发处理的场景，而 OperationQueue 更适合复杂的任务调度。
+
+example:
+  - title: 使用 GCD 进行异步任务
+    content: |
+      ```swift
+      // 在后台队列中执行耗时任务
+      DispatchQueue.global(qos: .background).async {
+          print("在后台执行任务")
+          
+          // 完成后回到主线程更新 UI
+          DispatchQueue.main.async {
+              print("任务完成，回到主线程更新 UI")
+          }
+      }
+      ```
+
+  - title: GCD 串行队列与并行队列示例
+    content: |
+      ```swift
+      import Foundation
+
+      // 创建串行队列
+      let serialQueue = DispatchQueue(label: "com.example.serial")
+
+      // 创建并发队列
+      let concurrentQueue = DispatchQueue(label: "com.example.concurrent", attributes: .concurrent)
+
+      // 演示串行队列
+      print("开始串行队列示例")
+      serialQueue.async {
+          print("串行队列任务 1 开始")
+          sleep(2) // 模拟任务耗时
+          print("串行队列任务 1 结束")
+      }
+
+      serialQueue.async {
+          print("串行队列任务 2 开始")
+          sleep(1)
+          print("串行队列任务 2 结束")
+      }
+
+      serialQueue.async {
+          print("串行队列任务 3 开始")
+          sleep(1)
+          print("串行队列任务 3 结束")
+      }
+
+      // 演示并发队列
+      print("\n开始并发队列示例")
+      concurrentQueue.async {
+          print("并发队列任务 1 开始")
+          sleep(2) // 模拟任务耗时
+          print("并发队列任务 1 结束")
+      }
+
+      concurrentQueue.async {
+          print("并发队列任务 2 开始")
+          sleep(1)
+          print("并发队列任务 2 结束")
+      }
+
+      concurrentQueue.async {
+          print("并发队列任务 3 开始")
+          sleep(1)
+          print("并发队列任务 3 结束")
+      }
+
+      // 保证主线程不会提前退出
+      sleep(5)
+      print("示例结束")
+
+      /*
+        开始串行队列示例
+        串行队列任务 1 开始
+        串行队列任务 1 结束
+        串行队列任务 2 开始
+        串行队列任务 2 结束
+        串行队列任务 3 开始
+        串行队列任务 3 结束
+
+        开始并发队列示例
+        并发队列任务 1 开始
+        并发队列任务 2 开始
+        并发队列任务 3 开始
+        并发队列任务 2 结束
+        并发队列任务 3 结束
+        并发队列任务 1 结束
+        示例结束
+      */
+      ```
+
+  - title: 使用 OperationQueue 管理任务
+    content: |
+      ```swift
+      let operationQueue = OperationQueue()
+
+      let operation1 = BlockOperation {
+          print("操作 1 开始")
+          // 模拟耗时任务
+          sleep(1)
+          print("操作 1 完成")
+      }
+
+      let operation2 = BlockOperation {
+          print("操作 2 开始")
+          // 模拟耗时任务
+          sleep(1)
+          print("操作 2 完成")
+      }
+
+      // 设置任务依赖，确保操作 2 在操作 1 完成后执行
+      operation2.addDependency(operation1)
+
+      // 添加操作到队列
+      operationQueue.addOperations([operation1, operation2], waitUntilFinished: false)
+
+      /*
+        操作 1 开始
+        操作 1 完成
+        操作 2 开始
+        操作 2 完成
+        示例结束
+      */
+      ```
+
+references:
+  - title: Concurrency
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/
+  - title: Thread
+    url: https://developer.apple.com/documentation/foundation/thread

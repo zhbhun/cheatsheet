@@ -1,0 +1,323 @@
+id: async
+title: Async & Await
+query: Swift async await 用法
+comment: 介绍 Swift 中 async/await 的用法，包括顺序调用、并行任务以及从同步代码调用异步函数的方式。
+description: |
+  Swift 从 5.5 开始引入了 `async` 和 `await`，简化了异步任务的处理，允许你以同步代码的形式编写异步逻辑。`async` 用于标记一个异步函数，而 `await` 则用于暂停执行并等待异步操作完成。
+
+  - **`Task` 任务**：在同步环境中可以通过 `Task { }` 启动异步任务，适用于非异步函数中执行异步操作。
+  - **异步函数**：使用 `async` 来标记一个可能包含异步操作的函数。调用时需使用 `await` 来暂停并等待结果。
+  - **`Continuation`**：用于将基于回调的异步代码转换为 async/await 模型。它通过让你手动控制异步任务的恢复，使得你可以将已有的回调式 API 封装成 async 函数，从而与新的 async/await 语法兼容。
+
+example:
+  - title: 顺序调用 async 函数
+    content: |
+      ```swift
+      func downloadData() async -> String {
+          print("Start downloading data...")
+          try? await Task.sleep(2 * 1_000_000_000) // 模拟 2 秒的下载时间
+          return "Downloaded Data"
+      }
+
+      func fetchData() async {
+          let data = await downloadData()
+          return data
+      }
+
+      func processTasks() async {
+          do {
+              let result = try await fetchData()
+              print("Result: \(result)")
+          } catch {
+              print("Error: \(error)")
+          }
+      }
+      ```
+  - title: 从同步代码调用异步函数
+    content: |
+      ```swift
+      func callAsyncFromSync() {
+          print("Before starting Task") // 同步代码日志
+
+          // 创建一个新的异步任务
+          Task {
+              let result = try await fetchData() // 调用异步函数
+              print("Async result: \(result)")   // 异步任务完成后打印
+          }
+
+          print("After starting Task") // 同步代码日志，证明不会被 Task 阻塞
+      }
+
+      // 模拟异步函数
+      func fetchData() async throws -> String {
+          // 模拟异步延迟
+          try await Task.sleep(nanoseconds: 1_000_000_000) // 1秒延迟
+          return "Fetched data"
+      }
+
+      // 调用函数
+      callAsyncFromSync()
+      ```
+  - title: 切换线程执行任务
+    content: |
+      ```swift
+      import Foundation
+
+      func performTaskOnDifferentThreads() async {
+          // 主线程执行任务：用于执行与用户界面相关的任务（如更新 UI）。主线程是应用程序的主事件循环，任何 UI 操作都必须在主线程上完成。
+          await Task { @MainActor in
+              print("Executing on main thread: \(Thread.current)")
+          }
+
+          // 后台线程执行任务：用于执行对用户不敏感的后台任务，通常是低优先级的、耗时较长的任务，如下载大文件或处理大型数据。
+          await Task(priority: .background) {
+              print("Executing on background thread: \(Thread.current)")
+          }
+
+          // 切换到默认优先级线程：处理大多数普通任务，适用于那些既不需要快速响应用户交互，也不需要低优先级的后台任务。
+          await Task(priority: .default) {
+            print("Executing on default thread: \(Thread.current)")
+          }
+
+          // 切换到用户交互线程：用于需要快速响应用户输入的任务，例如用户主动发起的操作（如拖拽文件、点击按钮等）。适合处理需要即时反馈的任务。
+          await Task(priority: .userInitiated) {
+              print("Executing on user-initiated thread: \(Thread.current)")
+          }
+
+          // 切换到低优先级线程：处理需要较长时间运行的任务，如批量处理数据、文件压缩等。适合处理不需要即时反馈的操作，优先级低于普通任务但高于后台任务。
+          await Task(priority: .utility) {
+              print("Executing on utility thread (low priority): \(Thread.current)")
+          }
+      }
+      ```
+  - title: 使用 async/await 发起网络请求
+    content: |
+      ```swift
+      import Foundation
+
+      // 定义一个异步函数用于发起网络请求
+      func fetchData(from url: URL) async throws -> Data {
+          // 使用 URLSession 发起网络请求
+          let (data, response) = try await URLSession.shared.data(from: url)
+
+          // 检查 HTTP 响应状态码是否为 200
+          guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+              throw URLError(.badServerResponse)
+          }
+
+          return data
+      }
+
+      // 解析网络请求返回的数据（JSON 示例）
+      func parseJSON(data: Data) throws -> [String: Any]? {
+          let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+          return json
+      }
+
+      // 异步发起请求并处理结果
+      @main
+      struct MyApp {
+          static func main() async {
+              let urlString = "https://jsonplaceholder.typicode.com/todos/1"
+              if let url = URL(string: urlString) {
+                  do {
+                      // 发起网络请求并获取数据
+                      let data = try await fetchData(from: url)
+
+                      // 解析 JSON 数据
+                      if let json = try parseJSON(data: data) {
+                          print("Fetched JSON: \(json)")
+                      }
+                  } catch {
+                      print("Failed to fetch data: \(error)")
+                  }
+              }
+          }
+      }
+      ```
+  - title: 并行执行多个异步任务
+    content: |
+      ```swift
+      func fetchMultipleData() async throws -> [String] {
+          async let firstData = downloadData(from: "url1")
+          async let secondData = downloadData(from: "url2")
+          return try await [firstData, secondData] // 并行获取两个数据
+      }
+
+      func processParallelTasks() async {
+          do {
+              let results = try await fetchMultipleData()
+              print("Results: \(results)")
+          } catch {
+              print("Error: \(error)")
+          }
+      }
+      ```
+  - title: 使用 `async` 和 `throws`
+    content: |
+      ```swift
+      enum NetworkError: Error {
+          case invalidURL
+          case requestFailed
+      }
+
+      func fetchData(from url: String) async throws -> Data {
+          guard let validURL = URL(string: url) else {
+              throw NetworkError.invalidURL
+          }
+          let (data, _) = try await URLSession.shared.data(from: validURL)
+          return data
+      }
+
+      func loadData() async {
+          do {
+              let data = try await fetchData(from: "https://example.com")
+              print("Data received: \(data)")
+          } catch {
+              print("Failed to load data: \(error)")
+          }
+      }
+      ```
+  - title: 异步序列和 `for await`
+    content: |
+      ```swift
+      struct NumberSequence: AsyncSequence {
+          typealias Element = Int
+          struct AsyncIterator: AsyncIteratorProtocol {
+              var current = 1
+              mutating func next() async -> Int? {
+                  if current > 5 { return nil }
+                  defer { current += 1 }
+                  return current
+              }
+          }
+
+          func makeAsyncIterator() -> AsyncIterator {
+              AsyncIterator()
+          }
+      }
+
+      func iterateAsyncSequence() async {
+          for await number in NumberSequence() {
+              print("Received: \(number)")
+          }
+      }
+      ```
+  - title: 取消异步任务
+    content: |
+      ```swift
+      func cancellableTask() async {
+          let task = Task {
+              for i in 1...5 {
+                  try Task.checkCancellation() // 检查是否取消
+                  print("Task running... step \(i)")
+                  try? await Task.sleep(1_000_000_000) // 模拟任务延迟
+              }
+              print("Task completed")
+          }
+
+          // 2 秒后取消任务
+          try? await Task.sleep(2_000_000_000)
+          task.cancel()
+          print("Task was cancelled")
+      }
+      ```
+  - title: 使用 withCheckedThrowingContinuation 将回调函数转换为异步函数（支持错误处理）
+    content: |
+      ```swift
+      func fetchDataWithCallback(completion: @escaping (Result<String, Error>) -> Void) {
+          // 模拟网络请求，延迟 2 秒后返回结果
+          DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+              completion(.success("Fetched data"))
+          }
+      }
+
+      func fetchData() async throws -> String {
+          return try await withCheckedThrowingContinuation { continuation in
+              fetchDataWithCallback { result in
+                  switch result {
+                  case .success(let data):
+                      continuation.resume(returning: data) // 完成并返回结果
+                  case .failure(let error):
+                      continuation.resume(throwing: error) // 抛出错误
+                  }
+              }
+          }
+      }
+
+      func performAsyncOperation() async {
+          do {
+              let data = try await fetchData()
+              print("Data: \(data)")
+          } catch {
+              print("Error: \(error)")
+          }
+      }
+      ```
+  - title: 使用 withCheckedContinuation 将回调函数转换为异步函数（无错误处理）
+    content: |
+      ```swift
+      func fetchDataWithCallback(completion: @escaping (String) -> Void) {
+          DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+              completion("Fetched Data")
+          }
+      }
+
+      func fetchData() async -> String {
+          return await withCheckedContinuation { continuation in
+              fetchDataWithCallback { result in
+                  continuation.resume(returning: result) // 完成并返回结果
+              }
+          }
+      }
+
+      func performTask() async {
+          let data = await fetchData()
+          print("Data: \(data)")
+      }
+      ```
+
+  - title: 使用 withCheckedThrowingContinuation 处理错误（支持错误处理）
+    content: |
+      ```swift
+      enum NetworkError: Error {
+          case badRequest
+      }
+
+      func fetchDataWithCallback(completion: @escaping (Result<String, Error>) -> Void) {
+          DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+              completion(.failure(NetworkError.badRequest)) // 模拟错误
+          }
+      }
+
+      func fetchData() async throws -> String {
+          return try await withCheckedThrowingContinuation { continuation in
+              fetchDataWithCallback { result in
+                  switch result {
+                  case .success(let data):
+                      continuation.resume(returning: data)
+                  case .failure(let error):
+                      continuation.resume(throwing: error)
+                  }
+              }
+          }
+      }
+
+      func performTask() async {
+          do {
+              let data = try await fetchData()
+              print("Data: \(data)")
+          } catch {
+              print("Error: \(error)")
+          }
+      }
+      ```
+references:
+  - title: "Async/await in Swift explained with examples"
+    url: https://www.avanderlee.com/swift/async-await/
+  - title: "Swift async/await concurrency explained"
+    url: https://matteomanferdini.com/async-await-swift/
+  - title: "Swift 5.5 concurrency async/await cheatsheet"
+    url: https://swiftuirecipes.com/blog/swift-5.5-concurrency-cheatsheet
+  - title: "Concurrency in Swift"
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/

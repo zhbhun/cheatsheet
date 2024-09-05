@@ -11,3 +11,4 @@ children:
   - classes
   - modules
   - stdlib
+  - asynchronous

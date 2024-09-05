@@ -1,0 +1,64 @@
+id: thread
+title: 线程
+query: Kotlin threads usage example
+comment: 介绍 Kotlin 中如何使用线程，以及与协程的区别。
+description: |
+  在 Kotlin 中，可以使用与 Java 类似的方式创建和管理线程，主要使用 `Thread` 类或 `kotlin.concurrent.thread()` 函数。线程用于并行执行任务，适合处理 I/O 操作、长时间运行的计算等场景。然而，线程的创建和管理相对较重，且容易出现同步问题，因此 Kotlin 官方更推荐使用协程来替代线程，协程相比线程更加轻量，能够更高效地处理并发任务。
+example:
+  - title: 使用 Thread 类创建线程
+    content: |
+      ```kotlin
+      // 创建线程并启动
+      val myThread = Thread {
+          println("Running in thread: ${Thread.currentThread().name}")
+      }
+      myThread.start() // 启动线程
+      ```
+      
+  - title: 使用 kotlin.concurrent.thread() 创建线程
+    content: |
+      ```kotlin
+      import kotlin.concurrent.thread
+
+      // 使用 kotlin.concurrent.thread() 创建线程
+      thread(start = true) {
+          println("Running in thread: ${Thread.currentThread().name}")
+      }
+      ```
+
+  - title: 线程休眠与中断
+    content: |
+      ```kotlin
+      val myThread = Thread {
+          try {
+              println("Thread sleeping...")
+              Thread.sleep(2000) // 休眠 2 秒
+              println("Thread resumed.")
+          } catch (e: InterruptedException) {
+              println("Thread interrupted")
+          }
+      }
+      myThread.start()
+      myThread.interrupt() // 中断线程
+      ```
+
+  - title: 守护线程示例
+    content: |
+      ```kotlin
+      // 创建守护线程
+      val daemonThread = thread(isDaemon = true) {
+          while (true) {
+              println("Daemon thread is running...")
+              Thread.sleep(1000)
+          }
+      }
+      // 主线程结束后，守护线程也会停止
+      Thread.sleep(3000)
+      println("Main thread ending.")
+      ```
+
+references:
+  - title: "Asynchronous programming techniques"
+    url: https://kotlinlang.org/docs/async-programming.html
+  - title: "Threads vs Coroutines in Kotlin"
+    url: https://www.baeldung.com/kotlin/threads-coroutines

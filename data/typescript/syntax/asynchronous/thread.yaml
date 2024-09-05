@@ -1,0 +1,56 @@
+id: thread
+title: Worker
+query: TypeScript worker threads, web workers 使用
+comment: 介绍了在 TypeScript 中 Web Worker 和 Worker Threads 的使用。重点说明如何在浏览器和 Node.js 环境下使用工作线程来执行并行任务，避免阻塞主线程。
+description: |
+  在 TypeScript 中，工作线程用于并行执行任务，提升应用性能，尤其适用于 CPU 密集型任务。工作线程分为两种：
+
+  1. **Web Worker** (浏览器环境) - 主要用于执行后台任务，不会阻塞 UI 线程。常见于大规模计算、文件解析或数据处理等场景。
+
+  2. **Worker Threads** (Node.js 环境) - 适用于多线程编程，主要用于 Node.js 中的 CPU 密集型任务。与 Web Worker 不同，Worker Threads 可以通过 `SharedArrayBuffer` 共享内存。
+
+  Web Worker 通过 `postMessage` 和 `onmessage` 事件与主线程通信；而 Node.js 中的 Worker Threads 通过 `workerData` 和 `parentPort` 进行数据传递。
+example:
+  - title: 在浏览器中使用 Web Worker
+    content: |
+      ```typescript
+      // worker.ts
+      self.onmessage = (e) => {
+          const result = e.data.num * 2;
+          self.postMessage(result);  // 将结果发送回主线程
+      };
+
+      // main.ts
+      const worker = new Worker(new URL('./worker.ts', import.meta.url));
+
+      worker.postMessage({ num: 5 });  // 向 worker 发送数据
+
+      worker.onmessage = (event) => {
+          console.log(`来自 worker 的结果: ${event.data}`);  // 输出: 10
+      };
+      ```
+  - title: 在 Node.js 中使用 Worker Threads
+    content: |
+      ```typescript
+      // worker.ts
+      import { parentPort, workerData } from 'worker_threads';
+
+      const result = workerData.num * 2;
+      parentPort.postMessage(result);  // 将结果发送回主线程
+
+      // main.ts
+      import { Worker } from 'worker_threads';
+
+      const worker = new Worker('./worker.js', {
+          workerData: { num: 5 }
+      });
+
+      worker.on('message', (result) => {
+          console.log(`来自 worker 线程的结果: ${result}`);  // 输出: 10
+      });
+      ```
+references:
+  - title: "使用 Web Workers - Web APIs | MDN"
+    url: https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API/Using_web_workers
+  - title: "在 React 中使用 TypeScript 的 Web Workers"
+    url: https://blog.logrocket.com/web-workers-react-typescript
