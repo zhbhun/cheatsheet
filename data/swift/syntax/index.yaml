@@ -11,3 +11,4 @@ children:
   - modules
   - stdlib
   - asynchronous
+  - gc

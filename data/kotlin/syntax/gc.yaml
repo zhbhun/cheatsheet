@@ -1,0 +1,45 @@
+id: gc
+title: 垃圾回收
+query: Kotlin 垃圾回收 标记清除 循环引用
+comment: Kotlin 的垃圾回收使用标记清除算法，不会存在循环引用问题。
+description: |
+  Kotlin 在 JVM 上运行时，依赖 JVM 的垃圾回收机制，主要采用标记-清除 (Mark-and-Sweep) 的垃圾收集算法。这种算法通过从 GC Roots（根对象）出发标记所有可以到达的对象，清除无法到达的“垃圾”对象。这种方法有效避免了循环引用问题，因为只要对象不可达，无论其引用关系如何，都会被回收。
+example:
+  - title: 强制触发 Kotlin/Native 垃圾回收
+    content: |
+      ```kotlin
+      import kotlin.native.internal.GC
+
+      // 手动触发垃圾回收并等待完成
+      fun forceGc() {
+          GC.collect()  // 触发垃圾回收
+      }
+      ```
+
+  - title: 在 JVM 中优化垃圾回收
+    content: |
+      ```kotlin
+      // 使用 JVM 的 G1 收集器
+      fun main() {
+          // JVM 参数：-XX:+UseG1GC
+          println("Hello, Kotlin with G1 GC!")
+      }
+      ```
+  - title: 监控 Kotlin/Native 中的 GC 信息
+    content: |
+      ```kotlin
+      import kotlin.native.internal.GC
+
+      fun printLastGcInfo() {
+          val info = GC.lastGCInfo
+          println("最后一次 GC 统计: ${info?.memoryUsageAfter}")
+      }
+      ```
+
+references:
+  - title: "Kotlin/Native Memory Management"
+    url: https://kotlinlang.org/docs/native-memory-manager.html
+  - title: "Kotlin/Native Memory Management Update"
+    url: https://blog.jetbrains.com/kotlin/2021/07/kotlin-native-memory-management-update/
+  - title: "Visualizing Memory Management in JVM"
+    url: https://deepu.tech/memory-management-in-jvm/

@@ -1,0 +1,56 @@
+id: gc
+title: 垃圾回收
+query: TypeScript garbage collection
+comment: 介绍 TypeScript 中垃圾回收的机制，如何利用 JavaScript 的垃圾回收机制避免内存泄漏，并给出最佳实践。
+description: >
+  TypeScript 本身没有独立的垃圾回收机制，因为它编译成 JavaScript 后运行于 JavaScript 引擎中（如 V8），依赖 JavaScript 内置的垃圾回收系统。JavaScript 采用“标记-清除”算法，通过追踪对象的可达性来确定是否可以释放内存。TypeScript 的静态类型检查有助于减少内存管理中的错误，避免不必要的内存泄漏。在 JavaScript 环境中，垃圾回收器会自动释放不再使用的对象，但是开发者仍需注意不要创建不必要的全局变量或长生命周期的引用。此外，通过将不再需要的对象设置为 `null`，可以显式地标识它们可被回收。
+example:
+  - title: 设置对象为 null 以便垃圾回收
+    content: |
+      ```typescript
+      let data = { name: 'example' };
+      console.log(data.name);  // 使用对象
+
+      data = null;  // 设置为 null，等待垃圾回收。ps：如果 data 不是全局变量，可以不用主动设置为 null，函数执行完后会自动释放
+      ```
+  - title: 避免事件监听器导致的内存泄漏
+    content: |
+      ```typescript
+      function handleResize() {
+        console.log('Window resized');
+      }
+
+      window.addEventListener('resize', handleResize);
+
+      // 及时移除事件监听器，避免内存泄漏
+      window.removeEventListener('resize', handleResize);
+      ```
+  - title: 使用 WeakMap 避免强引用导致的内存泄漏
+    content: |
+      ```typescript
+      let weakMap = new WeakMap<object, string>();
+      let obj = {};
+
+      weakMap.set(obj, "This can be garbage collected if no other strong references exist.");
+      obj = null;  // 设置为 null，对象会被回收，WeakMap 中的条目也会自动删除
+      ```
+  - title: 避免闭包中的内存泄漏
+    content: |
+      ```typescript
+      function createClosure() {
+        let largeArray = new Array(10000).fill(0);
+
+        return function() {
+          console.log('Closure function');
+        };
+      }
+
+      let closure = createClosure();
+      closure();  // 大数组 `largeArray` 不会被回收，导致内存泄漏
+      closure = null;  // 设置为 null，解除对闭包的引用。ps：如果 closure 不是全局变量，可以不用主动设置为 null，函数执行完后会自动释放
+      ```
+references:
+  - title: "Memory Management in JavaScript - MDN"
+    url: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management
+  - title: "Garbage Collection - JavaScript.info"
+    url: https://javascript.info/garbage-collection

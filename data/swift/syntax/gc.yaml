@@ -1,0 +1,171 @@
+id: gc
+title: 垃圾回收
+query: Swift garbage collection automatic reference counting
+comment: 介绍 Swift 中内存管理机制，详细解释 ARC (Automatic Reference Counting) 的原理与使用，以及常见应用场景中的弱引用用法
+description: |
+  Swift 不使用传统的垃圾回收 (Garbage Collection, GC) 机制，而是依赖自动引用计数（Automatic Reference Counting, ARC）来管理内存。ARC 自动跟踪和管理类实例的内存使用，当实例不再被引用时，ARC 会释放内存。在绝大多数情况下，ARC 可以自动处理对象的生命周期，开发者不需要手动干预。然而，如果类实例之间存在强引用循环（retain cycles），则可能会导致内存泄漏，开发者需要使用弱引用（weak）或无主引用（unowned）来打破循环。ARC 仅适用于引用类型（类），而值类型（结构体和枚举）不需要使用 ARC 管理。
+
+example:
+  - title: "基本 ARC 使用示例"
+    content: |
+      ```swift
+      class Person {
+          let name: String
+          init(name: String) {
+              self.name = name
+              print("\(name) is initialized")
+          }
+          deinit {
+              print("\(name) is being deinitialized")
+          }
+      }
+
+      var person1: Person? = Person(name: "John")
+      var person2: Person? = person1
+
+      person1 = nil  // 对象仍然存在，因为 person2 还持有引用
+      person2 = nil  // 此时对象被释放，触发 deinit
+      ```
+
+  - title: "强引用循环的示例"
+    content: |
+      ```swift
+      class Person {
+          let name: String
+          var apartment: Apartment?
+          init(name: String) {
+              self.name = name
+          }
+          deinit {
+              print("\(name) is being deinitialized")
+          }
+      }
+
+      class Apartment {
+          let unit: String
+          var tenant: Person?
+          init(unit: String) {
+              self.unit = unit
+          }
+          deinit {
+              print("Apartment \(unit) is being deinitialized")
+          }
+      }
+
+      var john: Person? = Person(name: "John")
+      var unit4A: Apartment? = Apartment(unit: "4A")
+
+      john?.apartment = unit4A
+      unit4A?.tenant = john
+
+      john = nil  // 强引用循环导致对象无法释放
+      unit4A = nil  // 仍然没有触发 deinit
+      ```
+
+  - title: "使用 weak 打破强引用循环"
+    content: |
+      ```swift
+      class Person {
+          let name: String
+          var apartment: Apartment?
+          init(name: String) {
+              self.name = name
+          }
+          deinit {
+              print("\(name) is being deinitialized")
+          }
+      }
+
+      class Apartment {
+          let unit: String
+          weak var tenant: Person?  // 使用 weak 打破循环
+          init(unit: String) {
+              self.unit = unit
+          }
+          deinit {
+              print("Apartment \(unit) is being deinitialized")
+          }
+      }
+
+      var john: Person? = Person(name: "John")
+      var unit4A: Apartment? = Apartment(unit: "4A")
+
+      john?.apartment = unit4A
+      unit4A?.tenant = john
+
+      john = nil  // 对象正确释放
+      unit4A = nil  // 此时对象也被释放
+      ```
+
+  - title: "委托模式中的弱引用"
+    content: |
+      ```swift
+      class ViewController: UIViewController, UITableViewDataSource {
+          weak var tableView: UITableView?
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              tableView?.dataSource = self // 弱引用，避免循环引用
+          }
+      }
+      ```
+
+  - title: "闭包中的弱引用"
+    content: |
+      ```swift
+      class ViewController: UIViewController {
+          var completion: (() -> Void)?
+
+          func loadData() {
+              fetchData { [weak self] data in
+                  self?.processData(data) // 使用弱引用避免循环
+              }
+          }
+      }
+      ```
+
+  - title: "通知中心中的弱引用"
+    content: |
+      ```swift
+      class MyViewController: UIViewController {
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              NotificationCenter.default.addObserver(self, selector: #selector(handleNotification), name: .myNotification, object: nil)
+          }
+
+          @objc func handleNotification() {
+              // 处理通知
+          }
+
+          deinit {
+              NotificationCenter.default.removeObserver(self) // 移除观察者，防止内存泄漏
+          }
+      }
+      ```
+
+  - title: "定时器中的弱引用"
+    content: |
+      ```swift
+      class ViewController: UIViewController {
+          var timer: Timer?
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                  self?.updateUI() // 使用弱引用避免循环
+              }
+          }
+
+          func updateUI() {
+              // 更新 UI
+          }
+
+          deinit {
+              timer?.invalidate() // 停止定时器，避免内存泄漏
+          }
+      }
+      ```
+
+references:
+  - title: "Automatic Reference Counting"
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/automaticreferencecounting/
