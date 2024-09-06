@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as yaml from 'yaml';
+import { Button } from '@nextui-org/button';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -12,12 +13,9 @@ function App() {
 
   return (
     <>
-      <button
-        className="text-red-500"
-        onClick={() => setCount((count) => count + 1)}
-      >
+      <Button color="primary" onClick={() => setCount((count) => count + 1)}>
         count is {count}
-      </button>
+      </Button>
     </>
   );
 }
