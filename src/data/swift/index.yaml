@@ -95,9 +95,24 @@ outlines:
           - id: selector
             title: 选择器表达式
       - id: functions
-        title: >-
-          函数 - defining - parameter - return - anonymous - type - scope -
-          overload - generic
+        title: 函数
+        children:
+          - id: defining
+            title: 函数定义
+          - id: parameter
+            title: 函数参数
+          - id: return
+            title: 返回值
+          - id: anonymous
+            title: 闭包
+          - id: type
+            title: 函数类型
+          - id: scope
+            title: 函数作用域
+          - id: overload
+            title: 函数重载
+          - id: generic
+            title: 函数泛型
       - id: classes
         title: 类
         children:

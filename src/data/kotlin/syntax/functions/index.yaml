@@ -1,5 +1,6 @@
 id: functions
 title: 函数
+children:
   - defining
   - parameter
   - return

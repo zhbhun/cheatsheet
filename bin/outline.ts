@@ -81,7 +81,8 @@ async function generateOutline(
 }
 
 async function main() {
-  const languages = ['typescript', 'kotlin', 'swift'];
+  // const languages = ['typescript', 'kotlin', 'swift'];
+  const languages = ['swift'];
   for (let index = 0; index < languages.length; index++) {
     const language = languages[index];
     const outline = await generateOutline(language);

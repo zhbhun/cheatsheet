@@ -103,9 +103,28 @@ outlines:
           - id: try
             title: 异常处理
       - id: functions
-        title: >-
-          函数 - defining - parameter - return - anonymous - lambda - type - scope
-          - overload - generic - inline
+        title: 函数
+        children:
+          - id: defining
+            title: 函数定义
+          - id: parameter
+            title: 函数参数
+          - id: return
+            title: 返回值
+          - id: anonymous
+            title: 匿名函数
+          - id: lambda
+            title: Lambda
+          - id: type
+            title: 类型
+          - id: scope
+            title: 作用域
+          - id: overload
+            title: 函数重载
+          - id: generic
+            title: 函数泛型
+          - id: inline
+            title: Inline
       - id: classes
         title: 类
         children:
