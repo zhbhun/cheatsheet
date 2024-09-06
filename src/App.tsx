@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import * as yaml from 'yaml';
-import { Button } from '@nextui-org/button';
+import { PresetProvider } from '@/component';
+import Layout from '@/page/index';
+import Home from '@/page/Home';
 
 function App() {
-  const [count, setCount] = useState(0);
   useEffect(() => {
     import('@/data/typescript/index.yaml?raw').then(({ default: content }) => {
       console.log(content);
@@ -12,11 +14,15 @@ function App() {
   }, []);
 
   return (
-    <>
-      <Button color="primary" onClick={() => setCount((count) => count + 1)}>
-        count is {count}
-      </Button>
-    </>
+    <PresetProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </PresetProvider>
   );
 }
 
