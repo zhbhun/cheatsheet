@@ -5,7 +5,7 @@ children:
   - comment
   - types
   - converts
-  - expression
+  - expressions
   - statements
   - functions
   - classes

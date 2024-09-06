@@ -1,7 +1,7 @@
-id: nil
+id: null
 alias:
   - null
-title: 空
+title: Nil
 description: |
   在 Swift 中，`nil` 表示一个不存在的值或“无值”。它常用于表示可选类型（`Optional`）中的“无效”状态。当一个可选类型的变量不包含任何值时，它会被设置为 `nil`。Swift 中的 `nil` 只能用于可选类型，这与一些其他编程语言不同，它们可能允许 `nil` 被赋值给任何变量。
 example: |

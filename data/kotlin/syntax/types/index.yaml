@@ -9,7 +9,7 @@ children:
   - triple
   - enum
   - object
-  - null
+  - "null"
   - optional
   - alias
   - unit

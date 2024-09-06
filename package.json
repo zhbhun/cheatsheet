@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "tsx ./bin/index.ts"
+    "cheatsheet:generate": "tsx ./bin/index.ts",
+    "cheatsheet:outline": "tsx ./bin/outline.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

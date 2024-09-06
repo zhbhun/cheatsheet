@@ -1,14 +1,14 @@
-id: constructor
+id: constructors
 title: 构造函数
 description: 构造函数是 TypeScript 类中的一种特殊方法，用于在创建类的新实例时初始化对象的属性。在 TypeScript 中，构造函数不仅支持基础的对象初始化，还支持参数属性声明、继承、方法重载等高级功能。
 example: |
   class Animal {
       name: string;
-      constructor(name: string) { 
+      constructor(name: string) {
           this.name = name;
       }
   }
-  
+
   const dog = new Animal('Buddy'); // 创建 Animal 类的实例，name 属性被初始化为 'Buddy'
 
   // 使用参数属性声明

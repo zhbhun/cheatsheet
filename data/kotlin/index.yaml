@@ -4,3 +4,184 @@ documents:
   - https://kotlinlang.org
   - https://www.kotlinprimer.com
   - https://book.kotlincn.net
+children:
+  - syntax
+  - gui
+outlines:
+  - id: syntax
+    title: 语法
+    children:
+      - id: variables
+        title: 变量
+        children:
+          - id: variable
+            title: 变量
+          - id: destructuring
+            title: 解构
+          - id: naming
+            title: 命名
+      - id: comment
+        title: 注释
+      - id: types
+        title: 数据类型
+        children:
+          - id: number
+            title: 数字
+          - id: boolean
+            title: 布尔值
+          - id: character
+            title: 字符
+          - id: string
+            title: 字符串
+          - id: pair
+            title: Pair
+          - id: triple
+            title: Triple
+          - id: enum
+            title: Enum
+          - id: object
+            title: Object
+          - id: null
+            title: null
+          - id: optional
+            title: 可空
+          - id: alias
+            title: 别名类型
+          - id: unit
+            title: Unit
+          - id: nothing
+            title: Nothing
+          - id: any
+            title: Any
+      - id: converts
+        title: 类型转换
+        children:
+          - id: explicit
+            title: 显示类型转换
+          - id: implicit
+            title: 隐式类型转换
+      - id: expressions
+        title: 表达式
+        children:
+          - id: arithmetic
+            title: 算术表达式
+          - id: assignment
+            title: 赋值表达式
+          - id: comparison
+            title: 比较表达式
+          - id: logic
+            title: 逻辑表达式
+          - id: ternary
+            title: If Expression
+          - id: spread
+            title: 展开运算符
+          - id: infix
+            title: 中缀操作符
+          - id: when
+            title: When Expression
+          - id: in
+            title: 包含表达式
+          - id: is
+            title: 类型检查
+          - id: non-null-assertion
+            title: 非空断言表达式
+          - id: nullish-coalescing
+            title: Elvis 操作符
+          - id: nullish-coalescing
+            title: 可选链表达式
+          - id: function
+            title: 函数表达式
+      - id: statements
+        title: 语句
+        children:
+          - id: branch
+            title: 条件分支
+          - id: switch
+            title: When
+          - id: loop
+            title: 循环
+          - id: try
+            title: 异常处理
+      - id: functions
+        title: >-
+          函数 - defining - parameter - return - anonymous - lambda - type - scope
+          - overload - generic - inline
+      - id: classes
+        title: 类
+        children:
+          - id: definition
+            title: 定义
+          - id: constructors
+            title: 构造函数
+          - id: property
+            title: 类属性
+          - id: method
+            title: 类方法
+          - id: visibility
+            title: 可见性
+          - id: inheritance
+            title: 继承
+          - id: interface
+            title: 接口
+          - id: delegation
+            title: 代理
+          - id: static
+            title: Companion
+          - id: nest
+            title: 嵌套类
+          - id: extension
+            title: 扩展
+          - id: data
+            title: Data
+          - id: sealed
+            title: 密封类
+          - id: generic
+            title: 泛型
+      - id: modules
+        title: 模块
+        children:
+          - id: package
+            title: 模块
+          - id: folder
+            title: 包
+          - id: file
+            title: 文件
+      - id: stdlib
+        title: 标准库
+        children:
+          - id: log
+            title: Log
+          - id: collections
+            title: 集合
+            children:
+              - id: array
+                title: 数组
+              - id: set
+                title: Set
+              - id: map
+                title: Map
+          - id: http
+            title: HTTP 请求
+          - id: regexp
+            title: 正则表达式
+          - id: time
+            title: 时间
+          - id: uuid
+            title: UUID
+          - id: binary
+            title: 二进制数据
+          - id: url
+            title: URL
+          - id: serialization
+            title: 序列化
+      - id: asynchronous
+        title: 异步
+        children:
+          - id: thread
+            title: 线程
+          - id: async
+            title: 协程
+      - id: gc
+        title: 垃圾回收
+  - id: gui
+    title: 图形用户界面

@@ -9,7 +9,7 @@ children:
   - tuple
   - enum
   - object
-  - null
+  - "null"
   - undefined
   - never
   - void

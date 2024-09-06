@@ -3,3 +3,170 @@ title: TypeScript
 documents:
   - https://www.typescriptlang.org
   - https://developer.mozilla.org
+children:
+  - syntax
+  - gui
+outlines:
+  - id: syntax
+    title: 语法
+    children:
+      - id: variables
+        title: 变量
+        children:
+          - id: variable
+            title: 变量
+          - id: destructuring
+            title: 解构
+          - id: naming
+            title: 命名
+      - id: comment
+        title: 注释
+      - id: types
+        title: 数据类型
+        children:
+          - id: number
+            title: 数字
+          - id: bigint
+            title: BigInt
+          - id: boolean
+            title: 布尔值
+          - id: string
+            title: 字符串
+          - id: symbol
+            title: Symbol
+          - id: tuple
+            title: Tuple
+          - id: enum
+            title: 枚举
+          - id: object
+            title: 对象
+          - id: null
+            title: null
+          - id: undefined
+            title: Undefined
+          - id: never
+            title: Never
+          - id: void
+            title: Void
+          - id: unknown
+            title: Unknown
+          - id: any
+            title: Any
+      - id: converts
+        title: 类型转换
+        children:
+          - id: explicit
+            title: 显示类型转换
+          - id: implicit
+            title: 隐式类型转换
+      - id: expressions
+        title: 表达式
+        children:
+          - id: arithmetic
+            title: 算术表达式
+          - id: assignment
+            title: 赋值表达式
+          - id: comparison
+            title: 比较表达式
+          - id: logic
+            title: 逻辑表达式
+          - id: ternary
+            title: 三元表达式
+          - id: spread
+            title: 展开运算符
+          - id: in
+            title: 包含表达式
+          - id: is
+            title: 类型检查
+          - id: non-null-assertion
+            title: 非空断言表达式
+          - id: nullish-coalescing
+            title: 空值合并表达式
+          - id: optional-chaining
+            title: 可选链表达式
+          - id: function
+            title: 函数表达式
+      - id: statements
+        title: 语句
+        children:
+          - id: branch
+            title: 条件分支
+          - id: switch
+            title: Switch
+          - id: loop
+            title: Loop
+          - id: try
+            title: 异常处理
+      - id: functions
+        title: >-
+          函数 - defining - parameter - return - anonymous - type - scope -
+          overload - generic
+      - id: classes
+        title: 类
+        children:
+          - id: definition
+            title: 类定义
+          - id: constructors
+            title: 构造函数
+          - id: property
+            title: 类属性
+          - id: method
+            title: 类方法
+          - id: visibility
+            title: 可见性
+          - id: inheritance
+            title: 继承
+          - id: class-implements-interface
+            title: 类实现接口
+          - id: static
+            title: 静态属性
+          - id: generic
+            title: 泛型
+      - id: modules
+        title: 模块
+        children:
+          - id: package
+            title: 包
+          - id: folder
+            title: 文件夹模块
+          - id: file
+            title: 模块
+      - id: stdlib
+        title: 标准库
+        children:
+          - id: log
+            title: 日志
+          - id: collections
+            title: 集合
+            children:
+              - id: array
+                title: 数组
+              - id: set
+                title: Set
+              - id: map
+                title: Map
+          - id: http
+            title: HTTP
+          - id: regexp
+            title: 正则表达式
+          - id: time
+            title: 时间
+          - id: uuid
+            title: UUID
+          - id: binary
+            title: 二进制数据
+          - id: url
+            title: URL
+          - id: serialization
+            title: 序列化
+      - id: asynchronous
+        title: 异步
+        children:
+          - id: thread
+            title: Worker
+          - id: async
+            title: Async & Await
+      - id: gc
+        title: 垃圾回收
+  - id: gui
+    title: 图形用户界面
