@@ -28,7 +28,7 @@ interface Feature {
 }
 
 const context = path.resolve(import.meta.dirname, '..');
-const dataContext = path.resolve(context, 'data');
+const dataContext = path.resolve(context, 'src/data');
 
 dotenv.config({
   path: path.resolve(context, '.env.local'),
@@ -166,10 +166,10 @@ async function generateContent(
   id: 语言特性的 ID
   title: 语言特性的标题
   description: 语言特性的描述信息，不支持该特性可以简单解释下（也可以通过其他方式来代替实现）
-  example: 
+  example:
     - title: 示例代码的标题
       content: 示例代码的 markdown 内容
-  references: 
+  references:
     - title: 参考文档的标题
       url: 参考文档的 URL
 - Workflow

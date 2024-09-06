@@ -18,7 +18,7 @@ interface Outline {
 }
 
 const context = path.resolve(import.meta.dirname, '..');
-const dataContext = path.resolve(context, 'data');
+const dataContext = path.resolve(context, 'src/data');
 
 async function isFileExit(filePath: string) {
   try {
