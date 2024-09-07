@@ -1,24 +1,24 @@
-import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import * as yaml from 'yaml';
 import { PresetProvider } from '@/component';
 import Layout from '@/page/index';
 import Home from '@/page/Home';
+import Language from '@/page/Language';
+import { languages } from './store';
 
 function App() {
-  useEffect(() => {
-    import('@/data/typescript/index.yaml?raw').then(({ default: content }) => {
-      console.log(content);
-      console.log(yaml.parse(content));
-    });
-  }, []);
-
   return (
     <PresetProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
+            {languages.map((route) => (
+              <Route
+                key={route.value}
+                path={`/${route.value}/*`}
+                element={<Language />}
+              />
+            ))}
           </Route>
         </Routes>
       </BrowserRouter>

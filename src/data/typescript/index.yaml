@@ -40,8 +40,8 @@ outlines:
             title: 枚举
           - id: object
             title: 对象
-          - id: null
-            title: null
+          - id: "null"
+            title: "Null"
           - id: undefined
             title: Undefined
           - id: never
@@ -149,7 +149,7 @@ outlines:
       - id: stdlib
         title: 标准库
         children:
-          - id: log
+          - id: print
             title: 日志
           - id: collections
             title: 集合

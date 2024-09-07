@@ -32,7 +32,6 @@ export function PresetProvider({ children }: PresetProviderProps) {
   useEffect(() => {
     setSelectedReferences(new Set(references));
   }, [references]);
-  console.log(selectedLanguage, selectedReferences);
   return (
     <>
       {children}

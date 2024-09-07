@@ -1,5 +1,5 @@
-id: null
-title: Null
+id: "null"
+title: "Null"
 description: 在 TypeScript 中，`null` 是一个表示“空”或“无”的特殊值。它通常用于表示一个变量没有值或尚未被初始化。`null` 类型只能接受 `null` 值。虽然在严格模式下（`strictNullChecks` 选项为 `true`）`null` 不能赋值给其他类型，但在非严格模式下，`null` 可以赋值给任何类型的变量。
 example: |
   let emptyValue: null = null; // 明确地将变量设置为 null

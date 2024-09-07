@@ -38,7 +38,7 @@ outlines:
             title: 枚举
           - id: struct
             title: 结构
-          - id: null
+          - id: "null"
             title: Nil
           - id: optional
             title: 可空

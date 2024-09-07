@@ -41,8 +41,8 @@ outlines:
             title: Enum
           - id: object
             title: Object
-          - id: null
-            title: null
+          - id: "null"
+            title: "Null"
           - id: optional
             title: 可空
           - id: alias
@@ -87,7 +87,7 @@ outlines:
             title: 非空断言表达式
           - id: nullish-coalescing
             title: Elvis 操作符
-          - id: nullish-coalescing
+          - id: optional-chaining
             title: 可选链表达式
           - id: function
             title: 函数表达式
@@ -168,8 +168,8 @@ outlines:
       - id: stdlib
         title: 标准库
         children:
-          - id: log
-            title: Log
+          - id: print
+            title: 日志
           - id: collections
             title: 集合
             children:

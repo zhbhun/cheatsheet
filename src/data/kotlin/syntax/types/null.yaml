@@ -1,5 +1,5 @@
-id: null
-title: Null
+id: "null"
+title: "Null"
 description: 在 Kotlin 中，`null` 是一种特殊类型，主要通过空安全机制（Null Safety）来处理。这种机制确保了变量和属性只有在显式声明为可为空（Nullable）时，才允许赋值为 `null`。默认情况下，所有变量和属性都是不可为空的，除非使用 `?` 将类型标记为可空。Kotlin 提供了多种方式来安全地处理可空类型，如安全调用操作符 `?.`、Elvis 操作符 `?:`、非空断言操作符 `!!` 等，来减少空指针异常的风险。
 example: |
   // 1. 声明可空类型
