@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ControlledTreeEnvironment, Tree, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import { loadLanguage, Outline } from '@/data';
@@ -7,7 +7,8 @@ import { usePresetStore } from '@/store';
 
 type OutlineTreeItem = TreeItem<{
   id: string;
-  key: string;
+  index: string;
+  parentIndex: string;
   title: string;
 }>;
 
@@ -18,9 +19,10 @@ const convertToTreeItems = (
   const addItem = (node: Outline, parents: string[]) => {
     const { id, title, children } = node;
     const ids = [...parents, id];
-    const key = ids.join('/');
-    treeItems[key] = {
-      index: key,
+    const index = ids.join('/');
+    const parentIndex = parents.join('/');
+    treeItems[index] = {
+      index: index,
       children: children
         ? children.map((child) => [...ids, child.id].join('/'))
         : [],
@@ -29,7 +31,8 @@ const convertToTreeItems = (
       canRename: false,
       data: {
         id: id,
-        key: key,
+        index,
+        parentIndex,
         title,
       },
     };
@@ -43,8 +46,9 @@ const convertToTreeItems = (
 
 export function Layout() {
   const navigate = useNavigate();
+  const localtion = useLocation();
   const { language } = usePresetStore();
-  const [treeData, setTreeData] = useState<Record<string, TreeItem>>({});
+  const [treeData, setTreeData] = useState<Record<string, OutlineTreeItem>>({});
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   useEffect(() => {
@@ -62,6 +66,32 @@ export function Layout() {
       });
     }
   }, [language]);
+  useEffect(() => {
+    const key = localtion.pathname.substring(1);
+    if (treeData[key]) {
+      setSelectedItems([key]);
+      setExpandedItems((prev) => {
+        let index = key;
+        let newIndexes = prev;
+        while (index && treeData[index]) {
+          const record = treeData[index];
+          if (record && record.isFolder) {
+            newIndexes = newIndexes.includes(index)
+              ? newIndexes
+              : [...newIndexes, index];
+          }
+          index = record.data.parentIndex;
+        }
+        return newIndexes;
+      });
+      setTimeout(() => {
+        const matchedItemElement = document.querySelector(
+          `button[data-rct-item-id="${key}"]`
+        );
+        matchedItemElement?.scrollIntoView();
+      }, 0);
+    }
+  }, [treeData, localtion]);
   return (
     <div className="pl-[300px]">
       <div className="fixed top-0 left-0 bottom-0 w-[300px] py-1 border-r border-neutral-100 overflow-y-auto">

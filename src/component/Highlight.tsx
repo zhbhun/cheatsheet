@@ -3,8 +3,6 @@ import { Snippet } from '@nextui-org/react';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
 
-console.log(hljs);
-
 const languages: Record<string, () => Promise<any>> = {
   kotlin: () => import('highlight.js/lib/languages/kotlin'),
   swift: () => import('highlight.js/lib/languages/swift'),

@@ -50,7 +50,6 @@ export function loadLanguageFeature(
   if (!modules[key]) {
     key = `./${language}/${feature.join('/')}/index.yaml`;
   }
-  console.log(modules, key);
   return modules[key]().then(({ default: source }: any) => {
     return yaml.parse(source) as LanguageFeauture;
   });
