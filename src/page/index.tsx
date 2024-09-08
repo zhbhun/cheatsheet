@@ -108,10 +108,17 @@ export function Layout() {
           canDropOnFolder={false}
           canReorderItems={false}
           canRename={false}
-          onExpandItem={(item) => {
+          onCollapseItem={(item) => {
             setExpandedItems((prev) => {
               return prev.includes(item.index as string)
                 ? prev.filter((id) => id !== item.index)
+                : prev;
+            });
+          }}
+          onExpandItem={(item) => {
+            setExpandedItems((prev) => {
+              return prev.includes(item.index as string)
+                ? prev
                 : [...prev, item.index as string];
             });
           }}
