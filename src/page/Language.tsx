@@ -1,75 +1,29 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Marked } from 'marked';
-import { markedHighlight } from 'marked-highlight';
-import hljs from 'highlight.js';
-import { LanguageFeauture, loadLanguageFeature } from '@/data';
-import { Highlight } from '@/component';
-
-const marked = new Marked(
-  markedHighlight({
-    langPrefix: '!bg-transparent hljs language-',
-    highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
-    },
-  })
-);
+import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Feature, LanguageOutlineView } from '@/component';
 
 function Language() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { pathname } = location;
-  const [feature, setFeature] = useState<LanguageFeauture | null>(null);
-  useEffect(() => {
-    const pathes = pathname.split('/');
-    loadLanguageFeature(pathes[1], pathes.slice(2)).then((data) => {
-      setFeature(data);
-    });
+  const [index, language] = useMemo(() => {
+    const index = pathname.substring(1);
+    return [index, index.split('/')[0]];
   }, [pathname]);
-  const example = useMemo(() => {
-    if (!feature) {
-      return '';
-    }
-    if (typeof feature.example === 'string') {
-      return feature.example;
-    }
-    return (
-      feature.example?.map((item) => ({
-        title: item.title,
-        content: marked.parse(item.content),
-      })) ?? []
-    );
-  }, [feature]);
-  let content: ReactNode = null;
-  if (feature) {
-    content = (
-      <>
-        <h1 className="mb-3 pt-2 text-2xl font-semibold">{feature.title}</h1>
-        <div className="mb-6">{feature.description}</div>
-        {typeof example === 'string' ? (
-          <Highlight lang="kotlin" code={example as any} />
-        ) : (
-          <ul>
-            {(
-              example as {
-                title: string;
-                content: string;
-              }[]
-            ).map((example, index) => (
-              <li key={index} className="mb-4">
-                <h2 className="mb-2 font-medium">{example.title}</h2>
-                <div
-                  className="h-fit text-small rounded-medium bg-default/40 text-default-foreground w-full max-w-full overflow-x-auto"
-                  dangerouslySetInnerHTML={{ __html: example.content }}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </>
-    );
-  }
-  return <div className="mx-auto max-w-screen-md p-4">{content}</div>;
+  return (
+    <div className="pl-[250px]">
+      <div className="fixed top-0 left-0 bottom-0 w-[250px] py-1 border-r border-neutral-100 overflow-y-auto">
+        <LanguageOutlineView
+          language={language}
+          selected={index}
+          onNavigate={(newIndex) => {
+            navigate(`/${newIndex}`);
+          }}
+        />
+      </div>
+      <Feature index={index} />
+    </div>
+  );
 }
 
 export default Language;

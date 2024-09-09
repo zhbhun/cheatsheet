@@ -28,7 +28,7 @@ interface Feature {
 }
 
 const context = path.resolve(import.meta.dirname, '..');
-const dataContext = path.resolve(context, 'src/data');
+const dataContext = path.resolve(context, 'src/language');
 
 dotenv.config({
   path: path.resolve(context, '.env.local'),

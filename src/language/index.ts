@@ -2,18 +2,33 @@ import * as yaml from 'yaml';
 
 const modules = import.meta.glob('./**/*.yaml', { query: '?raw' });
 
-export interface Outline {
-  id: string;
-  title: string;
-  children?: Outline[];
-}
+export const languages = [
+  {
+    label: 'Kotlin',
+    value: 'kotlin',
+  },
+  {
+    label: 'Swift',
+    value: 'swift',
+  },
+  {
+    label: 'Typescript',
+    value: 'typescript',
+  },
+];
 
 export interface Language {
   id: string;
   title: string;
   documents: string;
   children: string[];
-  outlines: Outline[];
+  outlines: LanguageOutline[];
+}
+
+export interface LanguageOutline {
+  id: string;
+  title: string;
+  children?: LanguageOutline[];
 }
 
 export interface LanguageFeauture {
@@ -54,5 +69,3 @@ export function loadLanguageFeature(
     return yaml.parse(source) as LanguageFeauture;
   });
 }
-
-export default modules;
