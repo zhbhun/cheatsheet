@@ -60,10 +60,14 @@ export function loadLanguage(language: string): Promise<Language> {
 export function loadLanguageFeature(
   language: string,
   feature: string[]
-): Promise<LanguageFeauture> {
+): Promise<LanguageFeauture | null> {
   let key = `./${language}/${feature.join('/')}.yaml`;
   if (!modules[key]) {
     key = `./${language}/${feature.join('/')}/index.yaml`;
+  }
+  const target = modules[key];
+  if (!target) {
+    return Promise.resolve(null);
   }
   return modules[key]().then(({ default: source }: any) => {
     return yaml.parse(source) as LanguageFeauture;
