@@ -85,16 +85,20 @@ export function Layout() {
         return newIndexes;
       });
       setTimeout(() => {
-        const matchedItemElement = document.querySelector(
+        const element = document.querySelector(
           `button[data-rct-item-id="${key}"]`
-        );
-        matchedItemElement?.scrollIntoView();
+        ) as any;
+        if (element?.scrollIntoViewIfNeeded) {
+          element.scrollIntoViewIfNeeded();
+        } else if (element?.scrollIntoView) {
+          element.scrollIntoView();
+        }
       }, 0);
     }
   }, [treeData, localtion]);
   return (
-    <div className="pl-[300px]">
-      <div className="fixed top-0 left-0 bottom-0 w-[300px] py-1 border-r border-neutral-100 overflow-y-auto">
+    <div className="pl-[250px]">
+      <div className="fixed top-0 left-0 bottom-0 w-[250px] py-1 border-r border-neutral-100 overflow-y-auto">
         <ControlledTreeEnvironment
           items={treeData}
           viewState={{

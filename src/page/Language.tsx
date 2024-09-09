@@ -1,7 +1,20 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
 import { LanguageFeauture, loadLanguageFeature } from '@/data';
 import { Highlight } from '@/component';
+
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: '!bg-transparent hljs language-',
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    },
+  })
+);
 
 function Language() {
   const location = useLocation();
@@ -13,33 +26,50 @@ function Language() {
       setFeature(data);
     });
   }, [pathname]);
+  const example = useMemo(() => {
+    if (!feature) {
+      return '';
+    }
+    if (typeof feature.example === 'string') {
+      return feature.example;
+    }
+    return (
+      feature.example?.map((item) => ({
+        title: item.title,
+        content: marked.parse(item.content),
+      })) ?? []
+    );
+  }, [feature]);
   let content: ReactNode = null;
   if (feature) {
     content = (
-      <div>
-        <h1 className="mb-3 text-2xl">{feature.title}</h1>
-        <div className="mb-5 text-neutral-600">{feature.description}</div>
-        {typeof feature.example === 'string' ? (
-          <Highlight lang="kotlin" code={feature.example as any} />
+      <>
+        <h1 className="mb-3 pt-2 text-2xl font-semibold">{feature.title}</h1>
+        <div className="mb-6">{feature.description}</div>
+        {typeof example === 'string' ? (
+          <Highlight lang="kotlin" code={example as any} />
         ) : (
           <ul>
             {(
-              feature.example as {
+              example as {
                 title: string;
                 content: string;
               }[]
             ).map((example, index) => (
               <li key={index} className="mb-4">
-                <div className="mb-2 text-neutral-600">{example.title}</div>
-                <Highlight lang="kotlin" code={example.content} />
+                <h2 className="mb-2 font-medium">{example.title}</h2>
+                <div
+                  className="h-fit text-small rounded-medium bg-default/40 text-default-foreground w-full max-w-full overflow-x-auto"
+                  dangerouslySetInnerHTML={{ __html: example.content }}
+                />
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </>
     );
   }
-  return <div className="mx-auto max-w-screen-lg p-4">{content}</div>;
+  return <div className="mx-auto max-w-screen-md p-4">{content}</div>;
 }
 
 export default Language;

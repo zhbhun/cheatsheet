@@ -11,6 +11,9 @@ importers:
       '@nextui-org/react':
         specifier: ^2.0.0
         version: 2.4.6(@types/react@18.3.4)(framer-motion@11.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       framer-motion:
         specifier: ^11.0.0
         version: 11.5.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -20,6 +23,9 @@ importers:
       marked:
         specifier: ^14.1.1
         version: 14.1.1
+      marked-highlight:
+        specifier: ^2.1.4
+        version: 2.1.4(marked@14.1.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -2500,6 +2506,11 @@ packages:
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
+
+  marked-highlight@2.1.4:
+    resolution: {integrity: sha512-D1GOkcdzP+1dzjoColL7umojefFrASDuLeyaHS0Zr/Uo9jkr1V6vpLRCzfi1djmEaWyK0SYMFtHnpkZ+cwFT1w==}
+    peerDependencies:
+      marked: '>=4 <15'
 
   marked@14.1.1:
     resolution: {integrity: sha512-eS59oxof5eBVDCKTs+mJbvB/6Vq137GbimF9wkTIlto2/B2ppY5nigUUQgKVmA3bI2mPTIshUyDj5j612ZxlQQ==}
@@ -6386,6 +6397,10 @@ snapshots:
       yallist: 3.1.1
 
   lru-cache@7.18.3: {}
+
+  marked-highlight@2.1.4(marked@14.1.1):
+    dependencies:
+      marked: 14.1.1
 
   marked@14.1.1: {}
 
