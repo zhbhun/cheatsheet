@@ -1,3 +1,4 @@
 export * from './Feature';
 export * from './Highlight';
-export * from './LanguageOutlineView';
+export * from './FeatureContent';
+export * from './FeatureWrapper';
