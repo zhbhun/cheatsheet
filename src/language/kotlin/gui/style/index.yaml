@@ -1,0 +1,13 @@
+id: style
+title: 样式
+children:
+  - size
+  - spacing
+  - background
+  - border
+  - shadow
+  - radius
+  - text
+  - opacity
+  - transform
+  - overflow

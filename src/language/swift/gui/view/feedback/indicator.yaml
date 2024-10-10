@@ -1,0 +1,89 @@
+id: indicator
+title: UIActivityIndicatorView
+query: Swift UIActivityIndicatorView
+comment: 详细介绍 Swift 中 UIActivityIndicatorView 的用法及实现方式
+description: "UIActivityIndicatorView 是 iOS 中的一个视图组件，用于显示加载或处理任务的进度。它通过一个旋转的圆圈向用户表示后台任务正在执行。UIActivityIndicatorView 可以通过 Interface Builder 或代码动态创建，并提供了多种样式选项。它通常用于网络请求或长时间执行的任务过程中，以提升用户体验。"
+usage:
+  - title: 创建 UIActivityIndicatorView
+    content: "可以通过代码或者 Interface Builder 来创建 UIActivityIndicatorView。在代码中，可以通过指定不同的样式来初始化视图。"
+    example: |
+      ```swift
+      import UIKit
+
+      class ViewController: UIViewController {
+          var activityIndicator = UIActivityIndicatorView(style: .large)
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 将指示器添加到视图中
+              view.addSubview(activityIndicator)
+
+              // 设置指示器的位置为屏幕中心
+              activityIndicator.center = view.center
+          }
+      }
+      ```
+
+  - title: 启动和停止动画
+    content: "通过 `startAnimating()` 启动旋转动画，通过 `stopAnimating()` 停止动画。通常在任务开始时启动动画，并在任务完成时停止动画。"
+    example: |
+      ```swift
+      // 启动指示器
+      activityIndicator.startAnimating()
+
+      // 停止指示器
+      activityIndicator.stopAnimating()
+      ```
+
+  - title: 隐藏停止时的指示器
+    content: "当指示器停止时，可以设置自动隐藏，避免显示静止的动画。可以通过 `hidesWhenStopped` 属性控制此行为。"
+    example: |
+      ```swift
+      // 当指示器停止时自动隐藏
+      activityIndicator.hidesWhenStopped = true
+      ```
+
+  - title: 自定义样式
+    content: "可以通过 `UIActivityIndicatorView.Style` 设置不同的样式，例如 `.large` 或 `.medium`。此外，还可以使用 `color` 属性自定义指示器的颜色。"
+    example: |
+      ```swift
+      // 设置为大型白色指示器
+      activityIndicator.style = .large
+
+      // 自定义颜色
+      activityIndicator.color = .blue
+      ```
+
+  - title: 使用 Interface Builder 创建 UIActivityIndicatorView
+    content: "通过 Interface Builder 创建 UIActivityIndicatorView 只需将其拖放到视图中，并通过 Outlet 连接到代码。然后通过代码控制其动画。"
+    example: |
+      ```swift
+      @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+
+      // 启动指示器
+      activityIndicator.startAnimating()
+
+      // 停止指示器
+      activityIndicator.stopAnimating()
+      ```
+
+  - title: 使用 DispatchQueue 模拟后台任务
+    content: "可以结合 DispatchQueue 模拟后台任务，在任务期间显示指示器，并在任务完成后停止指示器。"
+    example: |
+      ```swift
+      DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+          // 停止指示器动画
+          activityIndicator.stopAnimating()
+      }
+      ```
+
+references:
+  - title: "How to use UIActivityIndicatorView to show a spinner when work is happening"
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-use-uiactivityindicatorview-to-show-a-spinner-when-work-is-happening
+  - title: "UIActivityIndicatorView"
+    url: https://www.thomashanning.com/uiactivityindicatorview/
+  - title: "Creating UIActivityIndicatorView Programmatically"
+    url: https://www.appsdeveloperblog.com/creating-uiactivityindicatorview-programmatically/
+  - title: "Activity Indicator with Swift"
+    url: https://programmingwithswift.com/activity-indicator-with-swift/

@@ -1,0 +1,10 @@
+id: animation
+title: 动画
+children:
+  - view-property-animator
+  - object-animator
+  - value-animator
+  - transition-manager
+  - animation-drawable
+  - motion-layout
+  - physics-based-animations

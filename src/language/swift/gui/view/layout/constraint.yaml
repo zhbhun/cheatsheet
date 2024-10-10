@@ -1,0 +1,231 @@
+id: constraint
+title: Auto Layout
+query: Swift NSLayoutConstraint
+comment: 详细介绍 NSLayoutConstraint 的核心特性和用法，包括约束的创建、更新、删除、优先级、自动布局等。
+description: "NSLayoutConstraint 是 Swift 中用于自动布局的核心类，允许通过代码方式定义视图间的尺寸、位置和对齐关系。它支持创建固定或相对位置约束，可以动态更新、删除约束，并通过优先级控制多个约束的执行顺序。通过使用 NSLayoutConstraint，可以实现响应式布局，确保界面适应不同设备尺寸和方向。"
+usage:
+  - title: 固定大小
+    content: |
+      使用 `widthAnchor` 和 `heightAnchor` 可以为视图设置固定的宽高。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 设置固定大小
+      NSLayoutConstraint.activate([
+          myView.widthAnchor.constraint(equalToConstant: 200),
+          myView.heightAnchor.constraint(equalToConstant: 150)
+      ])
+      // 本示例设置了视图 `myView` 的宽度为 200 点，高度为 150 点。
+      ```
+  - title: 设置顶部和底部约束
+    content: |
+      通过 `topAnchor` 和 `bottomAnchor` 设置视图与父视图的顶部和底部对齐或距离，可以控制垂直方向的布局。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 设置顶部和底部约束
+      NSLayoutConstraint.activate([
+          myView.topAnchor.constraint(equalTo: superview.topAnchor, constant: 20),
+          myView.bottomAnchor.constraint(equalTo: superview.bottomAnchor, constant: -20)
+      ])
+      ```
+      本示例将 `myView` 与父视图的顶部保持 20 点的距离，并使其距离底部 20 点。
+  - title: 设置左右边距
+    content: |
+      使用 `leadingAnchor` 和 `trailingAnchor` 可以设置视图的左边和右边与父视图的对齐，支持适应从左到右（LTR）或从右到左（RTL）的文本方向。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 设置左右边距
+      NSLayoutConstraint.activate([
+          myView.leadingAnchor.constraint(equalTo: superview.leadingAnchor, constant: 16),
+          myView.trailingAnchor.constraint(equalTo: superview.trailingAnchor, constant: -16)
+      ])
+      ```
+      这段代码将 `myView` 的左边与父视图保持 16 点的距离，右边则保持 16 点的内边距。
+  - title: 使用基线对齐
+    content: |
+      通过 `firstBaselineAnchor` 和 `lastBaselineAnchor` 可以对齐文本内容的基线，特别适用于对齐多个文本元素。
+    example: |
+      ```swift
+      let label1 = UILabel()
+      let label2 = UILabel()
+      label1.translatesAutoresizingMaskIntoConstraints = false
+      label2.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(label1)
+      superview.addSubview(label2)
+
+      // 基线对齐
+      NSLayoutConstraint.activate([
+          label1.firstBaselineAnchor.constraint(equalTo: label2.firstBaselineAnchor)
+      ])
+      ```
+      本示例展示了如何将两个 `UILabel` 的首行基线对齐。
+  - title: 使用 Safe Area
+    content: |
+      使用 `safeAreaLayoutGuide` 可以确保视图不会被系统元素（如状态栏、导航栏）遮挡。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 使用 Safe Area
+      NSLayoutConstraint.activate([
+          myView.topAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.topAnchor),
+          myView.bottomAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.bottomAnchor)
+      ])
+      ```
+      本示例确保视图与父视图的安全区域对齐，不会被系统栏遮挡。
+  - title: 使用布局边距
+    content: |
+      使用 `layoutMarginsGuide` 可以确保视图的内容遵循父视图的内边距，避免紧贴视图边缘。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 使用布局边距
+      NSLayoutConstraint.activate([
+          myView.leadingAnchor.constraint(equalTo: superview.layoutMarginsGuide.leadingAnchor),
+          myView.trailingAnchor.constraint(equalTo: superview.layoutMarginsGuide.trailingAnchor)
+      ])
+      ```
+      本示例展示了如何通过 `layoutMarginsGuide` 设置视图的左右边距。
+  - title: 读取内容区域约束
+    content: |
+      使用 `readableContentGuide` 约束文本视图的宽度，确保文本在界面中保持良好的可读性。
+    example: |
+      ```swift
+      let label = UILabel()
+      label.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(label)
+
+      NSLayoutConstraint.activate([
+          label.leadingAnchor.constraint(equalTo: superview.readableContentGuide.leadingAnchor),
+          label.trailingAnchor.constraint(equalTo: superview.readableContentGuide.trailingAnchor)
+      ])
+      ```
+      本示例展示了如何使用 `readableContentGuide` 确保文本的内容区域保持适当的宽度，避免过于拥挤或分散。
+  - title: 居中对齐视图
+    content: |
+      使用 `centerXAnchor` 和 `centerYAnchor` 来将视图在父视图中水平和垂直居中。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 居中约束
+      NSLayoutConstraint.activate([
+          myView.centerXAnchor.constraint(equalTo: superview.centerXAnchor),
+          myView.centerYAnchor.constraint(equalTo: superview.centerYAnchor),
+          myView.widthAnchor.constraint(equalToConstant: 100),
+          myView.heightAnchor.constraint(equalTo: myView.widthAnchor) // 设置为正方形
+      ])
+      // 这段代码将 `myView` 水平和垂直居中，并将其设置为 100x100 大小的正方形。
+      ```
+  - title: 使用比例约束
+    content: |
+      使用宽高比约束让视图保持固定比例，例如将视图的高度设置为宽度的两倍。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+
+      // 设置宽高比为 2:1
+      NSLayoutConstraint.activate([
+          myView.widthAnchor.constraint(equalToConstant: 100),
+          myView.heightAnchor.constraint(equalTo: myView.widthAnchor, multiplier: 2.0)
+      ])
+      // 这段代码将 `myView` 的高度设置为其宽度的两倍，且宽度固定为 100 点。
+      ```
+
+  - title: 更新约束
+    content: |
+      在需要动态更新布局时，可以通过修改约束的 `constant` 属性来调整视图的位置或大小，而不需要重新创建约束。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.translatesAutoresizingMaskIntoConstraints = false
+      superview.addSubview(myView)
+      let heightConstraint = myView.heightAnchor.constraint(equalToConstant: 100)
+      heightConstraint.isActive = true
+
+      // 动态更新高度约束，将高度从 100 改为 150
+      heightConstraint.constant = 150
+
+      // 在这个示例中，我们创建了一个高度为 100 的约束，并在后续的操作中将其高度修改为 150。
+      ```
+
+  - title: 删除约束
+    content: |
+      要删除约束，可以通过将约束的 `isActive` 属性设置为 `false`，或使用 `NSLayoutConstraint.deactivate()` 方法一次性移除多个约束。
+    example: |
+      ```swift
+      // 禁用单个约束
+      heightConstraint.isActive = false
+
+      // 一次性禁用多个约束
+      NSLayoutConstraint.deactivate([heightConstraint, widthConstraint])
+      ```
+      本例展示了如何通过设置 `isActive = false` 或使用 `deactivate()` 方法来删除约束。
+
+  - title: 设置优先级
+    content: |
+      通过设置约束的 `priority` 属性，开发者可以控制多个约束在冲突时的执行顺序。优先级范围为 1 到 1000，1000 表示该约束是必须满足的。
+    example: |
+      ```swift
+      let lowPriorityConstraint = myView.heightAnchor.constraint(equalToConstant: 100)
+      lowPriorityConstraint.priority = .defaultLow // 设置优先级为 250
+      lowPriorityConstraint.isActive = true
+      ```
+      在这个示例中，我们设置了一个高度为 100 的约束，并将其优先级设为较低的 `defaultLow`（250），以便在布局冲突时可以忽略此约束。
+
+  - title: 使用 Visual Format Language (VFL)
+    content: |
+      VFL 语言允许通过字符串语法来定义视图的约束，虽然在现代 Swift 开发中较少使用，但它可以有效定义简单布局。
+    example: |
+      ```swift
+      let viewsDictionary = ["child": childView]
+      // 通过 VFL 让子视图在父视图中充满宽度和高度
+      NSLayoutConstraint.constraints(withVisualFormat: "H:|[child]|", options: [], metrics: nil, views: viewsDictionary)
+      NSLayoutConstraint.constraints(withVisualFormat: "V:|[child]|", options: [], metrics: nil, views: viewsDictionary)
+      ```
+      本例展示了如何使用 VFL 让 `childView` 在其父视图中充满布局。
+
+  - title: 使用 Safe Area 和 Layout Guides
+    content: |
+      为了避免布局元素被状态栏或其他系统元素遮挡，通常可以使用 Safe Area 或 Layout Guide 来确保视图布局的安全性。
+    example: |
+      ```swift
+      // 使用 Safe Area 布局，让视图紧贴父视图的安全区域
+      NSLayoutConstraint.activate([
+          myView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+          myView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+          myView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+          myView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+      ])
+      ```
+      在这个示例中，视图被设置为填满父视图的安全区域，避免被系统栏遮挡。
+
+references:
+  - title: "Auto Layout in Swift: Writing constraints programmatically"
+    url: https://www.avanderlee.com/swift/auto-layout-programmatically/
+  - title: "The Auto Layout cheat sheet"
+    url: https://www.hackingwithswift.com/read/auto-layout
+  - title: "How to activate multiple Auto Layout constraints using activate()"
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-activate-multiple-auto-layout-constraints-using-activate
+  - title: "NSLayoutConstraint - Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/appkit/nslayoutconstraint

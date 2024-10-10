@@ -1,0 +1,85 @@
+id: image
+title: UIImageView
+query: Swift UIImageView
+comment: Swift UIImageView 的用法介绍，包括：创建、设置图片、基于 SDWebImage 加载远程图片、缩放模式、动画图片、响应用户交互等
+description: UIImageView 是 iOS 中用于显示单个图片或一系列动画图片的视图。它可以通过 UIImage 对象配置，并支持在运行时更改显示的图片。UIImageView 还可以设置缩放模式、响应用户交互以及播放动画序列。
+usage:
+  - title: 创建 UIImageView
+    description: |
+      可以通过代码创建 UIImageView 实例，并设置其显示的图片。
+      - `init(image: UIImage?)`: 使用指定的 UIImage 初始化 UIImageView。
+      - `init(image: UIImage?, highlightedImage: UIImage?)`: 使用常规和高亮图片初始化 UIImageView。
+    example: |
+      ```swift
+      // 创建 UIImageView 并设置图片
+      let imageName = "yourImage.png"
+      let image = UIImage(named: imageName)
+      let imageView = UIImageView(image: image)
+
+      // 设置 UIImageView 的位置和大小
+      imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
+      // 将 UIImageView 添加到视图中
+      view.addSubview(imageView)
+      ```
+  - title: 设置图片
+    description: |
+      可以通过代码设置 UIImageView 的图片。
+      - `var image: UIImage?`: 设置或获取 UIImageView 显示的图片。
+      - `var highlightedImage: UIImage?`: 设置或获取 UIImageView 高亮状态下显示的图片。
+    example: |
+      ```swift
+      // 设置 UIImageView 的图片
+      imageView.image = UIImage(named: "newImage.png")
+
+      // 设置高亮图片
+      imageView.highlightedImage = UIImage(named: "highlightedImage.png")
+      ```
+  - title: 缩放模式
+    description: |
+      UIImageView 可以通过 `contentMode` 属性设置图片的缩放模式。
+      - `UIView.ContentMode.scaleAspectFit`: 保持图片原始比例，缩放以适应视图。
+      - `UIView.ContentMode.scaleAspectFill`: 保持图片原始比例，缩放以填充视图。
+      - `UIView.ContentMode.scaleToFill`: 不保持比例，缩放以完全填充视图。
+    example: |
+      ```swift
+      // 设置 UIImageView 的缩放模式
+      imageView.contentMode = .scaleAspectFit // 图片按比例适应视图
+      ```
+  - title: 动画图片
+    description: |
+      UIImageView 可以存储并播放一系列动画图片。
+      - `var animationImages: [UIImage]?`: 设置用于动画的 UIImage 数组。
+      - `func startAnimating()`: 开始播放动画。
+      - `func stopAnimating()`: 停止播放动画。
+      - `var animationDuration: TimeInterval`: 设置动画循环的时长。
+    example: |
+      ```swift
+      // 设置动画图片序列
+      imageView.animationImages = [UIImage(named: "frame1.png")!, UIImage(named: "frame2.png")!]
+      imageView.animationDuration = 1.0 // 设置动画时长为 1 秒
+      imageView.startAnimating() // 开始动画
+      ```
+  - title: 响应用户交互
+    description: |
+      默认情况下，UIImageView 不响应用户交互。可以通过设置 `isUserInteractionEnabled` 属性使其响应用户事件。
+      - `var isUserInteractionEnabled: Bool`: 设置是否响应用户交互。
+    example: |
+      ```swift
+      // 启用用户交互
+      imageView.isUserInteractionEnabled = true
+
+      // 添加点击手势识别器
+      let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+      imageView.addGestureRecognizer(tapGesture)
+
+      @objc func imageTapped() {
+          print("Image was tapped!")
+      }
+      ```
+references:
+  - title: UIImageView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiimageview
+  - title: UIImage | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiimage
+  - title: How do you create a UIImage View Programmatically - Swift
+    url: https://stackoverflow.com/questions/26569371/how-do-you-create-a-uiimage-view-programmatically-swift

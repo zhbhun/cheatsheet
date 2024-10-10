@@ -1,0 +1,108 @@
+id: button
+title: UIButton
+query: Swift UIKit 按钮
+comment: 详细介绍 Swift UIKit 按钮的用法及所有相关属性
+description: |
+  在 Swift 的 UIKit 中，`UIButton` 是常用的用户界面元素，通常用于触发某些操作。你可以通过 Storyboard 或代码来创建按钮。UIButton 提供了丰富的属性和方法用于自定义外观和行为，例如设置标题、背景颜色、图像、触发动作等。iOS 15 引入了 `UIButton.Configuration` API，这使得按钮的创建和定制变得更加灵活、简洁。你可以使用不同的配置类型（如 `.plain`、`.filled`、`.gray` 等）来定义按钮的外观，同时还能设置标题、图像、颜色、内边距等多种属性。
+
+usage:
+  - title: 创建按钮
+    content: |
+      在 Swift 中可以通过两种方式创建 UIButton：使用 Storyboard 或在代码中动态创建。Storyboard 提供了直观的界面设计，而通过代码可以灵活控制按钮的位置和行为。
+    example: |
+      ```swift
+      // 在 Storyboard 中创建按钮，并通过 IBOutlet 进行关联
+      @IBOutlet weak var button1: UIButton!
+
+      // 通过代码动态创建 UIButton
+      let button = UIButton(type: .system)
+      button.setTitle("Click Me", for: .normal)
+      button.frame = CGRect(x: 100, y: 200, width: 150, height: 50)
+      view.addSubview(button)
+      ```
+
+  - title: 设置按钮标题与样式
+    content: |
+      可以使用 `setTitle(_:for:)` 来设置按钮的标题，同时通过 `UIButton.Configuration` API 来定义更多外观，例如标题的字体、颜色、对齐方式等。
+    example: |
+      ```swift
+      let button = UIButton(type: .system)
+      button.setTitle("Click Me", for: .normal)
+      // iOS 15 的 UIButton.Configuration 使用方式
+      var config = UIButton.Configuration.filled()
+      config.title = "Download"
+      config.subtitle = "Files"
+      config.buttonSize = .large
+      config.baseBackgroundColor = .systemBlue
+      button.configuration = config
+      ```
+
+  - title: 设置按钮图像
+    content: |
+      `UIButton` 支持在按钮上显示图像。你可以使用 `setImage(_:for:)` 或通过 `UIButton.Configuration` 来控制图像及其位置。
+    example: |
+      ```swift
+      let button = UIButton(type: .system)
+      // 直接设置图像
+      button.setImage(UIImage(systemName: "star"), for: .normal)
+
+      // 使用配置 API 设置图像及位置
+      var config = UIButton.Configuration.filled()
+      config.image = UIImage(systemName: "arrow.down")
+      config.imagePlacement = .leading  // 让图像显示在标题前
+      button.configuration = config
+      ```
+
+  - title: 处理按钮的点击事件
+    content: |
+      通过 `addTarget(_:action:for:)` 方法或使用 iOS 15 引入的 `UIAction` API 来处理按钮的点击事件。
+    example: |
+      ```swift
+      // 通过 addTarget 绑定点击事件
+      button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+
+      // 或者使用 UIAction 处理点击事件
+      button.addAction(UIAction { _ in
+          print("Button was tapped")
+      }, for: .touchUpInside)
+      ```
+
+  - title: 自定义按钮外观（颜色、边框、圆角）
+    content: |
+      你可以通过 `layer` 属性来自定义 UIButton 的外观，例如设置边框、圆角等。iOS 15 还提供了 `UIButton.Configuration` 来简化这些设置。
+    example: |
+      ```swift
+      // 直接通过 layer 设置圆角和边框
+      button.layer.cornerRadius = 10
+      button.layer.borderWidth = 2
+      button.layer.borderColor = UIColor.black.cgColor
+
+      // 使用 UIButton.Configuration 来简化设置
+      var config = UIButton.Configuration.filled()
+      config.cornerStyle = .capsule  // 使用 capsule 样式
+      config.baseBackgroundColor = .systemGreen
+      button.configuration = config
+      ```
+
+  - title: 设置按钮的内边距和布局
+    content: |
+      使用 `UIButton.Configuration` 轻松控制按钮内容的内边距（包括标题与图像之间的距离）和整体布局。例如，你可以设置 `contentInsets` 来控制内容与按钮边界的距离。
+    example: |
+      ```swift
+      var config = UIButton.Configuration.filled()
+      config.title = "Button"
+      config.image = UIImage(systemName: "star")
+      config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
+      config.imagePadding = 10  // 设置图像与标题之间的距离
+      button.configuration = config
+      ```
+
+references:
+  - title: "UIButton | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/uikit/uibutton
+  - title: "A new way to style UIButton with UIButton.Configuration in iOS 15"
+    url: https://sarunw.com/posts/a-new-way-to-style-uibutton-with-uibuttonconfiguration-in-ios15/
+  - title: "UIButtons in Swift"
+    url: https://dev.to/mohsenkeshavarz/uibuttons-in-swift-4kmd
+  - title: "Customizing UIButton in iOS 15"
+    url: https://ohmyswift.com/uibutton-ios15/

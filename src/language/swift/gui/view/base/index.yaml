@@ -1,0 +1,7 @@
+id: base
+title: 基础
+children:
+  - view
+  - text
+  - button
+  - image

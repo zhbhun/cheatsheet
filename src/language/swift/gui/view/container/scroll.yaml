@@ -1,0 +1,75 @@
+id: scroll
+title: UIScrollView
+query: Swift UIScrollView
+comment: 详细介绍 Swift UIScrollView 的用法及场景，包含滚动、缩放、布局等操作。
+description: "UIScrollView 是一个能够容纳比屏幕显示区域更大内容的视图，允许用户通过触摸手势水平或垂直滚动视图。除了基本的滚动功能外，UIScrollView 还支持缩放、分页、嵌套滚动视图以及程序化地控制滚动位置。"
+usage:
+  - title: 创建 UIScrollView
+    content: "UIScrollView 可以在代码中通过 UIScrollView() 构造方法创建，也可以在 Interface Builder 中拖拽创建。在 Interface Builder 中，必须确保正确设置内容大小（contentSize），使得滚动视图能够正常工作。"
+    example: |
+      ```swift
+      let scrollView = UIScrollView()
+      scrollView.frame = view.bounds // 设置滚动视图的尺寸
+      scrollView.contentSize = CGSize(width: 1000, height: 1000) // 设置内容大小
+      scrollView.showsHorizontalScrollIndicator = true // 显示水平滚动条
+      scrollView.showsVerticalScrollIndicator = true   // 显示垂直滚动条
+      view.addSubview(scrollView) // 添加到主视图中
+      ```
+
+  - title: 设置滚动方向与分页
+    content: "UIScrollView 可以通过 isPagingEnabled 属性设置分页滚动，即用户滚动结束时，内容会自动对齐到页面边界。你可以将 scrollView.contentSize 设置得大于其 frame 来激活水平或垂直滚动。"
+    example: |
+      ```swift
+      scrollView.isPagingEnabled = true // 启用分页
+      scrollView.contentSize = CGSize(width: view.bounds.width * 3, height: view.bounds.height)
+      ```
+
+  - title: 使用缩放功能
+    content: "UIScrollView 支持缩放功能，通过设置 minimumZoomScale 和 maximumZoomScale 可以定义最小和最大缩放比例。还需要实现 UIScrollViewDelegate 协议中的 viewForZoomingInScrollView 方法来指定要缩放的视图。"
+    example: |
+      ```swift
+      scrollView.minimumZoomScale = 1.0 // 设置最小缩放比例
+      scrollView.maximumZoomScale = 5.0 // 设置最大缩放比例
+      scrollView.delegate = self // 设置代理
+
+      // UIScrollViewDelegate 方法
+      func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+          return imageView // 返回需要缩放的视图
+      }
+      ```
+
+  - title: 程序化控制滚动位置
+    content: "你可以使用 setContentOffset 方法来程序化控制 UIScrollView 的滚动位置。该方法允许设置滚动视图的偏移量，并且可以选择是否启用动画。"
+    example: |
+      ```swift
+      let offset = CGPoint(x: 0, y: 200) // 定义偏移量
+      scrollView.setContentOffset(offset, animated: true) // 滚动到指定位置
+      ```
+
+  - title: Auto Layout 与 UIScrollView
+    content: "在使用 Auto Layout 时，确保正确设置 UIScrollView 的 contentSize 以保证内容可以滚动。此外，使用 frameLayoutGuide 和 contentLayoutGuide 来定义 UIScrollView 的内容布局和滚动区域。"
+    example: |
+      ```swift
+      // 设置内容布局
+      scrollView.contentLayoutGuide.widthAnchor.constraint(equalTo: contentView.widthAnchor).isActive = true
+      scrollView.contentLayoutGuide.heightAnchor.constraint(equalTo: contentView.heightAnchor).isActive = true
+      ```
+
+  - title: 嵌套 UIScrollView
+    content: "UIScrollView 可以嵌套使用，通过不同方向的滚动视图可以实现复杂的滚动效果，比如一个垂直滚动视图包含一个水平滚动视图。需要注意避免手势冲突。"
+    example: |
+      ```swift
+      let horizontalScrollView = UIScrollView()
+      horizontalScrollView.contentSize = CGSize(width: 1000, height: 200)
+      scrollView.addSubview(horizontalScrollView) // 嵌套在主 UIScrollView 中
+      ```
+
+references:
+  - title: UIScrollView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiscrollview
+  - title: A Beginner's Guide to UIScrollView
+    url: https://www.appcoda.com/uiscrollview-introduction/
+  - title: "Swift Swift: Using UIScrollView with Autolayout"
+    url: https://makeapppie.com/2014/12/12/swift-swift-using-uiscrollview-with-autolayout/
+  - title: How to implement a UIScrollView in Swift
+    url: https://www.delasign.com/blog/uiscrollview-swift/

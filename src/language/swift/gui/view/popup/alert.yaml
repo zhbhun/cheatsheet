@@ -1,0 +1,139 @@
+id: alert
+title: UIAlertController
+query: Swift UIAlertController
+comment: 详细介绍 Swift UIAlertController 的用法
+description: "UIAlertController 是 Swift 中用于在 iOS 应用中显示弹出框（Alert）和操作表（Action Sheet）的类。它可以展示警告消息、提示用户输入信息或者选择操作选项。UIAlertController 有两种样式：Alert 和 Action Sheet，分别用于弹窗和底部滑出的操作表。"
+usage:
+  - title: "创建 UIAlertController"
+    content: "可以通过 UIAlertController 的构造方法来创建一个警告框或操作表。通过指定标题、消息和 preferredStyle 参数（.alert 或 .actionSheet）来创建相应类型的弹出框。"
+    example: |
+      ```swift
+      // 创建警告框
+      let alert = UIAlertController(title: "Alert Title",
+                                    message: "This is an alert message.",
+                                    preferredStyle: .alert)
+
+      // 创建操作表
+      let actionSheet = UIAlertController(title: "Action Sheet Title",
+                                          message: "Choose an option",
+                                          preferredStyle: .actionSheet)
+      ```
+
+  - title: "添加按钮操作"
+    content: "可以通过 addAction(_:) 方法为 UIAlertController 添加按钮操作（UIAlertAction）。每个按钮可以指定标题、样式和点击后的操作。常见的样式有 .default、.cancel 和 .destructive。"
+    example: |
+      ```swift
+      // 创建 UIAlertController
+      let alert = UIAlertController(title: "Delete File",
+                                    message: "Are you sure you want to delete this file?",
+                                    preferredStyle: .alert)
+
+      // 添加默认按钮
+      let confirmAction = UIAlertAction(title: "Confirm", style: .default) { _ in
+          print("User confirmed deletion")
+      }
+
+      // 添加取消按钮
+      let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+
+      // 添加破坏性按钮
+      let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { _ in
+          print("File deleted")
+      }
+
+      // 将按钮添加到 UIAlertController
+      alert.addAction(confirmAction)
+      alert.addAction(cancelAction)
+      alert.addAction(deleteAction)
+      ```
+
+  - title: "显示 UIAlertController"
+    content: "UIAlertController 需要通过 present(_:animated:completion:) 方法来显示。该方法需要在 UIViewController 中调用，通常在用户触发某个事件时展示。"
+    example: |
+      ```swift
+      // 在视图控制器中显示警告框
+      self.present(alert, animated: true, completion: nil)
+      ```
+
+  - title: "添加文本框"
+    content: "对于 .alert 类型的 UIAlertController，可以使用 addTextField(configurationHandler:) 方法添加一个或多个文本框，允许用户输入信息。"
+    example: |
+      ```swift
+      // 创建带有文本框的警告框
+      let loginAlert = UIAlertController(title: "Login",
+                                         message: "Enter your username and password",
+                                         preferredStyle: .alert)
+
+      // 添加用户名文本框
+      loginAlert.addTextField { textField in
+          textField.placeholder = "Username"
+      }
+
+      // 添加密码文本框
+      loginAlert.addTextField { textField in
+          textField.placeholder = "Password"
+          textField.isSecureTextEntry = true
+      }
+
+      // 添加登录按钮
+      let loginAction = UIAlertAction(title: "Login", style: .default) { _ in
+          let username = loginAlert.textFields?[0].text
+          let password = loginAlert.textFields?[1].text
+          print("Username: \(username ?? ""), Password: \(password ?? "")")
+      }
+
+      loginAlert.addAction(loginAction)
+
+      // 显示警告框
+      self.present(loginAlert, animated: true, completion: nil)
+      ```
+
+  - title: "处理 iPad 上的 Action Sheet"
+    content: "在 iPad 上，Action Sheet 必须指定其呈现源（UIPopoverPresentationController 的 sourceView 或 sourceRect），否则会导致应用崩溃。"
+    example: |
+      ```swift
+      // 创建操作表
+      let actionSheet = UIAlertController(title: "Choose Option",
+                                          message: "Select an option from the list",
+                                          preferredStyle: .actionSheet)
+
+      // 在 iPad 上指定 sourceView 和 sourceRect
+      if let popoverController = actionSheet.popoverPresentationController {
+          popoverController.sourceView = self.view
+          popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+          popoverController.permittedArrowDirections = []
+      }
+
+      // 显示操作表
+      self.present(actionSheet, animated: true, completion: nil)
+      ```
+
+  - title: "自定义 UIAlertController 样式"
+    content: "可以通过设置 UIAlertController 的 `tintColor` 自定义按钮和文本的颜色。其他样式的修改则需要使用自定义视图，UIAlertController 的内置样式支持有限。"
+    example: |
+      ```swift
+      // 修改警告框按钮的颜色
+      let alert = UIAlertController(title: "Custom Alert",
+                                    message: "This alert has a custom tint color.",
+                                    preferredStyle: .alert)
+
+      // 设置自定义颜色
+      alert.view.tintColor = UIColor.systemGreen
+
+      // 添加按钮
+      let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+      alert.addAction(okAction)
+
+      // 显示警告框
+      self.present(alert, animated: true, completion: nil)
+      ```
+
+references:
+  - title: "UIAlertController | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/uikit/uialertcontroller
+  - title: "How to show UIAlertController (alerts) in Swift"
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-show-uialertcontroller-alerts-in-swift
+  - title: "Swift UIAlertController Example"
+    url: https://www.swiftdevcenter.com/uialertcontroller-example-in-swift/
+  - title: "UIAlertController Tutorial: Working with Alerts in Swift"
+    url: https://www.raywenderlich.com/450-uialertcontroller-tutorial-handling-alerts-and-actionsheets

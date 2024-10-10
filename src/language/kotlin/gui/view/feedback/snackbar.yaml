@@ -1,0 +1,51 @@
+
+id: snackbar
+title: Snackbar
+query: Android Snackbar
+comment: 尽量详尽的演示不同属性和场景用法
+description: "Snackbar 是 Android 中用于快速反馈用户的视图组件，通常出现在屏幕底部，可以显示消息和操作按钮，支持多种定制选项。Snackbar 适合用于提示用户进行某项操作或显示信息。"
+usage:
+  - title: 创建 Snackbar
+    content: Snackbar.make(view, message, duration)
+  - title: 设置操作按钮
+    content: setAction(text, listener)
+  - title: 修改颜色
+    content:
+      - "背景色: snack.view.setBackgroundColor(color)"
+      - "文本色: snack.view.findViewById(R.id.snackbar_text).setTextColor(color)"
+      - "操作按钮文本色: snack.setActionTextColor(color)"
+  - title: 显示 Snackbar
+    content: snack.show()
+  - title: 取消 Snackbar
+    content: snack.dismiss()
+example:
+  - title: "基本 Snackbar 示例"
+    content: |
+      ```kotlin
+      val snack = Snackbar.make(findViewById(R.id.root_layout), "Hello, Snackbar!", Snackbar.LENGTH_LONG)
+      snack.show()
+      ```
+  - title: "设置操作按钮"
+    content: |
+      ```kotlin
+      val snack = Snackbar.make(findViewById(R.id.root_layout), "Message deleted", Snackbar.LENGTH_LONG)
+      snack.setAction("UNDO") { /* 执行撤销操作 */ }
+      snack.show()
+      ```
+  - title: "自定义颜色"
+    content: |
+      ```kotlin
+      val snack = Snackbar.make(findViewById(R.id.root_layout), "Custom Snackbar", Snackbar.LENGTH_LONG)
+      snack.view.setBackgroundColor(Color.BLUE)
+      val textView = snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
+      textView.setTextColor(Color.WHITE)
+      snack.setActionTextColor(Color.RED)
+      snack.show()
+      ```
+references:
+  - title: "Android Snackbar Documentation"
+    url: https://developer.android.com/reference/com/google/android/material/snackbar/Snackbar
+  - title: "Kotlin Android - Snackbar Examples"
+    url: https://workingdev.net/2018/06/snackbar.html
+  - title: "Customizing Snackbar in Android"
+    url: https://tutorialkart.com/kotlin-android/kotlin-android-snackbar-change-text-color-background-color/

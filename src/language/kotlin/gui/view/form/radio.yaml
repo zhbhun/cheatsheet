@@ -1,0 +1,156 @@
+id: radio
+title: RadioButton
+query: Android RadioButton 和 RadioGroup
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 中，`RadioButton` 是一个用于单选的控件，通常与 `RadioGroup` 配合使用，以确保用户只能选择一个选项。`RadioGroup` 提供了对包含的 `RadioButton` 进行管理的功能，确保它们互斥选择。"
+usage:
+  - title: 创建 RadioButton
+    content: 使用 XML 中定义 `RadioButton`，或在代码中动态创建。
+  - title: 属性设置
+    content: "`android:checked`、`android:text`、`android:textColor`、`android:textSize`、`android:padding` 等。"
+  - title: 事件处理
+    content: 使用 `android:onClick` 属性或在代码中设置 `OnClickListener`。
+  - title: 分组管理
+    content: 使用 `RadioGroup` 确保互斥选择。
+  - title: 监听选中事件
+    content: 使用 `setOnCheckedChangeListener` 方法。
+  - title: 样式定制
+    content: 使用自定义 Drawable、样式和主题，或使用 Material Components。
+example:
+  - title: "创建 RadioButton 示例"
+    content: |
+      ```xml
+      <RadioGroup
+          android:id="@+id/radioGroup"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          android:background="#e0e0e0"
+          android:padding="16dp">
+          <RadioButton
+              android:id="@+id/radio_button1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="选项 1"
+              android:textColor="#000"
+              android:textSize="18sp"
+              android:checked="true" />
+          <RadioButton
+              android:id="@+id/radio_button2"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="选项 2"
+              android:textColor="#000"
+              android:textSize="18sp" />
+      </RadioGroup>
+      ```
+  - title: "处理点击事件示例"
+    content: |
+      ```xml
+      <RadioButton
+          android:id="@+id/radio_button3"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="选项 3"
+          android:onClick="onRadioButtonClicked" />
+      ```
+      ```java
+      public void onRadioButtonClicked(View view) {
+          boolean checked = ((RadioButton) view).isChecked();
+          switch(view.getId()) {
+              case R.id.radio_button1:
+                  // 处理选项1
+                  break;
+              case R.id.radio_button2:
+                  // 处理选项2
+                  break;
+              case R.id.radio_button3:
+                  // 处理选项3
+                  break;
+          }
+      }
+      ```
+  - title: "监听选中事件示例"
+    content: |
+      ```xml
+      <RadioGroup
+          android:id="@+id/radioGroup"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical">
+          <RadioButton
+              android:id="@+id/radio_button1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="选项 1" />
+          <RadioButton
+              android:id="@+id/radio_button2"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="选项 2" />
+      </RadioGroup>
+      ```
+      ```java
+      RadioGroup radioGroup = findViewById(R.id.radioGroup);
+      radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+          @Override
+          public void onCheckedChanged(RadioGroup group, int checkedId) {
+              RadioButton checkedRadioButton = findViewById(checkedId);
+              // 执行操作，比如获取选中的文本
+              String selectedText = checkedRadioButton.getText().toString();
+              Toast.makeText(getApplicationContext(), "选中: " + selectedText, Toast.LENGTH_SHORT).show();
+          }
+      });
+      ```
+  - title: "自定义 Drawable 示例"
+    content: |
+      ```xml
+      <RadioButton
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:button="@drawable/custom_radio_button"
+          android:text="自定义样式" />
+      ```
+      ```xml
+      <!-- res/drawable/custom_radio_button.xml -->
+      <selector xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:state_checked="true" android:drawable="@drawable/radio_checked" />
+          <item android:state_checked="false" android:drawable="@drawable/radio_unchecked" />
+      </selector>
+      ```
+  - title: "使用样式和主题示例"
+    content: |
+      ```xml
+      <RadioButton
+          style="@style/CustomRadioButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="样式应用" />
+      ```
+      ```xml
+      <!-- res/values/styles.xml -->
+      <resources>
+          <style name="CustomRadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
+              <item name="android:textColor">#FF0000</item>
+              <item name="android:textSize">20sp</item>
+          </style>
+      </resources>
+      ```
+  - title: "使用 Material Components 示例"
+    content: |
+      ```xml
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Material 风格"
+          app:buttonTint="@color/colorAccent" />
+      ```
+references:
+  - title: "Android RadioButton Documentation"
+    url: https://developer.android.com/reference/android/widget/RadioButton
+  - title: "RadioGroup Overview"
+    url: https://developer.android.com/reference/android/widget/RadioGroup
+  - title: "Android RadioButton and RadioGroup Example"
+    url: https://www.tutlane.com/tutorial/android/android-radiobutton-with-examples
+  - title: "Android UI Design"
+    url: https://developer.android.com/guide/topics/ui/controls/radio-button

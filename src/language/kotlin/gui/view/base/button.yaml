@@ -1,0 +1,96 @@
+id: button
+title: Button
+query: Android 按钮
+comment: 详细介绍 Kotlin 中 Android 按钮的用法及所有相关属性
+description: "Android Button 是用户界面元素，用于执行点击事件。Kotlin 提供多种样式和功能属性，允许开发者自定义按钮的外观和行为。"
+usage:
+  - title: 创建按钮
+    content: 在 XML 布局文件中使用 `<Button>` 标签，设置必要的属性，如 `id`、`layout_width`、`layout_height` 和 `text`。
+  - title: 设置样式属性
+    content: 使用 XML 属性设置按钮的样式，包括：
+      - `android:background`
+      - `android:textColor`
+      - `android:textSize`
+      - `android:padding`
+      - `android:layout_margin`
+      - `android:drawableLeft` 等。
+  - title: 设置按钮的点击事件
+    content: 使用 `setOnClickListener` 方法来响应按钮点击事件，通常在 `Activity` 的 `onCreate` 方法中设置。
+  - title: 使用 onClick 属性
+    content: 在 XML 中为按钮添加 `android:onClick` 属性，指向一个方法，该方法将在按钮点击时被调用。
+  - title: 动态创建按钮
+    content: 在代码中创建按钮实例，并设置其属性和监听器。
+example:
+  - title: "在 XML 中创建按钮并设置样式"
+    content: |
+      ```xml
+      <Button
+          android:id="@+id/button_id"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:text="@string/submit"
+          android:textColor="#FFFFFF"
+          android:background="#FF6200EE"
+          android:textSize="18sp"
+          android:padding="16dp"
+          android:layout_margin="8dp"
+          android:drawableLeft="@drawable/icon" />
+      ```
+  - title: "设置按钮的点击事件"
+    content: |
+      ```kotlin
+      class MainActivity : AppCompatActivity() {
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val button = findViewById<Button>(R.id.button_id)
+              button.setOnClickListener {
+                  Toast.makeText(applicationContext, "Button clicked!", Toast.LENGTH_SHORT).show()
+              }
+          }
+      }
+      ```
+  - title: "使用 onClick 属性"
+    content: |
+      ```xml
+      <Button
+          android:id="@+id/button_id"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:onClick="handleButtonClick"
+          android:text="Click Me"
+          android:background="@drawable/button_background" />
+      ```
+      ```kotlin
+      fun handleButtonClick(view: View) {
+          Toast.makeText(applicationContext, "Button clicked!", Toast.LENGTH_SHORT).show()
+      }
+      ```
+  - title: "动态创建按钮并设置样式"
+    content: |
+      ```kotlin
+      val button = Button(this)
+      button.text = "Dynamic Button"
+      button.setBackgroundColor(Color.parseColor("#FF6200EE"))
+      button.setTextColor(Color.WHITE)
+      button.textSize = 18f
+      button.setPadding(16, 16, 16, 16)
+      button.setOnClickListener {
+          Toast.makeText(this, "Dynamic Button clicked!", Toast.LENGTH_SHORT).show()
+      }
+      val layout = findViewById<LinearLayout>(R.id.linearLayout)
+      layout.addView(button)
+      ```
+references:
+  - title: "Android Button Overview"
+    url: https://kotlinandroid.org/button/
+  - title: "Kotlin Button Click Listener"
+    url: https://kotlinandroid.org/button/setonclicklistener/
+  - title: "Creating Buttons in Android"
+    url: https://www.javatpoint.com/kotlin-android-button
+  - title: "Button XML Attributes"
+    url: https://developer.android.com/reference/android/widget/Button
+  - title: "Styling Buttons in Android"
+    url: https://developer.android.com/guide/topics/ui/controls/button

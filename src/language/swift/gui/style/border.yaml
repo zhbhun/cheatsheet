@@ -1,0 +1,63 @@
+id: border
+title: 边框
+query: Android  Border
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 中，边框可以通过多种方法实现，包括使用 XML 布局。边框通常用于增强 UI 组件的视觉效果，使其更加突出。"
+usage:
+  - title: XML 中的边框
+    content: 使用 `ShapeDrawable` 和 `LayerDrawable` 可以在 XML 布局中定义边框样式。
+    example: |
+      ```xml
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="@drawable/border" <!-- 应用边框 -->
+          android:padding="16dp"> <!-- 内部组件与边框的间距 -->
+          <!-- 内部组件 -->
+      </LinearLayout>
+
+      <!-- border.xml -->
+      <shape xmlns:android="http://schemas.android.com/apk/res/android">
+          <solid android:color="@android:color/white" /> <!-- 内部填充颜色 -->
+          <stroke
+              android:width="2dp" <!-- 边框宽度 -->
+              android:color="@android:color/black" /> <!-- 边框颜色 -->
+          <corners android:radius="8dp" /> <!-- 圆角半径 -->
+      </shape>
+      ```
+  - title: 动态添加边框
+    content: 使用 `setBackground` 方法动态设置视图的边框。
+    example: |
+      ```kotlin
+      val myView = View(this)
+      val drawable = GradientDrawable()
+      drawable.setStroke(4, Color.BLACK) // 设置边框宽度和颜色
+      drawable.cornerRadius = 10f // 设置圆角
+      myView.background = drawable // 应用边框
+      // 此视图将呈现一个宽度为 4 像素、黑色边框的矩形
+      ```
+  - title: 文本输入框边框
+    content: 使用 `TextView` 和 `EditText` 来创建带边框的文本输入框。
+    example: |
+      ```xml
+      <EditText
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="@drawable/border_edittext" <!-- 应用边框 -->
+          android:padding="10dp" /> <!-- 文本与边框的间距 -->
+
+      <!-- border_edittext.xml -->
+      <shape xmlns:android="http://schemas.android.com/apk/res/android">
+          <solid android:color="@android:color/white" /> <!-- 填充颜色 -->
+          <stroke
+              android:width="1dp" <!-- 边框宽度 -->
+              android:color="@android:color/darker_gray" /> <!-- 边框颜色 -->
+          <corners android:radius="4dp" /> <!-- 圆角半径 -->
+      </shape>
+      // 此输入框将呈现一个带有 1dp 边框的白色背景
+      ```
+references:
+  - title: "Adding Borders to Views in Android"
+    url: https://developer.android.com/guide/topics/ui/drawables
+  - title: "Creating Custom Borders in Android Views"
+    url: https://medium.com/@yourname/android-custom-borders-32c16c2f7aa8

@@ -1,0 +1,61 @@
+id: checkbox
+title: CheckBox
+query: Android CheckBox
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 开发中，CheckBox 是一个用于用户选择的控件，允许用户在多个选项中选择一个或多个。可以在 XML 布局文件中定义，也可以通过代码动态创建。CheckBox 提供多种属性和方法，以满足不同的需求。"
+usage:
+  - title: 创建 CheckBox
+    content: "在 XML 中使用 `<CheckBox>` 标签，或在代码中使用 `new CheckBox(context)` 创建。"
+  - title: 属性设置
+    content: "常用属性包括 `android:checked`、`android:text`、`android:onClick`、`android:visibility` 等。"
+  - title: 事件处理
+    content: "使用 `android:onClick` 属性指定点击事件方法，或通过 `setOnClickListener` 方法在代码中设置。"
+  - title: 动态修改
+    content: "可以使用代码修改 CheckBox 的文本、背景颜色、可见性等，例如 `checkBox.text = '新文本'`。"
+example:
+  - title: "在 XML 中定义 CheckBox"
+    content: |
+      ```xml
+      <CheckBox
+          android:id="@+id/checkBox"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="选择我"
+          android:checked="false"
+          android:onClick="onCheckboxClicked"/>
+      ```
+  - title: "XML 中的样式设置"
+    content: |
+      ```xml
+      <CheckBox
+          android:id="@+id/checkBox"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="选择我"
+          android:textColor="@android:color/holo_blue_dark"  <!-- 设置文本颜色 -->
+          android:textSize="18sp"                            <!-- 设置文本大小 -->
+          android:padding="10dp"                             <!-- 设置内边距 -->
+          android:background="@drawable/custom_background"   <!-- 设置自定义背景 -->
+          android:gravity="center"                           <!-- 设置文本对齐 -->
+          android:layout_margin="16dp"                       <!-- 设置外边距 -->
+          android:checked="true"                             <!-- 默认选中 -->
+          android:isChecked="true"/>                         <!-- 设置状态 -->
+      ```
+  - title: "自定义背景资源"
+    content: |
+      ```xml
+      <!-- res/drawable/custom_background.xml -->
+      <selector xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:state_checked="true" android:drawable="@color/holo_green_light" /> <!-- 选中状态 -->
+          <item android:drawable="@color/holo_red_light" />                                    <!-- 未选中状态 -->
+      </selector>
+      ```
+references:
+  - title: "Android CheckBox Documentation"
+    url: https://developer.android.com/reference/android/widget/CheckBox
+  - title: "Creating CheckBox in Android"
+    url: https://www.tutlane.com/tutorial/android/android-checkbox
+  - title: "Checkbox in Kotlin with Examples"
+    url: https://tutorial.eyehunts.com/android/android-checkbox-and-example-in-kotlin-with-condition
+  - title: "Set Visibility and Background of Checkbox"
+    url: https://www.tutorialwing.com/create-an-android-checkbox-programmatically-in-kotlin/

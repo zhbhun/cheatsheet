@@ -1,0 +1,109 @@
+id: layout
+title: 布局
+query: Android 布局文件
+comment: 介绍如何定义和使用 Android 布局文件，重点包括常见布局类型、如何在 XML 中定义布局以及如何在 Kotlin 中操作布局。
+description: |
+  在 Android 开发中，布局文件用于定义应用界面的结构。常见的布局类型包括 `LinearLayout`、`RelativeLayout` 和 `ConstraintLayout` 等，它们通过 XML 文件指定各个 UI 组件的位置和排列方式。每个布局文件都是一个 `.xml` 文件，位于项目的 `res/layout` 目录下，并通过 `activity` 或 `fragment` 与 Kotlin 代码进行关联。在代码中可以通过 `findViewById` 来获取和操作布局中的元素，也可以使用 `ViewBinding` 或 `DataBinding` 来简化操作。
+usage:
+  - title: 创建布局文件
+    content: |
+      Android 布局文件通常以 XML 格式创建。每个布局文件描述了一组 UI 组件的结构，使用不同的布局类型来决定组件的排列方式。
+      示例中展示了如何使用 `ConstraintLayout` 创建一个包含 `TextView` 和 `Button` 的基本布局。
+    example: |
+      ```xml
+      <!-- activity_main.xml -->
+      <androidx.constraintlayout.widget.ConstraintLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- TextView 显示文字 -->
+          <TextView
+              android:id="@+id/textView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Hello World!"
+              android:layout_marginTop="20dp"
+              android:layout_marginStart="20dp"/>
+
+          <!-- Button 按钮 -->
+          <Button
+              android:id="@+id/button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Click Me"
+              android:layout_marginTop="50dp"
+              android:layout_marginStart="20dp"
+              android:onClick="onButtonClick"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+
+  - title: 使用 Kotlin 代码访问布局元素
+    content: |
+      在 Kotlin 中，可以使用 `findViewById` 来访问 XML 布局中的 UI 元素，并为其设置事件处理程序。例如，访问按钮并设置点击事件。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中通过 ID 获取布局元素
+      val button = findViewById<Button>(R.id.button)
+      button.setOnClickListener {
+          // 处理按钮点击事件
+          findViewById<TextView>(R.id.textView).text = "Button Clicked!"
+      }
+      ```
+
+  - title: 使用 ViewBinding 简化布局访问
+    content: |
+      ViewBinding 是一种更安全、方便的方式来访问布局中的元素。启用 ViewBinding 后，Android Studio 会自动生成与每个布局文件相关的绑定类，省去使用 `findViewById` 的麻烦。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中使用 ViewBinding 访问布局
+      private lateinit var binding: ActivityMainBinding
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          binding = ActivityMainBinding.inflate(layoutInflater)
+          setContentView(binding.root)
+
+          // 使用 ViewBinding 访问 TextView 和 Button
+          binding.button.setOnClickListener {
+              binding.textView.text = "Button Clicked!"
+          }
+      }
+      ```
+
+  - title: 常见布局类型
+    content: |
+      Android 支持多种布局类型来适应不同的 UI 需求：
+      - `LinearLayout`: 组件沿水平方向或垂直方向排列。
+      - `RelativeLayout`: 组件相对于彼此或父布局进行排列。
+      - `ConstraintLayout`: 提供更灵活的方式来定义组件之间的约束关系，适合复杂布局。
+    example: |
+      ```xml
+      <!-- LinearLayout 示例 -->
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Item 1"/>
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Item 2"/>
+
+      </LinearLayout>
+      ```
+references:
+  - title: "构建基本布局"
+    url: https://developer.android.com/codelabs/building-basic-layouts
+  - title: "View 中的布局"
+    url: https://developer.android.com/guide/topics/ui/declaring-layout
+  - title: "Android 布局教程"
+    url: https://developer.android.com/guide/topics/ui/controls/button
+  - title: "使用 ViewBinding 简化布局访问"
+    url: https://developer.android.com/topic/libraries/view-binding

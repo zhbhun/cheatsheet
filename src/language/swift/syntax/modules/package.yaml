@@ -71,6 +71,8 @@ example:
       ```
 
 references:
+  - title: "Package Manager"
+    url: https://www.swift.org/documentation/package-manager/
   - title: "Managing dependencies using the Swift Package Manager"
     url: https://www.swiftbysundell.com/articles/managing-dependencies-using-the-swift-package-manager/
   - title: "Package — Swift Package Manager"

@@ -1,0 +1,86 @@
+id: bottom-sheet
+title: BottomSheetDialog
+query: Android BottomSheetDialog
+comment: 尽量详尽的演示不同属性和场景用法
+description: "BottomSheetDialog 是 Android 中的一种对话框，通常用于展示与当前界面相关的信息或选项。它在屏幕底部滑出，可以包含多种交互元素，如按钮、列表等。底部对话框的使用有助于提供更好的用户体验，因为它允许用户在不离开当前界面的情况下查看额外信息。"
+usage:
+  - title: 创建 BottomSheetDialog
+    content: "使用 BottomSheetDialog 类创建对话框，设置布局并展示。"
+  - title: 使用 BottomSheetDialogFragment
+    content: "继承 BottomSheetDialogFragment 类，以便在片段中使用底部对话框。"
+  - title: 设置行为
+    content: "使用 BottomSheetBehavior 设置对话框的展开、收起及其他行为。"
+  - title: 响应用户点击
+    content: "实现接口以响应底部对话框中的按钮点击事件。"
+  - title: 完全屏幕模式
+    content: "通过设置 `peekHeight` 为 0 来实现完全屏幕模式。"
+  - title: 自定义样式
+    content: "通过 XML 文件自定义底部对话框的样式，包括背景、边距和字体等。"
+example:
+  - title: "创建 BottomSheetDialog"
+    content: |
+      ```java
+      BottomSheetDialog dialog = new BottomSheetDialog(this);
+      dialog.setContentView(R.layout.bottom_sheet_layout);
+      dialog.show();
+      ```
+  - title: "使用 BottomSheetDialogFragment"
+    content: |
+      ```java
+      public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
+          @Nullable
+          @Override
+          public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                                   @Nullable Bundle savedInstanceState) {
+              return inflater.inflate(R.layout.bottom_sheet_layout, container, false);
+          }
+      }
+      ```
+  - title: "设置行为"
+    content: |
+      ```java
+      BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(view);
+      behavior.setPeekHeight(200); // 设置初始高度
+      behavior.setState(BottomSheetBehavior.STATE_EXPANDED); // 展开状态
+      ```
+  - title: "响应用户点击"
+    content: |
+      ```java
+      public interface ItemClickListener {
+          void onItemClick(String item);
+      }
+
+      // 在 BottomSheetDialogFragment 中实现点击响应
+      view.findViewById(R.id.button).setOnClickListener(v -> {
+          mListener.onItemClick("Item clicked");
+      });
+      ```
+  - title: "完全屏幕模式"
+    content: |
+      ```java
+      BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
+      behavior.setPeekHeight(0); // 设置为 0 以便全屏显示
+      behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+      ```
+  - title: "自定义样式"
+    content: |
+      ```xml
+      <!-- 在 styles.xml 中定义样式 -->
+      <style name="BottomSheetStyle" parent="Theme.Design.Light.BottomSheetDialog">
+          <item name="android:background">@color/white</item>
+          <item name="android:padding">16dp</item>
+      </style>
+      ```
+references:
+  - title: "Bottom Sheet Dialogs - Android Developers"
+    url: https://developer.android.com/design/components/bottom-sheets
+  - title: "Creating a Bottom Sheet Dialog Fragment"
+    url: https://developer.android.com/reference/androidx/fragment/app/BottomSheetDialogFragment
+  - title: "Using BottomSheetBehavior"
+    url: https://developer.android.com/reference/androidx/coordinatorlayout/widget/BottomSheetBehavior
+  - title: "Bottom Sheets - Material Design"
+    url: https://material.io/components/sheets
+  - title: "BottomSheetDialogFragment Example"
+    url: https://www.riptutorial.com/android/example/2325/modal-bottom-sheets-with-bottomsheetdialog
+  - title: "Full-Screen Bottom Sheets"
+    url: https://hatchjs.com/bottom-sheet-full-screen-android-guide

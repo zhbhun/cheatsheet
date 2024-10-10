@@ -1,0 +1,127 @@
+id: drag
+title: 拖拽
+query: Android 拖拽事件
+comment: 尽量详尽的演示不同属性和场景用法
+description: "Kotlin Android 的拖拽事件允许用户在界面上拖动视图，并将其放置在目标位置。此功能可以通过 `startDragAndDrop()` 和一系列 `DragEvent` 监听器来实现。适用于需要移动、重排或修改用户界面的场景。"
+usage:
+  - title: 启动拖拽
+    content: 使用 `startDragAndDrop()` 方法启动拖拽操作。需要创建 `ClipData` 和 `DragShadowBuilder`。
+    example: |
+      ```kotlin
+      val dragData = ClipData(
+          view.tag as? CharSequence,
+          arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
+          ClipData.Item(view.tag as? CharSequence)
+      )
+
+      // 创建拖拽阴影
+      val myShadow = View.DragShadowBuilder(view)
+
+      // 启动拖拽
+      view.startDragAndDrop(
+          dragData,   // 要拖动的数据
+          myShadow,    // 拖拽阴影
+          null,        // 不使用本地数据
+          0            // 标志位，当前未使用
+      )
+      ```
+
+  - title: 处理拖拽事件
+    content: 通过设置 `OnDragListener` 处理拖拽事件，包括拖拽开始、进入、位置、退出等。
+    example: |
+      ```kotlin
+      view.setOnDragListener { v, event ->
+          when (event.action) {
+              DragEvent.ACTION_DRAG_STARTED -> {
+                  // 判断是否能接收拖拽数据
+                  return@setOnDragListener true // 继续接收后续事件
+              }
+              DragEvent.ACTION_DRAG_ENTERED -> {
+                  // 改变视图外观，表示可放置区域
+                  v.setBackgroundColor(Color.LTGRAY)
+                  return@setOnDragListener true
+              }
+              DragEvent.ACTION_DRAG_LOCATION -> {
+                  // 更新视图状态或位置
+                  return@setOnDragListener true
+              }
+              DragEvent.ACTION_DRAG_EXITED -> {
+                  // 恢复视图外观
+                  v.setBackgroundColor(Color.WHITE)
+                  return@setOnDragListener true
+              }
+              DragEvent.ACTION_DROP -> {
+                  // 处理放置事件
+                  // 获取放置的位置和数据
+                  val draggedData = event.clipData
+                  // 处理数据
+                  return@setOnDragListener true
+              }
+              DragEvent.ACTION_DRAG_ENDED -> {
+                  // 拖拽结束，恢复视图状态
+                  return@setOnDragListener true
+              }
+          }
+          false
+      }
+      ```
+
+  - title: 创建拖拽阴影
+    content: 自定义拖拽阴影，以提高用户体验。使用 `DragShadowBuilder` 可以创建自定义的拖拽视图。
+    example: |
+      ```kotlin
+      class MyDragShadowBuilder(view: View) : View.DragShadowBuilder(view) {
+          override fun onDrawShadow(canvas: Canvas) {
+              // 绘制自定义阴影，例如半透明效果
+              val paint = Paint()
+              paint.color = Color.GRAY
+              paint.alpha = 100
+              canvas.drawRect(0f, 0f, view.width.toFloat(), view.height.toFloat(), paint)
+          }
+      }
+
+      // 启动拖拽时使用自定义阴影
+      view.startDragAndDrop(dragData, MyDragShadowBuilder(view), null, 0)
+      ```
+
+  - title: 响应放置操作
+    content: 在拖拽放置时处理接收到的数据，并更新 UI。
+    example: |
+      ```kotlin
+      view.setOnDragListener { v, event ->
+          if (event.action == DragEvent.ACTION_DROP) {
+              val clipData = event.clipData
+              // 处理放置的数据
+              // 例如更新视图内容
+              // 处理放置逻辑
+              return@setOnDragListener true
+          }
+          false
+      }
+      ```
+
+  - title: 拖拽效果的优化
+    content: 使用动画或视觉效果增强用户体验，例如放置成功时的动画。
+    example: |
+      ```kotlin
+      view.setOnDragListener { v, event ->
+          when (event.action) {
+              DragEvent.ACTION_DROP -> {
+                  // 执行放置成功的动画
+                  v.animate().scaleX(1.2f).scaleY(1.2f).setDuration(200).withEndAction {
+                      v.animate().scaleX(1f).scaleY(1f).setDuration(200).start()
+                  }.start()
+                  return@setOnDragListener true
+              }
+          }
+          false
+      }
+      ```
+
+references:
+  - title: "Drag and Drop in Android"
+    url: https://developer.android.com/guide/topics/ui/drag-drop
+  - title: "Implement drag and drop with views"
+    url: https://developer.android.com/reference/android/view/View#startDragAndDrop(android.content.ClipData,%20android.view.View.DragShadowBuilder,%20java.lang.Object,%20int)
+  - title: "Drag and Drop Overview"
+    url: https://developer.android.com/guide/topics/ui/drag-drop#drag-drop-overview

@@ -1,2 +1,9 @@
 id: gui
 title: 图形用户界面
+references:
+  - title: UIKit
+    url: https://developer.apple.com/documentation/uikit
+  - title: UIKit essentials
+    url: https://developer.apple.com/tutorials/app-dev-training/#uikit-essentials
+  - title: UIKit
+    url: https://developer.apple.com/cn/documentation/uikit/

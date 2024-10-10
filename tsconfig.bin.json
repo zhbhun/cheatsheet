@@ -4,6 +4,7 @@
     "lib": ["ES2023", "DOM"],
     "module": "NodeNext",
     "skipLibCheck": true,
+    "esModuleInterop": true,
 
     /* Bundler mode */
     "moduleResolution": "NodeNext",

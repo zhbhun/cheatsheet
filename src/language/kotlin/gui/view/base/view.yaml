@@ -1,0 +1,186 @@
+id: view
+title: View
+query: Android 纯 View 的用法
+comment: 针对不同场景的 View 属性使用进行演示，包括分隔线、占位符、装饰符、透明度和动画等
+description: |
+  在 Android 开发中，`View` 可以用于许多不同场景，比如创建分隔线、作为占位符、用作装饰符、控制透明度和设置动画等。通过合理运用 `View` 的属性和方法，开发者可以在 UI 设计中实现多样化效果。以下示例展示了 `View` 在这些不同场景下的典型用法。
+
+example:
+  - title: 设置 View 的大小 (layout_width 和 layout_height)
+    content: |
+      ```xml
+      <View
+          android:layout_width="200dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_blue_light"/>
+      ```
+  - title: 设置最小宽高 (minWidth 和 minHeight)
+    content: |
+      ```xml
+      <View
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minWidth="150dp"
+          android:minHeight="80dp"
+          android:background="@android:color/holo_purple"/>
+      ```
+  - title: 设置 margin (外边距)
+    content: |
+      ```xml
+      <View
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_margin="20dp"
+          android:background="@android:color/holo_orange_light"/>
+      ```
+  - title: 设置 padding (内边距)
+    content: |
+      ```xml
+      <View
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:padding="16dp"
+          android:background="@android:color/holo_green_light"/>
+      ```
+  - title: 使用 View 作为水平分隔线
+    content: |
+      ```xml
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="2dp"
+          android:background="@android:color/darker_gray"
+          android:layout_marginTop="16dp"
+          android:layout_marginBottom="16dp"/>
+      ```
+  - title: 使用 View 作为不可见占位符
+    content: |
+      ```xml
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="50dp"
+          android:visibility="invisible"/>
+      ```
+  - title: 设置背景色的 View
+    content: |
+      ```xml
+      <View
+          android:layout_width="match_parent"
+          android:layout_height="200dp"
+          android:background="@android:color/holo_orange_dark"
+          android:layout_marginTop="16dp"/>
+      ```
+
+  - title: 使用 View 作为装饰符，带圆角背景
+    content: |
+      ```xml
+      <View
+          android:layout_width="200dp"
+          android:layout_height="50dp"
+          android:background="@drawable/rounded_corner_background"
+          android:elevation="4dp"/>
+      ```
+
+  - title: 设置透明度的 View
+    content: |
+      ```xml
+      <View
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_blue_bright"
+          android:alpha="0.5"/>
+      ```
+
+  - title: View 动画示例：点击旋转
+    content: |
+      ```xml
+      <View
+          android:id="@+id/animated_view"
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_red_light"
+          android:layout_marginTop="16dp"/>
+      ```
+
+  - title: clickable 和 onClick 属性
+    content: |
+      ```xml
+      <View
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:clickable="true"
+          android:background="@android:color/holo_red_dark"
+          android:onClick="onViewClicked"/>
+      ```
+
+      ```kotlin
+      fun onViewClicked(view: View) {
+          Toast.makeText(this, "View Clicked!", Toast.LENGTH_SHORT).show()
+      }
+      ```
+
+  - title: 设置 View 的 rotation (旋转)
+    content: |
+      ```xml
+      <View
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_blue_dark"
+          android:rotation="45"/>
+      ```
+
+  - title: View 动画示例：点击旋转的 Kotlin 代码
+    content: |
+      ```kotlin
+      val animatedView = findViewById<View>(R.id.animated_view)
+
+      animatedView.setOnClickListener {
+          animatedView.animate()
+              .rotationBy(360f)
+              .alpha(0.7f)
+              .setDuration(1000)
+              .start()
+      }
+      ```
+
+  - title: 设置 scaleX 和 scaleY (缩放)
+    content: |
+      ```xml
+      <View
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_green_dark"
+          android:scaleX="1.5"
+          android:scaleY="1.5"/>
+      ```
+
+  - title: 设置 translationX 和 translationY (平移)
+    content: |
+      ```xml
+      <View
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:background="@android:color/holo_purple"
+          android:translationX="50dp"
+          android:translationY="30dp"/>
+      ```
+
+  - title: 自定义圆角背景的 drawable 文件
+    content: |
+      ```xml
+      <!-- res/drawable/rounded_corner_background.xml -->
+      <shape xmlns:android="http://schemas.android.com/apk/res/android">
+          <solid android:color="@android:color/holo_green_light" />
+          <corners android:radius="16dp" />
+          <padding android:left="16dp" android:right="16dp" android:top="8dp" android:bottom="8dp" />
+      </shape>
+      ```
+
+references:
+  - title: Create custom view components | Views | Android Developers
+    url: https://developer.android.com/guide/topics/ui/custom-components
+  - title: Android View Basics
+    url: https://developer.android.com/reference/android/view/View
+  - title: Android View Animation Tutorial | Android Developers
+    url: https://developer.android.com/guide/topics/graphics/view-animation
+  - title: Android Custom Views with Kotlin | GeeksforGeeks
+    url: https://www.geeksforgeeks.org/how-to-create-your-own-custom-view-in-android-with-kotlin/

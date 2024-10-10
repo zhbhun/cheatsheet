@@ -1,0 +1,81 @@
+id: font
+title: 字体资源
+query: Android 字体资源
+comment: 介绍如何定义字体资源并在布局、代码和样式中使用，包括可下载字体的实现方式。
+description:
+  在 Android 应用中，字体资源可以通过 XML 文件或代码引用。Android 8.0（API 级别 26）引入了字体作为资源的功能，允许开发者将字体捆绑在应用中，或使用可下载字体以减少 APK 大小。字体样式和粗细等属性可以通过 `fontStyle` 和 `fontWeight` 来控制，开发者可以在 XML 布局、代码文件以及样式文件中使用这些字体资源。
+usage:
+  - title: 定义字体并在布局和代码中使用
+    content:
+      字体资源可以通过 `res/font/` 文件夹定义，并在布局文件中通过 `fontFamily` 属性引用。同时，开发者也可以在代码中通过 `ResourcesCompat.getFont()` 动态设置字体。
+    example: |
+      ```xml
+      <!-- 定义字体资源 -->
+      <?xml version="1.0" encoding="utf-8"?>
+      <font-family xmlns:android="http://schemas.android.com/apk/res/android">
+          <font android:font="@font/lobster_regular" android:fontStyle="normal" android:fontWeight="400"/>
+      </font-family>
+
+      <!-- 在布局文件中使用字体 -->
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/lobster_regular"
+          android:text="Hello, World!" />
+
+      <!-- 在代码中动态设置字体 -->
+      val textView: TextView = findViewById(R.id.myTextView)
+      val typeface = ResourcesCompat.getFont(context, R.font.lobster_regular)
+      textView.typeface = typeface
+      ```
+
+  - title: 定义并使用可下载字体
+    content:
+      Android 支持可下载字体功能，通过将字体从网络下载，避免打包到 APK 中，从而减小应用大小。可下载字体可以通过 `fontFamily` 属性引用，通常在 `fonts.xml` 中进行配置。
+    example: |
+      ```xml
+      <!-- 定义可下载字体 -->
+      <?xml version="1.0" encoding="utf-8"?>
+      <font-family
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:fontProviderAuthority="com.google.android.gms.fonts"
+          android:fontProviderPackage="com.google.android.gms"
+          android:fontProviderQuery="Lobster"
+          android:fontProviderCerts="@array/com_google_android_gms_fonts_certs">
+      </font-family>
+
+      <!-- 在布局文件中使用可下载字体 -->
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/downloadable_font"
+          android:text="This is a downloadable font" />
+      ```
+
+  - title: 在样式文件中使用字体
+    content:
+      可以通过在 `styles.xml` 中定义全局字体样式，简化对多处字体的重复设置。这种方法适用于全局字体一致性需求。
+    example: |
+      ```xml
+      <!-- 定义样式文件中的字体 -->
+      <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+          <item name="android:fontFamily">@font/noto_sans_bold</item>
+      </style>
+
+      <!-- 在布局文件中应用全局样式 -->
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Text with global font" />
+      ```
+references:
+  - title: "Font resources - Android Developers"
+    url: https://developer.android.com/guide/topics/ui/look-and-feel/fonts-in-xml
+  - title: "使用可下载字体 | Android Developers"
+    url: https://developer.android.google.cn/guide/topics/ui/look-and-feel/fonts-in-xml#downloadable-fonts
+  - title: "Android 字体系列（三）：Xml中的字体"
+    url: https://sweetying520.github.io/android-fonts-in-xml
+  - title: "Android 在代码中使用字体 | CSDN 博客"
+    url: https://blog.csdn.net/Android使用代码设置字体
+  - title: "如何定义并使用字体资源 | Android Developers"
+    url: https://developer.android.google.cn/studio/write/resource-manager

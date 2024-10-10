@@ -1,0 +1,127 @@
+id: motion-layout
+title: MotionLayout
+query: Android MotionLayout
+comment: 尽量详尽的演示不同属性和场景用法
+description: "MotionLayout 是 Android 的一个强大布局管理器，基于 ConstraintLayout 之上，能够实现复杂的动画和转换。它通过定义动画的开始和结束状态，以及在这些状态之间的过渡，提供流畅的用户体验。适合用于视图之间的交互和动画效果，如滑动、点击等。"
+usage:
+  - title: 创建 MotionLayout
+    content: 使用 MotionLayout 替代 ConstraintLayout，并通过 `layoutDescription` 引用 MotionScene。
+    example: |
+      ```xml
+      <androidx.constraintlayout.motion.widget.MotionLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:app="http://schemas.android.com/apk/res-auto"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          app:layoutDescription="@xml/motion_scene"> <!-- 引用 MotionScene 定义动画 -->
+
+          <Button
+              android:id="@+id/button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Swipe me!" /> <!-- 触发动画的按钮 -->
+
+      </androidx.constraintlayout.motion.widget.MotionLayout>
+      ```
+
+  - title: 定义 MotionScene
+    content: 在 `motion_scene.xml` 文件中定义动画的开始和结束状态，以及过渡设置。
+    example: |
+      ```xml
+      <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+                   xmlns:motion="http://schemas.android.com/apk/res-auto">
+          <Transition
+              motion:constraintSetStart="@+id/start"  <!-- 动画开始时的布局约束 -->
+              motion:constraintSetEnd="@+id/end"      <!-- 动画结束时的布局约束 -->
+              motion:duration="1000">                   <!-- 动画持续时间为1000毫秒 -->
+              <OnSwipe
+                  motion:touchAnchorId="@+id/button"   <!-- 触摸锚点为按钮 -->
+                  motion:touchAnchorSide="top"         <!-- 从按钮的顶部开始拖动 -->
+                  motion:dragDirection="dragUp" />      <!-- 向上拖动触发动画 -->
+          </Transition>
+
+          <ConstraintSet android:id="@+id/start">
+              <Constraint
+                  android:id="@+id/button"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  motion:layout_constraintTop_toTopOf="parent"  <!-- 按钮靠顶部对齐 -->
+                  motion:layout_constraintStart_toStartOf="parent" /> <!-- 按钮靠左侧对齐 -->
+          </ConstraintSet>
+
+          <ConstraintSet android:id="@+id/end">
+              <Constraint
+                  android:id="@+id/button"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  motion:layout_constraintTop_toBottomOf="parent"  <!-- 按钮移到底部对齐 -->
+                  motion:layout_constraintEnd_toEndOf="parent" />  <!-- 按钮靠右侧对齐 -->
+          </ConstraintSet>
+      </MotionScene>
+      ```
+
+  - title: 使用 KeyFrameSet
+    content: 通过 `KeyFrameSet` 定义中间状态和动态属性变化，实现更复杂的动画效果。
+    example: |
+      ```xml
+      <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+                   xmlns:motion="http://schemas.android.com/apk/res-auto">
+          <Transition
+              motion:constraintSetStart="@+id/start"
+              motion:constraintSetEnd="@+id/end"
+              motion:duration="2000"> <!-- 动画持续时间为2000毫秒 -->
+              <KeyFrameSet>
+                  <KeyPosition
+                      motion:keyPositionType="pathRelative"  <!-- 相对路径位置 -->
+                      motion:percentY="0.25"                <!-- 动画进度到达25%时 -->
+                      motion:framePosition="50"              <!-- 在第50帧时触发 -->
+                      motion:target="@id/button" />          <!-- 目标为按钮 -->
+
+                  <KeyAttribute
+                      motion:framePosition="50"              <!-- 在第50帧时触发 -->
+                      motion:target="@id/button"
+                      android:rotation="90" />               <!-- 按钮旋转90度 -->
+              </KeyFrameSet>
+          </Transition>
+      </MotionScene>
+      ```
+
+  - title: 添加触发器
+    content: 使用触发器（如点击或滑动）来控制动画的开始和结束。
+    example: |
+      ```xml
+      <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+                   xmlns:motion="http://schemas.android.com/apk/res-auto">
+          <Transition
+              motion:constraintSetStart="@+id/start"
+              motion:constraintSetEnd="@+id/end"
+              motion:duration="1000"> <!-- 动画持续时间为1000毫秒 -->
+              <OnClick motion:target="@id/button" /> <!-- 点击按钮触发动画 -->
+          </Transition>
+      </MotionScene>
+      ```
+
+  - title: 动画中的自定义属性
+    content: 使用自定义属性控制动画中的特殊效果，如文本大小或颜色变化。
+    example: |
+      ```xml
+      <ConstraintSet android:id="@+id/start">
+          <Constraint
+              android:id="@+id/textView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Hello"
+              motion:layout_constraintTop_toTopOf="parent">
+              <CustomAttribute
+                  motion:attributeName="textSize"       <!-- 自定义属性名称 -->
+                  motion:customFloatValue="20" />       <!-- 设置文本大小为20 -->
+          </Constraint>
+      </ConstraintSet>
+      ```
+
+references:
+  - title: "MotionLayout Documentation"
+    url: https://developer.android.com/reference/androidx/constraintlayout/motion/widget/MotionLayout
+  - title: "Getting Started with MotionLayout"
+    url: https://developer.android.com/training/constraint-layout/motionlayout
+  - title: "Implementin

@@ -1,0 +1,107 @@
+id: relative
+title: RelativeLayout
+query: Kotlin Android RelativeLayout usage example
+comment: 介绍 Kotlin 中 RelativeLayout 的使用，包含常见的布局属性及示例。
+description: |
+  RelativeLayout 是 Android 中的一种布局容器，它允许子视图根据父容器或其他子视图的相对位置进行布局。相比 LinearLayout，RelativeLayout 更灵活，适用于需要避免嵌套布局的复杂界面布局。它提供了多种布局属性，例如 `layout_alignParentTop`、`layout_below`、`layout_toRightOf` 等，可以让开发者轻松地指定子视图之间的相对位置关系。Kotlin 与 XML 配合使用可以更清晰地组织界面元素。
+example:
+  - title: 相对布局的简单示例
+    content: |
+      ```xml
+      <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:padding="10dp">
+
+          <!-- 顶部的文本视图 -->
+          <TextView
+              android:id="@+id/tv_label"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="标题"
+              android:textSize="20sp"
+              android:layout_alignParentTop="true"
+              android:layout_centerHorizontal="true" />
+
+          <!-- 在标题下方的输入框 -->
+          <EditText
+              android:id="@+id/et_input"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:hint="输入内容"
+              android:layout_below="@id/tv_label"
+              android:layout_marginTop="16dp" />
+
+          <!-- 右侧的按钮 -->
+          <Button
+              android:id="@+id/btn_submit"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="提交"
+              android:layout_alignParentRight="true"
+              android:layout_below="@id/et_input"
+              android:layout_marginTop="16dp" />
+
+      </RelativeLayout>
+      ```
+
+  - title: Kotlin 代码动态生成 RelativeLayout
+    content: |
+      ```kotlin
+      val relativeLayout = RelativeLayout(this).apply {
+          layoutParams = RelativeLayout.LayoutParams(
+              RelativeLayout.LayoutParams.MATCH_PARENT,
+              RelativeLayout.LayoutParams.MATCH_PARENT
+          )
+      }
+
+      val textView = TextView(this).apply {
+          id = View.generateViewId()
+          text = "标题"
+          textSize = 20f
+          val params = RelativeLayout.LayoutParams(
+              RelativeLayout.LayoutParams.WRAP_CONTENT,
+              RelativeLayout.LayoutParams.WRAP_CONTENT
+          )
+          params.addRule(RelativeLayout.ALIGN_PARENT_TOP)
+          params.addRule(RelativeLayout.CENTER_HORIZONTAL)
+          layoutParams = params
+      }
+
+      val editText = EditText(this).apply {
+          id = View.generateViewId()
+          hint = "输入内容"
+          val params = RelativeLayout.LayoutParams(
+              RelativeLayout.LayoutParams.MATCH_PARENT,
+              RelativeLayout.LayoutParams.WRAP_CONTENT
+          )
+          params.addRule(RelativeLayout.BELOW, textView.id)
+          layoutParams = params
+      }
+
+      val button = Button(this).apply {
+          text = "提交"
+          val params = RelativeLayout.LayoutParams(
+              RelativeLayout.LayoutParams.WRAP_CONTENT,
+              RelativeLayout.LayoutParams.WRAP_CONTENT
+          )
+          params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+          params.addRule(RelativeLayout.BELOW, editText.id)
+          layoutParams = params
+      }
+
+      relativeLayout.addView(textView)
+      relativeLayout.addView(editText)
+      relativeLayout.addView(button)
+
+      setContentView(relativeLayout)
+      ```
+references:
+  - title: "Relative Layout | Android Developers"
+    url: https://developer.android.com/guide/topics/ui/layout/relative
+  - title: "Android RelativeLayout Example | Tutlane"
+    url: https://www.tutlane.com/tutorial/android/android-relativelayout-with-examples
+  - title: "RelativeLayout in Android | StackTips"
+    url: https://stacktips.com/tutorials/android/android-relativelayout-example
+  - title: "Android RelativeLayout Tutorial with Example | EyeHunts"
+    url: https://tutorial.eyehunts.com/android/android-relativelayout-example-kotlin/

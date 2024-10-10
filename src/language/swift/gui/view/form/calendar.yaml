@@ -1,0 +1,93 @@
+id: calendar
+title: UICalendarView
+query: Swift UICalendarView
+comment: 详细介绍 Swift UICalendarView 的用法
+description: "`UICalendarView` 是 UIKit 从 iOS 16 开始引入的原生日历组件，允许用户在应用中选择单个或多个日期。它可以高度自定义，并支持添加日期装饰、限制可选择日期范围以及自定义选择行为。此组件非常适合用于展示事件、行程预订等场景。"
+usage:
+  - title: 创建 UICalendarView
+    content: "要创建 `UICalendarView`，需要使用默认构造函数并指定日历类型。通常使用公历 (Gregorian calendar)，但可以根据需求选择其他日历。"
+    example: |
+      ```swift
+      let calendarView = UICalendarView()
+      let gregorianCalendar = Calendar(identifier: .gregorian)
+      calendarView.calendar = gregorianCalendar
+      ```
+
+  - title: 单日期选择
+    content: "`UICalendarView` 支持通过 `selectionBehavior` 属性来设置单日期选择。通过实现 `UICalendarSelectionSingleDateDelegate`，可以处理日期选择事件。"
+    example: |
+      ```swift
+      // 设置单日期选择行为
+      let dateSelection = UICalendarSelectionSingleDate(delegate: self)
+      calendarView.selectionBehavior = dateSelection
+
+      // 实现 delegate 来处理日期选择
+      extension ViewController: UICalendarSelectionSingleDateDelegate {
+          func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
+              print("Selected Date: \(dateComponents)")
+          }
+      }
+      ```
+
+  - title: 多日期选择
+    content: "对于需要多日期选择的场景，可以使用 `UICalendarSelectionMultiDateDelegate` 实现多日期选择行为，并通过 delegate 处理选择和取消选择的事件。"
+    example: |
+      ```swift
+      // 设置多日期选择行为
+      let multiSelect = UICalendarSelectionMultiDate(delegate: self)
+      calendarView.selectionBehavior = multiSelect
+
+      // 实现多日期选择的 delegate
+      extension ViewController: UICalendarSelectionMultiDateDelegate {
+          func multiDateSelection(_ selection: UICalendarSelectionMultiDate, didSelectDate dateComponents: DateComponents) {
+              print("Selected Date: \(dateComponents)")
+          }
+
+          func multiDateSelection(_ selection: UICalendarSelectionMultiDate, didDeselectDate dateComponents: DateComponents) {
+              print("Deselected Date: \(dateComponents)")
+          }
+      }
+      ```
+
+  - title: 日期装饰
+    content: "`UICalendarView` 支持使用 `UICalendarViewDelegate` 添加日期装饰（decoration），可以在特定日期显示图标或自定义视图。"
+    example: |
+      ```swift
+      calendarView.delegate = self
+
+      // 实现 UICalendarViewDelegate 来设置装饰
+      extension ViewController: UICalendarViewDelegate {
+          func calendarView(_ calendarView: UICalendarView, decorationFor dateComponents: DateComponents) -> UICalendarView.Decoration? {
+              let image = UIImage(systemName: "star.fill")
+              return .image(image)
+          }
+      }
+      ```
+
+  - title: 限制日期选择范围
+    content: "可以通过设置 `availableDateRange` 属性来限制用户选择的日期范围，禁止选择超出指定范围的日期。"
+    example: |
+      ```swift
+      // 限制可选择的日期范围
+      calendarView.availableDateRange = DateInterval(start: Date(), end: Date.distantFuture)
+      ```
+
+  - title: 禁用特定日期选择
+    content: "通过实现 `canSelectDate` 方法，可以根据条件禁用特定日期的选择，比如禁用周末或特定假期。"
+    example: |
+      ```swift
+      extension ViewController: UICalendarSelectionSingleDateDelegate {
+          func dateSelection(_ selection: UICalendarSelectionSingleDate, canSelectDate dateComponents: DateComponents?) -> Bool {
+              guard let weekday = dateComponents?.weekday else { return false }
+              // 禁用周末的选择
+              return weekday != 7 && weekday != 1
+          }
+      }
+      ```
+references:
+  - title: UICalendarView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uicalendarview
+  - title: Implementing a custom native calendar using UICalendarView | OhMySwift
+    url: https://ohmyswift.com/blog/2022/06/12/implementing-a-custom-native-calendar-using-uicalendarview-in-ios16-and-swift/
+  - title: How to use UICalendarView in iOS | Filip Němeček
+    url: https://nemecek.be/blog/118/how-to-use-uicalendarview-in-ios

@@ -1,0 +1,116 @@
+id: drawable
+title: 图片资源
+query: Android 图片资源
+comment: 介绍 Kotlin 中使用 Android Drawable 资源的几种方式，包括静态图片、XML 定义的图形，以及不同类型的 Drawable（如 ShapeDrawable 和 LayerDrawable）。
+description: |
+  在 Android 开发中，Drawable 是指可以绘制到屏幕上的图形资源。它可以是图片文件（如 PNG、JPG、WEBP），也可以是通过 XML 定义的图形资源，如形状或渐变等。Drawable 资源可以用于设置背景、图标、控件状态等，常用于 UI 设计。Kotlin 代码通过 `setImageResource` 或 XML 属性 `android:drawable` 来应用 Drawable 资源。
+usage:
+  - title: 使用图片资源
+    content: 将 PNG 或 JPG 图片添加到项目的 `res/drawable/` 文件夹，并通过代码或 XML 引用它。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中使用图片资源
+      val imageView = ImageView(this).apply {
+          setImageResource(R.drawable.my_image)  // 引用图片资源
+          contentDescription = "示例图片"  // 设置内容描述
+      }
+      ```
+
+      ```xml
+      <!-- 在 XML 中使用图片资源 -->
+      <ImageView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:src="@drawable/my_image"  <!-- 设置图片来源 -->
+          android:contentDescription="示例图片" />
+      ```
+
+  - title: ShapeDrawable（形状绘图）
+    content: 通过 XML 定义简单的几何图形，如矩形、圆形、线条等。可以为这些图形设置颜色、边框和圆角等属性。
+    example: |
+      ```xml
+      <!-- 定义一个带渐变效果和圆角的矩形 -->
+      <shape xmlns:android="http://schemas.android.com/apk/res/android"
+          android:shape="rectangle">
+          <gradient
+              android:startColor="#FF0000"
+              android:endColor="#0000FF"
+              android:angle="45"/>
+          <corners android:radius="10dp"/>
+          <stroke android:width="2dp" android:color="#FFFFFF"/>
+      </shape>
+      ```
+
+      ```xml
+      <!-- 将 ShapeDrawable 设置为背景 -->
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:background="@drawable/my_shape" />
+      ```
+
+  - title: LayerDrawable（图层绘图）
+    content: LayerDrawable 允许将多个 Drawable 层叠在一起，按顺序绘制。可以用于复杂的 UI 设计。
+    example: |
+      ```xml
+      <!-- 定义一个 LayerDrawable，层叠两个图片资源 -->
+      <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:drawable="@drawable/background_image"/>
+          <item android:drawable="@drawable/foreground_image" android:top="10dp" android:left="10dp"/>
+      </layer-list>
+      ```
+
+      ```xml
+      <!-- 将 LayerDrawable 应用于 ImageView -->
+      <ImageView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:background="@drawable/my_layer" />
+      ```
+
+  - title: StateListDrawable（状态绘图）
+    content: 定义不同状态下的 Drawable，例如按钮在按下、聚焦或默认状态下显示不同的图像。
+    example: |
+      ```xml
+      <!-- 定义不同状态下的 Drawable -->
+      <selector xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:drawable="@drawable/button_pressed" android:state_pressed="true"/>
+          <item android:drawable="@drawable/button_default"/>
+      </selector>
+      ```
+
+      ```xml
+      <!-- 设置按钮的背景为 StateListDrawable -->
+      <Button
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:background="@drawable/button_states"/>
+      ```
+
+  - title: VectorDrawable（矢量绘图）
+    content: 矢量 Drawable 是通过 XML 定义的，可缩放且不会失真，适用于多分辨率设备。
+    example: |
+      ```xml
+      <!-- 定义一个简单的矢量图形 -->
+      <vector xmlns:android="http://schemas.android.com/apk/res/android"
+          android:width="64dp"
+          android:height="64dp"
+          android:viewportWidth="24"
+          android:viewportHeight="24">
+          <path
+              android:fillColor="#000"
+              android:pathData="M12,2 L19,21 L12,17 L5,21 L12,2 Z"/>
+      </vector>
+      ```
+
+references:
+  - title: Drawable resources | Android Developers
+    url: https://developer.android.com/guide/topics/resources/drawable-resource
+  - title: Android Drawable Resources - Tutorial | Vogella
+    url: https://www.vogella.com/tutorials/AndroidDrawables/article.html
+  - title: Drawables overview | Android Developers
+    url: https://developer.android.com/guide/topics/resources/drawable-overview
+  - title: How to Create Drawable Resource XML File in Android Studio | GeeksforGeeks
+    url: https://www.geeksforgeeks.org/how-to-create-drawable-resource-xml-file-in-android-studio
+  - title: Android Drawable Resources - Tutorial | CodeToArt
+    url: https://www.codetoart.com/blog/android-drawable-resources

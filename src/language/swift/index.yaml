@@ -2,7 +2,7 @@ id: swift
 title: Swift
 documents:
   - https://www.swift.org
-  - https://gitbook.swiftgg.team
+  - https://developer.apple.com
 children:
   - syntax
   - gui

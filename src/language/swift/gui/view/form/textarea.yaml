@@ -1,0 +1,75 @@
+id: textarea
+title: UITextView
+query: Swift UITextView
+comment: 详细介绍 Swift UITextView 的用法
+description: "UITextView 是 UIKit 中用于显示多行文本的组件，它不仅支持简单的文本显示，还支持复杂的富文本样式及编辑功能。常用于需要多行输入或展示的场景，比如笔记或评论功能。你可以通过属性来控制其外观和行为，比如字体、颜色、对齐方式、自动更正、链接检测等。UITextView 可以通过 Interface Builder 或代码动态创建和配置。"
+
+usage:
+  - title: 创建 UITextView
+    content: "可以通过 Interface Builder 或代码创建 UITextView。代码中使用 UITextView() 来初始化，并使用 `addSubview()` 将其添加到视图中。可以设置其 frame 或使用 Auto Layout 来定义其位置和大小。"
+    example: |
+      ```swift
+      // 创建并添加 UITextView
+      let textView = UITextView(frame: CGRect(x: 20, y: 100, width: 300, height: 200))
+      textView.text = "Hello, World!"
+      textView.font = UIFont.systemFont(ofSize: 18)
+      view.addSubview(textView)
+      ```
+
+  - title: 修改字体和文本样式
+    content: "可以通过 `font` 和 `textColor` 属性设置 UITextView 的字体和颜色，使用 `textAlignment` 设置对齐方式。支持通过 NSAttributedString 进行富文本显示。"
+    example: |
+      ```swift
+      textView.font = UIFont.boldSystemFont(ofSize: 18)  // 设置字体
+      textView.textColor = UIColor.blue  // 设置文本颜色
+      textView.textAlignment = .center   // 文本居中对齐
+      ```
+
+  - title: 启用或禁用编辑功能
+    content: "UITextView 默认是可编辑的，使用 `isEditable` 属性可以启用或禁用编辑功能。"
+    example: |
+      ```swift
+      textView.isEditable = false  // 禁用编辑
+      ```
+
+  - title: 自动校正与拼写检查
+    content: "通过 `autocorrectionType` 和 `spellCheckingType` 属性控制自动更正和拼写检查功能。"
+    example: |
+      ```swift
+      textView.autocorrectionType = .yes  // 启用自动更正
+      textView.spellCheckingType = .yes   // 启用拼写检查
+      ```
+
+  - title: 检测链接和自动识别数据类型
+    content: "UITextView 支持检测文本中的链接、电话号码等，并自动将其转换为可点击的交互元素。使用 `dataDetectorTypes` 属性来控制检测的内容类型。"
+    example: |
+      ```swift
+      textView.dataDetectorTypes = [.link, .phoneNumber]  // 检测链接和电话号码
+      textView.isEditable = false  // 确保文本不可编辑
+      ```
+
+  - title: 添加占位符
+    content: "UITextView 本身不支持占位符功能，需要通过扩展来自定义实现。在 UITextView 为空时显示提示文字。"
+    example: |
+      ```swift
+      // 使用自定义扩展实现占位符功能
+      textView.placeholder = "请输入内容..."
+      ```
+
+  - title: 圆角和背景颜色
+    content: "可以通过 `layer.cornerRadius` 属性设置 UITextView 的圆角，通过 `backgroundColor` 设置背景颜色。"
+    example: |
+      ```swift
+      textView.layer.cornerRadius = 10  // 设置圆角
+      textView.backgroundColor = UIColor.lightGray  // 设置背景颜色
+      ```
+
+references:
+  - title: UITextView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uitextview
+  - title: Create and Customize UITextView Programmatically in Swift
+    url: https://www.appsdeveloperblog.com/create-and-customize-uitextview-programmatically-in-swift/
+  - title: Editing multiline text with UITextView
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-create-a-multi-line-uitextview
+  - title: Adding a placeholder to a UITextView in Swift
+    url: https://tij.me/blog/adding-placeholders-to-uitextviews-in-swift/

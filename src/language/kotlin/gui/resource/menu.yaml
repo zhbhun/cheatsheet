@@ -1,0 +1,140 @@
+id: menu
+title: 菜单资源
+query: Android 菜单资源
+comment: 介绍 Android 中菜单资源的使用场景和 Kotlin 中如何定义、加载和处理不同类型的菜单资源
+description: |
+  在 Android 中，菜单资源用于定义用户可以选择的功能或操作，包括选项菜单、上下文菜单和弹出菜单。每种菜单类型有不同的使用场景：
+  - **选项菜单**：常用于全局功能或设置，显示在应用的操作栏中。
+  - **上下文菜单**：在用户长按某个视图时显示，提供与该视图相关的操作。
+  - **弹出菜单**：在点击某个视图时显示临时菜单，通常用于即时操作。
+  菜单资源通常定义在 XML 文件中，通过 `MenuInflater` 动态加载并使用。
+
+usage:
+  - title: 选项菜单（Option Menu）
+    content: 选项菜单是应用全局功能或设置的主要菜单，通常显示在应用的操作栏中。通过 `onCreateOptionsMenu()` 方法加载定义好的菜单资源。
+    example: |
+      ```xml
+      <!-- res/menu/menu_main.xml -->
+      <menu xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:id="@+id/action_settings"
+                android:title="Settings"
+                android:icon="@drawable/ic_settings"/>
+          <item android:id="@+id/action_about"
+                android:title="About"
+                android:showAsAction="ifRoom"/>
+      </menu>
+      ```
+
+      ```kotlin
+      override fun onCreateOptionsMenu(menu: Menu): Boolean {
+          menuInflater.inflate(R.menu.menu_main, menu)  // 加载菜单资源
+          return true
+      }
+
+      override fun onOptionsItemSelected(item: MenuItem): Boolean {
+          return when (item.itemId) {
+              R.id.action_settings -> {
+                  // 处理设置菜单项
+                  true
+              }
+              R.id.action_about -> {
+                  // 处理关于菜单项
+                  true
+              }
+              else -> super.onOptionsItemSelected(item)
+          }
+      }
+      ```
+
+  - title: 上下文菜单（Context Menu）
+    content: 上下文菜单用于特定视图的交互，如长按某个视图时显示。需要通过 `registerForContextMenu()` 注册视图，并在 `onCreateContextMenu()` 方法中加载菜单资源。
+    example: |
+      ```xml
+      <!-- res/menu/context_menu.xml -->
+      <menu xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:id="@+id/item_copy"
+                android:title="Copy"/>
+          <item android:id="@+id/item_paste"
+                android:title="Paste"/>
+          <item android:id="@+id/item_delete"
+                android:title="Delete"/>
+      </menu>
+      ```
+
+      ```kotlin
+      // 注册上下文菜单到目标视图，例如按钮
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+          registerForContextMenu(button)  // 注册上下文菜单到按钮
+      }
+
+      // 定义上下文菜单
+      override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+          super.onCreateContextMenu(menu, v, menuInfo)
+          menuInflater.inflate(R.menu.context_menu, menu)  // 加载上下文菜单资源
+      }
+
+      // 处理上下文菜单项的点击事件
+      override fun onContextItemSelected(item: MenuItem): Boolean {
+          return when (item.itemId) {
+              R.id.item_copy -> {
+                  // 处理复制操作
+                  true
+              }
+              R.id.item_paste -> {
+                  // 处理粘贴操作
+                  true
+              }
+              R.id.item_delete -> {
+                  // 处理删除操作
+                  true
+              }
+              else -> super.onContextItemSelected(item)
+          }
+      }
+      ```
+
+  - title: 弹出菜单（Popup Menu）
+    content: 弹出菜单适合在用户点击特定视图时显示临时菜单，通常用于即时操作。通过 `PopupMenu` 类创建并显示。
+    example: |
+      ```xml
+      <!-- res/menu/popup_menu.xml -->
+      <menu xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:id="@+id/item_share"
+                android:title="Share"/>
+          <item android:id="@+id/item_edit"
+                android:title="Edit"/>
+      </menu>
+      ```
+
+      ```kotlin
+      val popup = PopupMenu(this, view)
+      popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)  // 加载弹出菜单资源
+      popup.setOnMenuItemClickListener { item ->
+          when (item.itemId) {
+              R.id.item_share -> {
+                  // 处理分享操作
+                  true
+              }
+              R.id.item_edit -> {
+                  // 处理编辑操作
+                  true
+              }
+              else -> false
+          }
+      }
+      popup.show()  // 显示弹出菜单
+      ```
+
+references:
+  - title: Android Developers - Menu Resources
+    url: https://developer.android.google.cn/guide/topics/ui/menus
+  - title: 使用Kotlin的Android菜单-CSDN博客
+    url: https://blog.csdn.net/xxlmoon/article/details/107821735
+  - title: 菜单资源-阿里云开发者社区
+    url: https://developer.aliyun.com/article/76877
+  - title: Android Popup Menu使用方法-CSDN
+    url: https://blog.csdn.net/qq_43480289/article/details/105551511
+  - title: Context Menu用法解析-CSDN
+    url: https://blog.csdn.net/qq_43480289/article/details/105511941

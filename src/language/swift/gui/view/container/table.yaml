@@ -1,0 +1,164 @@
+id: table
+alias: list
+title: UITableView
+query: Swift UITableView
+comment: 详细介绍 Swift UITableView 的用法及其常见场景，包含创建、数据源、委托、及自定义单元格等
+description: |
+  `UITableView` 是 iOS 中常见的 UI 组件，用于显示可滚动的垂直列表。它允许通过实现数据源和委托协议来定制显示内容。常见的用法包括展示静态或动态数据列表、实现复杂的交互（如编辑、删除、移动列表项），以及使用自定义单元格来增强用户界面。
+usage:
+  - title: 创建 UITableView
+    content: |
+      UITableView 可以通过代码或 Storyboard 创建。在代码中，通常需要使用 `UITableView` 构造函数并设置约束。如果使用 Storyboard，需要从控件库中拖动 UITableView 到视图中。
+    example: |
+      ```swift
+      // 在代码中创建 UITableView
+      let tableView = UITableView(frame: .zero, style: .plain)
+      tableView.translatesAutoresizingMaskIntoConstraints = false
+      view.addSubview(tableView)
+
+      // 通过 AutoLayout 设置约束
+      NSLayoutConstraint.activate([
+          tableView.topAnchor.constraint(equalTo: view.topAnchor),
+          tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+          tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+          tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+      ])
+      ```
+
+  - title: 设置数据源和委托
+    content: |
+      `UITableView` 依赖数据源 (`UITableViewDataSource`) 和委托 (`UITableViewDelegate`) 来显示内容并处理用户交互。需要为 `UITableView` 设置这两个属性。
+    example: |
+      ```swift
+      class MyViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+          let tableView = UITableView()
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              tableView.dataSource = self
+              tableView.delegate = self
+          }
+
+          // 实现数据源方法
+          func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+              return 10
+          }
+
+          func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+              let cell = UITableViewCell(style: .default, reuseIdentifier: "cell")
+              cell.textLabel?.text = "Row \(indexPath.row)"
+              return cell
+          }
+      }
+      ```
+
+  - title: 自定义 UITableViewCell
+    content: |
+      在大多数情况下，默认的 `UITableViewCell` 样式不够用。可以通过继承 `UITableViewCell` 来创建自定义单元格，并在 `cellForRowAt` 方法中使用它们。
+    example: |
+      ```swift
+      // 自定义 UITableViewCell
+      class CustomCell: UITableViewCell {
+          let titleLabel = UILabel()
+
+          override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+              super.init(style: style, reuseIdentifier: reuseIdentifier)
+              contentView.addSubview(titleLabel)
+              // 设置 label 的布局
+              titleLabel.translatesAutoresizingMaskIntoConstraints = false
+              NSLayoutConstraint.activate([
+                  titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+                  titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16)
+              ])
+          }
+
+          required init?(coder: NSCoder) {
+              fatalError("init(coder:) has not been implemented")
+          }
+      }
+
+      // 在 UITableView 数据源方法中使用自定义单元格
+      class MyViewController: UIViewController, UITableViewDataSource {
+          let tableView = UITableView()
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              tableView.dataSource = self
+              tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
+          }
+
+          func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+              let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
+              cell.titleLabel.text = "Custom Row \(indexPath.row)"
+              return cell
+          }
+      }
+      ```
+
+  - title: 分组与节标题
+    content: |
+      `UITableView` 支持将内容分组并为每个组设置标题。通过实现 `numberOfSections` 和 `tableView:titleForHeaderInSection` 方法，可以在表格中添加节和节标题。
+    example: |
+      ```swift
+      class MyViewController: UIViewController, UITableViewDataSource {
+          let tableView = UITableView()
+
+          func numberOfSections(in tableView: UITableView) -> Int {
+              return 3
+          }
+
+          func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+              return 5
+          }
+
+          func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+              return "Section \(section)"
+          }
+
+          func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+              let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+              cell.textLabel?.text = "Section \(indexPath.section), Row \(indexPath.row)"
+              return cell
+          }
+      }
+      ```
+
+  - title: 处理单元格点击事件
+    content: |
+      通过实现 `UITableViewDelegate` 的 `tableView(_:didSelectRowAt:)` 方法，可以处理用户点击单元格时的交互事件。
+    example: |
+      ```swift
+      class MyViewController: UIViewController, UITableViewDelegate {
+          func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+              print("Selected row at \(indexPath.row)")
+              tableView.deselectRow(at: indexPath, animated: true) // 取消选中效果
+          }
+      }
+      ```
+
+  - title: 删除与编辑单元格
+    content: |
+      `UITableView` 支持内置的滑动删除和编辑操作。通过实现 `commit editingStyle` 方法，可以处理删除或添加操作。
+    example: |
+      ```swift
+      class MyViewController: UIViewController, UITableViewDataSource {
+          func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+              if editingStyle == .delete {
+                  // 在此处处理删除逻辑
+                  print("Deleted row at \(indexPath.row)")
+              }
+          }
+      }
+      ```
+
+references:
+  - title: "UITableView | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/uikit/uitableview
+  - title: "UITableView tutorial in Swift"
+    url: https://www.theswiftdev.com/uitableview-tutorial-in-swift/
+  - title: "UITableViewController – iOS & Swift Tutorial"
+    url: https://www.ralfebert.com/tutorials/ios-swift-uitableviewcontroller/
+  - title: "Using UITableView | CodePath iOS Cliffnotes"
+    url: https://guides.codepath.com/ios/Using-UITableView
+  - title: "Getting Started with UITableView"
+    url: https://www.codingexplorer.com/getting-started-uitableview/

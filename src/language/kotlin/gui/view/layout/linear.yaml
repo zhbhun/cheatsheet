@@ -1,0 +1,204 @@
+id: linear
+title: LinearLayout
+query: Kotlin Android LinearLayout
+comment: 介绍 LinearLayout 的不同属性及常见使用场景
+description: |
+  LinearLayout 是 Android 中的一种布局视图容器，可以将子视图按垂直或水平的方向依次排列。其常用属性包括 `android:orientation`（布局方向），`android:layout_weight`（控件相对比例分配），和 `android:gravity`（内容对齐方式）。LinearLayout 适合创建简单的线性排列界面，比如按钮组或表单。如果需要更多的灵活性和性能优化，建议使用 ConstraintLayout。
+
+  ### 关键属性：
+  - **android:orientation**: 控制子视图的排列方向，`horizontal` 表示水平排列，`vertical` 表示垂直排列。
+  - **android:layout_weight**: 用于指定子视图在父布局中占用的比例空间，适用于让多个视图按比例分配屏幕空间。
+  - **android:gravity**: 定义子视图在布局中的对齐方式，例如 `center` 表示居中对齐。
+
+  使用 `layout_weight` 可以实现灵活的屏幕空间分配，使布局在不同设备屏幕上保持良好的响应性。
+
+example:
+  - title: 垂直方向 LinearLayout 示例
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="vertical"
+          android:padding="16dp">
+
+          <!-- 第一个文本项，位于顶部，内容居中显示 -->
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Item 1"
+              android:gravity="center"/>
+
+          <!-- 第二个文本项，依次排在第一个项下方，内容也居中显示 -->
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Item 2"
+              android:gravity="center"/>
+      </LinearLayout>
+      ```
+      **说明**: 这个布局中，子视图将按垂直方向排列，`TextView` 控件内容将居中对齐。所有子视图依次向下排列。
+
+  - title: 水平方向带权重的 LinearLayout
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="horizontal"
+          android:padding="16dp">
+
+          <!-- 三个按钮平分水平方向上的空间 -->
+          <Button
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button 1"
+              android:layout_weight="1"/>
+
+          <Button
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button 2"
+              android:layout_weight="1"/>
+
+          <Button
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button 3"
+              android:layout_weight="1"/>
+      </LinearLayout>
+      ```
+      **说明**: 在这个示例中，`LinearLayout` 是水平方向的，三个按钮的 `layout_width` 设置为 `0dp`，通过 `layout_weight` 将它们均等分配宽度。每个按钮会占据 1/3 的屏幕宽度。
+
+  - title: 使用 gravity 实现子视图居中对齐
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="vertical"
+          android:gravity="center"> <!-- 子视图内容居中对齐 -->
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Centered Text" />
+
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Centered Button" />
+      </LinearLayout>
+      ```
+      **说明**: 使用 `android:gravity="center"` 可以让所有子视图在父布局中居中对齐。
+
+  - title: 使用 layout_gravity 实现控件居右对齐
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:padding="16dp">
+
+          <!-- 左侧按钮 -->
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Left Button"/>
+
+          <!-- 右侧按钮，使用 layout_gravity 靠右对齐 -->
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Right Button"
+              android:layout_gravity="end"/> <!-- 使按钮靠右对齐 -->
+      </LinearLayout>
+      ```
+
+  - title: 实现两端对齐的布局
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="space-between"> <!-- 子视图左右两端对齐 -->
+
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Left" />
+
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Right" />
+      </LinearLayout>
+
+  - title: 嵌套 LinearLayout 的复杂布局
+    content: |
+      ```xml
+      <LinearLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="vertical"
+          android:padding="16dp">
+
+          <!-- 顶部的文本标题，居中显示 -->
+          <TextView
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="Login"
+              android:gravity="center"/>
+
+          <!-- 嵌套的 LinearLayout 包含两个输入框 -->
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+              <EditText
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Enter ID"/>
+              <EditText
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Enter Password"/>
+          </LinearLayout>
+
+          <!-- 水平方向的按钮布局，两个按钮平分宽度 -->
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal">
+              <Button
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Login"
+                  android:layout_weight="1"/>
+              <Button
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Register"
+                  android:layout_weight="1"/>
+          </LinearLayout>
+      </LinearLayout>
+      ```
+      **说明**: 这个示例展示了嵌套布局的用法。外部是一个垂直的 `LinearLayout`，包含一个标题、两个输入框的垂直布局和一个水平按钮布局。两个按钮通过 `layout_weight` 平分屏幕宽度。
+
+references:
+  - title: "Create a Linear Layout | Views | Android Developers"
+    url: https://developer.android.com/guide/topics/ui/layout/linear
+  - title: "Android LinearLayout Tutorial With Examples"
+    url: https://tutorial.eyehunts.com/android/android-linearlayout-tutorial-with-examples-in-android-kotlin/
+  - title: "Mastering layout_weight in Android LinearLayout"
+    url: https://robotqa.com/mastering-layout-weight-in-android-linearlayout/
+  - title: "LinearLayout in Android | Kotlin Android"
+    url: https://kotlinandroid.org/linearlayout/

@@ -1,0 +1,58 @@
+id: size
+title: 大小
+query: Android 大小样式
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 开发中，大小样式主要用于设置视图（如 TextView、Button、ImageView 等）的尺寸和文本大小。常用单位包括 dp（密度无关像素）和 sp（可缩放像素）。这些样式确保在不同屏幕尺寸和密度上保持一致的显示效果。"
+usage:
+  - title: 文本大小
+    content: "使用 `textSize` 属性设置 TextView 或 Button 的文本大小，单位为 sp。sp 适用于文本，因为它会根据用户的字体大小设置进行缩放，确保可读性。"
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textSize="20sp" <!-- 设置文本大小为20sp -->
+          android:text="Hello World!" />
+      ```
+
+  - title: 视图大小
+    content: "通过 `layout_width` 和 `layout_height` 属性设置视图的宽度和高度，可以使用具体的 dp 值、match_parent 或 wrap_content。dp 是密度无关的单位，适用于所有视图元素，以确保在不同屏幕密度上表现一致。"
+    example: |
+      ```xml
+      <Button
+          android:layout_width="200dp" <!-- 设置按钮宽度为200dp -->
+          android:layout_height="50dp" <!-- 设置按钮高度为50dp -->
+          android:text="Click Me!" />
+      ```
+
+  - title: 边距和内边距
+    content: "使用 `layout_margin` 和 `padding` 设置视图的外边距和内边距，通常使用 dp 单位。"
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_margin="16dp" <!-- 外边距为16dp -->
+          android:padding="8dp" <!-- 内边距为8dp -->
+          android:text="Hello World!" />
+      ```
+
+  - title: 设置最小和最大宽高
+    content: "可以使用 `android:minWidth`、`android:minHeight`、`android:maxWidth` 和 `android:maxHeight` 属性设置视图的最小和最大宽高约束。"
+    example: |
+      ```xml
+      <Button
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minWidth="100dp" <!-- 最小宽度为100dp -->
+          android:minHeight="50dp" <!-- 最小高度为50dp -->
+          android:maxWidth="300dp" <!-- 最大宽度为300dp -->
+          android:maxHeight="100dp" <!-- 最大高度为100dp -->
+          android:text="Click Me!" />
+      ```
+
+references:
+  - title: "TextView - Text Size"
+    url: https://kotlinandroid.org/textview/text-size/
+  - title: "Android Apps with Kotlin: Resources, Styles, and Themes"
+    url: https://www.pluralsight.com/courses/android-apps-kotlin-resources-styles-themes

@@ -1,0 +1,120 @@
+id: text
+title: 文本
+query: Kotlin Android TextView 样式
+comment: 本文介绍如何在 Kotlin 中使用 TextView 修改文字样式及其他相关属性。
+description: "Kotlin 中的 `TextView` 控件用于显示文本，支持多种样式和属性的设置，包括字体大小、颜色、粗细、行高、斜体、阴影和多种样式等。"
+usage:
+  - title: 字体大小
+    content: 使用 `textSize` 属性来设置字体的大小，可以在 XML 或代码中定义，通常使用 `sp`（缩放独立像素）作为单位。
+    example: |
+      ```xml
+      <TextView
+          android:id="@+id/myTextView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Hello World!"
+          android:textSize="20sp" /> <!-- 设置文本大小为 20sp -->
+      ```
+
+  - title: 文本颜色
+    content: 使用 `textColor` 属性可以设置文本颜色。支持 HEX 颜色、RGB 颜色或资源文件中的颜色。
+    example: |
+      ```xml
+      <TextView
+          android:id="@+id/myTextView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Hello World!"
+          android:textColor="#FF0000" /> <!-- 设置文本颜色为红色 -->
+      ```
+
+  - title: 字体样式
+    content: 使用 `textStyle` 属性设置字体样式，如 `bold`、`italic` 和 `normal`。
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Bold Text"
+          android:textStyle="bold" /> <!-- 设置为粗体 -->
+      ```
+
+  - title: 斜体文本
+    content: 使用 `textStyle` 属性设置文本为斜体。
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Italic Text"
+          android:textStyle="italic" /> <!-- 设置为斜体 -->
+      ```
+
+  - title: 行高
+    content: 使用 `lineSpacingExtra` 属性可以设置行间距，在 XML 中定义更为方便。
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Hello World!"
+          android:lineSpacingExtra="4dp" /> <!-- 设置额外行间距 -->
+      ```
+
+  - title: 添加阴影
+    content: 使用 `setShadowLayer()` 方法为文本添加阴影效果。
+    example: |
+      ```xml
+      <TextView
+          android:id="@+id/myTextView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Hello World!"
+          android:textSize="30sp"
+          android:textColor="#FFFFFF" /> <!-- 设置文本颜色为白色 -->
+      ```
+
+      ```kotlin
+      val myTextView = findViewById<TextView>(R.id.myTextView)
+      myTextView.setShadowLayer(5f, 3f, 3f, Color.BLACK) // 添加阴影
+      ```
+
+  - title: 多种样式的文本
+    content: 使用 `SpannableString` 为文本设置多种样式。
+    example: |
+      ```kotlin
+      val myTextView = findViewById<TextView>(R.id.myTextView)
+      val spannable = SpannableString("Hello Bold World")
+      spannable.setSpan(StyleSpan(Typeface.BOLD), 6, 10, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE) // "Bold" 设置为粗体
+      myTextView.text = spannable // 设置带样式的文本
+      ```
+
+  - title: 对齐方式
+    content: 使用 `gravity` 属性设置文本的对齐方式，如 `center`、`start`、`end` 等。
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="Centered Text"
+          android:gravity="center" /> <!-- 文本居中对齐 -->
+      ```
+
+      <!-- 其他可选值说明：
+           - left: 左对齐
+           - right: 右对齐
+           - top: 顶部对齐
+           - bottom: 底部对齐
+           - start: 从左到右时左对齐，从右到左时右对齐
+           - end: 从左到右时右对齐，从右到左时左对齐
+           - center_horizontal: 水平居中
+           - center_vertical: 垂直居中
+           - fill: 填充整个 TextView -->
+
+references:
+  - title: Android TextView Documentation
+    url: https://developer.android.com/reference/android/widget/TextView
+  - title: TextView in Kotlin
+    url: https://kotlinandroid.org/textview/text-size/
+  - title: TextView Styles
+    url: https://kotlinandroid.org/textview/text-style/

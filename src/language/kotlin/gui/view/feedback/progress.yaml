@@ -1,0 +1,99 @@
+id: progress
+title: ProgressBar
+query: Android ProgressBar
+comment: 演示 ProgressBar、CircularProgressIndicator 和 LinearProgressIndicator 的使用、初始进度和修改、配置样式场景
+description: "Kotlin 提供了 `ProgressBar`、`CircularProgressIndicator` 和 `LinearProgressIndicator`，适用于显示操作进度。以下示例涵盖了它们的初始化、进度更新和样式配置。"
+usage:
+  - title: 初始化
+    content: |
+      - **ProgressBar**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+        ```
+      - **CircularProgressIndicator**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/circularProgressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+        ```
+      - **LinearProgressIndicator**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/linearProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+        ```
+  - title: 更新进度
+    content: |
+      - **ProgressBar**:
+        ```kotlin
+        val progressBar: ProgressBar = findViewById(R.id.progressBar)
+        progressBar.progress = 70 // 设置进度为70%
+        ```
+      - **CircularProgressIndicator**:
+        ```kotlin
+        val circularProgressBar: ProgressBar = findViewById(R.id.circularProgressBar)
+        circularProgressBar.isIndeterminate = false
+        circularProgressBar.progress = 25 // 设置进度为25%
+        ```
+      - **LinearProgressIndicator**:
+        ```kotlin
+        val linearProgressBar: ProgressBar = findViewById(R.id.linearProgressBar)
+        linearProgressBar.progress = 50 // 设置进度为50%
+        ```
+  - title: 配置样式
+    content: |
+      - **ProgressBar**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/styledProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="60"
+            android:background="#e0e0e0"
+            android:progressTint="#76ff03"
+            android:indeterminateTint="#ff0000" />
+        ```
+      - **CircularProgressIndicator**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/styledCircularProgressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:background="#e0e0e0"
+            android:indeterminateTint="#76ff03" />
+        ```
+      - **LinearProgressIndicator**:
+        ```xml
+        <ProgressBar
+            android:id="@+id/styledLinearProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="80"
+            android:background="#e0e0e0"
+            android:progressTint="#76ff03"
+            android:indeterminateTint="#ff0000" />
+        ```
+references:
+  - title: "Android ProgressBar Documentation"
+    url: https://developer.android.com/reference/android/widget/ProgressBar
+  - title: "Material Design Progress Indicators"
+    url: https://material.io/components/progress-indicators

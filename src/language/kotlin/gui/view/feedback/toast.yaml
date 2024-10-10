@@ -1,0 +1,69 @@
+id: toast
+title: Toast
+query: Android Toast
+comment: 尽量详尽的演示不同属性和场景用法
+description: "Toast 是 Android 中用来显示短暂消息的一种组件，通常用于通知用户操作的结果或信息。它不占用用户界面空间，能够在屏幕底部或中间展示简短文本信息。Toast 消息自动消失，用户无需干预。"
+usage:
+  - title: 基本用法
+    content: "使用 `Toast.makeText(context, message, duration)` 创建并显示 Toast。"
+  - title: 自定义 Toast
+    content: "可以通过自定义布局来创建更复杂的 Toast，例如添加图像和文本。"
+  - title: 设置位置
+    content: "使用 `setGravity(gravity, xOffset, yOffset)` 方法设置 Toast 的显示位置。"
+  - title: 变化持续时间
+    content: "可以设置持续时间为 `Toast.LENGTH_SHORT` 或 `Toast.LENGTH_LONG`。"
+example:
+  - title: "基本 Toast"
+    content: |
+      ```kotlin
+      // 在按钮点击事件中显示基本的 Toast 消息
+      btnShowToast.setOnClickListener {
+          Toast.makeText(this, "Hello, Toast!", Toast.LENGTH_LONG).show()
+      }
+      ```
+  - title: "自定义 Toast"
+    content: |
+      ```kotlin
+      // 在 custom_toast.xml 中定义布局
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:orientation="vertical"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content">
+          <ImageView android:src="@drawable/icon" />
+          <TextView android:text="Custom Toast Message" />
+      </LinearLayout>
+
+      // 在 MainActivity.kt 中显示自定义 Toast
+      val layout = layoutInflater.inflate(R.layout.custom_toast, null)
+      val myToast = Toast(applicationContext)
+      myToast.duration = Toast.LENGTH_LONG
+      myToast.view = layout
+      myToast.show()
+      ```
+  - title: "设置位置"
+    content: |
+      ```kotlin
+      // 显示在屏幕中心的 Toast
+      val myToast = Toast.makeText(this, "Centered Toast", Toast.LENGTH_SHORT)
+      myToast.setGravity(Gravity.CENTER, 0, 0)
+      myToast.show()
+      ```
+  - title: "变化持续时间"
+    content: |
+      ```kotlin
+      // 显示短暂的 Toast
+      Toast.makeText(this, "Short Toast", Toast.LENGTH_SHORT).show()
+      // 显示长时间的 Toast
+      Toast.makeText(this, "Long Toast", Toast.LENGTH_LONG).show()
+      ```
+references:
+  - title: "Toast Documentation"
+    url: https://developer.android.com/guide/topics/ui/notifiers/toasts
+  - title: "Creating Custom Toasts in Android"
+    url: https://www.javatpoint.com/kotlin-android-custom-toast
+  - title: "How to Use Toast in Android"
+    url: https://notesjam.com/android-toast-in-kotlin
+  - title: "Toast Examples in Kotlin"
+    url: https://devanddep.com/android-toast-in-kotlin/
+  - title: "Advanced Toast Customization"
+    url: https://www.geeksforgeeks.org/android-toast-customization-in-kotlin/

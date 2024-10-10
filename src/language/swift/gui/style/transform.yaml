@@ -1,0 +1,105 @@
+id: transform
+title: 变换
+query: Android 变换样式
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 开发中，变换样式使得视图、活动和片段之间的过渡更加流畅与美观。通过属性配置，可以实现多种效果，如缩放、旋转、平移等，提升用户体验。"
+usage:
+  - title: 偏移
+    content: 使用 `translationX` 和 `translationY` 属性进行水平和垂直位移。
+    example: |
+      ```xml
+      <!-- 在 XML 中设置偏移 -->
+      <Button
+          android:id="@+id/myButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="偏移按钮"
+          android:translationX="50dp"  <!-- 水平偏移 50 像素 -->
+          android:translationY="100dp"/> <!-- 垂直偏移 100 像素 -->
+      ```
+
+      ```kotlin
+      // 创建一个按钮并设置其偏移
+      val myButton = Button(this).apply {
+          text = "偏移按钮"
+          translationX = 50f // 水平偏移 50 像素
+          translationY = 100f // 垂直偏移 100 像素
+      }
+      ```
+
+  - title: 旋转
+    content: 使用 `rotation` 属性来设置视图的旋转角度。
+    example: |
+      ```xml
+      <!-- 在 XML 中设置旋转 -->
+      <ImageView
+          android:id="@+id/myImageView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:src="@drawable/image"
+          android:rotation="45" /> <!-- 旋转 45 度 -->
+      ```
+
+      ```kotlin
+      // 创建一个 ImageView 并设置旋转
+      val myImageView = ImageView(this).apply {
+          setImageResource(R.drawable.image)
+          rotation = 45f // 旋转 45 度
+      }
+      ```
+
+  - title: 缩放
+    content: 使用 `scaleX` 和 `scaleY` 属性来设置水平和垂直缩放因子。
+    example: |
+      ```xml
+      <!-- 在 XML 中设置缩放 -->
+      <TextView
+          android:id="@+id/myTextView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="缩放文本"
+          android:scaleX="1.5"  <!-- 水平缩放 1.5 倍 -->
+          android:scaleY="1.5" /> <!-- 垂直缩放 1.5 倍 -->
+      ```
+
+      ```kotlin
+      // 创建一个 TextView 并设置缩放
+      val myTextView = TextView(this).apply {
+          text = "缩放文本"
+          scaleX = 1.5f // 水平缩放 1.5 倍
+          scaleY = 1.5f // 垂直缩放 1.5 倍
+      }
+      ```
+
+  - title: 组合变换
+    content: 可以同时应用多个变换属性来实现复合效果。
+    example: |
+      ```xml
+      <!-- 在 XML 中设置组合变换 -->
+      <View
+          android:id="@+id/myView"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:translationX="20dp"  <!-- 水平偏移 20 像素 -->
+          android:translationY="30dp"  <!-- 垂直偏移 30 像素 -->
+          android:rotation="30"         <!-- 旋转 30 度 -->
+          android:scaleX="2"           <!-- 水平缩放 2 倍 -->
+          android:scaleY="2" />        <!-- 垂直缩放 2 倍 -->
+      ```
+
+      ```kotlin
+      // 同时设置偏移、旋转和缩放
+      val myView = View(this).apply {
+          translationX = 20f
+          translationY = 30f
+          rotation = 30f
+          scaleX = 2f
+          scaleY = 2f
+      }
+      ```
+
+references:
+  - title: "Android View Properties"
+    url: https://developer.android.com/reference/android/view/View
+  - title: "Android Animations"
+    url: https://developer.android.com/guide/topics/graphics/view-animation

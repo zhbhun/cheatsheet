@@ -1,0 +1,232 @@
+id: text
+title: TextView
+query: TextView 用法
+comment: 详尽展示不同属性和场景用法
+description: "TextView 是 Android 中用于显示文本的基本组件，支持多种属性，如文本内容、大小、颜色、样式等。可以通过 XML 或 Kotlin 代码进行配置，适用于静态和动态文本显示。"
+usage:
+  - title: 设置文本内容
+    content: |
+      - android:text: 设置显示的文本内容，例如 "Hello, World!"。
+  - title: 设置文本大小
+    content: |
+      - android:textSize: 设置文本大小，建议使用 sp 单位，如 "18sp"。
+  - title: 设置文本颜色
+    content: |
+      - android:textColor: 设置文本颜色，例如 "#FF0000"。
+  - title: 设置文本样式
+    content: |
+      - android:textStyle: 设置文本样式，可以是 "bold"、"italic" 或 "normal"。
+  - title: 设置提示文本
+    content: |
+      - android:hint: 提供提示文本，当 TextView 为空时显示，例如 "请输入内容"。
+  - title: 文本对齐
+    content: |
+      - android:gravity: 控制文本在 TextView 内的对齐方式，如 "center"、"left"、"right"。
+  - title: 文本行数和溢出
+    content: |
+      - android:maxLines: 设置最大显示行数，超出部分将被截断。
+      - android:ellipsize: 超出范围时使用省略号显示，例如 "end"。
+  - title: 添加链接
+    content: |
+      - android:autoLink: 自动识别文本中的链接，如 "web"、"email"、"phone"。
+  - title: 处理点击事件
+    content: |
+      - android:onClick: 设置点击事件处理函数。
+  - title: 设置背景
+    content: |
+      - android:background: 设置背景颜色或 drawable，如 "#FFFFFF"。
+example:
+  - title: "基本文本显示"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Hello World"
+          android:textSize="20sp"
+          android:textColor="#000000"/> <!-- 设置文本内容、大小和颜色 -->
+      ```
+  - title: "设置背景"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="有背景的文本"
+          android:background="#FFFFFF" />
+  - title: "设置drawable"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:drawableTop="@drawable/ic_launcher"
+          android:drawablePadding="8dp"
+          android:text="带图标的文本"/> <!-- 在文本上方添加图标，drawablePadding设置图标与文本间的距离 -->
+      ```
+  - title: "文本对齐"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center" <!-- 文本在视图中的居中对齐 -->
+          android:text="居中对齐的文本"/>
+      <!-- gravity 属性的其他可选值：
+           - left: 左对齐
+           - right: 右对齐
+           - top: 顶部对齐
+           - bottom: 底部对齐
+           - start: 从左到右时左对齐，从右到左时右对齐
+           - end: 从左到右时右对齐，从右到左时左对齐
+           - center_horizontal: 水平居中
+           - center_vertical: 垂直居中
+           - fill: 填充整个 TextView
+           - center: 水平和垂直都居中
+      -->
+      ```
+  - title: "自动链接识别"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:autoLink="all"
+          android:text="请访问 https://www.example.com 或拨打1234567890"/> <!-- 自动识别链接和电话号码 -->
+      ```
+  - title: "长文本省略"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:ellipsize="end" <!-- 设置超出文本的省略方式为省略号 -->
+          android:maxLines="1"
+          android:text="这是一个很长的文本，如果超出长度会被省略"/>
+      <!-- ellipsize 属性的其他可选值：
+           - start: 省略文本开头
+           - middle: 省略文本中间部分
+           - marquee: 滚动文本效果
+      -->
+      ```
+  - title: "动态文本更新"
+    content: |
+      ```kotlin
+      val textView: TextView = findViewById(R.id.textView)
+      textView.text = "动态更新的文本内容" <!-- 在代码中更新文本内容 -->
+      ```
+  - title: "字体样式与字重"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="加粗和斜体的文本"
+          android:textStyle="bold|italic"/> <!-- 设置字体为粗体和斜体 -->
+      <!-- textStyle 属性的其他可选值：
+           - normal: 正常样式
+           - bold: 粗体
+           - italic: 斜体
+           - bold|italic: 同时使用粗体和斜体
+      -->
+      ```
+  - title: "设置行高"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="设置行高的文本"
+          android:lineSpacingExtra="4dp" <!-- 增加每行之间的额外间距，单位为 dp -->
+          android:lineHeight="1.5"/> <!-- 设置行高的比例，通常用于控制文本行距 -->
+      ```
+  - title: "下划线装饰"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="带下划线的文本"
+          android:paintFlags="underline"/> <!-- 添加下划线装饰 -->
+      <!-- paintFlags 属性的其他可选值：
+           - strike_through: 删除线
+           - bold: 粗体
+           - italic: 斜体
+           - underline: 下划线
+           - all: 所有效果
+      -->
+      ```
+  - title: "指定字体系列"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="使用特定字体"
+          android:fontFamily="monospace"/> <!-- 指定字体系列为等宽字体 -->
+      ```
+  - title: "字重变体设置"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="特定字重的文本"
+          android:fontVariationSettings="'wght' 700"/> <!-- 设置字体字重为700 -->
+      <!-- fontVariationSettings 属性用于指定字体变体，常见变体包括：
+           - 'wght' 100-900: 字重（从细到粗）
+           - 'wdth' 100-900: 字体宽度
+           - 'slant' 0-1: 斜体程度
+      -->
+      ```
+  - title: "文本阴影效果"
+    content: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="阴影效果"
+          android:textColor="#FFFFFF"
+          android:shadowColor="#000000"
+          android:shadowDx="2"
+          android:shadowDy="2"
+          android:shadowRadius="1" />
+
+  - title: "实现富文本样式"
+    content: |
+      ```java
+      TextView textView = findViewById(R.id.textView);
+      SpannableString spannableString = new SpannableString("这是一个富文本示例");
+      spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      spannableString.setSpan(new ForegroundColorSpan(Color.RED), 6, 8, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      textView.setText(spannableString);
+      ```
+
+  - title: "使用 SpannableStringBuilder"
+    content: |
+      ```java
+      TextView textView = findViewById(R.id.textView);
+      SpannableStringBuilder builder = new SpannableStringBuilder();
+      builder.append("普通文本 ");
+      builder.append("加粗文本", new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      textView.setText(builder);
+      ```
+
+  - title: "使用 Html.fromHtml()"
+    content: |
+      ```java
+      TextView textView = findViewById(R.id.textView);
+      String htmlText = "<b>加粗文本</b> 和 <font color='#FF0000'>红色文本</font>";
+      textView.setText(Html.fromHtml(htmlText, Html.FROM_HTML_MODE_LEGACY));
+      ```
+references:
+  - title: "TextView Documentation"
+    url: https://developer.android.com/reference/android/widget/TextView
+  - title: "Android TextView Tutorial"
+    url: https://www.runoob.com/w3cnote/android-textview.html
+  - title: "TextView Attributes"
+    url: https://developer.android.com/reference/android/widget/TextView#attr_android:drawableTop
+  - title: "TextView in Android"
+    url: https://www.tutorialspoint.com/android/android_textview.htm
+  - title: "Android TextView Examples"
+    url: https://www.geeksforgeeks.org/android-textview-example/

@@ -1,0 +1,73 @@
+id: time
+title: UIDatePicker
+query: Swift UIDatePicker
+comment: 详细介绍 Swift UIDatePicker 的用法
+description: |
+  `UIDatePicker` 是 iOS UIKit 中一个用于日期、时间或倒计时选择的组件。可以通过多种模式选择日期、时间或倒计时，支持设置最小和最大日期。它通过滚轮界面为用户提供直观的日期时间选择，常用于表单或设置中。它支持编程方式和 Interface Builder 的集成。
+usage:
+  - title: 创建 UIDatePicker
+    content: |
+      可以通过 Interface Builder 或编程方式创建 UIDatePicker。以下示例展示了如何在 `viewDidLoad()` 方法中通过代码创建并添加到视图中。
+    example: |
+      ```swift
+      let datePicker = UIDatePicker()
+      datePicker.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 200)
+      datePicker.center.x = self.view.center.x
+      datePicker.center.y = self.view.center.y
+      self.view.addSubview(datePicker)
+      ```
+
+  - title: 设置 UIDatePicker 模式
+    content: "`UIDatePicker` 提供四种模式：`date`（日期），`time`（时间），`dateAndTime`（日期和时间）以及 `countDownTimer`（倒计时器）。"
+    example: |
+      ```swift
+      datePicker.datePickerMode = .date  // 仅选择日期
+      ```
+
+  - title: 监听日期变化
+    content: 通过 `addTarget` 方法监听用户在 `UIDatePicker` 中选择的值，每次更改都会触发 `valueChanged` 事件。
+    example: |
+      ```swift
+      datePicker.addTarget(self, action: #selector(datePickerChanged(_:)), for: .valueChanged)
+
+      @objc func datePickerChanged(_ sender: UIDatePicker) {
+          print("Selected date: \(sender.date)")
+      }
+      ```
+
+  - title: 设置最小和最大日期
+    content: 可以限制用户选择的日期范围，使用 `minimumDate` 和 `maximumDate` 属性。
+    example: |
+      ```swift
+      let currentDate = Date()
+      let minDate = Calendar.current.date(byAdding: .day, value: -10, to: currentDate)
+      let maxDate = Calendar.current.date(byAdding: .day, value: 20, to: currentDate)
+      datePicker.minimumDate = minDate
+      datePicker.maximumDate = maxDate
+      ```
+
+  - title: 格式化日期显示
+    content: 使用 `DateFormatter` 将用户选择的日期格式化为特定样式。
+    example: |
+      ```swift
+      let dateFormatter = DateFormatter()
+      dateFormatter.dateFormat = "MM/dd/yyyy"
+      let formattedDate = dateFormatter.string(from: datePicker.date)
+      print("Formatted Date: \(formattedDate)")
+      ```
+
+  - title: 使用倒计时器
+    content: "`UIDatePicker` 的 `countDownTimer` 模式可用于倒计时设置。可以通过 `countDownDuration` 属性设置倒计时时长。"
+    example: |
+      ```swift
+      datePicker.datePickerMode = .countDownTimer
+      datePicker.countDownDuration = 300 // 设置倒计时为 5 分钟（300 秒）
+      ```
+
+references:
+  - title: Apple Developer Documentation on UIDatePicker
+    url: https://developer.apple.com/documentation/uikit/uidatepicker
+  - title: Create UIDatePicker Programmatically in Swift
+    url: https://www.appsdeveloperblog.com/create-uidatepicker-programmatically-in-swift/
+  - title: "Swift Swift: Using Dates and the UIDatePicker in Swift"
+    url: https://makeapppie.com/2014/09/21/swift-swift-using-dates-and-the-uidatepicker-in-swift/

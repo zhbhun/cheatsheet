@@ -1,0 +1,100 @@
+id: alert
+title: AlertDialog
+query: Android AlertDialog
+comment: 尽量详尽的演示不同属性和场景用法
+description: "AlertDialog 是 Android 提供的一种对话框，用于显示信息、提示用户选择或确认操作。它可以包含标题、消息、按钮和列表。AlertDialog 通常用于需要用户进行确认或提供输入的场景。"
+usage:
+  - title: 创建基本对话框
+    content: 使用 `AlertDialog.Builder` 创建一个简单的对话框，包括标题和消息。
+  - title: 添加按钮
+    content: 使用 `setPositiveButton()`、`setNegativeButton()` 和 `setNeutralButton()` 方法添加操作按钮。
+  - title: 列表选择
+    content: 使用 `setItems()`、`setSingleChoiceItems()` 或 `setMultiChoiceItems()` 方法创建带列表的对话框。
+  - title: 设置图标
+    content: 使用 `setIcon()` 方法为对话框添加图标。
+  - title: 可取消性设置
+    content: 使用 `setCancelable()` 方法设置对话框是否可以通过点击外部区域取消。
+  - title: 自定义布局
+    content: 使用 `setView()` 方法设置自定义视图。
+example:
+  - title: "基本 AlertDialog 示例"
+    content: |
+      ```java
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Alert Title")
+             .setMessage("This is an alert message.")
+             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                     // 用户点击了 OK
+                 }
+             });
+      AlertDialog dialog = builder.create();
+      dialog.show();
+      ```
+  - title: "带有多个按钮的 AlertDialog"
+    content: |
+      ```java
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Choose an option")
+             .setMessage("Select one option.")
+             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                     // 用户点击了 Yes
+                 }
+             })
+             .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                     // 用户点击了 No
+                 }
+             })
+             .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                     // 用户点击了 Cancel
+                 }
+             });
+      AlertDialog dialog = builder.create();
+      dialog.show();
+      ```
+  - title: "使用列表的 AlertDialog"
+    content: |
+      ```java
+      String[] items = {"Item 1", "Item 2", "Item 3"};
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Select an Item")
+             .setItems(items, new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int which) {
+                     // 用户选择了某个项目
+                 }
+             });
+      AlertDialog dialog = builder.create();
+      dialog.show();
+      ```
+  - title: "自定义 AlertDialog 布局"
+    content: |
+      ```java
+      LayoutInflater inflater = this.getLayoutInflater();
+      View dialogView = inflater.inflate(R.layout.custom_dialog, null);
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setView(dialogView)
+             .setTitle("Custom Dialog")
+             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                 public void onClick(DialogInterface dialog, int id) {
+                     // 处理确认逻辑
+                 }
+             });
+      AlertDialog dialog = builder.create();
+      dialog.show();
+      ```
+references:
+  - title: "AlertDialog 官方文档"
+    url: https://developer.android.com/reference/android/app/AlertDialog
+  - title: "使用 Dialogs 的指南"
+    url: https://developer.android.com/guide/topics/ui/dialogs
+  - title: "创建自定义对话框"
+    url: https://developer.android.com/reference/android/app/Dialog
+  - title: "Android AlertDialog 示例"
+    url: https://www.javatpoint.com/android-alertdialog
+  - title: "Android Dialogs 使用方法"
+    url: https://codesinsider.com/android-alertdialog-example/
+  - title: "Android Material Design 对话框"
+    url: https://developer.android.com/reference/androidx/appcompat/app/AlertDialog

@@ -1,0 +1,114 @@
+id: input
+title: UITextField
+query: Swift UITextField
+comment: 详细介绍 Swift UITextField 的用法
+description: |
+  `UITextField` 是 UIKit 中用于接收用户文本输入的控件。它允许用户通过屏幕键盘输入文本，并支持多种配置和样式，包括占位符、输入限制、键盘类型等。`UITextField` 提供了许多功能，适合用于表单、登录页面等需要文本输入的场景。通过 `UITextFieldDelegate` 可以进一步控制输入的行为，例如监听编辑开始、结束、实时更新等事件。
+
+usage:
+  - title: 创建 UITextField
+    content: |
+      创建 UITextField 可以通过 Storyboard 或者代码。可以设置其 frame 来定义显示区域，也可以通过各种属性自定义文本框的行为。
+    example: |
+      ```swift
+      // 使用代码创建 UITextField
+      let textField = UITextField(frame: CGRect(x: 20, y: 100, width: 280, height: 40))
+      textField.placeholder = "Enter your name"  // 设置占位符
+      textField.borderStyle = .roundedRect  // 设置边框样式
+      view.addSubview(textField)
+      ```
+
+  - title: 设置键盘类型
+    content: |
+      可以通过 `keyboardType` 属性设置 UITextField 的键盘样式，如数字键盘、电子邮件键盘等。
+    example: |
+      ```swift
+      let textField = UITextField(frame: CGRect(x: 20, y: 150, width: 280, height: 40))
+      textField.placeholder = "Enter your email"
+      textField.keyboardType = .emailAddress  // 设置键盘类型为电子邮件
+      view.addSubview(textField)
+      ```
+
+  - title: 使用 UITextFieldDelegate 处理输入事件
+    content: |
+      通过实现 `UITextFieldDelegate` 协议，可以处理 UITextField 的输入事件，如开始编辑、结束编辑、实时输入等。
+    example: |
+      ```swift
+      class ViewController: UIViewController, UITextFieldDelegate {
+          let textField = UITextField(frame: CGRect(x: 20, y: 200, width: 280, height: 40))
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              textField.delegate = self
+              view.addSubview(textField)
+          }
+
+          // 当用户开始编辑时调用
+          func textFieldDidBeginEditing(_ textField: UITextField) {
+              print("Editing started")
+          }
+
+          // 当用户结束编辑时调用
+          func textFieldDidEndEditing(_ textField: UITextField) {
+              print("Editing ended")
+          }
+
+          // 实时监听用户输入
+          func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+              print("Current text: \(textField.text ?? "")")
+              return true
+          }
+      }
+      ```
+
+  - title: 限制输入长度
+    content: |
+      可以通过 `shouldChangeCharactersIn` 方法限制用户的输入长度，例如最多只能输入 10 个字符。
+    example: |
+      ```swift
+      func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+          let maxLength = 10
+          let currentString: NSString = textField.text as NSString? ?? ""
+          let newString: NSString = currentString.replacingCharacters(in: range, with: string) as NSString
+          return newString.length <= maxLength
+      }
+      ```
+
+  - title: 自定义 UITextField 外观
+    content: |
+      通过设置属性如 `leftView`、`rightView` 来自定义 UITextField 的外观，例如在输入框中添加图标。
+    example: |
+      ```swift
+      let textField = UITextField(frame: CGRect(x: 20, y: 250, width: 280, height: 40))
+      textField.placeholder = "Search"
+
+      // 添加左侧的放大镜图标
+      let icon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
+      textField.leftView = icon
+      textField.leftViewMode = .always  // 始终显示左视图
+      view.addSubview(textField)
+      ```
+
+  - title: 使用 Combine 监听输入变化
+    content: |
+      使用 Combine 框架，可以订阅 UITextField 的输入变化，方便处理响应。
+    example: |
+      ```swift
+      import Combine
+      let textField = UITextField()
+      let textPublisher = NotificationCenter.default
+          .publisher(for: UITextField.textDidChangeNotification, object: textField)
+          .map { ($0.object as? UITextField)?.text ?? "" }
+
+      var cancellable: AnyCancellable? = textPublisher.sink { text in
+          print("User input: \(text)")
+      }
+      ```
+
+references:
+  - title: UITextField | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uitextfield
+  - title: Building a Customizable UITextField with Combine
+    url: https://lickability.com/blog/building-a-customizable-uitextfield-with-combine/
+  - title: UITextFieldDelegate | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uitextfielddelegate

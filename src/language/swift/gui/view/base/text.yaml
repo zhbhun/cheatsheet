@@ -1,0 +1,214 @@
+id: text
+title: UILabel
+query: Swift UILabel
+comment: 详细介绍 Swift UILabel 的用法及所有相关属性
+description: UILabel 是 UIKit 框架中的一个基础组件，用于在 iOS 应用程序中显示单行或多行信息文本。你可以配置标签文本的整体外观，并使用属性字符串来自定义文本中子字符串的外观。
+usage:
+  - title: 创建 UILabel
+    description: 可以使用代码创建 UILabel 实例，并设置其 frame、center 和 bounds 属性来指定其位置和大小。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 使用 frame 初始化 UILabel
+              let label1 = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 40))
+              label1.text = "使用 frame 创建的 UILabel"
+              view.addSubview(label1)
+
+              // 使用 center 和 bounds 初始化 UILabel
+              let label2 = UILabel()
+              label2.bounds = CGRect(x: 0, y: 0, width: 200, height: 40)
+              label2.center = CGPoint(x: view.center.x, y: 200)
+              label2.text = "使用 center 和 bounds 创建的 UILabel"
+              view.addSubview(label2)
+          }
+      }
+      ```
+  - title: 设置文本内容
+    description: |
+      可以使用 `text` 属性设置 UILabel 显示的文本内容，或使用 `attributedText` 属性设置带有样式的文本内容。
+        - `text`: 设置 UILabel 显示的文本内容，为 String 类型。
+        - `attributedText`: 设置 UILabel 显示的富文本内容，为 NSAttributedString 类型。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 40))
+
+              // 设置普通文本
+              label.text = "普通文本"
+              view.addSubview(label)
+
+              // 设置富文本
+              let attributedString = NSMutableAttributedString(string: "富文本示例")
+              attributedString.addAttribute(.foregroundColor, value: UIColor.red, range: NSRange(location: 0, length: 2))
+              attributedString.addAttribute(.font, value: UIFont.boldSystemFont(ofSize: 20), range: NSRange(location: 3, length: 2))
+              label.attributedText = attributedString
+              view.addSubview(label)
+          }
+      }
+      ```
+  - title: 设置文本样式
+    description: |
+      可以使用以下属性设置 UILabel 文本的样式，包括字体、颜色、对齐方式、行数、断行模式等。
+        - `font`: 设置文本字体，为 UIFont 类型，可以使用系统字体或自定义字体。
+        - `textColor`: 设置文本颜色，为 UIColor 类型。
+        - `textAlignment`: 设置文本对齐方式，为 NSTextAlignment 类型，可选值包括 .left、.center、.right、.justified 和 .natural。
+        - `numberOfLines`: 设置文本行数，为 Int 类型，默认为 1，设置为 0 表示不限制行数。
+        - `lineBreakMode`: 设置文本断行模式，为 NSLineBreakMode 类型，可选值包括 .byWordWrapping、.byCharWrapping、.byClipping、.byTruncatingHead、.byTruncatingTail 和 .byTruncatingMiddle。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 100))
+              label.text = "这是一段多行文本，用于演示 UILabel 的文本样式设置。"
+
+              // 设置字体
+              label.font = UIFont(name: "Helvetica", size: 16)
+
+              // 设置颜色
+              label.textColor = UIColor.blue
+
+              // 设置对齐方式
+              label.textAlignment = .center
+
+              // 设置行数
+              label.numberOfLines = 0
+
+              // 设置断行模式
+              label.lineBreakMode = .byWordWrapping
+
+              view.addSubview(label)
+          }
+      }
+      ```
+  - title: 设置文本阴影
+    description: |
+      可以使用以下属性设置 UILabel 文本的阴影样式，包括阴影颜色和阴影偏移量。
+        - `shadowColor`: 设置文本阴影颜色，为 UIColor 类型。
+        - `shadowOffset`: 设置文本阴影偏移量，为 CGSize 类型。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 40))
+              label.text = "文本阴影示例"
+
+              // 设置阴影颜色
+              label.shadowColor = UIColor.gray
+
+              // 设置阴影偏移量
+              label.shadowOffset = CGSize(width: 2, height: 2)
+
+              view.addSubview(label)
+          }
+      }
+      ```
+  - title: 设置高亮状态
+    description: |
+      可以使用以下属性设置 UILabel 在高亮状态下的样式，包括高亮文本颜色和是否高亮显示。
+        - `highlightedTextColor`: 设置高亮文本颜色，为 UIColor 类型。
+        - `isHighlighted`: 设置是否高亮显示，为 Bool 类型。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 40))
+              label.text = "高亮状态示例"
+
+              // 设置高亮文本颜色
+              label.highlightedTextColor = UIColor.red
+
+              // 设置为高亮状态
+              label.isHighlighted = true
+
+              view.addSubview(label)
+          }
+      }
+      ```
+  - title: 设置文本缩放
+    description: |
+      可以使用以下属性设置 UILabel 文本的缩放行为。
+        - `adjustsFontSizeToFitWidth`: 设置是否自动缩小字体以适应宽度，为 Bool 类型。
+        - `minimumScaleFactor`: 设置最小缩放比例，为 CGFloat 类型，取值范围为 0.0 到 1.0，默认为 0.0。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 100, height: 40))
+              label.text = "自动缩小字体示例"
+
+              // 设置自动缩小字体
+              label.adjustsFontSizeToFitWidth = true
+
+              // 设置最小缩放比例
+              label.minimumScaleFactor = 0.5
+
+              view.addSubview(label)
+          }
+      }
+      ```
+  - title: 设置用户交互
+    description: 默认情况下，UILabel 不接收用户交互。如果需要 UILabel 响应用户交互，可以设置 `isUserInteractionEnabled` 属性为 true。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              let label = UILabel(frame: CGRect(x: 20, y: 100, width: 200, height: 40))
+              label.text = "可交互的 UILabel"
+              label.isUserInteractionEnabled = true
+
+              // 添加点击手势
+              let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped(_:)))
+              label.addGestureRecognizer(tapGesture)
+
+              view.addSubview(label)
+          }
+
+          @objc func labelTapped(_ sender: UITapGestureRecognizer) {
+              print("UILabel 被点击了")
+          }
+      }
+      ```
+references:
+  - title: UILabel | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uilabel
+  - title: How to create UILabel programmatically using Swift?
+    url: https://stackoverflow.com/questions/24081731/how-to-create-uilabel-programmatically-using-swift
+  - title: 'UILabel: The Ultimate Guide'
+    url: https://medium.com/@marcusziade/uilabel-the-ultimate-guide-e07064e5c1d9

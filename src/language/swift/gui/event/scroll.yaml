@@ -1,0 +1,70 @@
+id: scroll
+title: 滚动
+query: Android 滚动事件
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 开发中，滚动事件用于监测和响应用户在可滚动视图（如 ScrollView 或 RecyclerView）中的滚动操作。不同的滚动监听器提供了不同的场景和功能。"
+usage:
+  - title: 使用 ScrollView 监听滚动
+    content: 通过重写 `onScrollChanged()` 方法，可以自定义响应 ScrollView 的滚动。
+    example: |
+      ```kotlin
+      class MyScrollView(context: Context) : ScrollView(context) {
+          override fun onScrollChanged(
+              scrollX: Int,
+              scrollY: Int,
+              oldScrollX: Int,
+              oldScrollY: Int
+          ) {
+              super.onScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY)
+              Log.d("ScrollView", "Scroll changed to x: $scrollX, y: $scrollY")
+          }
+      }
+      ```
+
+  - title: 使用 RecyclerView 监听滚动
+    content: 通过 `RecyclerView.OnScrollListener` 监听 RecyclerView 的滚动事件，适用于列表滚动。
+    example: |
+      ```kotlin
+      recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+          override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+              super.onScrolled(recyclerView, dx, dy)
+              Log.d("RecyclerView", "Scrolled by dx: $dx, dy: $dy")
+          }
+      })
+      ```
+
+  - title: 使用 ViewTreeObserver 监听全局滚动
+    content: 使用 `ViewTreeObserver.OnScrollChangedListener` 监测整个视图树中的滚动变化。
+    example: |
+      ```kotlin
+      val scrollView = findViewById<ScrollView>(R.id.scrollView)
+      scrollView.viewTreeObserver.addOnScrollChangedListener {
+          val scrollY = scrollView.scrollY
+          Log.d("ScrollView", "Current scroll position: $scrollY")
+      }
+      ```
+
+  - title: 自定义滚动监听器
+    content: 创建自定义监听器以简化滚动事件的处理。
+    example: |
+      ```kotlin
+      interface OnScrollChangeListener {
+          fun onScrollChanged(scrollX: Int, scrollY: Int)
+      }
+
+      class MyScrollListener(private val listener: OnScrollChangeListener) {
+          fun attachTo(view: View) {
+              view.viewTreeObserver.addOnScrollChangedListener {
+                  listener.onScrollChanged(view.scrollX, view.scrollY)
+              }
+          }
+      }
+      ```
+
+references:
+  - title: "Listening to Scroll Events on Android Views"
+    url: https://dzone.com/articles/listening-to-scroll-events-on-android-views
+  - title: "RecyclerView.OnScrollListener Documentation"
+    url: https://developer.android.com/reference/androidx/recyclerview/widget/RecyclerView.OnScrollListener
+  - title: "ScrollView Documentation"
+    url: https://developer.android.com/reference/android/widget/ScrollView

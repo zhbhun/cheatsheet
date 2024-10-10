@@ -1,0 +1,111 @@
+id: object-animator
+title: ObjectAnimator
+query: Android ObjectAnimator
+comment: 尽量详尽的演示不同属性和场景用法
+description: "ObjectAnimator 是 Android 中用于动画的一个重要类，能够直接对视图的属性进行动画处理。它允许开发者在不需要实现 `ViewPropertyAnimator` 的情况下，定义任意属性的动画。常用于实现简单和复杂的动画效果，比如旋转、平移、缩放和透明度变化等。"
+usage:
+  - title: 创建旋转动画
+    content: 使用 ObjectAnimator 创建视图的旋转动画。
+    example: |
+      ```kotlin
+      // 创建旋转动画，旋转角度从0到360度
+      val rotationAnimator = ObjectAnimator.ofFloat(view, "rotation", 0f, 360f)
+      rotationAnimator.duration = 2000 // 动画持续时间2秒
+      rotationAnimator.start() // 开始动画
+      ```
+
+  - title: 创建平移动画
+    content: 使用 ObjectAnimator 创建视图的平移动画。
+    example: |
+      ```kotlin
+      // 创建水平移动动画，从当前x位置移动到x+500
+      val translationAnimator = ObjectAnimator.ofFloat(view, "translationX", 0f, 500f)
+      translationAnimator.duration = 1500 // 动画持续时间1.5秒
+      translationAnimator.start() // 开始动画
+      ```
+
+  - title: 创建缩放动画
+    content: 使用 ObjectAnimator 创建视图的缩放动画。
+    example: |
+      ```kotlin
+      // 创建缩放动画，x轴和y轴均缩放至2倍
+      val scaleAnimator = ObjectAnimator.ofFloat(view, "scaleX", 1f, 2f)
+      scaleAnimator.duration = 1000 // 动画持续时间1秒
+      scaleAnimator.start() // 开始动画
+
+      // 同时缩放y轴
+      val scaleYAnimator = ObjectAnimator.ofFloat(view, "scaleY", 1f, 2f)
+      scaleYAnimator.duration = 1000 // 动画持续时间1秒
+      scaleYAnimator.start() // 开始动画
+      ```
+
+  - title: 创建透明度变化动画
+    content: 使用 ObjectAnimator 创建视图的透明度变化动画。
+    example: |
+      ```kotlin
+      // 创建透明度变化动画，从不透明到完全透明
+      val alphaAnimator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+      alphaAnimator.duration = 2000 // 动画持续时间2秒
+      alphaAnimator.start() // 开始动画
+      ```
+
+  - title: 组合动画
+    content: 使用 AnimatorSet 组合多个 ObjectAnimator 动画。
+    example: |
+      ```kotlin
+      // 创建多个动画并组合
+      val rotationAnimator = ObjectAnimator.ofFloat(view, "rotation", 0f, 360f)
+      val translationAnimator = ObjectAnimator.ofFloat(view, "translationX", 0f, 500f)
+      val alphaAnimator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+
+      // 使用 AnimatorSet 组合动画
+      val animatorSet = AnimatorSet()
+      animatorSet.playTogether(rotationAnimator, translationAnimator, alphaAnimator) // 同时执行
+      animatorSet.duration = 3000 // 总动画持续时间3秒
+      animatorSet.start() // 开始组合动画
+      ```
+
+  - title: 使用插值器
+    content: 在 ObjectAnimator 中使用插值器来调整动画效果。
+    example: |
+      ```kotlin
+      // 创建旋转动画，使用加速减速插值器
+      val rotationAnimator = ObjectAnimator.ofFloat(view, "rotation", 0f, 360f)
+      rotationAnimator.interpolator = AccelerateDecelerateInterpolator() // 设置插值器
+      rotationAnimator.duration = 2000 // 动画持续时间2秒
+      rotationAnimator.start() // 开始动画
+      // 其他可用的插值器：
+      // - LinearInterpolator: 线性变化，动画以恒定速度进行
+      // - AccelerateInterpolator: 动画开始时慢，后面加速
+      // - DecelerateInterpolator: 动画开始时快，后面减速
+      // - BounceInterpolator: 动画结束时有弹跳效果
+      // - OvershootInterpolator: 动画结束时超过目标值，然后返回
+      ```
+
+  - title: 添加监听器
+    content: 为 ObjectAnimator 添加监听器，以处理动画事件。
+    example: |
+      ```kotlin
+      // 创建透明度变化动画，并添加监听器
+      val alphaAnimator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+      alphaAnimator.duration = 2000 // 动画持续时间2秒
+
+      alphaAnimator.addListener(object : AnimatorListenerAdapter() {
+          override fun onAnimationEnd(animation: Animator) {
+              super.onAnimationEnd(animation)
+              // 动画结束后的操作，比如隐藏视图
+              view.visibility = View.GONE
+          }
+      })
+
+      alphaAnimator.start() // 开始动画
+      ```
+references:
+  - title: "Android ObjectAnimator Official Documentation"
+    url: https://developer.android.com/reference/android/animation/ObjectAnimator
+  - title: "Android Animation Overview"
+    url: https://developer.android.com/guide/topics/graphics/prop-animation
+  - title: "ObjectAnimator Tutorial"
+    url: https://www.demo2s.com/android/android-objectanimator-tutorial-with-examples.html
+  - title: "Using animations in Android application"
+    url: https://vogella.com/tutorials/AndroidAnimation/article.html

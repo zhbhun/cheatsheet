@@ -1,0 +1,44 @@
+id: frame
+title: Frame
+query: Swift UIView 使用 frame 和 bounds 定位子视图
+comment: 演示 UIView 他通过 frame 和 bounds 定位子视图的方法
+description: |
+  在 Swift 中，UIView 的 `frame` 和 `bounds` 是两个重要属性，用来管理视图的大小和位置。`frame` 代表视图相对于父视图的坐标系统中的位置和大小，而 `bounds` 则表示视图在自身坐标系统中的大小和位置。`frame` 用于确定视图在父视图中的布局，而 `bounds` 更常用于调整视图内部的布局，特别是在需要保持位置不变但改变大小的情况下。通过旋转或缩放视图，`frame` 会发生变化，而 `bounds` 始终保持不变。
+
+usage:
+  - title: 使用 Frame 定位视图
+    content: |
+      `frame` 用于设置视图在父视图中的位置和大小。它通过父视图的坐标系确定视图的位置。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.frame = CGRect(x: 50, y: 100, width: 200, height: 150)
+      // 将视图定位在父视图中的 (50, 100) 位置，并设置宽度为 200，高度为 150
+      ```
+
+  - title: 使用 Bounds 修改大小
+    content: |
+      `bounds` 用于设置视图的内部尺寸，而不会影响其在父视图中的位置。通常 `bounds.origin` 是 (0, 0)。
+    example: |
+      ```swift
+      let myView = UIView()
+      myView.bounds.size = CGSize(width: 300, height: 300)
+      // 修改视图的内部大小，但保持其在父视图中的位置不变
+      ```
+  - title: 使用 autoresizingMask 自动调整大小
+    content: |
+      `autoresizingMask` 可以使视图在父视图尺寸变化时自动调整大小和位置。设置为 `flexibleWidth` 和 `flexibleHeight` 可以让视图在父视图改变大小时，自动调整其宽高。
+    example: |
+      ```swift
+      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 150))
+      myView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+      // 父视图大小改变时，myView 将自动调整其宽度和高度
+      ```
+
+references:
+  - title: "What’s the difference between frame and bounds?"
+    url: https://www.hackingwithswift.com/example-code/uikit/whats-the-difference-between-frame-and-bounds
+  - title: "Difference between Frame and Bounds in Swift"
+    url: https://programmingwithswift.com/frame-vs-bounds-in-swift/
+  - title: "Apple Developer Documentation: bounds"
+    url: https://developer.apple.com/documentation/uikit/uiview/1622580-bounds

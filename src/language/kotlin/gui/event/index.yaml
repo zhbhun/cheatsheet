@@ -1,0 +1,9 @@
+id: event
+title: 事件
+children:
+  - click
+  - touch
+  - gesture
+  - drag
+  - scroll
+  - keyboard

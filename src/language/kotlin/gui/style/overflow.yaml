@@ -1,0 +1,38 @@
+id: overflow
+title: Overflow
+query: Kotlin Android overflow cropping
+comment: 介绍如何在 Android 应用中处理视图溢出情况。
+description: "在 Kotlin Android 开发中，溢出裁剪用于处理视图内容超出可视区域的情况。通过设置不同属性，开发者可以选择是否裁剪视图，类似于 CSS 中的 overflow 属性。"
+usage:
+  - title: 使用 clipChildren 控制溢出
+    content: 使用布局属性 clipChildren 来控制视图是否被裁剪。
+    example: |
+      ```kotlin
+      // 在布局中禁用裁剪
+      val parentLayout = FrameLayout(this).apply {
+          clipChildren = false // 禁用裁剪，超出部分仍可见
+      }
+
+      val childView = View(this).apply {
+          layoutParams = FrameLayout.LayoutParams(200, 200) // 设置子视图大小
+          setBackgroundColor(Color.RED) // 设置背景色以便观察
+      }
+
+      parentLayout.addView(childView) // 添加子视图到父布局
+      ```
+  - title: 文本溢出处理
+    content: 使用 TextView 和 Jetpack Compose 的 Text 组件处理文本溢出。
+    example: |
+      ```kotlin
+      // 在传统的 TextView 中设置溢出处理
+      val textView = TextView(this).apply {
+          text = "这是一段很长的文本，可能会溢出视图边界，需要处理溢出情况。"
+          maxLines = 2 // 设置最大行数
+          ellipsize = TextUtils.TruncateAt.END // 溢出时显示省略号
+      }
+      ```
+references:
+  - title: "Handling Text Overflow in Jetpack Compose"
+    url: https://kotlinandroid.org/android-jetpack-compose-text-overflow/
+  - title: "Creating and Managing Overflow Menus on Android with Kotlin"
+    url: https://www.techotopia.com/index.php/Creating_and_Managing_Overflow_Menus_on_Android_with_Kotlin

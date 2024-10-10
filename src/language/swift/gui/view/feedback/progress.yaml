@@ -1,0 +1,81 @@
+id: progress
+title: UIProgressView
+query: Swift UIProgressView
+comment: 详细介绍 Swift UIProgressView 的用法
+description: |
+  `UIProgressView` 是 UIKit 中用于显示任务进度的进度条组件。它支持两种类型的进度：确定进度（determinate）和不确定进度（indeterminate）。确定进度用于展示一个明确的完成百分比，而不确定进度通常用于需要等待但不清楚完成时间的任务。通过 `setProgress` 方法可以动态更新进度，还可以自定义外观和动画效果。
+usage:
+  - title: 创建 UIProgressView
+    content: |
+      UIProgressView 可以通过 Interface Builder 或编程方式创建。你可以在视图中添加一个 `UIProgressView` 来显示任务进度，默认情况下进度条显示为一条水平线。
+    example: |
+      ```swift
+      // 通过编程方式创建 UIProgressView
+      let progressView = UIProgressView(progressViewStyle: .default)
+      progressView.frame = CGRect(x: 20, y: 100, width: 280, height: 20)
+      view.addSubview(progressView)
+      ```
+
+  - title: 设置进度
+    content: |
+      使用 `setProgress` 方法更新 UIProgressView 的进度，进度值是一个介于 0.0 和 1.0 之间的浮点数，表示任务的完成度。可以选择是否为进度更新添加动画效果。
+    example: |
+      ```swift
+      // 设置 UIProgressView 进度并启用动画
+      progressView.setProgress(0.5, animated: true)
+      ```
+
+  - title: 自定义外观
+    content: |
+      可以自定义 `UIProgressView` 的进度条颜色和轨道颜色（进度未完成部分的颜色）。这些属性可以通过 `progressTintColor` 和 `trackTintColor` 来设置。
+    example: |
+      ```swift
+      // 设置进度条颜色和轨道颜色
+      progressView.progressTintColor = UIColor.blue
+      progressView.trackTintColor = UIColor.lightGray
+      ```
+
+  - title: 动态更新进度
+    content: |
+      可以使用定时器或任务的完成进度动态更新进度条。以下示例演示如何通过 `Timer` 来更新进度。
+    example: |
+      ```swift
+      var progress: Float = 0.0
+      Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+          if progress < 1.0 {
+              progress += 0.1
+              progressView.setProgress(progress, animated: true)
+          } else {
+              timer.invalidate() // 停止定时器
+          }
+      }
+      ```
+
+  - title: 使用动画
+    content: |
+      UIProgressView 支持使用动画来平滑地更新进度。可以指定动画时长，并通过 `UIView.animate` 创建更复杂的动画效果。
+    example: |
+      ```swift
+      // 使用 UIView.animate 来平滑更新进度条
+      UIView.animate(withDuration: 2.0) {
+          progressView.setProgress(1.0, animated: true)
+      }
+      ```
+
+  - title: 显示不确定进度
+    content: |
+      不确定进度通常用于无法预估完成时间的任务。只需不设置具体进度值即可使用不确定进度模式，进度条将以无限循环的动画表示。
+    example: |
+      ```swift
+      // 创建不确定进度条（不设置具体进度值）
+      let indeterminateProgressView = UIProgressView(progressViewStyle: .default)
+      indeterminateProgressView.isIndeterminate = true // 自定义属性标示不确定进度
+      view.addSubview(indeterminateProgressView)
+      ```
+references:
+  - title: UIProgressView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiprogressview
+  - title: "Swift UIProgressView Example: Progress"
+    url: https://thedeveloperblog.com/swift/swift-uiprogressview-example
+  - title: How to Use iOS Progress View Programmatically
+    url: https://www.dev2qa.com/how-to-use-ios-progress-view-programmatically-in-swift/

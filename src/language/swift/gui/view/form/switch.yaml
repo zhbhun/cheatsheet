@@ -1,0 +1,80 @@
+id: switch
+title: UISwitch
+query: Swift UISwitch
+comment: 详细介绍 Swift UISwitch 的用法
+description: |
+  UISwitch 是 iOS UIKit 中用于提供二进制选项（例如开/关）的控件。通过切换 UISwitch，用户可以改变控件的状态，并触发事件响应。你可以通过代码或界面构建器来添加 UISwitch，并自定义它的外观与行为，例如设置初始状态、响应状态变化、改变开关的颜色等。
+usage:
+  - title: 创建 UISwitch
+    content: |
+      UISwitch 可以通过代码或 Interface Builder（界面构建器）创建。在代码中，使用 `UISwitch()` 构造函数创建一个开关，并使用 `CGRect` 设置其位置与大小。
+    example: |
+      ```swift
+      import UIKit
+
+      class ViewController: UIViewController {
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建 UISwitch 并设置位置
+              let mySwitch = UISwitch(frame: CGRect(x: 150, y: 150, width: 0, height: 0))
+              self.view.addSubview(mySwitch)
+          }
+      }
+      ```
+
+  - title: 设置开关初始状态
+    content: |
+      使用 `setOn(_:animated:)` 方法可以设置 UISwitch 的初始状态为打开或关闭。该方法接受两个参数：第一个是布尔值，表示开关是否处于“开”状态；第二个参数决定是否在切换时应用动画效果。
+    example: |
+      ```swift
+      // 设置 UISwitch 初始状态为开，且不应用动画
+      mySwitch.setOn(true, animated: false)
+      ```
+
+  - title: 监听开关状态变化
+    content: |
+      通过 `addTarget(_:action:for:)` 方法，可以在 UISwitch 状态改变时执行自定义函数。常用事件是 `.valueChanged`，当用户切换开关状态时触发。
+    example: |
+      ```swift
+      // 监听开关的状态变化
+      mySwitch.addTarget(self, action: #selector(switchStateChanged(_:)), for: .valueChanged)
+
+      @objc func switchStateChanged(_ sender: UISwitch) {
+          if sender.isOn {
+              print("UISwitch 已开启")
+          } else {
+              print("UISwitch 已关闭")
+          }
+      }
+      ```
+
+  - title: 自定义开关的颜色
+    content: |
+      UISwitch 可以通过 `onTintColor` 和 `thumbTintColor` 属性来自定义开关的颜色。`onTintColor` 控制开关开启时的背景颜色，而 `thumbTintColor` 则用于设置开关按钮的颜色。
+    example: |
+      ```swift
+      // 设置开关开启时的背景颜色为绿色，按钮颜色为白色
+      mySwitch.onTintColor = UIColor.green
+      mySwitch.thumbTintColor = UIColor.white
+      ```
+
+  - title: 获取开关当前状态
+    content: |
+      可以通过 `isOn` 属性检查 UISwitch 当前是否处于“开”状态，返回值为布尔类型。
+    example: |
+      ```swift
+      if mySwitch.isOn {
+          print("开关当前为打开状态")
+      } else {
+          print("开关当前为关闭状态")
+      }
+      ```
+
+references:
+  - title: UISwitch | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiswitch
+  - title: Create UISwitch in Swift Programmatically
+    url: https://www.appsdeveloperblog.com/create-uiswitch-in-swift-programmatically/
+  - title: Swift UISwitch: ViewController
+    url: https://thedeveloperblog.com/swift/swift-uiswitch

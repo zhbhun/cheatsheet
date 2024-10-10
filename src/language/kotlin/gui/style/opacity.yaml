@@ -1,0 +1,59 @@
+id: opacity
+title: 透明度
+query: Android 透明度样式
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 开发中，透明度是通过设置颜色的 alpha 值实现的。可以应用于视图、按钮、文本等，以增强视觉效果和用户体验。常用的方式包括使用 XML 属性和 Kotlin 代码。"
+usage:
+  - title: XML 中设置透明度
+    content: 使用 `android:alpha` 属性来设置视图的透明度。
+    example: |
+      ```xml
+      <!-- 在布局 XML 文件中设置透明度 -->
+      <Button
+          android:id="@+id/myButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Click Me"
+          android:alpha="0.5"/> <!-- 设置透明度为50% -->
+      ```
+  - title: Kotlin 代码设置透明度
+    content: 使用 `setAlpha()` 方法动态设置视图的透明度。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中设置按钮透明度
+      val myButton: Button = findViewById(R.id.myButton)
+      myButton.alpha = 0.5f // 设置透明度为50%
+      ```
+  - title: TextView 的透明度
+    content: 使用 `setTextColor()` 方法和 `Color` 的 `copy()` 方法来设置文本透明度。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中设置 TextView 透明度
+      val myTextView: TextView = findViewById(R.id.myTextView)
+      myTextView.setTextColor(Color.RED.copy(alpha = 0.5f)) // 设置文本透明度为50%
+      ```
+  - title: 图片透明度
+    content: 使用 `setAlpha()` 方法设置 ImageView 的透明度。
+    example: |
+      ```kotlin
+      // 在 Kotlin 中设置 ImageView 透明度
+      val myImageView: ImageView = findViewById(R.id.myImageView)
+      myImageView.alpha = 0.3f // 设置透明度为30%
+      ```
+  - title: 透明状态栏
+    content: 使用 `WindowManager.LayoutParams` 设置透明状态栏。
+    example: |
+      ```kotlin
+      // 在 Activity 中设置透明状态栏
+      window.apply {
+          decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+          statusBarColor = Color.TRANSPARENT // 设置状态栏为透明
+      }
+      ```
+references:
+  - title: "Android UI Guide - Opacity and Transparency"
+    url: https://developer.android.com/guide/topics/ui/layout/opacity
+  - title: "Jetpack Compose Color and Opacity"
+    url: https://developer.android.com/jetpack/compose/color
+  - title: "Making the Status Bar Transparent"
+    url: https://stackoverflow.com/questions/20221711/how-to-make-the-status-bar-transparent-in-android

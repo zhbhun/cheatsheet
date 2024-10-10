@@ -1,0 +1,71 @@
+id: switch
+title: Switch
+query: Android Switch
+comment: 尽量详尽的演示不同属性和场景用法
+description: "Android 的 Switch 组件允许用户在两种状态（开和关）之间切换，适用于启用或禁用功能、选择选项等场景。Switch 包含可拖动的 thumb 和背景 track。"
+usage:
+  - title: 创建 Switch
+    content: "在 XML 布局中使用 `<Switch>` 标签。"
+  - title: 监听状态变化
+    content: "使用 `setOnCheckedChangeListener` 方法来响应状态变化。"
+  - title: 自定义外观
+    content: "通过 `thumbTint` 和 `trackTint` 属性自定义颜色，使用 `textSize` 和 `textColor` 修改文本样式。"
+  - title: 编程控制 Switch
+    content: "在 Java 或 Kotlin 中通过 `isChecked` 属性判断 Switch 状态。"
+  - title: 使用在不同场景
+    content: "适用于设置界面、功能开关等场景。"
+example:
+  - title: "基本 Switch 示例"
+    content: |
+      ```xml
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:gravity="center"
+          android:orientation="vertical">
+          <Switch
+              android:id="@+id/switch1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="OFF"/>
+      </LinearLayout>
+      ```
+  - title: "监听 Switch 状态变化"
+    content: |
+      ```java
+      Switch mySwitch = findViewById(R.id.switch1);
+      mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+          @Override
+          public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+              Toast.makeText(MainActivity.this, isChecked ? "ON" : "OFF", Toast.LENGTH_SHORT).show();
+          }
+      });
+      ```
+  - title: "自定义 Switch 外观"
+    content: |
+      ```xml
+      <Switch
+          android:id="@+id/customSwitch"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:thumbTint="@color/black"
+          android:trackTint="@color/teal_700"
+          android:textSize="20sp"/>
+      ```
+  - title: "编程控制 Switch"
+    content: |
+      ```kotlin
+      val switch: Switch = findViewById(R.id.customSwitch)
+      if (switch.isChecked) {
+          // 开启功能
+      } else {
+          // 关闭功能
+      }
+      ```
+references:
+  - title: "Android Switch Guide"
+    url: https://developer.android.com/reference/android/widget/Switch
+  - title: "How to Use Switch in Android"
+    url: https://tutorialwing.com/android-switch-tutorial-with-example/
+  - title: "Customizing Android Switch"
+    url: https://rrtutors.com/tutorials/android-switch

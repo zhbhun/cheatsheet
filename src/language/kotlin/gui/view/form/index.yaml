@@ -1,0 +1,10 @@
+id: form
+title: 基础
+children:
+  - input
+  - checkbox
+  - radio
+  - select
+  - slider
+  - switch
+  - time

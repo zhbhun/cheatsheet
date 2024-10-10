@@ -1,0 +1,84 @@
+id: slider
+title: UISlider
+query: Swift UISlider
+comment: 详细介绍 Swift UISlider 的用法
+description: |
+  UISlider 是 UIKit 中的一个控件，用于在一个连续的范围内选择单个值。它通常用于调节音量、亮度等类似场景。UISlider 由一个滑块（thumb）和滑轨（track）组成。滑块可在最小值和最大值之间移动，用户滑动时可以动态更新关联的值。UISlider 的属性和事件可以通过代码或 Interface Builder 来配置。
+usage:
+  - title: 创建 UISlider
+    content: |
+      UISlider 可以通过代码动态创建，或在 Interface Builder 中拖拽 UISlider 到视图上。创建时需指定其位置和大小。
+    example: |
+      ```swift
+      // 使用代码创建 UISlider
+      let mySlider = UISlider(frame: CGRect(x: 10, y: 100, width: 300, height: 20))
+      mySlider.minimumValue = 0      // 设置最小值
+      mySlider.maximumValue = 100    // 设置最大值
+      mySlider.value = 50            // 设置初始值
+      mySlider.isContinuous = true   // 使滑动时连续更新值
+      view.addSubview(mySlider)      // 添加到当前视图
+      ```
+  - title: 设置滑块最小值和最大值
+    content: |
+      使用 `minimumValue` 和 `maximumValue` 属性来定义 UISlider 的最小和最大值。这些值可以动态调整。
+    example: |
+      ```swift
+      mySlider.minimumValue = 0
+      mySlider.maximumValue = 100
+      ```
+  - title: 监听 UISlider 值的变化
+    content: |
+      使用 `addTarget(_:action:for:)` 方法监听滑块值的变化，常用于在用户滑动时执行某些动作。
+    example: |
+      ```swift
+      mySlider.addTarget(self, action: #selector(sliderValueDidChange(_:)), for: .valueChanged)
+
+      @objc func sliderValueDidChange(_ sender: UISlider!) {
+          print("当前滑块值: \(sender.value)")
+      }
+      ```
+  - title: 自定义 UISlider 外观
+    content: |
+      可以通过 `tintColor` 和 `thumbTintColor` 等属性自定义 UISlider 的外观，如改变滑轨和滑块的颜色。
+    example: |
+      ```swift
+      mySlider.tintColor = .green         // 改变滑轨颜色
+      mySlider.thumbTintColor = .blue     // 改变滑块颜色
+      ```
+  - title: 设置 UISlider 的步长
+    content: |
+      UISlider 默认支持连续滑动，但可以通过调整值在滑动时步进特定的间隔，使用 `round` 函数可以实现滑块值的四舍五入。
+    example: |
+      ```swift
+      @objc func sliderValueDidChange(_ sender: UISlider!) {
+          let step: Float = 10
+          let newValue = round(sender.value / step) * step
+          sender.value = newValue
+          print("当前滑块步长值: \(Int(newValue))")
+      }
+      ```
+  - title: 通过 Storyboard 创建 UISlider
+    content: |
+      也可以通过 Storyboard 将 UISlider 拖到视图中，并通过 Assistant Editor 将它与代码中的 IBOutlet 关联，从而更方便地操作。
+    example: |
+      ```swift
+      // 在 Storyboard 中创建 UISlider 后，通过 IBOutlet 连接
+      @IBOutlet weak var slider: UISlider!
+      @IBOutlet weak var sliderLabel: UILabel!
+
+      @IBAction func sliderValueChanged(_ sender: UISlider) {
+          sliderLabel.text = String(sender.value)
+      }
+      ```
+
+references:
+  - title: "UISlider | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/uikit/uislider
+  - title: "UISlider example (iOS Slider) using Swift"
+    url: https://sourcefreeze.com/ios-slider-uislider-example-using-swift/
+  - title: "Create UISlider Programmatically in Swift"
+    url: https://www.appsdeveloperblog.com/create-uislider-programmatically-in-swift/
+  - title: "UISlider Tutorial and Example - CodeWithChris"
+    url: https://codewithchris.com/uislider-tutorial-and-example/
+  - title: "Swift UISlider Example"
+    url: https://thedeveloperblog.com/swift/swift-uislider-example

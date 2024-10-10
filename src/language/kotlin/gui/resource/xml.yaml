@@ -1,0 +1,140 @@
+id: xml
+title: 使用自定义 XML 文件管理偏好设置
+query: Android 自定义 XML 配置文件 preferences.xml
+comment: 介绍如何在 Android 应用中创建和使用自定义 XML 文件管理用户偏好设置，展示如何在 XML 中定义偏好设置并通过 Kotlin 代码加载和操作。
+description: |
+  Android 提供了使用 XML 文件来管理应用用户设置的便捷方式，特别是通过 `PreferenceFragmentCompat` 和 `SharedPreferences` 机制来存储和管理用户偏好项。通过 XML 文件定义设置界面元素（如 CheckBox、EditText 等），开发者可以轻松实现分组、依赖关系、动态更新等功能，并将其加载到应用中。
+usage:
+  - title: 创建并加载基本的偏好设置
+    content: |
+      你可以通过在 `res/xml` 目录下创建 `preferences.xml` 文件定义偏好设置，并通过 `PreferenceFragmentCompat` 类加载这些设置。在 Kotlin 中加载偏好文件，设置会自动存储到 `SharedPreferences` 中。
+    example: |
+      ```xml
+      <!-- 在 res/xml/preferences.xml 文件中定义偏好设置 -->
+      <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+          <PreferenceCategory android:title="General Settings">
+              <CheckBoxPreference
+                  android:key="checkbox_preference"
+                  android:title="Enable feature"
+                  android:defaultValue="true"/>
+              <EditTextPreference
+                  android:key="edittext_preference"
+                  android:title="Enter your name"
+                  android:summary="Your name will be displayed in the app"
+                  android:dialogTitle="Enter your name"/>
+          </PreferenceCategory>
+      </PreferenceScreen>
+      ```
+
+      ```kotlin
+      // 定义 SettingsFragment 来加载 preferences.xml
+      class SettingsFragment : PreferenceFragmentCompat() {
+          override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+              setPreferencesFromResource(R.xml.preferences, rootKey)
+          }
+      }
+
+      // 在 Activity 中加载设置页面
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+          supportFragmentManager.beginTransaction()
+              .replace(R.id.fragment_container, SettingsFragment())
+              .commit()
+      }
+      ```
+
+  - title: 设置偏好项的依赖关系
+    content: |
+      通过 `android:dependency` 属性，某些偏好项可以依赖于其他偏好项的状态。下面的示例展示了如何在偏好项之间设置依赖关系：当开关打开时，允许用户编辑额外的设置项。
+    example: |
+      ```xml
+      <!-- 在 XML 中设置依赖关系 -->
+      <SwitchPreference
+          android:key="enable_feature"
+          android:title="Enable feature"/>
+      <EditTextPreference
+          android:key="feature_details"
+          android:title="Feature details"
+          android:dependency="enable_feature"/>
+      ```
+
+      ```kotlin
+      // 在 Kotlin 中加载带有依赖关系的偏好设置
+      class SettingsFragment : PreferenceFragmentCompat() {
+          override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+              setPreferencesFromResource(R.xml.preferences, rootKey)
+          }
+      }
+      ```
+
+  - title: 动态更新偏好项的摘要信息
+    content: |
+      通过代码动态更新偏好项的摘要信息，例如根据用户的输入更新显示的信息。此示例展示了如何根据用户输入的文本更新 `EditTextPreference` 的摘要。
+    example: |
+      ```xml
+      <!-- 在 XML 中定义 EditTextPreference -->
+      <EditTextPreference
+          android:key="edittext_preference"
+          android:title="Enter your name"
+          android:summary="Your name will be displayed here"
+          android:dialogTitle="Enter your name"/>
+      ```
+
+      ```kotlin
+      // 动态更新 EditTextPreference 的摘要
+      override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+          setPreferencesFromResource(R.xml.preferences, rootKey)
+
+          val editTextPreference: EditTextPreference? = findPreference("edittext_preference")
+          editTextPreference?.summaryProvider = Preference.SummaryProvider<EditTextPreference> { preference ->
+              val text = preference.text
+              if (text.isNullOrEmpty()) {
+                  "Not set"
+              } else {
+                  "Current value: $text"
+              }
+          }
+      }
+      ```
+
+  - title: 获取和修改偏好值
+    content: |
+      通过 `SharedPreferences` 获取和修改用户保存的偏好设置。例如，读取开关状态或编辑文本内容，并进行更新。
+    example: |
+      ```xml
+      <!-- 在 XML 中定义 SwitchPreference 和 EditTextPreference -->
+      <SwitchPreference
+          android:key="enable_feature"
+          android:title="Enable feature"
+          android:defaultValue="false"/>
+      <EditTextPreference
+          android:key="edittext_preference"
+          android:title="Enter your name"
+          android:summary="Your name will be displayed here"
+          android:dialogTitle="Enter your name"/>
+      ```
+
+      ```kotlin
+      // 获取 SharedPreferences 实例
+      val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+      // 读取设置项的值
+      val isFeatureEnabled = sharedPreferences.getBoolean("enable_feature", false)
+      val userName = sharedPreferences.getString("edittext_preference", "Guest")
+
+      // 更新偏好设置值
+      sharedPreferences.edit().putBoolean("enable_feature", true).apply()
+      ```
+
+references:
+  - title: "Settings with PreferenceFragment | CodePath Android Cliffnotes"
+    url: https://guides.codepath.com/android/Settings-with-PreferenceFragment
+  - title: "Customize your settings | Android Developers"
+    url: https://developer.android.com/guide/topics/ui/settings/customize-your-settings
+  - title: "Using PreferenceFragment to effortlessly handle user settings"
+    url: https://blog.jakelee.co.uk/using-preferencefragment-to-effortlessly-handle-user-settings/
+  - title: "Add preferences using PreferenceFragmentCompat"
+    url: https://developer.android.com/guide/topics/ui/settings/preference-fragment
+  - title: "Using Preferences in Android"
+    url: https://www.geeksforgeeks.org/using-preferences-in-android/

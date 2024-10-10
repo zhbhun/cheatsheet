@@ -1,0 +1,152 @@
+id: linear
+title: UIStackView
+query: Swift UIStackView
+comment: 详细介绍 Swift 中 `UIStackView` 的使用，包括创建、添加和移除视图、设置对齐和分布、调整间距等操作。
+description: |
+  `UIStackView` 是 Swift 中用于管理线性布局的强大控件。它可以垂直或水平排列子视图，且自动处理 Auto Layout 约束，无需手动为每个视图设置。`UIStackView` 支持动态添加、删除子视图，并通过配置对齐方式、分布模式和间距来实现灵活布局。适用于需要根据屏幕大小或内容动态调整布局的场景，如响应式界面设计。
+usage:
+  - title: 创建 UIStackView
+    content: |
+      `UIStackView` 可以通过代码或 Interface Builder 创建。需要指定 `axis`（轴方向为水平或垂直），并使用 `addArrangedSubview()` 添加子视图。
+    example: |
+      ```swift
+      let stackView = UIStackView()
+      stackView.axis = .vertical // 垂直排列子视图
+      stackView.distribution = .fillEqually // 所有视图均分空间
+      stackView.spacing = 10 // 设置视图之间的间距为 10 点
+
+      let label1 = UILabel()
+      label1.text = "标签 1"
+      let label2 = UILabel()
+      label2.text = "标签 2"
+
+      // 向 Stack View 添加子视图
+      stackView.addArrangedSubview(label1)
+      stackView.addArrangedSubview(label2)
+      ```
+  - title: 添加和移除子视图
+    content: |
+      可以通过 `addArrangedSubview()` 动态添加视图，使用 `removeArrangedSubview()` 和 `removeFromSuperview()` 来移除视图，无需手动处理布局约束。
+    example: |
+      ```swift
+      let newLabel = UILabel()
+      newLabel.text = "新标签"
+      stackView.addArrangedSubview(newLabel) // 添加新标签
+
+      // 移除标签
+      stackView.removeArrangedSubview(newLabel)
+      newLabel.removeFromSuperview() // 也从视图层次结构中移除
+
+  - title: 设置对齐和分布
+    content: |
+      `UIStackView` 的 `alignment` 属性控制子视图在主轴垂直方向上的对齐方式，而 `distribution` 属性决定子视图在主轴方向上的分布。以下是常用的对齐方式说明：
+
+      - `.fill`：子视图将填满 Stack View 的整个高度或宽度。
+      - `.center`：子视图在主轴垂直方向上居中对齐。
+      - `.leading`：子视图靠近 Stack View 的起始边对齐（垂直布局为顶部，水平布局为左侧）。
+      - `.trailing`：子视图靠近 Stack View 的结束边对齐（垂直布局为底部，水平布局为右侧）。
+
+      `distribution` 属性的几种常见值：
+
+      - `.fill`：所有子视图将压缩或扩展以填充 Stack View 的空间。
+      - `.fillEqually`：子视图均分空间，无论其内容大小。
+      - `.fillProportionally`：子视图按其固有大小的比例分配空间。
+      - `.equalSpacing`：子视图之间的间距相等。
+      - `.equalCentering`：子视图的中心点间距相等。
+    example: |
+      ```swift
+      // 对齐方式示例
+      stackView.alignment = .center // 所有子视图在 Stack View 中垂直居中对齐
+      stackView.distribution = .fillEqually // 所有子视图均分 Stack View 的宽度或高度
+      ```
+  - title: 使用 isLayoutMarginsRelativeArrangement 增加内边距
+    content: |
+      当 `isLayoutMarginsRelativeArrangement` 设置为 `true` 时，Stack View 将基于自身的 `layoutMargins` 属性对齐子视图，可以用来设置额外的内边距。
+    example: |
+      ```swift
+      let stackView = UIStackView()
+      stackView.axis = .vertical
+      stackView.spacing = 10
+
+      // 设置 layoutMargins 并启用 isLayoutMarginsRelativeArrangement
+      stackView.isLayoutMarginsRelativeArrangement = true
+      stackView.layoutMargins = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+
+      let label1 = UILabel()
+      label1.text = "标签 1"
+      let label2 = UILabel()
+      label2.text = "标签 2"
+
+      // 添加子视图
+      stackView.addArrangedSubview(label1)
+      stackView.addArrangedSubview(label2)
+
+      // Stack View 内的视图将遵循 layoutMargins 设置的内边距
+      ```
+  - title: 使用 isBaselineRelativeArrangement 进行基线对齐
+    content: |
+      当 `isBaselineRelativeArrangement` 设置为 `true` 时，Stack View 会根据文本内容的基线来对齐子视图。适合在包含多个 `UILabel` 时使用，以确保文本行的底部对齐。
+    example: |
+      ```swift
+      let stackView = UIStackView()
+      stackView.axis = .horizontal
+      stackView.spacing = 10
+
+      // 启用基线对齐
+      stackView.isBaselineRelativeArrangement = true
+
+      let label1 = UILabel()
+      label1.text = "大文字"
+      label1.font = UIFont.systemFont(ofSize: 24)
+
+      let label2 = UILabel()
+      label2.text = "小文字"
+      label2.font = UIFont.systemFont(ofSize: 14)
+
+      // 添加子视图到 Stack View
+      stackView.addArrangedSubview(label1)
+      stackView.addArrangedSubview(label2)
+
+      // 这将确保标签的文本基线对齐
+      ```
+  - title: 使用 `setContentHuggingPriority` 来控制哪些子视图优先占用空间
+    content: |
+      `UIStackView`可以使用 `setContentHuggingPriority` 来控制哪些子视图优先占用空间。优先级低的视图将更容易扩展，模拟 `flex-grow` 的行为。
+    example: |
+      ```swift
+      let stackView = UIStackView()
+      stackView.axis = .horizontal
+      stackView.distribution = .fill
+
+      let view1 = UIView()
+      view1.backgroundColor = .red
+      let view2 = UIView()
+      view2.backgroundColor = .blue
+
+      // 向 stackView 添加子视图
+      stackView.addArrangedSubview(view1)
+      stackView.addArrangedSubview(view2)
+
+      // 设置 view1 的 contentHuggingPriority，降低其优先级，模拟 "flex-grow" 效果
+      view1.setContentHuggingPriority(.defaultLow, for: .horizontal)
+      view2.setContentHuggingPriority(.defaultHigh, for: .horizontal) // view2 不会生长
+      ```
+
+  - title: 自定义视图间距
+    content: |
+      `spacing` 属性用于定义所有视图之间的统一间距，而 `setCustomSpacing()` 可以为特定视图之后设置自定义间距。
+    example: |
+      ```swift
+      stackView.spacing = 8 // 设置所有视图之间的间距为 8 点
+      stackView.setCustomSpacing(20, after: view1) // 设置 view1 后的间距为 20 点
+      ```
+
+references:
+  - title: UIStackView - Apple 开发者文档
+    url: https://developer.apple.com/documentation/uikit/uistackview
+  - title: UIStackView 详解 - Hacking with Swift
+    url: https://www.hackingwithswift.com/read/7/3/uistackview-by-example
+  - title: 如何为 UIStackView 添加自定义间距 - Hacking with Swift
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-add-custom-spacing-to-uistackview-items
+  - title: 使用 UIStackView 创建灵活布局
+    url: https://www.kodeco.com/16070260-uistackview-tutorial-for-ios-introducing-stack-views

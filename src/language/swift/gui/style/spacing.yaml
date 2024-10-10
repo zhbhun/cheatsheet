@@ -1,0 +1,95 @@
+id: spacing
+title: 间距
+query: Android margin 和 padding 样式
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 中，`margin` 和 `padding` 是用于控制视图间距的关键属性。`margin` 定义视图外部的空间，而 `padding` 则定义视图内部的空间。理解这两者的区别可以帮助创建更好的用户界面。"
+usage:
+  - title: Margin 属性
+    content: "使用 `android:layout_margin` 属性设置视图周围的外边距。可以设置单个边距或四个边距的值。"
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="带有外边距的文本"
+          android:layout_margin="16dp" <!-- 四周都设置为 16dp 的外边距 -->
+          android:layout_marginTop="24dp" <!-- 仅设置顶部外边距 -->
+      />
+      ```
+
+  - title: Padding 属性
+    content: "使用 `android:padding` 属性设置视图内容与边界之间的内部间距。可以单独设置每个边的填充值。"
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="带有内边距的文本"
+          android:padding="8dp" <!-- 四周都设置为 8dp 的内边距 -->
+          android:paddingLeft="12dp" <!-- 仅设置左侧内边距 -->
+      />
+      ```
+
+  - title: Margin 和 Padding 区别
+    content: "`margin` 是视图外部的空间，用于控制与其他视图的距离；`padding` 是视图内部的空间，影响内容与视图边缘的距离。"
+    example: |
+      ```xml
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="16dp" <!-- 内容与 LinearLayout 边缘之间的内边距 -->
+          android:layout_margin="8dp"> <!-- LinearLayout 与其他视图之间的外边距 -->
+
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="按钮" />
+      </LinearLayout>
+      ```
+
+  - title: 使用不同的尺寸
+    content: "可以通过使用不同的尺寸来响应不同的屏幕尺寸和密度，确保 UI 一致性。"
+    example: |
+      ```xml
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="适应不同屏幕的文本"
+          android:padding="@dimen/padding_large" <!-- 使用 dimens.xml 文件中定义的尺寸 -->
+          android:layout_margin="@dimen/margin_small" />
+      ```
+
+      ```xml
+      <?xml version="1.0" encoding="utf-8"?>
+      <resources>
+          <dimen name="padding_small">4dp</dimen> <!-- 小内边距 -->
+          <dimen name="padding_medium">8dp</dimen> <!-- 中等内边距 -->
+          <dimen name="padding_large">16dp</dimen> <!-- 大内边距 -->
+          <dimen name="margin_small">4dp</dimen> <!-- 小外边距 -->
+          <dimen name="margin_medium">8dp</dimen> <!-- 中等外边距 -->
+          <dimen name="margin_large">16dp</dimen> <!-- 大外边距 -->
+      </resources>
+      ```
+
+  - title: 结合使用
+    content: "通常，`margin` 和 `padding` 会一起使用以实现更灵活的布局设计。"
+    example: |
+      ```xml
+      <CardView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="16dp" <!-- 外边距 -->
+          android:padding="16dp"> <!-- 内边距 -->
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="卡片中的文本" />
+      </CardView>
+      ```
+
+references:
+  - title: "Margin and Padding in an Android View"
+    url: https://www.studytonight.com/android/margin-and-padding-in-an-android-view
+  - title: "Layout basics"
+    url: https://developer.android.com/guide/topics/ui/declaring-layout

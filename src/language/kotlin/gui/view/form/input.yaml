@@ -1,0 +1,114 @@
+id: inputType
+title: EditText Input Types and Styles
+query: Android EditText inputType and styles
+comment: 包含所有可用的输入类型及其样式配置
+description: "Android 的 `EditText` 控件提供多种输入类型，允许开发者根据输入需求进行配置。同时，它还支持多种样式属性来定制外观。"
+usage:
+  - title: 输入类型
+    content: |
+      1. `text` - 普通文本（可以输入任意字符）
+      2. `textMultiLine` - 多行文本（可以输入换行）
+      3. `textPassword` - 密码文本（输入时字符被隐藏）
+      4. `number` - 仅数字（限制输入为数字）
+      5. `numberDecimal` - 小数（支持小数点）
+      6. `numberSigned` - 正负整数（支持正负号）
+      7. `phone` - 电话号码（适配输入电话号码的键盘）
+      8. `emailAddress` - 电子邮件地址（适配输入电子邮件的键盘）
+      9. `url` - URL 地址（适配输入网址的键盘）
+      10. `date` - 日期（适配输入日期的键盘）
+      11. `time` - 时间（适配输入时间的键盘）
+    notes: |
+      - 这些输入类型可以通过 XML 中的 `android:inputType` 属性或在 Java/Kotlin 中动态设置。
+      - 也可以组合多个类型，例如 `text|textPassword` 来同时允许普通文本和密码输入。
+      - 使用不当会导致用户体验不佳，例如在输入电话号码时不应设置为 `textPassword`。
+
+  - title: 样式配置
+    content: |
+      - `android:textColor` - 设置文本颜色
+      - `android:textSize` - 设置文本大小（单位为sp）
+      - `android:textStyle` - 设置文本样式（如 normal, bold, italic）
+      - `android:fontFamily` - 设置字体家族
+      - `android:background` - 设置背景（颜色或drawable）
+      - `android:hint` - 提示文本
+      - `android:padding` - 设置内边距
+      - `android:lineSpacingExtra` - 设置行间距
+      - `android:maxLines` - 设置最大行数
+    notes: |
+      - 每个样式属性都可以在 XML 或代码中设置。
+      - 例如，通过设置 `android:hint` 来提供输入提示，或使用 `android:background` 来美化输入框。
+      - 在 `textStyle` 中，可以通过使用 `|` 操作符组合多种样式（如 `bold|italic`）。
+
+example:
+  - title: "设置输入类型"
+    content: |
+      ```xml
+      <EditText
+          android:id="@+id/editText"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="textEmailAddress" /> <!-- 设置键盘为电子邮件输入 -->
+      <!-- 可选值包括：
+           text: 普通文本
+           textMultiLine: 多行文本
+           textPassword: 密码输入
+           number: 仅数字
+           numberDecimal: 小数输入
+           numberSigned: 支持正负数
+           phone: 电话号码
+           emailAddress: 电子邮件
+           url: URL 地址
+           date: 日期
+           time: 时间
+      -->
+      ```
+  - title: "设置多行输入"
+    content: |
+      ```xml
+      <EditText
+          android:id="@+id/editTextMultiLine"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:inputType="textMultiLine" <!-- 允许多行输入 -->
+          android:hint="请输入多行文本"
+          android:maxLines="5" <!-- 设置最大行数为5 -->
+          android:gravity="top|start" <!-- 文本从顶部开始显示 -->
+          android:padding="16dp" />
+      ```
+  - title: "设置样式"
+    content: |
+      ```xml
+      <EditText
+          android:id="@+id/editText"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="输入邮箱"
+          android:textColor="#000000"
+          android:textSize="16sp"
+          android:textStyle="bold"
+          android:fontFamily="sans-serif"
+          android:background="@android:color/white"
+          android:padding="16dp" />
+      ```
+  - title: "动态设置输入类型"
+    content: |
+      ```kotlin
+      val editText: EditText = findViewById(R.id.editText)
+      editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+      // 设置键盘类型为电子邮件输入
+      ```
+  - title: "动态设置样式"
+    content: |
+      ```kotlin
+      editText.setTextColor(Color.BLACK)
+      editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+      editText.setTypeface(Typeface.SANS_SERIF, Typeface.BOLD)
+      editText.setBackgroundColor(Color.WHITE)
+      editText.setPadding(16, 16, 16, 16)
+      ```
+references:
+  - title: "Input Types in Android"
+    url: https://developer.android.com/reference/android/text/InputType
+  - title: "EditText Attributes"
+    url: https://developer.android.com/reference/android/widget/EditText
+  - title: "Styling EditText in Android"
+    url: https://developer.android.com/reference/android/widget/TextView#attr_android:textColor

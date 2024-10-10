@@ -1,0 +1,302 @@
+id: constraint
+title: ConstraintLayout
+query: Kotlin ConstraintLayout usage and examples
+comment: 详细介绍 ConstraintLayout 的核心特性，如约束、链、圆形定位和比例，及其在 Android 布局中的应用场景
+description: |
+  ConstraintLayout 是 Android 中一个强大的布局管理器，它允许开发者通过约束将界面元素相对定位到其他元素或父布局上，从而构建灵活和高效的布局。
+
+example:
+  - title: "相对定位 (Relative Positioning)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <Button
+              android:id="@+id/button1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintTop_toTopOf="parent"
+              android:text="Button 1"/>
+
+          <Button
+              android:id="@+id/button2"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:layout_constraintStart_toEndOf="@id/button1"
+              app:layout_constraintTop_toTopOf="parent"
+              android:text="Button 2"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // Button1 位于父布局左上角，Button2 位于 Button1 右边。
+  - title: "居中对齐 (Centering)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <Button
+              android:id="@+id/button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Centered Button"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintBottom_toBottomOf="parent"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // Button 水平和垂直居中显示。
+
+  - title: "偏移 (Bias)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <Button
+              android:id="@+id/button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintHorizontal_bias="0.7"
+              android:text="Button"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // Button 水平偏移 70% 位置，靠近右侧。
+
+  - title: "百分比尺寸 (Percent Dimensions)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <ImageView
+              android:id="@+id/imageView"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              app:layout_constraintWidth_default="percent"
+              app:layout_constraintWidth_percent="0.5"
+              android:src="@drawable/sample_image"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // ImageView 宽度占父布局的 50%。
+
+  - title: "大小约束 (Min/Max Dimensions)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <ImageView
+              android:id="@+id/imageView"
+              android:layout_width="0dp"
+              android:layout_height="0dp"
+              android:src="@drawable/sample_image"
+              app:layout_constraintWidth_min="100dp"
+              app:layout_constraintHeight_min="100dp"
+              app:layout_constraintWidth_max="200dp"
+              app:layout_constraintHeight_max="200dp"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintBottom_toBottomOf="parent"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // ImageView 的最小宽高为 100dp，最大宽高为 200dp，避免显示时拉伸过度。
+  - title: 使用 ConstraintLayout 实现宽高比为 16:9 的视图
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 宽高比为 16:9 的 ImageView -->
+          <ImageView
+              android:id="@+id/imageView"
+              android:layout_width="0dp"
+              android:layout_height="0dp"
+              android:src="@drawable/sample_image"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintBottom_toBottomOf="parent"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintDimensionRatio="16:9" />
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      **说明**: 该示例通过 `layout_constraintDimensionRatio="16:9"` 设置了 `ImageView` 的宽高比为 16:9。`layout_width` 和 `layout_height` 都设置为 `0dp`，表示视图的大小将由约束和比例决定。
+
+  - title: 使用 ConstraintLayout 设置比例并基于宽度调整高度
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 高度基于宽度的比例为 4:3 的按钮 -->
+          <Button
+              android:id="@+id/button"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintDimensionRatio="W,4:3" />
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      **说明**: 在此示例中，`layout_constraintDimensionRatio="W,4:3"` 表示按钮的宽度和高度按照 4:3 的比例进行调整。`W` 表示根据宽度调整高度。
+
+  - title: 使用 ConstraintLayout 实现类似 FrameLayout 的重叠布局
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 背景图片 -->
+          <ImageView
+              android:id="@+id/imageView"
+              android:layout_width="0dp"
+              android:layout_height="0dp"
+              android:scaleType="centerCrop"
+              android:src="@drawable/background_image"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintBottom_toBottomOf="parent"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent" />
+
+          <!-- 中心文本 -->
+          <TextView
+              android:id="@+id/textView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Centered Text"
+              android:textSize="24sp"
+              android:textColor="#FFFFFF"
+              app:layout_constraintTop_toTopOf="parent"
+              app:layout_constraintBottom_toBottomOf="parent"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              app:layout_constraintHorizontal_bias="0.5"
+              app:layout_constraintVertical_bias="0.5" />
+
+          <!-- 底部按钮 -->
+          <Button
+              android:id="@+id/button"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Click Me"
+              app:layout_constraintBottom_toBottomOf="parent"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toEndOf="parent"
+              android:layout_marginBottom="20dp"/>
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      **说明**: 使用 `ConstraintLayout` 实现了类似 `FrameLayout` 的重叠布局。`ImageView` 作为背景占满父布局，`TextView` 居中显示，按钮则在底部居中显示。
+  - title: "链 (Chains)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <Button
+              android:id="@+id/button1"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button 1"
+              app:layout_constraintHorizontal_chainStyle="spread"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintEnd_toStartOf="@+id/button2"/>
+
+          <Button
+              android:id="@+id/button2"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:text="Button 2"
+              app:layout_constraintStart_toEndOf="@id/button1"
+              app:layout_constraintEnd_toEndOf="parent"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // Button1 和 Button2 在水平链中均匀分布。
+
+  - title: "圆形定位 (Circular Positioning)"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <Button
+              android:id="@+id/buttonCenter"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Center"/>
+
+          <Button
+              android:id="@+id/buttonCircle"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Around"
+              app:layout_constraintCircle="@id/buttonCenter"
+              app:layout_constraintCircleRadius="100dp"
+              app:layout_constraintCircleAngle="45"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // ButtonCircle 以 100dp 半径和 45° 角围绕 ButtonCenter。
+
+  - title: "Guideline 和 Barrier"
+    content: |
+      ```xml
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <androidx.constraintlayout.widget.Guideline
+              android:id="@+id/guideline"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              app:layout_constraintGuide_percent="0.5"/>
+
+          <Button
+              android:id="@+id/buttonLeft"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:layout_constraintEnd_toStartOf="@id/guideline"
+              android:text="Left of Guideline"/>
+
+          <Button
+              android:id="@+id/buttonRight"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:layout_constraintStart_toEndOf="@id/guideline"
+              android:text="Right of Guideline"/>
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
+      ```
+      // Guideline 将布局分为左右两部分，Button 在不同侧。
+
+references:
+  - title: "ConstraintLayout Developer Guide"
+    url: https://developer.android.com/reference/androidx/constraintlayout/widget/ConstraintLayout
+  - title: "Build a responsive UI with ConstraintLayout"
+    url: https://developer.android.com/training/constraint-layout

@@ -1,0 +1,73 @@
+id: color
+title: UIColorWell
+query: Swift UIColorWell
+comment: 详细介绍 Swift UIColorWell 的用法
+description: |
+  `UIColorWell` 是 iOS 14 引入的一个用于选择颜色的控件。它提供了一个色彩选择器，允许用户通过点击来选择颜色。该控件内置了 `UIColorPickerViewController`，因此用户在点击颜色井时会自动弹出颜色选择器。`UIColorWell` 可显示已选颜色，并允许设置是否支持透明度。你可以使用 `selectedColor` 属性预设颜色或监听颜色变化事件，并通过 `valueChanged` 事件获取用户的选择。
+usage:
+  - title: 创建 UIColorWell 并显示颜色选择器
+    content: |
+      你可以在代码中创建一个 `UIColorWell` 控件，并通过监听 `valueChanged` 事件来响应用户的颜色选择。每当用户选择新颜色后，`UIColorWell` 的 `selectedColor` 属性会更新，可以根据该值调整 UI。
+    example: |
+      ```swift
+      import UIKit
+
+      class ViewController: UIViewController {
+          let colorWell = UIColorWell()
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 设置 UIColorWell 位置和大小
+              colorWell.frame = CGRect(x: 50, y: 50, width: 40, height: 40)
+              colorWell.selectedColor = UIColor.red  // 预设初始颜色
+              colorWell.addTarget(self, action: #selector(colorWellChanged(_:)), for: .valueChanged)
+
+              view.addSubview(colorWell)
+          }
+
+          @objc func colorWellChanged(_ sender: UIColorWell) {
+              // 当颜色变化时，更新背景颜色
+              self.view.backgroundColor = sender.selectedColor
+          }
+      }
+      ```
+
+  - title: 禁用透明度支持
+    content: |
+      `UIColorWell` 默认支持选择带有透明度的颜色。若想只允许用户选择不透明颜色，可以将 `supportsAlpha` 属性设置为 `false`。
+    example: |
+      ```swift
+      let colorWell = UIColorWell()
+      colorWell.supportsAlpha = false  // 禁用透明度选择
+      ```
+
+  - title: 设置初始颜色
+    content: |
+      你可以通过 `selectedColor` 属性为 `UIColorWell` 设置初始颜色，这样用户在打开颜色选择器时会看到预设的颜色。
+    example: |
+      ```swift
+      let colorWell = UIColorWell()
+      colorWell.selectedColor = UIColor.blue  // 设置初始颜色为蓝色
+      ```
+
+  - title: 监听颜色变化
+    content: |
+      使用 `valueChanged` 事件可以监听用户每次选择颜色后的变化。通过 `addTarget(_:action:for:)` 方法将颜色选择变化的事件与处理函数关联。
+    example: |
+      ```swift
+      colorWell.addTarget(self, action: #selector(colorWellChanged(_:)), for: .valueChanged)
+
+      @objc func colorWellChanged(_ sender: UIColorWell) {
+          // 打印用户选择的颜色
+          print("Selected color: \(sender.selectedColor?.description ?? "none")")
+      }
+      ```
+
+references:
+  - title: UIColorWell | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uicolorwell
+  - title: "iOS 14: Quick dive into the new UIColorWell"
+    url: https://nemecek.be/blog/34/ios-14-quick-dive-into-the-new-uicolorwell
+  - title: How to use UIColorWell and UIColorPickerViewController in iOS
+    url: https://ashishkakkad.com/how-to-use-uicolorwell-and-uicolorpickerviewcontroller-in-ios

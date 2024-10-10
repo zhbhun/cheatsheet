@@ -1,0 +1,94 @@
+id: frame
+title: FrameLayout
+query: Kotlin Android FrameLayout attributes usage
+comment: 介绍 FrameLayout 的不同属性及场景使用
+description: |
+  FrameLayout 是 Android 中的一种布局容器，通常用于堆叠子视图。它会将所有子视图放置在布局的同一区域，后添加的子视图覆盖在前面的子视图上。适合用于简单的叠加布局，比如在图片上叠加文本或按钮。尽管 FrameLayout 支持添加多个子视图，但每个子视图的布局位置只能通过 `android:layout_gravity` 控制，因此不适合用于复杂的界面布局。
+
+example:
+  - title: 基础 FrameLayout 示例
+    content: |
+      ```xml
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 底层图片 -->
+          <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:src="@drawable/sample_image" />
+
+          <!-- 覆盖在图片上的文本 -->
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Hello World!"
+              android:textSize="24sp"
+              android:textColor="#FFFFFF"
+              android:layout_gravity="center" />
+      </FrameLayout>
+      ```
+      **说明**: 该示例展示了如何在 FrameLayout 中堆叠视图，`ImageView` 作为底层视图，`TextView` 通过 `layout_gravity="center"` 居中显示在图片上。
+
+  - title: 使用 FrameLayout 实现按钮覆盖效果
+    content: |
+      ```xml
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 底层图片 -->
+          <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:src="@drawable/background_image"
+              android:scaleType="centerCrop" />
+
+          <!-- 覆盖的按钮，位于底部居中 -->
+          <Button
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Click Me"
+              android:layout_gravity="center_horizontal|bottom"
+              android:layout_marginBottom="16dp" />
+      </FrameLayout>
+      ```
+      **说明**: 这个例子展示了如何在 `FrameLayout` 中实现按钮覆盖在图片上的效果，按钮通过 `layout_gravity="center_horizontal|bottom"` 实现底部居中对齐。
+
+  - title: 使用 foreground 属性添加前景
+    content: |
+      ```xml
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:foreground="?android:attr/selectableItemBackground"
+          android:foregroundGravity="center">
+
+          <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:src="@drawable/sample_background" />
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Foreground Example"
+              android:textColor="#FFFFFF"
+              android:layout_gravity="center" />
+      </FrameLayout>
+      ```
+      **说明**: 通过 `android:foreground` 添加前景图层，可以设置前景内容的对齐方式，示例中使用 `foregroundGravity="center"` 实现前景居中对齐。
+
+references:
+  - title: "FrameLayout in Android - Developer Guide"
+    url: https://developer.android.com/guide/topics/ui/layout/frame-layout
+  - title: "Android FrameLayout Tutorial with Examples"
+    url: https://tutorial.eyehunts.com/android/android-framelayout-tutorial-with-example-kotlin/
+  - title: "FrameLayout in Android with Kotlin"
+    url: https://www.devanddep.com/android-framelayout-with-examples
+  - title: "Android Tutorial - FrameLayout"
+    url: https://riptutorial.com/android/example/27626/framelayout

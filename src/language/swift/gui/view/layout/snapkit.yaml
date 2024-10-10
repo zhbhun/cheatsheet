@@ -1,0 +1,143 @@
+id: snapkit
+title: SnapKit
+query: Swift SnapKit
+comment: SnapKit 是 Swift 中常用的 Auto Layout 第三方库，用于简化布局代码，使其更加简洁和可读。
+description: |
+  SnapKit 是一个基于 Swift 的自动布局库，主要用于简化 Auto Layout 的代码编写。相比于直接使用 Auto Layout，SnapKit 提供了一种更加声明式和链式语法的方式定义布局，使得代码更加简洁易懂。它常用于 iOS 开发，帮助开发者通过闭包方式定义视图约束，避免繁琐的 NSLayoutConstraint 语法。SnapKit 可以与 UIKit 以及 SwiftUI 一起使用，适合大部分布局场景。
+
+usage:
+  - title: 安装 SnapKit
+    content: |
+      SnapKit 可以通过 CocoaPods 或 Swift Package Manager 安装。推荐使用 CocoaPods 进行管理。
+    example: |
+      ```bash
+      # CocoaPods 安装
+      pod 'SnapKit'
+
+      # Swift Package Manager 安装
+      dependencies: [
+          .package(url: "https://github.com/SnapKit/SnapKit.git", .upToNextMajor(from: "5.0.0"))
+      ]
+      ```
+
+  - title: 基本布局示例
+    content: |
+      使用 SnapKit 来创建一个简单的视图布局，包括将视图居中，并设置固定宽高。
+    example: |
+      ```swift
+      import SnapKit
+
+      let box = UIView()
+      view.addSubview(box)
+
+      // 使用 SnapKit 定义布局
+      box.snp.makeConstraints { make in
+          make.center.equalToSuperview()  // 将视图居中
+          make.width.height.equalTo(100)  // 设置宽高为 100
+      }
+      ```
+
+  - title: 相对布局
+    content: |
+      SnapKit 支持定义相对于其他视图的约束。以下示例展示了如何将一个视图放置在另一个视图的下面。
+    example: |
+      ```swift
+      let topView = UIView()
+      let bottomView = UIView()
+
+      view.addSubview(topView)
+      view.addSubview(bottomView)
+
+      topView.snp.makeConstraints { make in
+          make.top.equalToSuperview().offset(20)  // 距离父视图顶部 20 点
+          make.left.right.equalToSuperview()      // 左右对齐
+          make.height.equalTo(50)                 // 高度为 50
+      }
+
+      bottomView.snp.makeConstraints { make in
+          make.top.equalTo(topView.snp.bottom).offset(20)  // 距离 topView 底部 20 点
+          make.left.right.equalToSuperview()               // 左右对齐
+          make.height.equalTo(50)                          // 高度为 50
+      }
+      ```
+
+  - title: 更新约束
+    content: |
+      SnapKit 允许动态更新视图的约束。例如，可以在运行时更新视图的大小或位置。
+    example: |
+      ```swift
+      let resizableBox = UIView()
+      view.addSubview(resizableBox)
+
+      resizableBox.snp.makeConstraints { make in
+          make.center.equalToSuperview()
+          make.width.height.equalTo(100)
+      }
+
+      // 更新约束
+      resizableBox.snp.updateConstraints { make in
+          make.width.height.equalTo(150)  // 将宽高更新为 150
+      }
+      ```
+
+  - title: 移除约束
+    content: |
+      如果需要删除某个视图的特定约束，可以使用 `remakeConstraints`，这会移除当前所有约束并重新应用新的约束。
+    example: |
+      ```swift
+      let removableBox = UIView()
+      view.addSubview(removableBox)
+
+      removableBox.snp.makeConstraints { make in
+          make.center.equalToSuperview()
+          make.width.height.equalTo(100)
+      }
+
+      // 移除并重设约束
+      removableBox.snp.remakeConstraints { make in
+          make.top.left.equalToSuperview().offset(20)  // 重新定义顶部和左侧约束
+          make.width.height.equalTo(150)               // 新的宽高
+      }
+      ```
+
+  - title: 复杂布局示例
+    content: |
+      SnapKit 也可以用于创建较为复杂的布局，例如嵌套视图和相对约束。
+    example: |
+      ```swift
+      let containerView = UIView()
+      let childView1 = UIView()
+      let childView2 = UIView()
+
+      containerView.addSubview(childView1)
+      containerView.addSubview(childView2)
+      view.addSubview(containerView)
+
+      containerView.snp.makeConstraints { make in
+          make.edges.equalToSuperview().inset(20)  // 与父视图边缘留出 20 点间距
+      }
+
+      childView1.snp.makeConstraints { make in
+          make.top.left.equalToSuperview()  // 左上角对齐
+          make.width.equalTo(100)
+          make.height.equalTo(50)
+      }
+
+      childView2.snp.makeConstraints { make in
+          make.left.equalTo(childView1.snp.right).offset(10)  // 位于 childView1 右侧，间隔 10 点
+          make.top.equalTo(childView1)                        // 垂直对齐
+          make.width.height.equalTo(childView1)               // 与 childView1 等宽高
+      }
+      ```
+
+references:
+  - title: "SnapKit 官方文档"
+    url: https://snapkit.io/docs/
+  - title: "SnapKit 使用教程 - 快速入门"
+    url: https://www.raywenderlich.com/482-snapkit-tutorial-make-auto-layout-easy
+  - title: "iOS Auto Layout 入门：使用 SnapKit 简化约束"
+    url: https://www.jianshu.com/p/abfcedbbffab
+  - title: "SnapKit GitHub 仓库"
+    url: https://github.com/SnapKit/SnapKit
+  - title: "Swift 中使用 SnapKit 进行 Auto Layout"
+    url: https://www.swiftbysundell.com/articles/snapkit-a-swift-dsl-for-auto-layout/

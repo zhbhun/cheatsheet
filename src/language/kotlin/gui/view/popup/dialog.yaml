@@ -1,0 +1,187 @@
+id: dialog
+title: DialogFragment
+query: Android DialogFragment
+comment: 尽量详尽的演示不同属性和场景用法
+description: "DialogFragment 是 Android 提供的一种用于显示对话框的片段。它允许在 Activity 中展示对话框，并可用于与用户交互，适用于确认、选择或输入信息等场景。DialogFragment 提供了比普通对话框更多的灵活性和生命周期管理。"
+usage:
+  - title: 创建和使用 SimpleDialog
+    content: "通过扩展 DialogFragment 来创建 SimpleDialog，并使用 onCreateView() 方法定义对话框的界面。在 Activity 中创建并展示该对话框。"
+    example: |
+      ```kotlin
+      // SimpleDialog.kt
+      class SimpleDialog : DialogFragment() {
+
+          companion object {
+              const val TAG = "SimpleDialog"
+              private const val KEY_TITLE = "KEY_TITLE"
+              private const val KEY_SUBTITLE = "KEY_SUBTITLE"
+
+              fun newInstance(title: String, subTitle: String): SimpleDialog {
+                  val args = Bundle()
+                  args.putString(KEY_TITLE, title)
+                  args.putString(KEY_SUBTITLE, subTitle)
+                  val fragment = SimpleDialog()
+                  fragment.arguments = args
+                  return fragment
+              }
+          }
+
+          override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+              return inflater.inflate(R.layout.fragment_simple_dialog, container, false)
+          }
+
+          override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+              super.onViewCreated(view, savedInstanceState)
+              setupView(view)
+              setupClickListeners(view)
+          }
+
+          private fun setupView(view: View) {
+              view.findViewById<TextView>(R.id.tvTitle).text = arguments?.getString(KEY_TITLE)
+              view.findViewById<TextView>(R.id.tvSubTitle).text = arguments?.getString(KEY_SUBTITLE)
+          }
+
+          private fun setupClickListeners(view: View) {
+              view.findViewById<Button>(R.id.btnPositive).setOnClickListener { dismiss() }
+              view.findViewById<Button>(R.id.btnNegative).setOnClickListener { dismiss() }
+          }
+      }
+
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              // 创建并显示 SimpleDialog
+              val simpleDialog = SimpleDialog.newInstance("标题", "副标题")
+              simpleDialog.show(supportFragmentManager, SimpleDialog.TAG)
+          }
+      }
+      ```
+
+  - title: 使用 AlertDialog
+    content: "通过重写 onCreateDialog() 方法来使用 Android 提供的 AlertDialog，可以快速创建简单的对话框。"
+    example: |
+      ```kotlin
+      class AlertDialogFragment : DialogFragment() {
+          override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+              return AlertDialog.Builder(requireActivity())
+                  .setTitle("警告")
+                  .setMessage("这是一个警告对话框")
+                  .setPositiveButton("确认") { dialog, _ -> dismiss() }
+                  .setNegativeButton("取消") { dialog, _ -> dismiss() }
+                  .create()
+          }
+      }
+
+      // 在 MainActivity 中使用 AlertDialog
+      fun showAlertDialog() {
+          val alertDialog = AlertDialogFragment()
+          alertDialog.show(supportFragmentManager, "AlertDialog")
+      }
+      ```
+
+  - title: 与 Activity/Fragment 通信
+    content: "使用 setTargetFragment() 方法与调用的 Activity 或 Fragment 进行通信，可以获取用户选择的结果。"
+    example: |
+      ```kotlin
+      class YesNoDialogFragment : DialogFragment() {
+          override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+              return AlertDialog.Builder(requireActivity())
+                  .setTitle("确认")
+                  .setMessage("您是否喜欢这个示例？")
+                  .setPositiveButton("是") { _, _ ->
+                      targetFragment?.onActivityResult(targetRequestCode, Activity.RESULT_OK, null)
+                      dismiss()
+                  }
+                  .setNegativeButton("否") { _, _ ->
+                      targetFragment?.onActivityResult(targetRequestCode, Activity.RESULT_CANCELED, null)
+                      dismiss()
+                  }
+                  .create()
+          }
+      }
+
+      // 在 MainActivity 中使用 YesNoDialogFragment
+      fun showYesNoDialog() {
+          val yesNoDialog = YesNoDialogFragment()
+          yesNoDialog.setTargetFragment(this, 0)
+          yesNoDialog.show(supportFragmentManager, "YesNoDialog")
+      }
+      ```
+
+  - title: 使用 SharedViewModel 共享数据
+    content: "可以通过 ViewModel 共享数据，使 DialogFragment 与 Activity 或 Fragment 进行通信。"
+    example: |
+      ```kotlin
+      // MyViewModel.kt
+      class MyViewModel : ViewModel() {
+          val userInput = MutableLiveData<String>()
+      }
+
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+
+          private lateinit var viewModel: MyViewModel
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              viewModel = ViewModelProvider(this).get(MyViewModel::class.java)
+
+              // 显示输入对话框
+              val inputDialog = InputDialogFragment()
+              inputDialog.show(supportFragmentManager, "InputDialog")
+
+              // 观察 LiveData
+              viewModel.userInput.observe(this) { input ->
+                  findViewById<TextView>(R.id.textView).text = input
+              }
+          }
+
+          // 使用对话框的代码示例
+          fun showAlertDialog() {
+              val alertDialog = AlertDialogFragment()
+              alertDialog.show(supportFragmentManager, "AlertDialog")
+          }
+
+          fun showYesNoDialog() {
+              val yesNoDialog = YesNoDialogFragment()
+              yesNoDialog.setTargetFragment(this, 0)
+              yesNoDialog.show(supportFragmentManager, "YesNoDialog")
+          }
+      }
+
+      // InputDialogFragment.kt
+      class InputDialogFragment : DialogFragment() {
+
+          private lateinit var viewModel: MyViewModel
+
+          override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+              viewModel = ViewModelProvider(requireActivity()).get(MyViewModel::class.java)
+
+              val dialogView = layoutInflater.inflate(R.layout.fragment_input_dialog, null)
+              val editText = dialogView.findViewById<EditText>(R.id.editText)
+
+              return AlertDialog.Builder(requireActivity())
+                  .setTitle("输入")
+                  .setView(dialogView)
+                  .setPositiveButton("确定") { _, _ ->
+                      viewModel.userInput.value = editText.text.toString()
+                  }
+                  .setNegativeButton("取消") { dialog, _ -> dialog.dismiss() }
+                  .create()
+          }
+      }
+      ```
+
+references:
+  - title: "DialogFragment Documentation"
+    url: https://developer.android.com/reference/androidx/fragment/app/DialogFragment
+  - title: "Implementing DialogFragment in Android"
+    url: https://blog.mindorks.com/implementing-dialogfragment-in-android-ecf4d97e8a7d
+  - title: "Android DialogFragment Tutorial"
+    url: https://o7planning.org/11732/android-dialogfragment-tutorial-with-examples

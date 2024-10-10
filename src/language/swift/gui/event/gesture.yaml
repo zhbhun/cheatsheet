@@ -1,0 +1,171 @@
+id: gesture
+title: 手势
+query: Android 手势检测
+comment: 使用 GestureDetector 处理点击和长按手势
+description: "通过 GestureDetector 可以在 Kotlin Android 中统一处理点击和长按手势，增强用户体验。"
+usage:
+  - title: 点击手势
+    content: 使用 GestureDetector 处理点击事件。
+    example: |
+      ```kotlin
+      private lateinit var gestureDetector: GestureDetector
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+
+          gestureDetector = GestureDetector(this, GestureListener())
+          myView.setOnTouchListener { view, event ->
+              gestureDetector.onTouchEvent(event) // 将触摸事件传递给 GestureDetector
+              true
+          }
+      }
+
+      private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+          override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+              Toast.makeText(this@MainActivity, "单击手势", Toast.LENGTH_SHORT).show()
+              return true
+          }
+      }
+      ```
+
+  - title: 长按手势
+    content: 使用 GestureDetector 处理长按事件。
+    example: |
+      ```kotlin
+      private lateinit var gestureDetector: GestureDetector
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+
+          gestureDetector = GestureDetector(this, GestureListener())
+          myView.setOnTouchListener { view, event ->
+              gestureDetector.onTouchEvent(event) // 将触摸事件传递给 GestureDetector
+              true
+          }
+      }
+
+      private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+          override fun onLongPress(e: MotionEvent?) {
+              Toast.makeText(this@MainActivity, "长按手势", Toast.LENGTH_SHORT).show()
+          }
+      }
+      ```
+
+  - title: 滑动手势
+    content: 使用 GestureDetector 处理滑动手势。
+    example: |
+      ```kotlin
+      private lateinit var gestureDetector: GestureDetector
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+
+          gestureDetector = GestureDetector(this, GestureListener())
+          myView.setOnTouchListener { view, event ->
+              gestureDetector.onTouchEvent(event)
+              true
+          }
+      }
+
+      private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+          override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+              // 处理滑动手势逻辑
+              return true
+          }
+      }
+      ```
+
+  - title: 拖动手势
+    content: 处理视图的拖动功能。
+    example: |
+      ```kotlin
+      var dX = 0f
+      var dY = 0f
+
+      myView.setOnTouchListener { view, event ->
+          when (event.action) {
+              MotionEvent.ACTION_DOWN -> {
+                  dX = view.x - event.rawX
+                  dY = view.y - event.rawY
+              }
+              MotionEvent.ACTION_MOVE -> {
+                  view.animate()
+                      .x(event.rawX + dX)
+                      .y(event.rawY + dY)
+                      .setDuration(0)
+                      .start()
+              }
+          }
+          true
+      }
+      ```
+
+  - title: 捏合手势
+    content: 处理捏合手势以缩放视图。
+    example: |
+      ```kotlin
+      private lateinit var scaleDetector: ScaleGestureDetector
+      private var scaleFactor = 1f
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+
+          scaleDetector = ScaleGestureDetector(this, ScaleListener())
+          myView.setOnTouchListener { view, event ->
+              scaleDetector.onTouchEvent(event)
+              view.scaleX = scaleFactor
+              view.scaleY = scaleFactor
+              true
+          }
+      }
+
+      private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+          override fun onScale(detector: ScaleGestureDetector?): Boolean {
+              scaleFactor *= detector?.scaleFactor ?: 1f
+              return true
+          }
+      }
+      ```
+
+  - title: 旋转手势
+    content: 处理旋转手势以旋转视图。
+    example: |
+      ```kotlin
+      private lateinit var rotateDetector: RotateGestureDetector
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+          setContentView(R.layout.activity_main)
+
+          rotateDetector = RotateGestureDetector(this, RotateListener())
+          myView.setOnTouchListener { view, event ->
+              rotateDetector.onTouchEvent(event)
+              true
+          }
+      }
+
+      private inner class RotateGestureDetector(context: Context, private val listener: RotateListener) {
+          fun onTouchEvent(event: MotionEvent): Boolean {
+              // 处理多点触控旋转手势的逻辑
+              return true
+          }
+      }
+
+      private inner class RotateListener {
+          fun onRotate(angle: Float) {
+              // 处理旋转逻辑
+              myView.rotation = angle
+              Toast.makeText(this@MainActivity, "旋转角度: $angle", Toast.LENGTH_SHORT).show()
+          }
+      }
+      ```
+
+references:
+  - title: "Gesture Detection in Android"
+    url: https://developer.android.com/training/gestures
+  - title: "Handling Multi-touch Events"
+    url: https://developer.android.com/training/gestures/multi-touch

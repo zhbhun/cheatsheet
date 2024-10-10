@@ -1,0 +1,58 @@
+id: menu
+title: PopupMenu
+query: Android PopupMenu
+comment: 尽量详尽的演示不同属性和场景用法
+description: "Android 的 PopupMenu 是一种弹出式菜单，通常用于显示与特定视图相关的操作。它可以在用户点击某个视图时显示，提供一系列可选择的菜单项。PopupMenu 不支持图标或快捷键，适用于提供上下文相关的操作。"
+usage:
+  - title: 创建和显示 PopupMenu
+    content: 使用 `PopupMenu` 类和 `MenuInflater` 来显示定义的菜单，并处理菜单项的点击事件。在 `res/menu/` 目录下定义菜单项的 XML 文件。
+    example: |
+      ```kotlin
+      // 在 Activity 中创建并显示 PopupMenu
+      fun showPopup(view: View) {
+          val popup = PopupMenu(this, view) // 创建 PopupMenu，指定锚点视图
+          popup.menuInflater.inflate(R.menu.menu_example, popup.menu) // 加载菜单资源
+
+          // 设置菜单项点击监听器
+          popup.setOnMenuItemClickListener { item ->
+              when (item.itemId) {
+                  R.id.mail -> { /* 处理邮件操作 */ true }
+                  R.id.upload -> { /* 处理上传操作 */ true }
+                  R.id.share -> { /* 处理分享操作 */ true }
+                  else -> false
+              }
+          }
+
+          popup.show() // 显示 PopupMenu
+      }
+      ```
+      ```xml
+      <!-- res/menu/menu_example.xml -->
+      <?xml version="1.0" encoding="utf-8"?>
+      <menu xmlns:android="http://schemas.android.com/apk/res/android">
+          <item android:id="@+id/mail" android:title="邮件" />
+          <item android:id="@+id/upload" android:title="上传" />
+          <item android:id="@+id/share" android:title="分享" />
+      </menu>
+      ```
+  - title: 动态创建菜单项
+    content: 可以在代码中动态添加菜单项。
+    example: |
+      ```kotlin
+      val popup = PopupMenu(this, view)
+      popup.menu.add(Menu.NONE, Menu.FIRST, 0, "动态菜单项") // 动态添加菜单项
+      popup.setOnMenuItemClickListener { item ->
+          // 处理动态菜单项的点击事件
+          true
+      }
+      popup.show()
+      ```
+references:
+  - title: "Android Popup Menu with Examples"
+    url: https://www.tutlane.com/tutorial/android/android-popup-menu-with-examples
+  - title: "Popup Menus in Android"
+    url: https://developer.android.com/reference/android/widget/PopupMenu
+  - title: "Add menus | Android Developers"
+    url: https://developer.android.com/guide/topics/ui/controls/popup-menu
+  - title: "Creating Menus in Android"
+    url: https://developer.android.com/guide/topics/ui/menus

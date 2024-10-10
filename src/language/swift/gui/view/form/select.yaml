@@ -1,0 +1,115 @@
+id: select
+title: UIPickerView
+query: Swift UIPickerView
+comment: 详细介绍 Swift UIPickerView 的用法
+description: |
+  `UIPickerView` 是 iOS 中常用的视图组件，允许用户从多个选项中进行选择。它通常以滚轮的形式显示，并支持多列和多行的选项。使用 `UIPickerView` 需要实现 `UIPickerViewDataSource` 和 `UIPickerViewDelegate` 协议，这样可以提供选项数据并响应用户的选择。它在 iOS 的应用中非常广泛，例如日期选择器、语言选择器等。
+usage:
+  - title: 创建和添加 UIPickerView
+    content: |
+      UIPickerView 可以通过代码或 Storyboard 来创建，并通过约束或 Frame 来定位在界面上。
+    example: |
+      ```swift
+      let picker = UIPickerView()
+      picker.translatesAutoresizingMaskIntoConstraints = false
+      view.addSubview(picker)
+
+      // 添加约束
+      picker.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+      picker.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+      picker.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+      ```
+
+  - title: 配置 UIPickerView 的数据源和代理
+    content: |
+      UIPickerView 依赖于数据源和代理来提供选项数据和响应用户操作。你需要实现 `UIPickerViewDataSource` 和 `UIPickerViewDelegate` 协议。
+    example: |
+      ```swift
+      class ViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+
+          let data = ["Option 1", "Option 2", "Option 3"]
+          @IBOutlet weak var picker: UIPickerView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              picker.delegate = self
+              picker.dataSource = self
+          }
+
+          func numberOfComponents(in pickerView: UIPickerView) -> Int {
+              return 1  // 单列
+          }
+
+          func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+              return data.count  // 行数
+          }
+
+          func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+              return data[row]  // 显示的文本
+          }
+      }
+      ```
+
+  - title: 获取用户的选择
+    content: |
+      使用 `UIPickerViewDelegate` 方法来捕获用户选择的行和列。
+    example: |
+      ```swift
+      func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+          print("用户选择了: \(data[row])")
+      }
+      ```
+
+  - title: 自定义 UIPickerView 的显示内容
+    content: |
+      除了文本，你还可以自定义 UIPickerView 的行内容，例如显示图片或复杂的视图。
+    example: |
+      ```swift
+      func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+          let label = UILabel()
+          label.text = data[row]
+          label.textAlignment = .center
+          return label
+      }
+      ```
+
+  - title: 使用多列 UIPickerView
+    content: |
+      UIPickerView 支持多列，每列的数据可以不同。通过实现 `numberOfComponents(in:)` 和 `pickerView(_:numberOfRowsInComponent:)` 方法来管理每列的数据。
+    example: |
+      ```swift
+      func numberOfComponents(in pickerView: UIPickerView) -> Int {
+          return 2  // 两列
+      }
+
+      func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+          if component == 0 {
+              return 10  // 第一列 10 行
+          } else {
+              return 5   // 第二列 5 行
+          }
+      }
+      ```
+
+  - title: 结合 UIDatePicker 使用 UIPickerView
+    content: |
+      UIPickerView 常与 UIDatePicker 结合使用，用于日期和时间选择。UIDatePicker 提供更为简单的方式来选择日期。
+    example: |
+      ```swift
+      let datePicker = UIDatePicker()
+      datePicker.datePickerMode = .dateAndTime
+      datePicker.addTarget(self, action: #selector(onDateChanged), for: .valueChanged)
+
+      @objc func onDateChanged(_ datePicker: UIDatePicker) {
+          let selectedDate = datePicker.date
+          print("选择的日期是 \(selectedDate)")
+      }
+      ```
+references:
+  - title: UIPickerView Example and Tutorial
+    url: https://codewithchris.com/uipickerview-example/
+  - title: How to use UIPickerView in Swift
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-use-uipickerview
+  - title: iOS UI PickerView
+    url: https://www.tutlane.com/tutorial/ios/ios-ui-pickerview
+  - title: UIPi

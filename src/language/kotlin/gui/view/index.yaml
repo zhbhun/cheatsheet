@@ -1,0 +1,10 @@
+id: view
+title: 视图
+children:
+  - base
+  - layout
+  - display
+  - scroll
+  - form
+  - feedback
+  - popup

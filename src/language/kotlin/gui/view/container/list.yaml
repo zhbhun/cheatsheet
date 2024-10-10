@@ -1,0 +1,557 @@
+id: list
+title: RecyclerView
+query: Android RecyclerView
+comment: 演示 RecyclerView 在 Android 中的不同使用场景，包括列表、网格布局、多视图类型，以及滑动删除功能，所有示例代码都包含 layout 文件
+description: |
+  RecyclerView 是 Android 中用于高效展示大数据集的组件。通过自定义 Adapter 和 ViewHolder，可以实现灵活的列表、网格和不同布局类型的展示方式。RecyclerView 提供了更好的性能和视图复用功能，适用于大规模数据展示，常用组件包括 LayoutManager、Adapter 和 ViewHolder。支持自定义布局、滑动删除、拖拽排序等功能。
+example:
+  - title: 基本的 RecyclerView 列表
+    content: |
+      ```xml
+      <!-- activity_main.xml -->
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent" />
+      ```
+
+      ```xml
+      <!-- item_layout.xml -->
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp">
+          <TextView
+              android:id="@+id/itemTextView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textSize="18sp"/>
+      </LinearLayout>
+      ```
+
+      ```kotlin
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = LinearLayoutManager(this)
+
+              val data = listOf("Item 1", "Item 2", "Item 3")
+              recyclerView.adapter = MyAdapter(data)
+          }
+      }
+
+      class MyAdapter(private val dataList: List<String>) :
+          RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+
+          class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+              val textView: TextView = view.findViewById(R.id.itemTextView)
+          }
+
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+              val view = LayoutInflater.from(parent.context)
+                  .inflate(R.layout.item_layout, parent, false)
+              return ViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+              holder.textView.text = dataList[position]
+          }
+
+          override fun getItemCount() = dataList.size
+      }
+      ```
+
+  - title: RecyclerView 的网格布局
+    content: |
+      ```xml
+      <!-- activity_main.xml -->
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent" />
+      ```
+
+      ```xml
+      <!-- grid_item_layout.xml -->
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp">
+          <TextView
+              android:id="@+id/itemTextView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textSize="18sp"/>
+      </LinearLayout>
+      ```
+
+      ```kotlin
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = GridLayoutManager(this, 2)  // 设置为两列网格
+
+              val data = listOf("Item 1", "Item 2", "Item 3", "Item 4")
+              recyclerView.adapter = MyAdapter(data)
+          }
+      }
+
+      class MyAdapter(private val dataList: List<String>) :
+          RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+
+          class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+              val textView: TextView = view.findViewById(R.id.itemTextView)
+          }
+
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+              val view = LayoutInflater.from(parent.context)
+                  .inflate(R.layout.grid_item_layout, parent, false)
+              return ViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+              holder.textView.text = dataList[position]
+          }
+
+          override fun getItemCount() = dataList.size
+      }
+      ```
+  - title: "使用 GridSpacingItemDecoration 设置网格间距"
+    content: |
+      ```kotlin
+      import android.graphics.Rect
+      import android.os.Bundle
+      import android.view.View
+      import androidx.appcompat.app.AppCompatActivity
+      import androidx.recyclerview.widget.GridLayoutManager
+      import androidx.recyclerview.widget.RecyclerView
+
+      // 自定义类，添加项目之间的间距
+      class GridSpacingItemDecoration(
+          private val spanCount: Int, // 列数
+          private val spacing: Int,   // 间距大小
+          private val includeEdge: Boolean // 是否包含边距
+      ) : RecyclerView.ItemDecoration() {
+
+          override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+              val position = parent.getChildAdapterPosition(view) // 获取当前项目的位置
+              val column = position % spanCount // 计算当前项目的列索引
+
+              if (includeEdge) {
+                  outRect.left = spacing - column * spacing / spanCount
+                  outRect.right = (column + 1) * spacing / spanCount
+
+                  if (position < spanCount) {
+                      outRect.top = spacing // 为第一行设置顶部边距
+                  }
+                  outRect.bottom = spacing // 设置底部边距
+              } else {
+                  outRect.left = column * spacing / spanCount
+                  outRect.right = spacing - (column + 1) * spacing / spanCount
+
+                  if (position >= spanCount) {
+                      outRect.top = spacing // 设置顶部边距（除第一行外）
+                  }
+              }
+          }
+      }
+
+      class MainActivity : AppCompatActivity() {
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              // 获取 RecyclerView 引用
+              val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
+
+              // 设置网格布局管理器，2 列
+              val gridLayoutManager = GridLayoutManager(this, 2)
+              recyclerView.layoutManager = gridLayoutManager
+
+              // 设置项目间距
+              val spacingInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing)
+              val itemDecoration = GridSpacingItemDecoration(2, spacingInPixels, true)
+              recyclerView.addItemDecoration(itemDecoration)
+          }
+      }
+      ```
+  - title: "为 RecyclerView 网格项添加分割线"
+    content: |
+      ```kotlin
+      import android.os.Bundle
+      import androidx.appcompat.app.AppCompatActivity
+      import androidx.recyclerview.widget.DividerItemDecoration
+      import androidx.recyclerview.widget.GridLayoutManager
+      import androidx.recyclerview.widget.RecyclerView
+
+      class MainActivity : AppCompatActivity() {
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              // 获取 RecyclerView
+              val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
+
+              // 设置 GridLayoutManager
+              val gridLayoutManager = GridLayoutManager(this, 2)
+              recyclerView.layoutManager = gridLayoutManager
+
+              // 添加分割线
+              val dividerItemDecoration = DividerItemDecoration(this, gridLayoutManager.orientation)
+              recyclerView.addItemDecoration(dividerItemDecoration)
+          }
+      }
+      ```
+  - title: 多视图类型的 RecyclerView
+    content: |
+      ```xml
+      <!-- activity_main.xml -->
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent" />
+      ```
+
+      ```xml
+      <!-- item_type_1.xml -->
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="#FFDDDD">
+          <TextView
+              android:id="@+id/textView1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Type 1"
+              android:textSize="18sp"/>
+      </LinearLayout>
+      ```
+
+      ```xml
+      <!-- item_type_2.xml -->
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="#DDFFDD">
+          <TextView
+              android:id="@+id/textView2"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="Type 2"
+              android:textSize="18sp"/>
+      </LinearLayout>
+      ```
+
+      ```kotlin
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = LinearLayoutManager(this)
+
+              val data = listOf("Item 1", "Item 2", "Item 3")
+              recyclerView.adapter = MyAdapter(data)
+          }
+      }
+
+      class MyAdapter(private val dataList: List<String>) :
+          RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+          override fun getItemViewType(position: Int): Int {
+              return if (position % 2 == 0) R.layout.item_type_1 else R.layout.item_type_2
+          }
+
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+              val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
+              return object : RecyclerView.ViewHolder(view) {}
+          }
+
+          override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+              // 不同类型的布局可以在此设置
+          }
+
+          override fun getItemCount() = dataList.size
+      }
+      ```
+  - title: "RecyclerView 增、删、改示例"
+    content: |
+      ```kotlin
+      class MainActivity : AppCompatActivity() {
+          private lateinit var adapter: MyRecyclerViewAdapter
+          private val data = arrayListOf("Item 1", "Item 2", "Item 3")
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = LinearLayoutManager(this)
+
+              adapter = MyRecyclerViewAdapter(data)
+              recyclerView.adapter = adapter
+          }
+
+          // 插入新项
+          fun addItem() {
+              val newItem = "New Item"
+              val position = 2
+              data.add(position, newItem) // 修改数据集
+              adapter.notifyItemInserted(position) // 通知适配器插入新项
+          }
+
+          // 更新项
+          fun updateItem() {
+              val updatedItem = "Updated Item"
+              val position = 1
+              data[position] = updatedItem // 更新数据
+              adapter.notifyItemChanged(position) // 通知适配器某项已更新
+          }
+
+          // 移除项
+          fun removeItem() {
+              val position = 0
+              data.removeAt(position) // 从数据集中移除项
+              adapter.notifyItemRemoved(position) // 通知适配器移除项
+          }
+      }
+
+      class MyRecyclerViewAdapter(private val data: List<String>) : RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder>() {
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+              val view = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_1, parent, false)
+              return ViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+              holder.textView.text = data[position]
+          }
+
+          override fun getItemCount() = data.size
+
+          class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+              val textView: TextView = itemView.findViewById(android.R.id.text1)
+          }
+      }
+      ```
+  - title: 使用 DiffUtil 更新 RecyclerView
+    content: |
+      ```kotlin
+      class MyDiffCallback(
+          private val oldList: List<String>,
+          private val newList: List<String>
+      ) : DiffUtil.Callback() {
+          override fun getOldListSize() = oldList.size
+          override fun getNewListSize() = newList.size
+
+          // 判断两个项是否是同一个
+          override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+              return oldList[oldItemPosition] == newList[newItemPosition]
+          }
+
+          // 判断两个项的内容是否相同
+          override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+              return oldList[oldItemPosition] == newList[newItemPosition]
+          }
+      }
+
+      class MainActivity : AppCompatActivity() {
+          private lateinit var adapter: MyRecyclerViewAdapter
+          private val data = arrayListOf("Item 1", "Item 2", "Item 3")
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = LinearLayoutManager(this)
+
+              adapter = MyRecyclerViewAdapter(data)
+              recyclerView.adapter = adapter
+          }
+
+          // 更新列表项使用 DiffUtil
+          fun updateList(newData: List<String>) {
+              val diffCallback = MyDiffCallback(data, newData)
+              val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+              data.clear()
+              data.addAll(newData)
+              diffResult.dispatchUpdatesTo(adapter) // 通知适配器更新
+          }
+      }
+
+      class MyRecyclerViewAdapter(private val data: List<String>) : RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder>() {
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+              val view = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_1, parent, false)
+              return ViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+              holder.textView.text = data[position]
+          }
+
+          override fun getItemCount() = data.size
+
+          class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+              val textView: TextView = itemView.findViewById(android.R.id.text1)
+          }
+      }
+      ```
+  - title: 实现滑动删除功能的 RecyclerView
+    content: |
+      ```xml
+      <!-- activity_main.xml -->
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/recyclerView"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent" />
+      ```
+
+      ```xml
+      <!-- item_layout.xml -->
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:padding="8dp">
+          <TextView
+              android:id="@+id/itemTextView"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textSize="18sp"/>
+      </LinearLayout>
+      ```
+
+      ```kotlin
+      // MainActivity.kt
+      class MainActivity : AppCompatActivity() {
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              setContentView(R.layout.activity_main)
+
+              val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+              recyclerView.layoutManager = LinearLayoutManager(this)
+
+              val data = mutableListOf("Item 1", "Item 2", "Item 3")
+              val adapter = MyAdapter(data)
+              recyclerView.adapter = adapter
+
+              val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+                  override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                      return false
+                  }
+
+                  override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                      data.removeAt(viewHolder.adapterPosition)
+                      adapter.notifyItemRemoved(viewHolder.adapterPosition)
+                  }
+              })
+              itemTouchHelper.attachToRecyclerView(recyclerView)
+          }
+      }
+
+      class MyAdapter(private val dataList: MutableList<String>) :
+          RecyclerView.Adapter<MyAdapter.ViewHolder>() {
+
+          class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+              val textView: TextView = view.findViewById(R.id.itemTextView)
+          }
+
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+              val view = LayoutInflater.from(parent.context)
+                  .inflate(R.layout.item_layout, parent, false)
+              return ViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+              holder.textView.text = dataList[position]
+          }
+
+          override fun getItemCount() = dataList.size
+      }
+  - title: RecyclerView 使用 StaggeredGridLayoutManager 示例
+    content: |
+      ```kotlin
+      class MainActivity : AppCompatActivity() {
+          private lateinit var binding: ActivityMainBinding
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              binding = ActivityMainBinding.inflate(layoutInflater)
+              setContentView(binding.root)
+
+              // 创建数据源
+              val flowerList = createFlowerList()
+
+              // 创建适配器
+              val flowerAdapter = FlowerAdapter(flowerList) { flower, _ ->
+                  Toast.makeText(this, "点击: ${flower.name}", Toast.LENGTH_SHORT).show()
+              }
+
+              // 设置 StaggeredGridLayoutManager，指定为2列垂直排列
+              binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+
+              // 绑定适配器
+              binding.recyclerView.adapter = flowerAdapter
+          }
+
+          private fun createFlowerList(): List<Flower> {
+              return listOf(
+                  Flower("Rose", R.drawable.rose),
+                  Flower("Tulip", R.drawable.tulip),
+                  Flower("Sunflower", R.drawable.sunflower),
+                  Flower("Lily", R.drawable.lily)
+              )
+          }
+      }
+
+      data class Flower(val name: String, val image: Int)
+
+      class FlowerAdapter(
+          private val flowers: List<Flower>,
+          private val onClick: (Flower, Int) -> Unit
+      ) : RecyclerView.Adapter<FlowerAdapter.FlowerViewHolder>() {
+
+          class FlowerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+              val flowerImage: ImageView = view.findViewById(R.id.flowerImage)
+              val flowerName: TextView = view.findViewById(R.id.flowerName)
+          }
+
+          override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FlowerViewHolder {
+              val view = LayoutInflater.from(parent.context).inflate(R.layout.flower_item, parent, false)
+              return FlowerViewHolder(view)
+          }
+
+          override fun onBindViewHolder(holder: FlowerViewHolder, position: Int) {
+              val flower = flowers[position]
+              holder.flowerName.text = flower.name
+              holder.flowerImage.setImageResource(flower.image)
+              holder.itemView.setOnClickListener { onClick(flower, position) }
+          }
+
+          override fun getItemCount(): Int = flowers.size
+      }
+      ```
+
+references:
+  - title: "Create dynamic lists with RecyclerView"
+    url: https://developer.android.com/guide/topics/ui/layout/recyclerview
+  - title: "RecyclerView Tutorial With Example In Android Studio"
+    url: https://www.abhiandroid.com/ui/recyclerview
+  - title: "RecyclerView Fundamentals"
+    url: https://www.willowtreeapps.com/ideas/android-fundamentals-recyclerview-adapter-and-viewholder-pattern
+  - title: "Android RecyclerView Tutorial in Kotlin"
+    url: https://www.tutorialkart.com/kotlin-android/android-recyclerview-tutorial-kotlin
+  - title: "Using RecyclerView | CodePath Android Cliffnotes"
+    url: https://guides.codepath.com/android/using-the-recyclerview

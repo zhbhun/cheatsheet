@@ -1,0 +1,122 @@
+id: view
+title: UIView
+query: Swift 纯 UIView 的用法
+comment: 针对纯 UIView 提供的属性和方法演示相关用法。
+description: |
+  `UIView` 是 iOS 开发中最基本的 UI 组件，负责在屏幕上显示内容、管理子视图、响应用户交互等。你可以通过 `UIView` 实现绘图、动画、布局以及事件处理。它的常用功能包括设置背景色、圆角、边框、添加子视图、处理手势识别等。可以通过代码或 Interface Builder 来创建和配置 `UIView`。
+
+usage:
+  - title: 创建 UIView
+    content: 可以使用 `UIView(frame:)` 方法通过代码创建 `UIView`，并指定其位置和尺寸。
+    example: |
+      ```swift
+      let myView = UIView(frame: CGRect(x: 10, y: 50, width: 200, height: 100))
+      myView.backgroundColor = UIColor.blue // 设置背景色为蓝色
+      self.view.addSubview(myView) // 添加到父视图中
+      ```
+
+  - title: 自定义外观
+    content: 通过修改 `UIView` 的 `backgroundColor`、`layer.cornerRadius`、`layer.borderWidth` 和 `layer.borderColor` 等属性来自定义视图的外观。
+    example: |
+      ```swift
+      myView.layer.cornerRadius = 10 // 设置圆角
+      myView.layer.borderWidth = 2 // 设置边框宽度
+      myView.layer.borderColor = UIColor.red.cgColor // 设置边框颜色为红色
+      ```
+
+  - title: 透明度设置
+    content: 使用 `alpha` 属性可以控制 `UIView` 的透明度，取值范围为 0.0（完全透明）到 1.0（完全不透明）。
+    example: |
+      ```swift
+      myView.alpha = 0.5 // 设置透明度为 50%
+      ```
+
+  - title: 添加阴影
+    content: 通过 `layer` 的 `shadow` 属性为 `UIView` 添加阴影效果，包括阴影颜色、透明度、偏移量和模糊半径。
+    example: |
+      ```swift
+      myView.layer.shadowColor = UIColor.black.cgColor // 设置阴影颜色
+      myView.layer.shadowOpacity = 0.5 // 设置阴影透明度
+      myView.layer.shadowOffset = CGSize(width: 5, height: 5) // 设置阴影偏移量
+      myView.layer.shadowRadius = 10 // 设置阴影模糊半径
+      ```
+
+  - title: 视图的变换 (缩放、移动、旋转)
+    content: 使用 `CGAffineTransform` 对 `UIView` 进行缩放、平移、旋转等变换操作。
+    example: |
+      ```swift
+      myView.transform = CGAffineTransform(scaleX: 1.5, y: 1.5) // 缩放 1.5 倍
+      myView.transform = CGAffineTransform(rotationAngle: .pi / 4) // 旋转 45 度
+      myView.transform = CGAffineTransform(translationX: 50, y: 0) // 向右移动 50
+      ```
+
+  - title: 动画效果
+    content: "`UIView` 提供了丰富的动画接口，可以对其 `alpha`、`frame`、`backgroundColor` 等属性进行动画处理。"
+    example: |
+      ```swift
+      UIView.animate(withDuration: 0.5) {
+          myView.alpha = 0 // 渐隐
+          myView.frame = CGRect(x: 50, y: 100, width: 250, height: 100) // 动态调整大小和位置
+      }
+      ```
+
+  - title: 子视图管理
+    content: "`UIView` 提供多个方法来管理子视图，包括添加 (`addSubview`)、移除 (`removeFromSuperview`) 和调整层次 (`bringSubviewToFront`, `sendSubviewToBack`)。"
+    example: |
+      ```swift
+      let subview = UIView(frame: CGRect(x: 60, y: 40, width: 100, height: 50))
+      subview.backgroundColor = UIColor.blue
+      myView.addSubview(subview) // 添加子视图
+      myView.bringSubviewToFront(subview) // 将子视图置于最前
+      ```
+
+  - title: 手势识别
+    content: "`UIView` 支持手势识别，通过 `UIGestureRecognizer` 可以检测诸如点击、滑动、缩放等手势。"
+    example: |
+      ```swift
+      let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+      myView.addGestureRecognizer(tapGesture)
+
+      @objc func handleTap() {
+          print("View tapped!") // 处理点击事件
+      }
+      ```
+
+  - title: 触摸区域控制
+    content: 通过重写 `point(inside:with:)` 方法自定义 `UIView` 的可触摸区域，扩大或缩小默认的触摸响应区域。
+    example: |
+      ```swift
+      override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+          let margin: CGFloat = 20
+          let area = bounds.insetBy(dx: -margin, dy: -margin)
+          return area.contains(point)
+      }
+      ```
+
+  - title: 拖动手势
+    content: 通过 `UIPanGestureRecognizer` 实现拖动手势，允许用户在屏幕上拖动视图。
+    example: |
+      ```swift
+      let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+      myView.addGestureRecognizer(panGesture)
+
+      @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+          let translation = gesture.translation(in: self.view)
+          if let view = gesture.view {
+              view.center = CGPoint(x: view.center.x + translation.x, y: view.center.y + translation.y)
+          }
+          gesture.setTranslation(CGPoint.zero, in: self.view)
+      }
+      ```
+
+references:
+  - title: "UIView Fundamentals Masterclass"
+    url: https://www.swiftanytime.com
+  - title: "Create UIView in Swift Programmatically"
+    url: https://www.appsdeveloperblog.com
+  - title: "UIView | Apple Developer Documentation"
+    url: https://developer.apple.com/documentation/uikit/uiview
+  - title: "How to scale, stretch, move, and rotate UIViews using CGAffineTransform"
+    url: https://www.hackingwithswift.com
+  - title: "Managing Subviews in iOS"
+    url: https://developer.apple.com

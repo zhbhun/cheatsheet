@@ -1,0 +1,150 @@
+id: image
+title: ImageView
+query: ImageView 用法
+comment: 尽量详尽的演示不同属性和场景用法
+description: "ImageView 是 Android 中用于显示图像的核心组件。它支持多种属性和方法，以便在应用中灵活展示图像，包括图像加载、调整大小、点击事件等。常用属性包括 `src`、`scaleType` 和 `adjustViewBounds`，适用于多种场景，如用户界面、图像展示和动态内容更新。"
+example:
+  - title: "设置 Drawable 资源"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:src="@drawable/image_name" /> <!-- 设置本地 drawable 资源 -->
+      ```
+
+      ```kotlin
+      val logoImg: ImageView = findViewById(R.id.imageView)
+      logoImg.setImageResource(R.drawable.your_image) // 动态设置图像
+      ```
+
+  - title: "设置网络图片 (URI)"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:src="http://example.com/image.jpg" />
+      ```
+
+      ```kotlin
+      val imageView: ImageView = findViewById(R.id.imageView)
+      val imageUri = Uri.parse("http://example.com/image.jpg")
+      imageView.setImageURI(imageUri) // 设置网络图片
+      ```
+
+  - title: "使用 Bitmap 设置图像"
+    content: |
+      ```kotlin
+      val bitmap = BitmapFactory.decodeResource(resources, R.drawable.image_name)
+      imageView.setImageBitmap(bitmap) // 使用 Bitmap 设置图像
+      ```
+
+  - title: "scaleType = fitXY 示例"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="300dp"
+          android:layout_height="200dp"
+          android:src="@drawable/image_name"
+          android:scaleType="fitXY" />
+      <!-- 图像将完全拉伸以适应 ImageView 的宽高，不保持宽高比。 -->
+      ```
+
+  - title: "scaleType = center 示例"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="300dp"
+          android:layout_height="200dp"
+          android:src="@drawable/image_name"
+          android:scaleType="center" />
+      <!-- 图像居中显示，大小保持原始大小和比例，但如果图像超出 ImageView 的边界，将被裁剪。 -->
+      ```
+
+  - title: "scaleType = centerCrop 示例"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="300dp"
+          android:layout_height="200dp"
+          android:src="@drawable/image_name"
+          android:scaleType="centerCrop" />
+      <!-- 图像将以保持宽高比的方式裁剪，以填满整个 ImageView。 -->
+      ```
+
+  - title: "scaleType = fitCenter 示例"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="300dp"
+          android:layout_height="200dp"
+          android:src="@drawable/image_name"
+          android:scaleType="fitCenter" />
+      <!-- 图像按比例缩放以适应 ImageView，并居中显示，不会超出视图的边界。 -->
+      ```
+
+  - title: "使用 adjustViewBounds"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:src="@drawable/image_name"
+          android:adjustViewBounds="true" />
+       <!-- adjustViewBounds：根据图像的宽高比调整 ImageView 的大小 -->
+      ```
+
+  - title: "使用 cropToPadding"
+    content: |
+      ```xml
+      <ImageView
+          android:id="@+id/imageView"
+          android:layout_width="300dp"
+          android:layout_height="200dp"
+          android:src="@drawable/image_name"
+          android:padding="16dp"
+          android:cropToPadding="true" />
+      <!-- cropToPadding：图像会被裁剪到内边距内 -->
+      ```
+
+  - title: "点击事件处理"
+    content: |
+      ```kotlin
+      imageView.setOnClickListener {
+          Toast.makeText(this, "图像被点击", Toast.LENGTH_SHORT).show()
+      }
+      ```
+
+  - title: "处理多种屏幕密度"
+    content: |
+      ```xml
+      <!-- 资源目录示例 -->
+      res/
+        drawable-mdpi/
+          your_image.png
+        drawable-hdpi/
+          your_image.png
+        drawable-xhdpi/
+          your_image.png
+      ```
+references:
+  - title: "Working with the ImageView"
+    url: https://guides.codepath.com/android/Working-with-the-ImageView
+  - title: "Android ImageView Using Kotlin"
+    url: https://notesjam.com/android-imageview-using-kotlin
+  - title: "ImageView Attributes in Android"
+    url: https://rrtutors.com/tutorials/android-imageview
+  - title: "Android ImageView ScaleType"
+    url: https://developer.android.com/reference/android/widget/ImageView.ScaleType
+  - title: "Android Density Buckets"
+    url: https://developer.android.com/training/multiscreen/screensizes
+  - title: "Loading Images Efficiently"
+    url: https://developer.android.com/topic/performance/graphics/load-bitmap

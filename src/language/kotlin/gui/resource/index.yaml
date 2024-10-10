@@ -1,0 +1,12 @@
+id: resource
+title: 资源
+children:
+  - layout
+  - values
+  - drawable
+  - animation
+  - menu
+  - raw
+  - font
+  - mipmap
+  - xml

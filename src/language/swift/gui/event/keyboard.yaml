@@ -1,0 +1,88 @@
+id: keyboard
+title: 键盘事件
+query: Android 键盘事件
+comment: 尽量详尽的演示不同属性和场景用法
+description: "在 Android 中，键盘事件通过 `KeyEvent` 类进行处理，主要用于监听用户的按键输入。可以在活动或视图类中重写 `onKeyDown` 和 `onKeyUp` 方法以捕获特定的按键事件。"
+usage:
+  - title: 处理按键事件
+    content: 使用 `onKeyDown` 和 `onKeyUp` 方法来处理按键事件。可以通过 `KeyEvent` 类中的常量识别特定按键。
+    example: |
+      ```kotlin
+      // 在 Activity 中重写 onKeyDown 方法
+      override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+          if (keyCode == KeyEvent.KEYCODE_ENTER) {
+              // 处理回车键按下事件
+              Toast.makeText(this, "Enter pressed", Toast.LENGTH_SHORT).show()
+              return true // 返回 true 表示事件已处理
+          }
+          return super.onKeyDown(keyCode, event)
+      }
+      ```
+
+  - title: 处理特定按键
+    content: 在 `onKeyDown` 中处理特定按键，例如返回键和音量键。
+    example: |
+      ```kotlin
+      override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+          return when (keyCode) {
+              KeyEvent.KEYCODE_BACK -> {
+                  // 处理返回键
+                  Toast.makeText(this, "Back pressed", Toast.LENGTH_SHORT).show()
+                  true
+              }
+              KeyEvent.KEYCODE_VOLUME_UP -> {
+                  // 处理音量加键
+                  Toast.makeText(this, "Volume Up pressed", Toast.LENGTH_SHORT).show()
+                  true
+              }
+              else -> super.onKeyDown(keyCode, event)
+          }
+      }
+      ```
+
+  - title: 关闭软键盘
+    content: 使用 `InputMethodManager` 来隐藏软键盘。
+    example: |
+      ```kotlin
+      fun hideKeyboard(activity: Activity) {
+          val inputMethodManager = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+          inputMethodManager.hideSoftInputFromWindow(activity.currentFocus?.windowToken, 0)
+      }
+
+      // 在需要时调用该函数
+      hideKeyboard(this)
+      ```
+
+  - title: 配置软键盘显示模式
+    content: 在 `AndroidManifest.xml` 中配置 `windowSoftInputMode` 属性，以控制软键盘的显示方式。
+    example: |
+      ```xml
+      <activity
+          android:name=".MainActivity"
+          android:windowSoftInputMode="adjustResize"> <!-- 适应内容调整 -->
+      </activity>
+      ```
+
+  - title: 使用 EditText 处理 IME 行为
+    content: 在 `EditText` 中配置输入法行为和动作。
+    example: |
+      ```kotlin
+      val editText = findViewById<EditText>(R.id.editText)
+      editText.setOnEditorActionListener { _, actionId, _ ->
+          if (actionId == EditorInfo.IME_ACTION_DONE) {
+              // 处理完成事件
+              Toast.makeText(this, "Done pressed", Toast.LENGTH_SHORT).show()
+              true
+          } else {
+              false
+          }
+      }
+      ```
+
+references:
+  - title: "Handle keyboard input"
+    url: https://developer.android.com/training/keyboard-input
+  - title: "Android KeyEvent handling"
+    url: https://developer.android.com/reference/android/view/KeyEvent
+  - title: "Keyboard events handling in Android"
+    url: https://www.vskills.in/certification/tutorial/keyboard-events-handling-in-android/
