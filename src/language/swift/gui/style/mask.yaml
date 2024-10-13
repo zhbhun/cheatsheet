@@ -1,0 +1,85 @@
+id: mask
+title: 蒙版
+query: Swift UIKit Mask
+comment: Swift UIKit 视图的蒙版样式
+description: 在 iOS 开发中，`mask` 属性允许使用一个视图的形状和透明度来遮盖另一个视图的内容。蒙版视图充当一个滤镜，只显示与蒙版视图不透明区域相对应的部分。简单来说，你可以把它想象成在目标视图上“挖洞”，只显示蒙版视图覆盖的部分。
+usage:
+  - title: 使用另一个 UIView 作为蒙版
+    description: |
+      `UIView` 的 `mask` 属性可以设置为另一个 `UIView` 实例。蒙版视图的 alpha 通道决定了目标视图哪些部分可见。完全不透明的像素会显示目标视图的内容，而完全透明的像素则会隐藏目标视图的内容。
+    example: |
+      ```swift
+      // 这将创建一个红色的正方形视图，并使用一个黑色的圆形视图作为蒙版，最终效果是一个红色的圆形。
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建一个红色的视图作为目标视图
+              let redView = UIView(frame: CGRect(x: 50, y: 50, width: 200, height: 200))
+              redView.backgroundColor = .red
+              view.addSubview(redView)
+
+              // 创建一个圆形的视图作为蒙版
+              let maskView = UIView(frame: redView.bounds)
+              maskView.backgroundColor = .black
+              maskView.layer.cornerRadius = maskView.bounds.width / 2
+              redView.mask = maskView
+          }
+      }
+      ```
+  - title: 使用 CAShapeLayer 作为蒙版
+    description: |
+      `CAShapeLayer` 是 `CALayer` 的子类，可以用来创建各种形状，包括矩形、圆形、路径等。通过将 `CAShapeLayer` 设置为视图的 `mask` 属性，可以创建更复杂的蒙版效果。
+    example: |
+      ```swift
+      // 这将创建一个红色的正方形视图，并使用一个星形路径作为蒙版，最终效果是一个红色的星形。
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建一个红色的视图作为目标视图
+              let redView = UIView(frame: CGRect(x: 50, y: 50, width: 200, height: 200))
+              redView.backgroundColor = .red
+              view.addSubview(redView)
+
+              // 创建一个星形路径
+              let path = UIBezierPath()
+              let center = CGPoint(x: 100, y: 100)
+              let radius: CGFloat = 90
+              let points = 5
+              let angle = CGFloat.pi * 2 / CGFloat(points)
+              var currentAngle = CGFloat.pi / 2
+              for _ in 0..<points {
+                  let x = center.x + radius * cos(currentAngle)
+                  let y = center.y + radius * sin(currentAngle)
+                  if path.isEmpty {
+                      path.move(to: CGPoint(x: x, y: y))
+                  } else {
+                      path.addLine(to: CGPoint(x: x, y: y))
+                  }
+                  currentAngle += angle
+              }
+              path.close()
+
+              // 创建一个 CAShapeLayer 并设置其路径
+              let maskLayer = CAShapeLayer()
+              maskLayer.path = path.cgPath
+
+              // 将 CAShapeLayer 设置为 redView 的蒙版
+              redView.layer.mask = maskLayer
+          }
+      }
+      ```
+references:
+  - title: mask | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622557-mask
+  - title: How to mask one UIView using another UIView
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-mask-one-uiview-using-another-uiview
+  - title: Simply mask a UIView with a rectangle - ios
+    url: https://stackoverflow.com/questions/11391058/simply-mask-a-uiview-with-a-rectangle

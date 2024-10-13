@@ -1,120 +1,138 @@
 id: text
 title: 文本
-query: Kotlin Android TextView 样式
-comment: 本文介绍如何在 Kotlin 中使用 TextView 修改文字样式及其他相关属性。
-description: "Kotlin 中的 `TextView` 控件用于显示文本，支持多种样式和属性的设置，包括字体大小、颜色、粗细、行高、斜体、阴影和多种样式等。"
+query: Swift UIKit UILabel style
+comment: Swift UIKit UILabel 的文本样式属性
+description: UILabel 用于在 iOS 应用中显示简单的静态文本，支持单行或多行文本。你可以使用它来显示标题、描述、提示信息等内容。UILabel 提供了丰富的属性来自定义文本样式，例如字体、颜色、对齐方式、行数、阴影等，以及如何处理文本截断等。
 usage:
-  - title: 字体大小
-    content: 使用 `textSize` 属性来设置字体的大小，可以在 XML 或代码中定义，通常使用 `sp`（缩放独立像素）作为单位。
+  - title: 设置文本内容
+    description: 使用 `text` 属性可以设置 UILabel 显示的文本内容，可以直接设置字符串。如果要设置富文本，需要使用 `attributedText` 属性。
     example: |
-      ```xml
-      <TextView
-          android:id="@+id/myTextView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Hello World!"
-          android:textSize="20sp" /> <!-- 设置文本大小为 20sp -->
-      ```
+      ```swift
+      // 设置普通文本
+      let label = UILabel()
+      label.text = "Hello, world!"
 
-  - title: 文本颜色
-    content: 使用 `textColor` 属性可以设置文本颜色。支持 HEX 颜色、RGB 颜色或资源文件中的颜色。
+      // 设置富文本
+      let attributedString = NSMutableAttributedString(string: "Hello, world!")
+      attributedString.addAttribute(.foregroundColor, value: UIColor.blue, range: NSRange(location: 0, length: 5))
+      label.attributedText = attributedString
+      ```
+  - title: 设置字体样式
+    description: 使用 `font` 属性可以设置 UILabel 文本的字体样式，包括字体名称、大小、粗细、斜体等。可以使用系统字体，也可以使用自定义字体。
     example: |
-      ```xml
-      <TextView
-          android:id="@+id/myTextView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Hello World!"
-          android:textColor="#FF0000" /> <!-- 设置文本颜色为红色 -->
-      ```
+      ```swift
+      // 设置系统字体，大小为 20
+      label.font = UIFont.systemFont(ofSize: 20)
 
-  - title: 字体样式
-    content: 使用 `textStyle` 属性设置字体样式，如 `bold`、`italic` 和 `normal`。
+      // 设置粗体系统字体，大小为 20
+      label.font = UIFont.boldSystemFont(ofSize: 20)
+
+      // 设置斜体系统字体，大小为 20
+      label.font = UIFont.italicSystemFont(ofSize: 20)
+
+      // 设置自定义字体 Helvetica，大小为 20
+      label.font = UIFont(name: "Helvetica", size: 20)
+      ```
+  - title: 设置文本颜色
+    description: 使用 `textColor` 属性可以设置 UILabel 文本的颜色，可以使用预定义的颜色，也可以使用自定义颜色。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Bold Text"
-          android:textStyle="bold" /> <!-- 设置为粗体 -->
-      ```
+      ```swift
+      // 设置文本颜色为红色
+      label.textColor = UIColor.red
 
-  - title: 斜体文本
-    content: 使用 `textStyle` 属性设置文本为斜体。
+      // 设置自定义 RGB 颜色
+      label.textColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+      ```
+  - title: 设置文本对齐方式
+    description: 使用 `textAlignment` 属性可以设置 UILabel 文本的对齐方式，包括左对齐、右对齐、居中对齐、两端对齐、自然对齐等。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Italic Text"
-          android:textStyle="italic" /> <!-- 设置为斜体 -->
-      ```
+      ```swift
+      // 设置文本左对齐
+      label.textAlignment = .left
 
-  - title: 行高
-    content: 使用 `lineSpacingExtra` 属性可以设置行间距，在 XML 中定义更为方便。
+      // 设置文本右对齐
+      label.textAlignment = .right
+
+      // 设置文本居中对齐
+      label.textAlignment = .center
+
+      // 设置文本两端对齐
+      label.textAlignment = .justified
+
+      // 设置文本自然对齐
+      label.textAlignment = .natural
+      ```
+  - title: 设置文本换行模式
+    description: 使用 `lineBreakMode` 属性可以设置 UILabel 文本的换行模式，包括按单词换行、按字符换行、裁剪、头部截断、尾部截断、中间截断等。该属性决定了当文本超出 UILabel 显示范围时如何处理。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Hello World!"
-          android:lineSpacingExtra="4dp" /> <!-- 设置额外行间距 -->
-      ```
+      ```swift
+      // 设置文本按单词换行
+      label.lineBreakMode = .byWordWrapping
 
-  - title: 添加阴影
-    content: 使用 `setShadowLayer()` 方法为文本添加阴影效果。
+      // 设置文本按字符换行
+      label.lineBreakMode = .byCharWrapping
+
+      // 设置文本裁剪
+      label.lineBreakMode = .byClipping
+
+      // 设置文本头部截断
+      label.lineBreakMode = .byTruncatingHead
+
+      // 设置文本尾部截断
+      label.lineBreakMode = .byTruncatingTail
+
+      // 设置文本中间截断
+      label.lineBreakMode = .byTruncatingMiddle
+      ```
+  - title: 设置文本行数
+    description: 使用 `numberOfLines` 属性可以设置 UILabel 文本的最大行数，设置为 0 表示不限制行数。
     example: |
-      ```xml
-      <TextView
-          android:id="@+id/myTextView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Hello World!"
-          android:textSize="30sp"
-          android:textColor="#FFFFFF" /> <!-- 设置文本颜色为白色 -->
-      ```
+      ```swift
+      // 设置文本最多显示 2 行
+      label.numberOfLines = 2
 
-      ```kotlin
-      val myTextView = findViewById<TextView>(R.id.myTextView)
-      myTextView.setShadowLayer(5f, 3f, 3f, Color.BLACK) // 添加阴影
+      // 设置文本不限制行数
+      label.numberOfLines = 0
       ```
-
-  - title: 多种样式的文本
-    content: 使用 `SpannableString` 为文本设置多种样式。
+  - title: 设置文本阴影
+    description: 使用 `shadowColor` 和 `shadowOffset` 属性可以设置 UILabel 文本的阴影颜色和偏移量。
     example: |
-      ```kotlin
-      val myTextView = findViewById<TextView>(R.id.myTextView)
-      val spannable = SpannableString("Hello Bold World")
-      spannable.setSpan(StyleSpan(Typeface.BOLD), 6, 10, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE) // "Bold" 设置为粗体
-      myTextView.text = spannable // 设置带样式的文本
-      ```
+      ```swift
+      // 设置阴影颜色为灰色
+      label.shadowColor = UIColor.gray
 
-  - title: 对齐方式
-    content: 使用 `gravity` 属性设置文本的对齐方式，如 `center`、`start`、`end` 等。
+      // 设置阴影偏移量为 (2, 2)
+      label.shadowOffset = CGSize(width: 2, height: 2)
+      ```
+  - title: 设置高亮状态
+    description: 使用 `highlightedTextColor` 和 `isHighlighted` 属性可以设置 UILabel 文本的高亮颜色和状态。设置为高亮状态后，文本将会以高亮颜色显示。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:text="Centered Text"
-          android:gravity="center" /> <!-- 文本居中对齐 -->
+      ```swift
+      // 设置高亮颜色为绿色
+      label.highlightedTextColor = UIColor.green
+
+      // 设置为高亮状态
+      label.isHighlighted = true
       ```
+  - title: 设置文本自适应宽度
+    description: 使用 `adjustsFontSizeToFitWidth` 和 `minimumScaleFactor` 属性可以设置 UILabel 文本是否自适应宽度，以及最小的缩放比例。如果开启了自适应宽度，当文本超出 UILabel 显示范围时，文本的字体大小将会自动缩小，直到文本能够完整显示出来。
+    example: |
+      ```swift
+      // 开启文本自适应宽度
+      label.adjustsFontSizeToFitWidth = true
 
-      <!-- 其他可选值说明：
-           - left: 左对齐
-           - right: 右对齐
-           - top: 顶部对齐
-           - bottom: 底部对齐
-           - start: 从左到右时左对齐，从右到左时右对齐
-           - end: 从左到右时右对齐，从右到左时左对齐
-           - center_horizontal: 水平居中
-           - center_vertical: 垂直居中
-           - fill: 填充整个 TextView -->
-
+      // 设置文本最小缩放比例为 0.5
+      label.minimumScaleFactor = 0.5
+      ```
+  - title: 设置用户交互
+    description: 默认情况下，UILabel 不响应用户交互事件。使用 `isUserInteractionEnabled` 属性可以设置 UILabel 是否响应用户交互事件，例如点击事件等。
+    example: |
+      ```swift
+      // 设置 UILabel 响应用户交互事件
+      label.isUserInteractionEnabled = true
+      ```
 references:
-  - title: Android TextView Documentation
-    url: https://developer.android.com/reference/android/widget/TextView
-  - title: TextView in Kotlin
-    url: https://kotlinandroid.org/textview/text-size/
-  - title: TextView Styles
-    url: https://kotlinandroid.org/textview/text-style/
+  - title: UILabel | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uilabel
+  - title: 'UILabel: The Ultimate Guide'
+    url: https://medium.com/@marcusziade/uilabel-the-ultimate-guide-e07064e5c1d9

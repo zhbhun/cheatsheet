@@ -1,59 +1,75 @@
 id: opacity
 title: 透明度
-query: Android 透明度样式
-comment: 尽量详尽的演示不同属性和场景用法
-description: "在 Android 开发中，透明度是通过设置颜色的 alpha 值实现的。可以应用于视图、按钮、文本等，以增强视觉效果和用户体验。常用的方式包括使用 XML 属性和 Kotlin 代码。"
+query: Swift UIKit Aplha
+comment: Swift UIKit 视图的透明样式用法，注意 isOpaque 的作用
+description: UIView 的透明度可以通过 `alpha` 和 `backgroundColor` 的 `alpha`  值来设置，但这两种方式的效果不同。设置 `alpha` 会影响视图及其所有子视图的透明度，而设置 `backgroundColor` 的 `alpha` 值只会影响视图的背景颜色，不会影响子视图。
 usage:
-  - title: XML 中设置透明度
-    content: 使用 `android:alpha` 属性来设置视图的透明度。
+  - title: 设置视图的 alpha 值
+    description: |
+      `alpha` 是 `UIView` 的一个属性，取值范围为 0.0 到 1.0，0.0 表示完全透明，1.0 表示完全不透明。设置 `alpha` 值会影响视图及其所有子视图的透明度。
     example: |
-      ```xml
-      <!-- 在布局 XML 文件中设置透明度 -->
-      <Button
-          android:id="@+id/myButton"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Click Me"
-          android:alpha="0.5"/> <!-- 设置透明度为50% -->
+      ```swift
+      // 创建一个红色的视图
+      let redView = UIView(frame: CGRect(x: 50, y: 50, width: 100, height: 100))
+      redView.backgroundColor = .red
+
+      // 创建一个绿色的视图
+      let greenView = UIView(frame: CGRect(x: 100, y: 100, width: 100, height: 100))
+      greenView.backgroundColor = .green
+
+      // 将绿色视图添加到红色视图中
+      redView.addSubview(greenView)
+
+      // 设置红色视图的 alpha 值为 0.5
+      redView.alpha = 0.5
+
+      // 将红色视图添加到主视图中
+      view.addSubview(redView)
+
+      // 此时，红色视图和绿色视图的透明度都为 0.5
       ```
-  - title: Kotlin 代码设置透明度
-    content: 使用 `setAlpha()` 方法动态设置视图的透明度。
+  - title: 设置背景颜色的 alpha 值
+    description: |
+      可以通过设置 `backgroundColor` 的 `alpha` 值来设置视图的背景透明度，不会影响子视图的透明度。
     example: |
-      ```kotlin
-      // 在 Kotlin 中设置按钮透明度
-      val myButton: Button = findViewById(R.id.myButton)
-      myButton.alpha = 0.5f // 设置透明度为50%
+      ```swift
+      // 创建一个红色的视图
+      let redView = UIView(frame: CGRect(x: 50, y: 50, width: 100, height: 100))
+      redView.backgroundColor = UIColor(red: 1, green: 0, blue: 0, alpha: 0.5) // 红色，透明度 50%
+
+      // 创建一个绿色的视图
+      let greenView = UIView(frame: CGRect(x: 100, y: 100, width: 100, height: 100))
+      greenView.backgroundColor = .green
+
+      // 将绿色视图添加到红色视图中
+      redView.addSubview(greenView)
+
+      // 将红色视图添加到主视图中
+      view.addSubview(redView)
+
+      // 此时，红色视图的背景透明度为 50%，绿色视图的透明度为 1.0
       ```
-  - title: TextView 的透明度
-    content: 使用 `setTextColor()` 方法和 `Color` 的 `copy()` 方法来设置文本透明度。
+  - title: 设置 isOpaque 属性
+    description: |
+      `isOpaque` 属性用于指定视图是否完全不透明。如果视图是完全不透明的，则可以将此属性设置为 true，否则设置为 false。将此属性设置为 true 可以提高渲染性能。
     example: |
-      ```kotlin
-      // 在 Kotlin 中设置 TextView 透明度
-      val myTextView: TextView = findViewById(R.id.myTextView)
-      myTextView.setTextColor(Color.RED.copy(alpha = 0.5f)) // 设置文本透明度为50%
-      ```
-  - title: 图片透明度
-    content: 使用 `setAlpha()` 方法设置 ImageView 的透明度。
-    example: |
-      ```kotlin
-      // 在 Kotlin 中设置 ImageView 透明度
-      val myImageView: ImageView = findViewById(R.id.myImageView)
-      myImageView.alpha = 0.3f // 设置透明度为30%
-      ```
-  - title: 透明状态栏
-    content: 使用 `WindowManager.LayoutParams` 设置透明状态栏。
-    example: |
-      ```kotlin
-      // 在 Activity 中设置透明状态栏
-      window.apply {
-          decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-          statusBarColor = Color.TRANSPARENT // 设置状态栏为透明
-      }
+      ```swift
+      // 创建一个红色的视图
+      let redView = UIView(frame: CGRect(x: 50, y: 50, width: 100, height: 100))
+      redView.backgroundColor = .red
+
+      // 设置红色视图的 isOpaque 属性为 true
+      redView.isOpaque = true
+
+      // 将红色视图添加到主视图中
+      view.addSubview(redView)
+
+      // 此时，红色视图是完全不透明的
       ```
 references:
-  - title: "Android UI Guide - Opacity and Transparency"
-    url: https://developer.android.com/guide/topics/ui/layout/opacity
-  - title: "Jetpack Compose Color and Opacity"
-    url: https://developer.android.com/jetpack/compose/color
-  - title: "Making the Status Bar Transparent"
-    url: https://stackoverflow.com/questions/20221711/how-to-make-the-status-bar-transparent-in-android
+  - title: alpha | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622417-alpha
+  - title: Setting alpha on UIView sets the alpha on its subviews ...
+    url: https://stackoverflow.com/questions/18681901/setting-alpha-on-uiview-sets-the-alpha-on-its-subviews-which-should-not-happen
+  - title: colorWithAlphaComponent
+    url: https://developer.apple.com/documentation/uikit/uicolor/1621922-colorwithalphacomponent

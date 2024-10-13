@@ -1,0 +1,72 @@
+id: over-scroller
+title: OverScroller
+query: Android OverScroller
+description: OverScroller 类用于实现 Android 中的弹性滚动效果，它可以帮助你实现平滑的滚动动画，并允许滚动超出边界，并在释放时弹回。OverScroller 本身不负责滚动视图，它只负责计算滚动位置和速度，你需要在你的视图中使用这些计算值来实现滚动效果。
+usage:
+  - title: 创建 OverScroller
+    description: 在使用 OverScroller 之前，你需要先创建一个 OverScroller 对象。你可以使用以下构造函数之一来创建 OverScroller：
+    example: |
+      ```kotlin
+      // 创建一个带有默认插值器的 OverScroller
+      val overScroller = OverScroller(context)
+
+      // 创建一个带有自定义插值器的 OverScroller
+      val overScroller = OverScroller(context, interpolator)
+      ```
+  - title: 开始滚动动画
+    description: 你可以使用以下方法之一来开始滚动动画：
+    example: |
+      ```kotlin
+      // 以提供的速度开始滑动
+      overScroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY)
+
+      // 从一个位置滚动到另一个位置，并指定持续时间
+      overScroller.startScroll(startX, startY, dx, dy, duration)
+      ```
+  - title: 控制滚动动画
+    description: 你可以使用以下方法来控制滚动动画：
+    example: |
+      ```kotlin
+      // 中断滚动动画
+      overScroller.abortAnimation()
+
+      // 强制结束滚动动画
+      overScroller.forceFinished(true)
+
+      // 设置滚动摩擦力
+      overScroller.setFriction(0.5f)
+      ```
+  - title: 获取滚动信息
+    description: 你可以使用以下方法来获取滚动信息：
+    example: |
+      ```kotlin
+      // 获取当前滚动位置
+      val currentX = overScroller.currX
+      val currentY = overScroller.currY
+
+      // 获取最终滚动位置
+      val finalX = overScroller.finalX
+      val finalY = overScroller.finalY
+
+      // 检查滚动动画是否完成
+      val isFinished = overScroller.isFinished
+      ```
+  - title: 实现滚动效果
+    description: 你需要在你的视图中使用 `computeScroll()` 方法来实现滚动效果。在 `computeScroll()` 方法中，你需要调用 `overScroller.computeScrollOffset()` 方法来更新滚动位置，然后使用 `scrollTo()` 方法滚动你的视图。
+    example: |
+      ```kotlin
+      override fun computeScroll() {
+          if (overScroller.computeScrollOffset()) {
+              scrollTo(overScroller.currX, overScroller.currY)
+              // 继续滚动
+              invalidate()
+          }
+      }
+      ```
+references:
+  - title: OverScroller | Android Developers
+    url: https://developer.android.com/reference/android/widget/OverScroller
+  - title: Android 列表滚动优化之OverScroller 揭秘原创
+    url: https://blog.csdn.net/shensky711/article/details/115624628
+  - title: android - Understanding how to use OverScroller class
+    url: https://stackoverflow.com/questions/18768939/understanding-how-to-use-overscroller-class

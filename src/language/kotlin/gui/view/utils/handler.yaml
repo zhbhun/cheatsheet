@@ -1,0 +1,296 @@
+id: handler
+title: Handler
+query: Android Handler
+description: Handler是Android中用于线程间通信的机制，主要用于将工作线程中需要更新UI的操作信息传递到UI主线程，从而实现工作线程对UI的更新处理。Handler、Message、MessageQueue和Looper共同构成了Android的消息机制。
+usage:
+  - title: 创建Handler
+    description: |
+      创建Handler主要有以下几种方式：
+
+      - 在主线程中创建Handler：直接实例化Handler对象即可，该Handler将绑定到主线程的Looper。
+      - 在子线程中创建Handler：需要先调用Looper.prepare()方法创建Looper，然后实例化Handler对象，最后调用Looper.loop()方法启动消息循环。
+      - 创建静态内部类Handler，并持有外部Activity的弱引用：为了避免内存泄漏，建议使用这种方式创建Handler。
+
+      **语法：**
+
+      ```kotlin
+      // 主线程中创建Handler
+      val handler = Handler()
+
+      // 子线程中创建Handler
+      val handler = Handler(Looper.getMainLooper())
+
+      // 创建静态内部类Handler
+      class MyActivity : Activity() {
+          private lateinit var handler: MyHandler
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              handler = MyHandler(this)
+          }
+
+          // 静态内部类Handler
+          private class MyHandler(activity: MyActivity) : Handler() {
+              // 使用弱引用持有外部Activity
+              private val weakReference = WeakReference(activity)
+
+              override fun handleMessage(msg: Message) {
+                  super.handleMessage(msg)
+                  // 处理消息
+                  val activity = weakReference.get()
+                  if (activity != null) {
+                      // 更新UI
+                  }
+              }
+          }
+      }
+      ```
+    example: |
+      ```kotlin
+      class MyActivity : Activity() {
+
+          private lateinit var handler: MyHandler
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              handler = MyHandler(this)
+          }
+
+          // 静态内部类Handler
+          private class MyHandler(activity: MyActivity) : Handler(Looper.getMainLooper()) {
+              // 使用弱引用持有外部Activity
+              private val weakReference = WeakReference(activity)
+
+              override fun handleMessage(msg: Message) {
+                  super.handleMessage(msg)
+                  // 处理消息
+                  val activity = weakReference.get()
+                  if (activity != null) {
+                      when (msg.what) {
+                          UPDATE_TEXT_VIEW -> {
+                              // 更新TextView
+                              val textView = activity.findViewById<TextView>(R.id.text_view)
+                              textView.text = "Message received!"
+                          }
+                      }
+                  }
+              }
+          }
+
+          // 在子线程中发送消息
+          private fun sendMessage() {
+              Thread {
+                  // 模拟耗时操作
+                  Thread.sleep(2000)
+                  // 发送消息
+                  handler.sendEmptyMessage(UPDATE_TEXT_VIEW)
+              }.start()
+          }
+
+          companion object {
+              private const val UPDATE_TEXT_VIEW = 1
+          }
+      }
+      ```
+  - title: 发送消息
+    description: |
+      Handler 提供了多种方法发送消息，可以分为 sendMessage() 系列和 post() 系列。
+
+      **sendMessage() 系列方法用于发送 Message 对象：**
+
+      - `sendMessage(Message msg)`：将消息发送到消息队列末尾。
+      - `sendMessageAtTime(Message msg, long uptimeMillis)`：在指定时间发送消息。
+      - `sendMessageDelayed(Message msg, long delayMillis)`：延迟指定时间发送消息。
+      - `sendEmptyMessage(int what)`：发送空消息。
+      - `sendEmptyMessageAtTime(int what, long uptimeMillis)`：在指定时间发送空消息。
+      - `sendEmptyMessageDelayed(int what, long delayMillis)`：延迟指定时间发送空消息。
+
+      **post() 系列方法用于发送 Runnable 对象：**
+
+      - `post(Runnable r)`：立即发送 Runnable 对象。
+      - `postAtTime(Runnable r, long uptimeMillis)`：在指定时间发送 Runnable 对象。
+      - `postDelayed(Runnable r, long delayMillis)`：延迟指定时间发送 Runnable 对象。
+      - `postAtFrontOfQueue(Runnable r)`: 将 Runnable 对象插入到消息队列的头部, 这会导致它立即被处理。
+
+      **Message 对象包含以下重要属性：**
+
+      - `what`：用户自定义的消息代码，用于区分不同的消息类型。
+      - `arg1`，`arg2`：简单的整型数据传递。
+      - `obj`：任意类型的对象传递。
+
+      **获取 Message 对象：**
+
+      - `Message.obtain()`：从消息池中获取 Message 对象，推荐使用。
+      - `Handler.obtainMessage()`：通过 Handler 对象获取 Message 对象，本质上也是调用 `Message.obtain()`。
+    example: |
+      ```kotlin
+      class MyActivity : AppCompatActivity() {
+
+          private lateinit var handler: Handler
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              // ...
+
+              handler = Handler(Looper.getMainLooper()) { msg ->
+                  when (msg.what) {
+                      1 -> {
+                          // 处理 Runnable
+                          val message = msg.obj as String
+                          Log.d("Handler", "Runnable: $message")
+                      }
+                      2 -> {
+                          // 处理 Message
+                          val message = msg.obj as String
+                          val arg1 = msg.arg1
+                          val arg2 = msg.arg2
+                          Log.d("Handler", "Message: $message, arg1: $arg1, arg2: $arg2")
+                      }
+                  }
+                  true
+              }
+
+              // 使用 post() 发送 Runnable
+              handler.post {
+                  Log.d("Handler", "This is a Runnable")
+              }
+
+              // 使用 sendMessage() 发送 Message
+              val message = Message.obtain()
+              message.what = 2
+              message.obj = "This is a Message"
+              message.arg1 = 10
+              message.arg2 = 20
+              handler.sendMessage(message)
+          }
+      }
+      ```
+  - title: 处理消息
+    description: |
+      要处理已发送的消息，您需要重写 Handler 的 `handleMessage(Message msg)` 方法。在该方法中，您可以根据 `msg.what` 的值来区分不同的消息类型，并执行相应的操作。
+
+      **语法：**
+
+      ```kotlin
+      class MyHandler : Handler(Looper.getMainLooper()) {
+          override fun handleMessage(msg: Message) {
+              when (msg.what) {
+                  MESSAGE_TYPE_1 -> {
+                      // 处理消息类型 1
+                  }
+                  MESSAGE_TYPE_2 -> {
+                      // 处理消息类型 2
+                  }
+                  // ...
+              }
+          }
+      }
+      ```
+    example: |
+      ```kotlin
+      class MyActivity : AppCompatActivity() {
+
+          private val handler = Handler(Looper.getMainLooper()) { msg ->
+              when (msg.what) {
+                  UPDATE_UI -> {
+                      // 更新UI
+                      val textView = findViewById<TextView>(R.id.text_view)
+                      textView.text = "UI updated from background thread!"
+                  }
+                  else -> {
+                      super.handleMessage(msg)
+                  }
+              }
+              true
+          }
+
+          // 在子线程中发送消息
+          private fun sendMessage() {
+              Thread {
+                  // 模拟耗时操作
+                  Thread.sleep(2000)
+
+                  // 发送消息以更新UI
+                  handler.sendEmptyMessage(UPDATE_UI)
+              }.start()
+          }
+
+          companion object {
+              private const val UPDATE_UI = 1
+          }
+      }
+      ```
+  - title: 移除消息
+    description: |
+      Handler 提供了以下方法移除消息和回调：
+
+      - `removeCallbacks(Runnable r)`：移除指定 Runnable 的所有回调。
+      - `removeCallbacks(Runnable r, Object token)`：移除指定 Runnable 和 token 的所有回调。
+      - `removeMessages(int what)`：移除指定 `what` 的所有消息。
+      - `removeMessages(int what, Object object)`：移除指定 `what` 和 `object` 的所有消息。
+      - `removeCallbacksAndMessages(Object token)`：移除指定 `token` 的所有回调和消息，`token` 为 null 时移除所有。
+    example: |
+      ```kotlin
+      class MyActivity : AppCompatActivity() {
+
+          private val handler = Handler(Looper.getMainLooper()) { msg ->
+              // ...
+          }
+
+          private val runnable = Runnable {
+              // ...
+          }
+
+          // 发送延迟消息
+          private fun sendMessage() {
+              handler.postDelayed(runnable, 3000)
+          }
+
+          // 移除消息
+          private fun removeMessage() {
+              handler.removeCallbacks(runnable) // 移除指定 Runnable 的回调
+          }
+      }
+      ```
+  - title: 使用Looper
+    description: |
+      Looper 用于循环处理消息队列中的消息。每个线程最多只能拥有一个 Looper，主线程默认拥有 Looper，子线程需要手动创建。
+
+      **Looper 的常用方法：**
+
+      - `Looper.prepare()`: 初始化 Looper
+      - `Looper.loop()`: 启动消息循环
+      - `Looper.myLooper()`: 获取当前线程的 Looper
+      - `Looper.getMainLooper()`: 获取主线程的 Looper
+    example: |
+      ```kotlin
+      // 在子线程中创建 Looper 和 Handler
+      private fun createThreadWithHandler() {
+          val thread = Thread {
+              // 初始化 Looper
+              Looper.prepare()
+
+              // 创建 Handler
+              val handler = Handler() { msg ->
+                  // 处理消息
+                  Log.d("Handler", "Message received on thread ${Thread.currentThread().name}")
+                  true
+              }
+
+              // 发送消息给 handler
+              handler.sendEmptyMessage(0)
+
+              // 启动消息循环
+              Looper.loop()
+          }
+          thread.name = "MyThread"
+          thread.start()
+      }
+      ```
+references:
+  - title: Handler | Android Developers
+    url: https://developer.android.com/reference/android/os/Handler
+  - title: Android——Handler详解原创
+    url: https://blog.csdn.net/ly0724ok/article/details/117324053
+  - title: Handler in Android. Main Thread | by Ankit Sinhal
+    url: https://medium.com/@ankit.sinhal/handler-in-android-d138c1f4980e

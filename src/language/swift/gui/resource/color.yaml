@@ -1,0 +1,75 @@
+id: color
+title: 颜色
+query: XCode Color management
+comment: XCode 中管理颜色资源的方法，以及如何在 SWift UIKit 代码中使用这些颜色
+description: 颜色在应用程序设计中起到至关重要的作用。本教程介绍如何在 Xcode 项目中有效管理颜色资源，以及如何在 SwiftUI 和 UIKit 代码中使用这些颜色。
+usage:
+  - title: 创建颜色集
+    description: 在 Xcode 的 Assets.xcassets 文件中创建颜色集，可以集中管理应用程序的颜色资源，并在代码中方便地引用。
+    example: |
+      ```
+      // 在 Assets.xcassets 中创建一个名为 "PrimaryColor" 的颜色集
+      // 设置默认颜色值为 R: 255, G: 0, B: 0
+      ```
+  - title: 设置不同外观模式的颜色
+    description: 为不同的外观模式（例如亮色和暗色模式）设置不同的颜色值，确保应用程序在不同环境下都能提供良好的用户体验。
+    example: |
+      ```
+      // 为 "PrimaryColor" 颜色集设置暗色模式颜色值为 R: 0, G: 0, B: 255
+      ```
+  - title: 在 UIKit 中使用颜色
+    description: 使用 `UIColor` 类在 UIKit 代码中引用颜色集。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              view.backgroundColor = UIColor(named: "PrimaryColor") // 使用 PrimaryColor 颜色集
+          }
+      }
+      ```
+  - title: 创建 UIColor 扩展
+    description: 创建一个 `UIColor` 扩展，方便在 UIKit 代码中使用自定义颜色名称。
+    example: |
+      ```swift
+      import UIKit
+
+      extension UIColor {
+          static var primaryColor: UIColor {
+              return UIColor(named: "PrimaryColor") ?? .white // 使用 PrimaryColor 颜色集，如果颜色集不存在则返回白色
+          }
+      }
+      ```
+  - title: 使用全局强调色
+    description: |
+      在 Xcode 项目中设置全局强调色，可以统一应用程序中按钮、选择高亮等元素的颜色。
+
+      1. 在 Assets.xcassets 中创建一个名为 "AccentColor" 的颜色集。
+      2. 在项目的 Build Settings 中，找到 "Global Accent Color Name" 设置，并将其值设置为 "AccentColor"。
+    example: |
+      ```
+      // 在 Assets.xcassets 中创建一个名为 "AccentColor" 的颜色集
+      // 在 Build Settings 中设置 "Global Accent Color Name" 为 "AccentColor"
+      ```
+  - title: 在代码中访问强调色
+    description: 使用 `UIColor.tintColor` 在 UIKit 代码中访问全局强调色。
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              view.backgroundColor = .tintColor // 使用全局强调色
+          }
+      }
+      ```
+references:
+  - title: Color | Apple Developer Documentation
+    url: https://developer.apple.com/design/human-interface-guidelines/color
+  - title: Specifying your app's color scheme
+    url: https://developer.apple.com/documentation/xcode/specifying-your-apps-color-scheme
+  - title: How To Manage Colors in Your Xcode Project | by Mgabouarab
+    url: https://mgabouarab.medium.com/how-to-manage-colors-in-your-xcode-project-c88cbb5de0a0

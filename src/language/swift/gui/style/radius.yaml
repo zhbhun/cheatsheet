@@ -1,70 +1,41 @@
 id: border-radius
 title: 圆角
-query: Android BorderRadius
-comment: 尽量详尽的演示不同属性和场景用法
-description: "Android 支持通过不同方式设置视图的圆角，包括 XML 和程序化方式。可以使用 `ShapeDrawable` 或 `GradientDrawable` 来为不同的角设置不同的弧度。"
+query: Swift UIKit Corner Radius
+comment: Swift UIKit 视图的圆角样式用法（仅 UIKit，不包含 SwiftUI）
+description: Swift UIKit 中可以使用 `CALayer` 的属性来设置视图的圆角样式。
 usage:
-  - title: 设置统一圆角
-    content: 使用 XML 创建一个 drawable 资源文件，实现统一的圆角效果。
+  - title: 设置圆角
+    description: |
+      通过设置视图 `layer` 的 `cornerRadius` 属性可以控制圆角的弧度大小。
     example: |
-      ```xml
-      <!-- res/drawable/uniform_background.xml -->
-      <?xml version="1.0" encoding="utf-8"?>
-      <shape xmlns:android="http://schemas.android.com/apk/res/android">
-          <solid android:color="@android:color/white"/> <!-- 背景颜色 -->
-          <corners android:radius="16dp"/> <!-- 所有角的圆角半径 -->
-      </shape>
+      ```swift
+      // 设置圆角半径为 10
+      view.layer.cornerRadius = 10
       ```
-
-      ```xml
-      <!-- 在布局中使用 -->
-      <View
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:background="@drawable/uniform_background"/>
-      ```
-
-  - title: 使用 XML 创建自定义形状
-    content: 创建一个 drawable 资源文件，并在视图中引用该文件，实现不同角的圆角效果。
+  - title: 设置部分圆角
+    description: |
+      通过设置视图 `layer` 的 `maskedCorners` 属性可以指定哪些角应用圆角。`maskedCorners` 是一个 `CACornerMask` 类型的数组，可以包含以下值：
+      - `layerMinXMinYCorner`: 左上角
+      - `layerMaxXMinYCorner`: 右上角
+      - `layerMinXMaxYCorner`: 左下角
+      - `layerMaxXMaxYCorner`: 右下角
     example: |
-      ```xml
-      <!-- res/drawable/custom_background.xml -->
-      <?xml version="1.0" encoding="utf-8"?>
-      <shape xmlns:android="http://schemas.android.com/apk/res/android">
-          <solid android:color="@android:color/white"/> <!-- 背景颜色 -->
-          <corners
-              android:topLeftRadius="16dp"   <!-- 左上角弧度 -->
-              android:topRightRadius="0dp"   <!-- 右上角弧度 -->
-              android:bottomRightRadius="32dp" <!-- 右下角弧度 -->
-              android:bottomLeftRadius="0dp"/> <!-- 左下角弧度 -->
-      </shape>
+      ```swift
+      // 只设置左上角和右上角为圆角
+      view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
       ```
-
-      ```xml
-      <!-- 在布局中使用 -->
-      <View
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:background="@drawable/custom_background"/>
-      ```
-
-  - title: 使用代码动态设置
-    content: 使用 `GradientDrawable` 在代码中为不同角设置不同的弧度。
+  - title: 圆角样式
+    description: |
+      通过设置视图 `layer` 的 `cornerCurve` 属性可以设置圆角的样式。`cornerCurve`:  是一个 `CALayerCornerCurve` 类型的枚举值，可以是以下值之一：
+      - `circular`: 圆形圆角
+      - `continuous`: 平滑圆角
     example: |
-      ```kotlin
-      val gradientDrawable = GradientDrawable().apply {
-          setColor(Color.WHITE) // 背景颜色
-          cornerRadii = floatArrayOf(
-              16f, 16f, // 左上角
-              0f, 0f,   // 右上角
-              32f, 32f, // 右下角
-              0f, 0f    // 左下角
-          )
-      }
-
-      val myView = findViewById<View>(R.id.my_view)
-      myView.background = gradientDrawable
+      ```swift
+      // 设置为圆形圆角
+      view.layer.cornerCurve = .circular
       ```
 references:
-  - title: "Android Custom Shape Drawable"
-    url: https://developer.android.com/reference/android/graphics/drawable/ShapeDrawable
+  - title: Applying rounded corners to a UIKit or SwiftUI view
+    url: https://www.swiftbysundell.com/articles/rounded-corners-uikit-swiftui
+  - title: How to apply rounded corners to a UIKit or SwiftUI view
+    url: https://paigeshin1991.medium.com/how-to-apply-rounded-corners-to-a-uikit-or-swiftui-view-a8351f04dae0

@@ -1,0 +1,64 @@
+id: image
+title: 图像
+query: Assets.xcassets Image
+comment: Assets.xcassets 管理图像、应用图标和启动屏等资源文件，以及如何在代码中使用这些资源
+description: 本教程介绍如何在 Xcode 项目中使用 Asset Catalog 管理图像资源，包括创建 Image Set、添加不同分辨率的图像、设置 Appearance 和 Gamut 等属性，以及如何在代码中加载图像资源。
+usage:
+  - title: 创建新的 Image Set
+    description: Image Set 用于管理单个图像资源的不同变体，例如不同分辨率、不同设备、不同状态等。每个 Image Set 对应一个图像资源，例如 App 图标、启动屏图片、按钮背景图片等。
+    example: |
+      ```
+      1. 在 Xcode 项目导航器中选择一个 Asset Catalog 文件（.xcassets）。
+      2. 将图像文件从 Finder 拖动到 Asset Catalog 的 Outline View 中。
+      3. 双击 Image Set 的名称，为其指定一个描述性的名称。
+      ```
+  - title: 添加不同分辨率的图像
+    description: 为了适配不同分辨率的设备，需要为每个 Image Set 添加不同分辨率的图像。默认情况下，Xcode 会创建 @1x、@2x 和 @3x 三个分辨率的 Image Well。将对应分辨率的图像文件拖动到相应的 Image Well 中即可。
+    example: |
+      ```
+      1. 在 Xcode 项目导航器中选择一个 Asset Catalog 文件（.xcassets）。
+      2. 在 Outline View 中选择一个 Image Set。
+      3. 将不同分辨率的图像文件拖动到 Detail Area 中对应的 Image Well 中。
+      ```
+  - title: 设置 Appearance 属性
+    description: |-
+      Appearance 属性用于指定图像资源在不同外观模式下的变体，例如 Light 和 Dark 模式。可以为每个 Image Set 设置不同的 Appearance 属性，以适配不同的外观模式。
+
+      **属性：**
+
+      * **Appearance:** 指定图像资源适用的外观模式，例如 Any、Light、Dark。
+      * **Default Appearance:** 指定默认的外观模式。
+    example: |
+      ```
+      1. 在 Xcode 项目导航器中选择一个 Asset Catalog 文件（.xcassets）。
+      2. 在 Outline View 中选择一个 Image Set。
+      3. 在 Attributes Inspector 中找到 Appearances 部分。
+      4. 点击 Appearance 下拉菜单，选择 Any、Light 或 Dark。
+      5. 如果需要，可以设置 Default Appearance 属性，指定默认的外观模式。
+      ```
+  - title: 设置 Gamut 属性
+    description: |-
+      Gamut 属性用于指定图像资源适用的色域，例如 sRGB 和 P3。可以为每个 Image Set 设置不同的 Gamut 属性，以适配不同色域的设备。
+
+      **属性：**
+
+      * **Gamut:** 指定图像资源适用的色域，例如 Any、sRGB、P3。
+    example: |
+      ```
+      1. 在 Xcode 项目导航器中选择一个 Asset Catalog 文件（.xcassets）。
+      2. 在 Outline View 中选择一个 Image Set。
+      3. 在 Attributes Inspector 中找到 Gamut 部分。
+      4. 点击 Gamut 下拉菜单，选择 Any、sRGB 或 P3。
+      ```
+  - title: 在代码中加载图像资源
+    description: 在代码中使用 `UIImage(named:)` 方法加载图像资源，传入 Image Set 的名称即可。系统会根据当前设备的特性自动加载最合适的图像变体。
+    example: |
+      ```swift
+      // 加载名为 "icon" 的 Image Set
+      let iconImage = UIImage(named: "icon")
+      ```
+references:
+  - title: Adding images to your Xcode project
+    url: https://developer.apple.com/documentation/xcode/adding-images-to-your-xcode-project
+  - title: Managing assets with asset catalogs | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/xcode/managing-assets-with-asset-catalogs

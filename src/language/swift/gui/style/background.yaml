@@ -1,127 +1,67 @@
 id: background
-title: 背景样式
-query: Android background
-comment: 尽量详尽的演示不同属性和场景用法
-description: "在 Android 中，背景样式用于设置视图的背景，包括颜色、图像、渐变等。可以通过 XML 属性或代码动态设置，适用于多种场景，如设置 Activity 背景或自定义组件。"
+title: 背景
+query: Swift UIKit background
+comment: Swift UIKit 如何配置视图的背景颜色、背景图片和渐变背景等样式。
+description: Swift UIKit 中可以使用 `UIView` 的属性来配置视图的背景颜色、背景图片和渐变背景等样式。
 usage:
-  - title: 颜色背景
-    content: 通过 `android:background` 属性设置颜色背景。
+  - title: 设置背景颜色
+    description: 使用 `backgroundColor` 属性可以设置视图的背景颜色。例如，将视图的背景颜色设置为蓝色：
     example: |
-      ```xml
-      <!-- 设置背景颜色为蓝色 -->
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="#2196F3"> <!-- 直接使用颜色值 -->
-      </RelativeLayout>
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="#2196F380"> <!-- 80 表示透明度（00-FF） -->
-      </RelativeLayout>
+      ```swift
+      // 设置背景颜色为蓝色
+      view.backgroundColor = .blue
       ```
-  - title: 图像背景
-    content: 使用 drawable 资源作为背景。
+  - title: 设置背景图片
+    description: 使用 `UIImageView` 可以设置视图的背景图片。创建一个 `UIImageView` 并将其添加到视图的层次结构中。例如，将名为 background.png 的图片设置为视图的背景：
     example: |
-      ```xml
-      <!-- 使用 drawable 作为背景 -->
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="@drawable/background_image"> <!-- 使用资源引用 -->
-      </RelativeLayout>
-      ```
-  - title: 渐变背景
-    content: 创建渐变效果的背景。
-    example: |
-      ```xml
-      <!-- 渐变背景 -->
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="@drawable/gradient_background"> <!-- 引用渐变资源 -->
-      </RelativeLayout>
+      ```swift
+      // 创建 UIImageView
+      let backgroundImageView = UIImageView(image: UIImage(named: "background.png"))
 
-      <!-- gradient_background.xml -->
-      <shape xmlns:android="http://schemas.android.com/apk/res/android">
-          <gradient
-              android:startColor="#FF5733"
-              android:endColor="#FFC300"
-              android:angle="45"/> <!-- 设置渐变方向 -->
-      </shape>
+      // 设置 UIImageView 的 frame
+      backgroundImageView.frame = view.bounds
+
+      // 将 UIImageView 添加到视图的层次结构中
+      view.addSubview(backgroundImageView)
       ```
-  - title: 主题背景
-    content: 通过主题为应用设置统一的背景样式。
+  - title: 使用 CALayer 设置图片背景
+    description: CALayer 不能直接设置图片背景，但可以通过 contents 属性来设置图片背景。创建一个 CALayer 并将图片作为背景添加到视图的图层中。
     example: |
-      ```xml
-      <!-- 定义主题 -->
-      <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-          <item name="android:windowBackground">@drawable/background_image</item> <!-- 主题背景 -->
-      </style>
-      ```
-  - title: 动态设置背景
-    content: 在代码中动态修改视图的背景。
-    example: |
-      ```kotlin
-      // 在 Activity 中动态设置背景
-      val layout = findViewById<RelativeLayout>(R.id.myLayout)
-      layout.setBackgroundColor(Color.parseColor("#FF5733")) // 设置背景颜色
-      ```
-  - title: 自定义 View 背景
-    content: 创建自定义视图并设置背景。
-    example: |
-      ```kotlin
-      class CustomView(context: Context) : View(context) {
-          init {
-              // 设置自定义背景
-              setBackgroundResource(R.drawable.custom_background)
-          }
+      ```swift
+      // 创建 CALayer
+      let imageLayer = CALayer()
+
+      // 设置 CALayer 的 frame
+      imageLayer.frame = view.bounds
+
+      // 设置图片背景
+      if let image = UIImage(named: "background.png")?.cgImage {
+          imageLayer.contents = image
       }
+
+      // 将 CALayer 添加到视图的图层中
+      view.layer.addSublayer(imageLayer)
       ```
-  - title: 使用 LayerDrawable 设置多层背景
-    content: 通过 `LayerDrawable` 创建多层背景，并调整每一层的位置和大小。
+  - title: 设置渐变背景
+    description: 使用 `CAGradientLayer` 可以创建渐变背景。创建一个 `CAGradientLayer` 并将其添加到视图的图层中。例如，创建一个从红色到蓝色的线性渐变背景：
     example: |
-      ```kotlin
-      // 在代码中动态设置 LayerDrawable 作为背景
-      val backgroundDrawable = BitmapDrawable(resources, BitmapFactory.decodeResource(resources, R.drawable.background_layer))
-      val foregroundDrawable = BitmapDrawable(resources, BitmapFactory.decodeResource(resources, R.drawable.foreground_layer))
+      ```swift
+      // 创建 CAGradientLayer
+      let gradientLayer = CAGradientLayer()
 
-      val layers = arrayOf(backgroundDrawable, foregroundDrawable)
-      val layerDrawable = LayerDrawable(layers)
+      // 设置 CAGradientLayer 的 frame
+      gradientLayer.frame = view.bounds
 
-      // 调整第二层的偏移
-      layerDrawable.setLayerInset(1, 50, 50, 0, 0)
+      // 设置渐变颜色
+      gradientLayer.colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
 
-      // 设置为布局的背景
-      val layout = findViewById<RelativeLayout>(R.id.myLayout)
-      layout.background = layerDrawable
-      ```
-  - title: 使用 XML 配置多层背景
-    content: 通过 XML 配置多层背景（LayerDrawable），允许将多个图像层叠，并通过 XML 定义它们的位置和大小。
-    example: |
-      ```xml
-      <!-- layer_background.xml -->
-      <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-          <!-- 第一层背景图 -->
-          <item android:drawable="@drawable/background_image" />
-
-          <!-- 第二层前景图，有位置偏移 -->
-          <item android:top="20dp" android:left="20dp">
-              <bitmap android:src="@drawable/foreground_image" android:gravity="center" />
-          </item>
-      </layer-list>
-
-      <!-- 应用多层背景 -->
-      <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="@drawable/layer_background"> <!-- 使用多层背景 -->
-      </RelativeLayout>
+      // 将 CAGradientLayer 添加到视图的图层中
+      view.layer.addSublayer(gradientLayer)
       ```
 references:
-  - title: "Android Backgrounds"
-    url: https://developer.android.com/guide/topics/ui/drawables/drawable-resource
-  - title: "Using Gradients"
-    url: https://developer.android.com/guide/topics/graphics/drawables#gradients
-  - title: "Creating and Using Themes"
-    url: https://developer.android.com/guide/topics/ui/look-and-feel/themes
+  - title: backgroundColor | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622591-backgroundcolor
+  - title: How can I set UIView background in Swift?
+    url: https://stackoverflow.com/questions/65062005/how-can-i-set-uiview-background-in-swift
+  - title: background | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uitextfield/1619623-background

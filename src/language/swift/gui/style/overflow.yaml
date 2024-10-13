@@ -1,38 +1,81 @@
 id: overflow
 title: Overflow
-query: Kotlin Android overflow cropping
-comment: 介绍如何在 Android 应用中处理视图溢出情况。
-description: "在 Kotlin Android 开发中，溢出裁剪用于处理视图内容超出可视区域的情况。通过设置不同属性，开发者可以选择是否裁剪视图，类似于 CSS 中的 overflow 属性。"
+query: Swift UIKit clipsToBounds and masksToBounds
+comment: Swift UIKit 视图的裁剪样式用法，注意区分 clipsToBounds 和 masksToBounds 的区别
+description: Swift UIKit 中可以使用 `clipsToBounds` 和 `masksToBounds` 属性来设置视图的裁剪样式。`clipsToBounds` 是 `UIView` 的属性，用于设置是否裁剪超出视图边界的内容；`masksToBounds` 是 `CALayer` 的属性，也用于设置是否裁剪超出图层边界的内容。通常情况下，我们应该优先使用 `clipsToBounds`，因为它更轻量级，性能更好。
 usage:
-  - title: 使用 clipChildren 控制溢出
-    content: 使用布局属性 clipChildren 来控制视图是否被裁剪。
+  - title: clipsToBounds：裁剪视图内容
+    description: |
+      `clipsToBounds` 属性用于设置是否裁剪超出视图边界的内容。
+
+      - 当 `clipsToBounds` 为 `true` 时，如果子视图超出了父视图的边界，则子视图超出部分将被裁剪掉。
+      - 当 `clipsToBounds` 为 `false` 时，即使子视图超出了父视图的边界，子视图也将完整显示。
     example: |
-      ```kotlin
-      // 在布局中禁用裁剪
-      val parentLayout = FrameLayout(this).apply {
-          clipChildren = false // 禁用裁剪，超出部分仍可见
-      }
+      ```swift
+      // 创建一个 UIImageView
+      let imageView = UIImageView(image: UIImage(named: "myImage"))
+      imageView.frame = CGRect(x: 50, y: 50, width: 200, height: 200)
 
-      val childView = View(this).apply {
-          layoutParams = FrameLayout.LayoutParams(200, 200) // 设置子视图大小
-          setBackgroundColor(Color.RED) // 设置背景色以便观察
-      }
+      // 设置 imageView 的圆角
+      imageView.layer.cornerRadius = imageView.frame.width / 2
 
-      parentLayout.addView(childView) // 添加子视图到父布局
+      // 设置 clipsToBounds 为 true，裁剪超出 imageView 边界的内容
+      imageView.clipsToBounds = true
+
+      // 将 imageView 添加到视图中
+      view.addSubview(imageView)
       ```
-  - title: 文本溢出处理
-    content: 使用 TextView 和 Jetpack Compose 的 Text 组件处理文本溢出。
+  - title: masksToBounds：裁剪图层内容
+    description: |
+      `masksToBounds` 属性用于设置是否裁剪超出图层边界的内容。
+
+      - 当 `masksToBounds` 为 `true` 时，如果子图层超出了父图层的边界，则子图层超出部分将被裁剪掉。
+      - 当 `masksToBounds` 为 `false` 时，即使子图层超出了父图层的边界，子图层也将完整显示。
     example: |
-      ```kotlin
-      // 在传统的 TextView 中设置溢出处理
-      val textView = TextView(this).apply {
-          text = "这是一段很长的文本，可能会溢出视图边界，需要处理溢出情况。"
-          maxLines = 2 // 设置最大行数
-          ellipsize = TextUtils.TruncateAt.END // 溢出时显示省略号
-      }
+      ```swift
+      // 创建一个 UIView
+      let myView = UIView(frame: CGRect(x: 50, y: 50, width: 200, height: 100))
+      myView.backgroundColor = .red
+
+      // 设置 myView 的圆角
+      myView.layer.cornerRadius = 20
+
+      // 设置 masksToBounds 为 true，裁剪超出 myView 图层边界的内容
+      myView.layer.masksToBounds = true
+
+      // 将 myView 添加到视图中
+      view.addSubview(myView)
+      ```
+  - title: clipsToBounds 和 masksToBounds 的区别
+    description: |
+      `clipsToBounds` 和 `masksToBounds` 的功能类似，都是用于裁剪超出边界的内容。区别在于 `clipsToBounds` 是 `UIView` 的属性，作用于视图；而 `masksToBounds` 是 `CALayer` 的属性，作用于图层。
+
+      在大多数情况下，我们应该优先使用 `clipsToBounds`，因为它更轻量级，性能更好。但如果我们需要对图层进行更精细的控制，例如设置阴影效果，则需要使用 `masksToBounds`。
+    example: |
+      ```swift
+      // 创建一个 UIView
+      let myView = UIView(frame: CGRect(x: 50, y: 50, width: 200, height: 100))
+      myView.backgroundColor = .red
+
+      // 设置 myView 的圆角
+      myView.layer.cornerRadius = 20
+
+      // 设置 masksToBounds 为 false，不裁剪超出 myView 图层边界的内容
+      myView.layer.masksToBounds = false
+
+      // 设置阴影效果
+      myView.layer.shadowColor = UIColor.black.cgColor
+      myView.layer.shadowOpacity = 0.8
+      myView.layer.shadowOffset = CGSize(width: 5, height: 5)
+      myView.layer.shadowRadius = 5
+
+      // 将 myView 添加到视图中
+      view.addSubview(myView)
       ```
 references:
-  - title: "Handling Text Overflow in Jetpack Compose"
-    url: https://kotlinandroid.org/android-jetpack-compose-text-overflow/
-  - title: "Creating and Managing Overflow Menus on Android with Kotlin"
-    url: https://www.techotopia.com/index.php/Creating_and_Managing_Overflow_Menus_on_Android_with_Kotlin
+  - title: masksToBounds vs. clipsToBounds [duplicate]
+    url: https://stackoverflow.com/questions/39466001/maskstobounds-vs-clipstobounds
+  - title: iOS ) The Difference Between ClipsToBounds And ...
+    url: https://medium.com/@ecc00414/the-difference-between-clipstobounds-and-maskstobounds-21fd23c8afe2
+  - title: masksToBounds vs clipsToBounds
+    url: https://forums.developer.apple.com/forums/thread/736395

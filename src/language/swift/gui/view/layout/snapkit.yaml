@@ -2,142 +2,178 @@ id: snapkit
 title: SnapKit
 query: Swift SnapKit
 comment: SnapKit 是 Swift 中常用的 Auto Layout 第三方库，用于简化布局代码，使其更加简洁和可读。
-description: |
-  SnapKit 是一个基于 Swift 的自动布局库，主要用于简化 Auto Layout 的代码编写。相比于直接使用 Auto Layout，SnapKit 提供了一种更加声明式和链式语法的方式定义布局，使得代码更加简洁易懂。它常用于 iOS 开发，帮助开发者通过闭包方式定义视图约束，避免繁琐的 NSLayoutConstraint 语法。SnapKit 可以与 UIKit 以及 SwiftUI 一起使用，适合大部分布局场景。
-
+description: SnapKit 是 Swift 中常用的 Auto Layout 第三方库，用于简化布局代码，使其更加简洁和可读。
 usage:
   - title: 安装 SnapKit
-    content: |
-      SnapKit 可以通过 CocoaPods 或 Swift Package Manager 安装。推荐使用 CocoaPods 进行管理。
+    description: 可以通过 CocoaPods 或 Swift Package Manager 将 SnapKit 集成到项目中。
     example: |
-      ```bash
-      # CocoaPods 安装
+      **CocoaPods**
+      ```ruby
       pod 'SnapKit'
-
-      # Swift Package Manager 安装
-      dependencies: [
-          .package(url: "https://github.com/SnapKit/SnapKit.git", .upToNextMajor(from: "5.0.0"))
-      ]
       ```
-
-  - title: 基本布局示例
-    content: |
-      使用 SnapKit 来创建一个简单的视图布局，包括将视图居中，并设置固定宽高。
+      **Swift Package Manager**
+      在 Xcode 中，选择 File > Swift Packages > Add Package Dependency，然后输入 SnapKit 的仓库地址：`https://github.com/SnapKit/SnapKit.git`。
+  - title: 导入 SnapKit
+    description: 在需要使用 SnapKit 的 Swift 文件中导入 SnapKit 库。
     example: |
       ```swift
       import SnapKit
+      ```
+  - title: 使用 makeConstraints 方法添加约束
+    description: |
+      SnapKit 使用 `makeConstraints` 方法为视图添加约束。`makeConstraints` 方法接受一个闭包作为参数，在闭包中可以使用 `make` 对象来定义约束。
 
+      **语法：**
+      ```swift
+      view.snp.makeConstraints { make in
+          // 添加约束
+      }
+      ```
+    example: |
+      ```swift
       let box = UIView()
       view.addSubview(box)
 
-      // 使用 SnapKit 定义布局
       box.snp.makeConstraints { make in
-          make.center.equalToSuperview()  // 将视图居中
-          make.width.height.equalTo(100)  // 设置宽高为 100
+          make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+          make.left.equalToSuperview().offset(20)
+          make.width.equalTo(100)
+          make.height.equalTo(100)
       }
       ```
-
-  - title: 相对布局
-    content: |
-      SnapKit 支持定义相对于其他视图的约束。以下示例展示了如何将一个视图放置在另一个视图的下面。
+      这段代码将 `box` 视图添加到了 `view` 视图上，并设置了 `box` 距离 `view` 顶部安全区域 20 个点，距离左边 20 个点，宽度和高度都为 100 个点。
+  - title: 使用 equalTo、offset 和 inset 设置约束关系
+    description: |
+      可以使用 `equalTo`、`offset` 和 `inset` 方法设置约束关系。
+      - `equalTo`: 设置两个视图之间的相等关系。
+      - `offset`: 添加偏移量。
+      - `inset`: 设置内边距。
     example: |
       ```swift
-      let topView = UIView()
-      let bottomView = UIView()
-
-      view.addSubview(topView)
-      view.addSubview(bottomView)
-
-      topView.snp.makeConstraints { make in
-          make.top.equalToSuperview().offset(20)  // 距离父视图顶部 20 点
-          make.left.right.equalToSuperview()      // 左右对齐
-          make.height.equalTo(50)                 // 高度为 50
-      }
-
-      bottomView.snp.makeConstraints { make in
-          make.top.equalTo(topView.snp.bottom).offset(20)  // 距离 topView 底部 20 点
-          make.left.right.equalToSuperview()               // 左右对齐
-          make.height.equalTo(50)                          // 高度为 50
+      box.snp.makeConstraints { make in
+          // 设置顶部约束，距离父视图顶部安全区域 20 个点
+          make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+          // 设置左边约束，距离父视图左边 20 个点
+          make.left.equalToSuperview().offset(20)
+          // 设置右边约束，距离父视图右边 20 个点
+          make.right.equalToSuperview().inset(20)
+          // 设置底部约束，距离父视图底部安全区域 20 个点
+          make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(20)
       }
       ```
-
-  - title: 更新约束
-    content: |
-      SnapKit 允许动态更新视图的约束。例如，可以在运行时更新视图的大小或位置。
+  - title: 设置视图尺寸
+    description: 可以使用 `width` 和 `height` 属性设置视图的宽度和高度。
     example: |
       ```swift
-      let resizableBox = UIView()
-      view.addSubview(resizableBox)
-
-      resizableBox.snp.makeConstraints { make in
-          make.center.equalToSuperview()
-          make.width.height.equalTo(100)
-      }
-
-      // 更新约束
-      resizableBox.snp.updateConstraints { make in
-          make.width.height.equalTo(150)  // 将宽高更新为 150
-      }
-      ```
-
-  - title: 移除约束
-    content: |
-      如果需要删除某个视图的特定约束，可以使用 `remakeConstraints`，这会移除当前所有约束并重新应用新的约束。
-    example: |
-      ```swift
-      let removableBox = UIView()
-      view.addSubview(removableBox)
-
-      removableBox.snp.makeConstraints { make in
-          make.center.equalToSuperview()
-          make.width.height.equalTo(100)
-      }
-
-      // 移除并重设约束
-      removableBox.snp.remakeConstraints { make in
-          make.top.left.equalToSuperview().offset(20)  // 重新定义顶部和左侧约束
-          make.width.height.equalTo(150)               // 新的宽高
-      }
-      ```
-
-  - title: 复杂布局示例
-    content: |
-      SnapKit 也可以用于创建较为复杂的布局，例如嵌套视图和相对约束。
-    example: |
-      ```swift
-      let containerView = UIView()
-      let childView1 = UIView()
-      let childView2 = UIView()
-
-      containerView.addSubview(childView1)
-      containerView.addSubview(childView2)
-      view.addSubview(containerView)
-
-      containerView.snp.makeConstraints { make in
-          make.edges.equalToSuperview().inset(20)  // 与父视图边缘留出 20 点间距
-      }
-
-      childView1.snp.makeConstraints { make in
-          make.top.left.equalToSuperview()  // 左上角对齐
+      box.snp.makeConstraints { make in
           make.width.equalTo(100)
           make.height.equalTo(50)
       }
-
-      childView2.snp.makeConstraints { make in
-          make.left.equalTo(childView1.snp.right).offset(10)  // 位于 childView1 右侧，间隔 10 点
-          make.top.equalTo(childView1)                        // 垂直对齐
-          make.width.height.equalTo(childView1)               // 与 childView1 等宽高
+      ```
+  - title: 设置视图居中
+    description: 可以使用 `centerX` 和 `centerY` 属性设置视图在父视图中的水平或垂直居中。
+    example: |
+      ```swift
+      box.snp.makeConstraints { make in
+          make.centerX.equalToSuperview()
+          make.centerY.equalToSuperview()
       }
       ```
+  - title: 设置视图之间的间距
+    description: 可以使用 `top`、`left`、`bottom`、`right` 属性设置视图之间的间距。
+    example: |
+      ```swift
+      let box1 = UIView()
+      view.addSubview(box1)
+      box1.backgroundColor = .red
+      box1.snp.makeConstraints { make in
+          make.top.equalToSuperview().offset(100)
+          make.left.equalToSuperview().offset(20)
+          make.width.equalTo(100)
+          make.height.equalTo(100)
+      }
 
+      let box2 = UIView()
+      view.addSubview(box2)
+      box2.backgroundColor = .green
+      box2.snp.makeConstraints { make in
+          make.top.equalTo(box1.snp.bottom).offset(20) // box2 距离 box1 底部 20 个点
+          make.left.equalToSuperview().offset(20)
+          make.width.equalTo(100)
+          make.height.equalTo(100)
+      }
+      ```
+  - title: 设置约束优先级
+    description: 可以使用 `priority` 方法设置约束的优先级。优先级越高，约束越容易被满足。
+    example: |
+      ```swift
+      box.snp.makeConstraints { make in
+          make.top.equalToSuperview().offset(20).priority(.high)
+          make.left.equalToSuperview().offset(20).priority(.medium)
+          make.right.equalToSuperview().inset(20).priority(.low)
+      }
+      ```
+  - title: 更新约束
+    description: |
+      可以使用 `updateConstraints` 方法更新已存在的约束。
+
+      **语法：**
+      ```swift
+      view.snp.updateConstraints { make in
+          // 更新约束
+      }
+      ```
+    example: |
+      ```swift
+      box.snp.updateConstraints { make in
+          make.width.equalTo(200) // 将宽度更新为 200
+      }
+      ```
+  - title: 移除约束
+    description: |
+      可以使用 `remakeConstraints` 方法移除所有已存在的约束，并添加新的约束。
+
+      **语法：**
+      ```swift
+      view.snp.remakeConstraints { make in
+          // 添加新的约束
+      }
+      ```
+    example: |
+      ```swift
+      box.snp.remakeConstraints { make in
+          make.center.equalToSuperview() // 将 box 约束到父视图中心
+          make.width.height.equalTo(50)  // 设置 box 的宽度和高度为 50
+      }
+      ```
+      这段代码会移除 `box` 之前的所有约束，并添加新的约束，使其居于父视图中心，且宽度和高度都为 50。
+  - title: 使用 edges 属性设置边缘约束
+    description: 可以使用 `edges` 属性一次性设置视图的上下左右四个边缘约束。
+    example: |
+      ```swift
+      box.snp.makeConstraints { make in
+          make.edges.equalToSuperview().inset(20) // 距离父视图四边 20 个点
+      }
+      ```
+  - title: 使用 size 属性设置尺寸约束
+    description: 可以使用 `size` 属性一次性设置视图的宽度和高度约束。
+    example: |
+      ```swift
+      box.snp.makeConstraints { make in
+          make.size.equalTo(CGSize(width: 100, height: 50))
+      }
+      ```
+  - title: 使用 center 属性设置中心点约束
+    description: 可以使用 `center` 属性一次性设置视图的水平和垂直居中约束。
+    example: |
+      ```swift
+      box.snp.makeConstraints { make in
+          make.center.equalToSuperview()
+      }
 references:
-  - title: "SnapKit 官方文档"
-    url: https://snapkit.io/docs/
-  - title: "SnapKit 使用教程 - 快速入门"
-    url: https://www.raywenderlich.com/482-snapkit-tutorial-make-auto-layout-easy
-  - title: "iOS Auto Layout 入门：使用 SnapKit 简化约束"
-    url: https://www.jianshu.com/p/abfcedbbffab
-  - title: "SnapKit GitHub 仓库"
+  - title: 'SnapKit/SnapKit: A Swift Autolayout DSL for iOS & OS X'
     url: https://github.com/SnapKit/SnapKit
-  - title: "Swift 中使用 SnapKit 进行 Auto Layout"
-    url: https://www.swiftbysundell.com/articles/snapkit-a-swift-dsl-for-auto-layout/
+  - title: SnapKit for iOS - Next Level Swift
+    url: https://medium.nextlevelswift.com/snapkit-for-ios-dca2dca859dc
+  - title: What is SnapKit and How to use it? (with Brief Descriptions)
+    url: https://medium.com/@burrakerden/what-is-snapkit-and-how-to-use-it-with-brief-descriptions-d6af19b3c4bc

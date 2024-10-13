@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import * as dotenv from 'dotenv';
 import yaml from 'js-yaml';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { LanguageData, Reference, Feature } from './types.ts';
 import { context, getLanguageData, loadFeature } from './utils.ts';
 import { loadReference } from './reference.ts';
+import { getGeminiPro } from './gemini.ts';
 
 dotenv.config({
   path: path.resolve(context, '.env.local'),
@@ -34,10 +34,10 @@ const instruction = `
     - 用法列表应该是循序渐进的，从简单到复杂，从基础到高级。
     - 涵盖编程语言的所有特性，让学习者掌握全方位的技能。
   4. 针对每个用法，生成一个标题，这个标题应该简洁明了，能够准确描述该用法的功能。
-  5. 针对每个用法，生成一个描述信息，描述信息中包含该用法的概括介绍。涉及到的关键语法、属性或方法需要依次罗列介绍。
-    - 语法：每种语法都有不同的用法，需要分别描述。
-    - 属性：对应的值有不同的设置方式，需要分别描述。
-    - 方法：每个方法都有不同的调用方式，需要分别描述。
+  5. 针对每个用法，生成一个描述信息，描述信息中包含该用法的概括介绍。如果涉及的关键语法、属性或方法**存在较多且容易混淆**时，需要依次罗列介绍，例如：
+    - 语法：如果存在多种语法或使用场景且容易混淆的，需要分别描述
+    - 属性：如果对应的值有不同的设置方式或使用场景，需要分别描述。
+    - 方法：如果每个方法都有不同的调用方式或使用场景，需要分别描述。
   6. 针对每个用法，生成一个示例代码，示例代码应该简洁明了，能够准确演示该用法的功能。
     - 必须遵循事实，不得虚构
     - 示例必须是独立的，包含相应的上下文信息
@@ -47,10 +47,10 @@ const instruction = `
   \`\`\`yaml
   title: "编程语言特性"
   description: "该编程语言特性是什么，在什么场景用，使用什么来实现。"
-  usage: |
+  usage:
     - title: "用法标题"
       description: "用法描述（Markdown）"
-      example": "代码示例（Markdown）"
+      example: "代码示例（Markdown）"
   }
   \`\`\`
 - 示例
@@ -111,7 +111,7 @@ const instruction = `
       - title: "查找元素"
         description: "可以使用 find()、firstOrNull() 函数查找满足条件的数组或列表元素，返回第一个匹配的元素。也可以使用 indexOf() 或 lastIndexOf() 查找元素在数组或列表中的索引位置。"
         example: 略
-        \`\`\`
+    \`\`\`
   - Android LinearLayout
     \`\`\`yaml
     title: "LinearLayout"
@@ -193,7 +193,6 @@ const instruction = `
               }
           }
           \`\`\`
-
       - title: "对齐方式"
         description: |
           使用 android:gravity 属性来控制所有子视图在 LinearLayout 内的对齐方式。单个子视图可以通过 android:layout_gravity 属性设置自身在父布局中的对齐方式。可选值包括：
@@ -220,14 +219,8 @@ const instruction = `
     \`\`\`
 `;
 
-const gemini = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY as string
-).getGenerativeModel({
-  model: 'models/gemini-1.5-pro-latest',
-});
-
 async function complete(query: string, references: Reference[]) {
-  const result = await gemini.generateContent({
+  const result = await getGeminiPro().generateContent({
     contents: [
       {
         role: 'user',
@@ -261,7 +254,7 @@ async function generateContent(
     references
   );
   const data = yaml.load(
-    text.replace(/^```yaml(\n)?/g, '').replace(/(\n)?```$/g, '')
+    text.replace(/^\s*```yaml(\n)?/g, '').replace(/(\n)?```\s*$/g, '')
   ) as {
     title: string;
     description: string;

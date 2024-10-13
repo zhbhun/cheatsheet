@@ -1,44 +1,76 @@
 id: frame
 title: Frame
-query: Swift UIView 使用 frame 和 bounds 定位子视图
-comment: 演示 UIView 他通过 frame 和 bounds 定位子视图的方法
-description: |
-  在 Swift 中，UIView 的 `frame` 和 `bounds` 是两个重要属性，用来管理视图的大小和位置。`frame` 代表视图相对于父视图的坐标系统中的位置和大小，而 `bounds` 则表示视图在自身坐标系统中的大小和位置。`frame` 用于确定视图在父视图中的布局，而 `bounds` 更常用于调整视图内部的布局，特别是在需要保持位置不变但改变大小的情况下。通过旋转或缩放视图，`frame` 会发生变化，而 `bounds` 始终保持不变。
-
+query: Swift UIView frame and bounds
+comment: 详细介绍 UIKit 里的 UIView 通过 frame 和 bounds 来手动设置视图的位置和大小。
+description: '在 UIKit 中，`frame` 和 `bounds` 都用于描述视图的大小和位置，但它们有重要的区别。`frame` 是指视图相对于其父视图坐标系的位置和尺寸，而 `bounds` 是指视图相对于自身坐标系的位置和尺寸。简单来说，`frame` 描述的是“视图在哪里”，而 `bounds` 描述的是“视图内部是什么”。 '
 usage:
-  - title: 使用 Frame 定位视图
-    content: |
-      `frame` 用于设置视图在父视图中的位置和大小。它通过父视图的坐标系确定视图的位置。
-    example: |
-      ```swift
-      let myView = UIView()
-      myView.frame = CGRect(x: 50, y: 100, width: 200, height: 150)
-      // 将视图定位在父视图中的 (50, 100) 位置，并设置宽度为 200，高度为 150
-      ```
+  - title: 理解 Frame
+    description: |
+      `frame` 属性表示视图在其父视图坐标系中的位置和尺寸。它是一个 `CGRect` 结构体，包含两个属性：
 
-  - title: 使用 Bounds 修改大小
-    content: |
-      `bounds` 用于设置视图的内部尺寸，而不会影响其在父视图中的位置。通常 `bounds.origin` 是 (0, 0)。
-    example: |
-      ```swift
-      let myView = UIView()
-      myView.bounds.size = CGSize(width: 300, height: 300)
-      // 修改视图的内部大小，但保持其在父视图中的位置不变
-      ```
-  - title: 使用 autoresizingMask 自动调整大小
-    content: |
-      `autoresizingMask` 可以使视图在父视图尺寸变化时自动调整大小和位置。设置为 `flexibleWidth` 和 `flexibleHeight` 可以让视图在父视图改变大小时，自动调整其宽高。
-    example: |
-      ```swift
-      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 150))
-      myView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-      // 父视图大小改变时，myView 将自动调整其宽度和高度
-      ```
+      - `origin`:  表示视图左上角的坐标 (x, y)。
+      - `size`: 表示视图的宽度和高度 (width, height)。
 
+      当你设置视图的 `frame` 时，实际上是在改变视图相对于其父视图的位置和大小。
+    example: |
+      ```swift
+      // 创建一个宽度为 200，高度为 100 的视图，位于父视图的 (50, 100) 位置
+      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 100))
+      ```
+  - title: 理解 Bounds
+    description: |
+      `bounds` 属性表示视图自身的坐标系，其原点 (0, 0) 始终位于视图的左上角。它也是一个 `CGRect` 结构体，包含两个属性：
+
+      - `origin`:  通常为 (0, 0)，除非你应用了视图的滚动或缩放。
+      - `size`: 表示视图的宽度和高度 (width, height)。
+
+      当你改变 `bounds` 的 `size` 时，视图的 `frame` 也会随之改变，但 `frame` 的 `origin`  保持不变。 
+    example: |
+      ```swift
+      // 创建一个视图
+      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 100))
+
+      // 改变视图的 bounds 的 size
+      myView.bounds.size = CGSize(width: 100, height: 50)
+
+      // 此时 myView 的 frame 变为 (50, 100, 100, 50)
+      ```
+  - title: Frame 和 Bounds 的关系
+    description: |
+      `frame` 和 `bounds` 是相互关联的。当你改变 `frame`  的 `origin`  时，`bounds` 不会改变；但当你改变 `frame` 的 `size`  时，`bounds` 的 `size` 也会随之改变。
+
+      当你改变 `bounds` 的 `origin` 时，通常用于实现视图的滚动效果；当你改变 `bounds` 的 `size`  时，视图的 `frame` 也会随之改变，但 `frame` 的 `origin`  保持不变。 
+    example: |
+      ```swift
+      // 创建一个视图
+      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 100))
+
+      // 改变视图的 frame 的 origin
+      myView.frame.origin = CGPoint(x: 100, y: 50)
+
+      // 此时 myView 的 bounds 仍然为 (0, 0, 200, 100)
+
+      // 改变视图的 bounds 的 origin
+      myView.bounds.origin = CGPoint(x: 50, y: 50)
+
+      // 此时 myView 的 frame 变为 (100, 100, 200, 100)
+      ```
+  - title: 何时使用 Frame 和 Bounds
+    description: |
+      - 使用 `frame`： 当你需要设置或获取视图相对于其父视图的位置和尺寸时。
+      - 使用 `bounds`： 当你需要操作视图自身的坐标系，例如实现滚动或缩放效果时。
+
+      通常情况下，你应该尽量避免直接修改 `frame`  的 `size`，而是通过修改 `bounds`  的 `size` 或使用 Auto Layout 来改变视图的尺寸。
+    example: |
+      ```swift
+      // 使用 frame 设置视图的位置和尺寸
+      let myView = UIView(frame: CGRect(x: 50, y: 100, width: 200, height: 100))
+
+      // 使用 bounds 实现滚动效果
+      scrollView.bounds.origin = CGPoint(x: 0, y: 100)
+      ```
 references:
-  - title: "What’s the difference between frame and bounds?"
+  - title: Difference Between Frames and Bounds in iOS Swift - Medium
+    url: https://medium.com/@kashif00527/difference-between-frames-and-bounds-in-ios-swift-3d62984c35b6
+  - title: What's the difference between frame and bounds?
     url: https://www.hackingwithswift.com/example-code/uikit/whats-the-difference-between-frame-and-bounds
-  - title: "Difference between Frame and Bounds in Swift"
-    url: https://programmingwithswift.com/frame-vs-bounds-in-swift/
-  - title: "Apple Developer Documentation: bounds"
-    url: https://developer.apple.com/documentation/uikit/uiview/1622580-bounds

@@ -1,0 +1,6 @@
+id: collection
+title: 容器
+children:
+  - scroll
+  - table
+  - collection

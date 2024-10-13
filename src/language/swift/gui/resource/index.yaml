@@ -2,11 +2,9 @@ id: resource
 title: 资源
 children:
   - layout
-  - values
-  - drawable
-  - animation
-  - menu
-  - raw
+  - image
+  - color
   - font
-  - mipmap
-  - xml
+  - string
+  - property
+  - common

@@ -1,0 +1,59 @@
+id: property
+title: 配置
+query: UIKit Information Property List
+comment: 如何管理应用程序的配置信息，新增配置文件，以及如何在代码中使用这些配置
+description: Info.plist 文件是一个结构化的文本文件，它包含了应用程序的配置信息。这些信息是以键值对的形式存储的，系统使用这些信息来识别和配置应用程序。Info.plist 文件是所有 iOS、iPadOS、macOS、tvOS、visionOS 和 watchOS 应用程序所必需的。
+usage:
+  - title: 管理应用程序的配置信息
+    description: Info.plist 文件包含了许多重要的配置信息，例如应用程序的名称、版本号、图标、支持的设备方向等等。您可以使用 Xcode 的图形界面来编辑 Info.plist 文件，也可以直接编辑 XML 源代码。
+    example: |
+      ```xml
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>CFBundleIdentifier</key>
+        <string>com.example.myapp</string>
+        <key>CFBundleDisplayName</key>
+        <string>My App</string>
+        <key>CFBundleShortVersionString</key>
+        <string>1.0</string>
+        <key>CFBundleVersion</key>
+        <string>1</string>
+      </dict>
+      </plist>
+      ```
+  - title: 新增配置文件
+    description: |
+      除了系统预定义的键之外，您也可以在 Info.plist 文件中添加自定义的键值对。这对于存储应用程序特定的配置信息非常有用。
+      - 使用 Xcode 打开您的项目，然后选择您的项目文件。
+      - 在项目编辑器中，选择您的目标。
+      - 点击“Info”选项卡。
+      - 点击“+”按钮添加新的键值对。
+    example: |
+      ```xml
+      <key>MyCustomKey</key>
+      <string>MyCustomValue</string>
+      ```
+  - title: 在代码中使用配置信息
+    description: |
+      您可以使用 `Bundle` 类来访问 Info.plist 文件中的配置信息。
+      - 使用 `Bundle.main.infoDictionary` 属性获取 Info.plist 文件的内容。
+      - 使用键来访问对应的值。
+    example: |
+      ```swift
+      // 获取应用程序的版本号
+      if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+          print("应用程序版本号：\(version)")
+      }
+
+      // 获取自定义配置的值
+      if let customValue = Bundle.main.infoDictionary?["MyCustomKey"] as? String {
+          print("自定义配置的值：\(customValue)")
+      }
+      ```
+references:
+  - title: Information Property List | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/bundleresources/information_property_list
+  - title: propertyList | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uicommand/3175310-propertylist

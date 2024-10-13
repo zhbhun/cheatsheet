@@ -1,81 +1,53 @@
 id: font
-title: 字体资源
-query: Android 字体资源
-comment: 介绍如何定义字体资源并在布局、代码和样式中使用，包括可下载字体的实现方式。
-description:
-  在 Android 应用中，字体资源可以通过 XML 文件或代码引用。Android 8.0（API 级别 26）引入了字体作为资源的功能，允许开发者将字体捆绑在应用中，或使用可下载字体以减少 APK 大小。字体样式和粗细等属性可以通过 `fontStyle` 和 `fontWeight` 来控制，开发者可以在 XML 布局、代码文件以及样式文件中使用这些字体资源。
+title: 字体
+query: UIKit Custom Font
+comment: 如何管理字体资源，以及如何在代码中使用自定义字体
+description: 本教程介绍如何在 Swift UIKit 项目中管理字体资源，以及如何在代码中使用自定义字体。
 usage:
-  - title: 定义字体并在布局和代码中使用
-    content:
-      字体资源可以通过 `res/font/` 文件夹定义，并在布局文件中通过 `fontFamily` 属性引用。同时，开发者也可以在代码中通过 `ResourcesCompat.getFont()` 动态设置字体。
+  - title: 添加字体文件到项目
+    description: 将自定义字体文件（.ttf 或 .otf）拖放到 Xcode 项目导航器中，确保勾选了“添加到目标”并选择了你的应用程序目标。
+    example: ''
+  - title: 在 Info.plist 中注册字体
+    description: |
+      1. 打开 `Info.plist` 文件。
+      2. 添加一个名为 “Fonts provided by application” 的新键，类型为数组。
+      3. 为数组添加一个新项，值为字体的完整文件名，包括扩展名。
+    example: ''
+  - title: 查找字体名称
+    description: |
+      字体名称不一定与文件名相同。你可以使用以下代码打印出所有可用的字体名称。
     example: |
-      ```xml
-      <!-- 定义字体资源 -->
-      <?xml version="1.0" encoding="utf-8"?>
-      <font-family xmlns:android="http://schemas.android.com/apk/res/android">
-          <font android:font="@font/lobster_regular" android:fontStyle="normal" android:fontWeight="400"/>
-      </font-family>
-
-      <!-- 在布局文件中使用字体 -->
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:fontFamily="@font/lobster_regular"
-          android:text="Hello, World!" />
-
-      <!-- 在代码中动态设置字体 -->
-      val textView: TextView = findViewById(R.id.myTextView)
-      val typeface = ResourcesCompat.getFont(context, R.font.lobster_regular)
-      textView.typeface = typeface
+      ```swift
+      for family in UIFont.familyNames.sorted() {
+          let names = UIFont.fontNames(forFamilyName: family)
+          print("字体族: \(family) 字体名称: \(names)")
+      }
       ```
-
-  - title: 定义并使用可下载字体
-    content:
-      Android 支持可下载字体功能，通过将字体从网络下载，避免打包到 APK 中，从而减小应用大小。可下载字体可以通过 `fontFamily` 属性引用，通常在 `fonts.xml` 中进行配置。
+  - title: 在代码中使用自定义字体
+    description: |
+      使用 `UIFont(name:size:)` 初始化字体对象，传入字体名称和大小。
     example: |
-      ```xml
-      <!-- 定义可下载字体 -->
-      <?xml version="1.0" encoding="utf-8"?>
-      <font-family
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          android:fontProviderAuthority="com.google.android.gms.fonts"
-          android:fontProviderPackage="com.google.android.gms"
-          android:fontProviderQuery="Lobster"
-          android:fontProviderCerts="@array/com_google_android_gms_fonts_certs">
-      </font-family>
-
-      <!-- 在布局文件中使用可下载字体 -->
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:fontFamily="@font/downloadable_font"
-          android:text="This is a downloadable font" />
+      ```swift
+      // 使用自定义字体设置标签文本
+      let label = UILabel()
+      label.font = UIFont(name: "CustomFont-Regular", size: 16)
+      label.text = "这是一段使用自定义字体的文本"
       ```
-
-  - title: 在样式文件中使用字体
-    content:
-      可以通过在 `styles.xml` 中定义全局字体样式，简化对多处字体的重复设置。这种方法适用于全局字体一致性需求。
+  - title: 动态调整字体大小
+    description: |
+      为了支持动态类型，请使用 `UIFontMetrics` 获取缩放的字体对象。
     example: |
-      ```xml
-      <!-- 定义样式文件中的字体 -->
-      <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-          <item name="android:fontFamily">@font/noto_sans_bold</item>
-      </style>
-
-      <!-- 在布局文件中应用全局样式 -->
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Text with global font" />
+      ```swift
+      guard let customFont = UIFont(name: "CustomFont-Regular", size: UIFont.labelFontSize) else {
+          fatalError("无法加载字体 'CustomFont-Regular'")
+      }
+      label.font = UIFontMetrics.default.scaledFont(for: customFont)
+      label.adjustsFontForContentSizeCategory = true
       ```
 references:
-  - title: "Font resources - Android Developers"
-    url: https://developer.android.com/guide/topics/ui/look-and-feel/fonts-in-xml
-  - title: "使用可下载字体 | Android Developers"
-    url: https://developer.android.google.cn/guide/topics/ui/look-and-feel/fonts-in-xml#downloadable-fonts
-  - title: "Android 字体系列（三）：Xml中的字体"
-    url: https://sweetying520.github.io/android-fonts-in-xml
-  - title: "Android 在代码中使用字体 | CSDN 博客"
-    url: https://blog.csdn.net/Android使用代码设置字体
-  - title: "如何定义并使用字体资源 | Android Developers"
-    url: https://developer.android.google.cn/studio/write/resource-manager
+  - title: Adding a Custom Font to Your App
+    url: https://developer.apple.com/documentation/uikit/text_display_and_fonts/adding_a_custom_font_to_your_app
+  - title: How to add custom fonts to iOS app
+    url: https://sarunw.com/posts/how-to-add-custom-fonts-to-ios-app/
+  - title: 'Custom Fonts: Getting Started'
+    url: https://www.kodeco.com/26454946-custom-fonts-getting-started

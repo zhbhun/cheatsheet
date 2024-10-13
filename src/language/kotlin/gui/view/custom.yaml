@@ -1,0 +1,219 @@
+id: custom
+title: 自定义视图
+query: Kotlin custom android View
+comment: |
+  介绍如何自定义 Android 视图，实现特定的 UI 效果，包括：
+  - 创建自定义视图类
+  - 自定义属性：声明、配置，获取以及更新处理，注意使用
+  - 自定义视图的大小和布局：测量、布局和大小等回调
+  - 自定义渲染：绘制视图内容
+  - 处理用户交互
+  - 设计可访问性
+  - 使用 BindingAdapter 扩展属性
+description: Android 自定义视图允许开发者创建和实现不属于标准 Android 视图组件的功能和 UI。本教程涵盖创建自定义 Android 视图的关键方面。
+usage:
+  - title: 创建自定义视图类
+    description: 所有 Android 视图类都继承自 `View` 类。自定义视图可以直接继承 `View`，或继承现有的视图子类（例如 `Button`、 `TextView` 等）。自定义视图类应至少提供一个接收 `Context` 和 `AttributeSet` 对象作为参数的构造函数，以便在 XML 布局中使用。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+          // 自定义视图的初始化逻辑
+      }
+      ```
+  - title: 定义自定义属性
+    description: |
+      为了使自定义视图可定制化，开发者可以定义自定义属性：
+      1. 在 `res/values/attrs.xml` 文件中添加 `<declare-styleable>` 资源元素，为视图定义自定义属性。
+      2. 在 XML 布局文件中为属性指定值。
+      3. 在运行时检索属性值。
+      4. 将检索到的属性值应用于自定义视图。
+
+      例如，以下代码定义了两个自定义属性 `showText` 和 `textColor`：
+    example: |
+      ```xml
+      <resources>
+        <declare-styleable name="MyCustomView">
+          <attr name="showText" format="boolean" />
+          <attr name="textColor" format="color" />
+        </declare-styleable>
+      </resources>
+      ```
+  - title: 在 XML 布局中应用自定义属性
+    description: 定义自定义属性后，你可以在 XML 布局文件中使用它们，就像使用内置属性一样。自定义属性属于自定义命名空间，通常使用 `xmlns` 指令定义一个别名来简化命名空间的使用。
+    example: |
+      ```xml
+      <LinearLayout 
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:app="http://schemas.android.com/apk/res-auto">
+
+          <com.example.myapp.MyCustomView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              app:showText="true"
+              app:textColor="@color/red" />
+      </LinearLayout>
+      ```
+  - title: 在运行时获取自定义属性
+    description: |
+      在自定义视图类的构造函数中，可以通过 `obtainStyledAttributes()` 方法获取自定义属性的值。该方法返回一个 `TypedArray` 对象，其中包含已解析和样式化的属性值。
+
+      - `obtainStyledAttributes()` 方法接受多个参数，包括 `AttributeSet` 和自定义属性数组的 ID。
+      - 使用 `TypedArray` 的 `getBoolean()`、`getColor()`、`getDimension()` 等方法获取对应类型的属性值。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+
+        private var showText: Boolean = false
+        private var textColor: Int = Color.BLACK
+
+        init {
+          context.theme.obtainStyledAttributes(
+              attrs,
+              R.styleable.MyCustomView,
+              0, 0
+          ).apply {
+              try {
+                showText = getBoolean(R.styleable.MyCustomView_showText, false)
+                textColor = getColor(R.styleable.MyCustomView_textColor, Color.BLACK)
+              } finally {
+                recycle() // 必须回收 TypedArray
+              }
+          }
+        }
+      }
+      ```
+  - title: 添加属性和事件
+    description: 为了提供动态行为，自定义视图应该为每个自定义属性公开一个属性 getter 和 setter 对。当属性发生更改时，应该调用 `invalidate()` 方法来更新视图，并根据需要调用 `requestLayout()` 方法来请求重新布局。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+          // ...
+
+          fun isShowText(): Boolean {
+              return showText
+          }
+
+          fun setShowText(showText: Boolean) {
+              this.showText = showText
+              invalidate() // 通知视图更新
+              requestLayout() // 如果属性更改可能影响视图大小，则请求重新布局
+          }
+
+          // ...
+      }
+      ```
+  - title: 自定义视图的大小和布局
+    description: 自定义视图需要实现 `onMeasure()` 和 `onLayout()` 方法来确定自身的大小和子视图的位置。`onMeasure()` 方法用于测量视图的大小，`onLayout()` 方法用于在父视图中放置子视图。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+          // ...
+
+          override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+              // 计算视图的宽度和高度
+              val width = MeasureSpec.getSize(widthMeasureSpec)
+              val height = MeasureSpec.getSize(heightMeasureSpec)
+
+              // 设置视图的测量大小
+              setMeasuredDimension(width, height)
+          }
+
+          override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+              // 在这里放置子视图
+          }
+
+          // ...
+      }
+      ```
+  - title: 自定义渲染
+    description: 为了自定义视图的外观，开发者需要重写 `onDraw()` 方法。`onDraw()` 方法提供了一个 `Canvas` 对象，用于绘制视图的内容。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+          // ...
+
+          override fun onDraw(canvas: Canvas) {
+              super.onDraw(canvas)
+
+              // 在这里绘制自定义视图的内容
+              val paint = Paint()
+              paint.color = Color.RED
+              canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+          }
+
+          // ...
+      }
+      ```
+  - title: 处理用户交互
+    description: 自定义视图可以通过实现 `onTouchEvent()` 方法来响应用户的触摸事件。`onTouchEvent()` 方法提供了触摸事件的详细信息，例如触摸操作的类型、触摸点的坐标等。
+    example: |
+      ```kotlin
+      class MyCustomView @JvmOverloads constructor(
+          context: Context,
+          attrs: AttributeSet? = null,
+          defStyleAttr: Int = 0
+      ) : View(context, attrs, defStyleAttr) {
+          // ...
+
+          override fun onTouchEvent(event: MotionEvent): Boolean {
+              when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                  // 处理按下事件
+                }
+                MotionEvent.ACTION_MOVE -> {
+                  // 处理移动事件
+                }
+                MotionEvent.ACTION_UP -> {
+                  // 处理抬起事件
+                }
+              }
+              return true
+          }
+
+          // ...
+      }
+      ```
+  - title: 设计可访问性
+    description: |
+      为了使自定义视图对所有用户都可用，开发者应该考虑可访问性。这包括：
+      - 使用 `android:contentDescription` 属性为输入字段添加标签。
+      - 在适当的时候调用 `sendAccessibilityEvent()` 方法发送可访问性事件。
+      - 支持备用控制器，例如方向键或轨迹球。
+    example: 略
+  - title: 使用 BindingAdapter 扩展属性
+    description: |
+      可以使用 `BindingAdapter` 来扩展自定义视图的属性，以便在 XML 布局中直接绑定数据或处理事件。`BindingAdapter` 是一个静态方法，使用 `@BindingAdapter` 注解标记，用于将 XML 属性与自定义视图的代码逻辑关联起来。
+    example: |
+      ```kotlin
+      @BindingAdapter("app:customText")
+      fun setCustomText(view: MyCustomView, text: String) {
+          view.text = text
+      }
+      ```
+references:
+  - title: Create a view class
+    url: https://developer.android.com/develop/ui/views/layout/custom-views/create-view
+  - title: How to create constructor of custom view with Kotlin
+    url: https://stackoverflow.com/questions/20670828/how-to-create-constructor-of-custom-view-with-kotlin
+  - title: Exploring Kotlin initialization with Android custom views
+    url: https://medium.com/google-developer-experts/exploring-kotlin-initialization-with-android-custom-views-cde06e915e8d

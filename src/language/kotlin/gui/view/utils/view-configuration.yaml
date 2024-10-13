@@ -1,0 +1,60 @@
+id: view-configuration
+title: ViewConfiguration
+query: Android ViewConfiguration
+description: ViewConfiguration 是一个 Android 类，它提供了用于设置 UI 超时、大小和距离的标准常量和方法。可以通过它获取与设备相关的配置信息，例如触摸灵敏度、滚动速度和动画时长等。
+usage:
+  - title: 获取 ViewConfiguration 实例
+    description: 通过 `ViewConfiguration.get(context)` 方法获取 ViewConfiguration 实例，其中 `context` 是当前 Activity 或应用的上下文。
+    example: |
+      ```kotlin
+      val viewConfiguration = ViewConfiguration.get(context)
+      ```
+  - title: 触摸灵敏度
+    description: |
+      - `getScaledTouchSlop()`: 获取触摸灵敏度，即用户手指滑动多少像素后才会被识别为滚动操作。
+      - `getScaledPagingTouchSlop()`: 获取翻页触摸灵敏度，即用户手指滑动多少像素后才会被识别为翻页操作。
+    example: |
+      ```kotlin
+      val touchSlop = viewConfiguration.scaledTouchSlop // 获取触摸灵敏度
+      val pagingTouchSlop = viewConfiguration.scaledPagingTouchSlop // 获取翻页触摸灵敏度
+      ```
+  - title: 滚动速度
+    description: |
+      - `getScaledMinimumFlingVelocity()`: 获取飞速滑动的最小速度，单位是像素/秒。
+      - `getScaledMaximumFlingVelocity()`: 获取飞速滑动的最大速度，单位是像素/秒。
+    example: |
+      ```kotlin
+      val minFlingVelocity = viewConfiguration.scaledMinimumFlingVelocity // 获取飞速滑动的最小速度
+      val maxFlingVelocity = viewConfiguration.scaledMaximumFlingVelocity // 获取飞速滑动的最大速度
+      ```
+  - title: 超时时间
+    description: |
+      - `getLongPressTimeout()`: 获取长按的超时时间，单位是毫秒。
+      - `getTapTimeout()`: 获取点击的超时时间，单位是毫秒。
+      - `getDoubleTapTimeout()`: 获取双击的超时时间，单位是毫秒。
+    example: |
+      ```kotlin
+      val longPressTimeout = viewConfiguration.longPressTimeout // 获取长按的超时时间
+      val tapTimeout = viewConfiguration.tapTimeout // 获取点击的超时时间
+      val doubleTapTimeout = viewConfiguration.doubleTapTimeout // 获取双击的超时时间
+      ```
+  - title: 其他配置
+    description: |
+      - `getScaledScrollBarSize()`: 获取滚动条的大小，单位是像素。
+      - `getScaledOverflingDistance()`: 获取飞速滑动时，View 超出边界的最大距离，单位是像素。
+      - `getScaledOverscrollDistance()`: 获取滚动时，View 超出边界的最大距离，单位是像素。
+      - `hasPermanentMenuKey()`: 检查设备是否具有永久菜单键。
+    example: |
+      ```kotlin
+      val scrollBarSize = viewConfiguration.scaledScrollBarSize // 获取滚动条的大小
+      val overflingDistance = viewConfiguration.scaledOverflingDistance // 获取飞速滑动时，View 超出边界的最大距离
+      val overscrollDistance = viewConfiguration.scaledOverscrollDistance // 获取滚动时，View 超出边界的最大距离
+      val hasPermanentMenuKey = viewConfiguration.hasPermanentMenuKey() // 检查设备是否具有永久菜单键
+      ```
+references:
+  - title: ViewConfiguration | Android Developers
+    url: https://developer.android.com/reference/android/view/ViewConfiguration
+  - title: ViewConfiguration | Android Developers
+    url: https://developer.android.com/reference/kotlin/android/view/ViewConfiguration
+  - title: Android ViewConfiguration配置说明原创
+    url: https://blog.csdn.net/heng615975867/article/details/80406534

@@ -1,6 +1,7 @@
 id: layout
 title: 布局
 children:
+  - constraint
+  - linear
   - frame
-  - constraint-layout
-  - linear-layout
+  - snapkit

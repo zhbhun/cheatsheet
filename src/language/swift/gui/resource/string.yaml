@@ -1,0 +1,82 @@
+id: string
+title: 文本
+query: UIKit String Catalog
+comment: UIKit 项目中管理多语言文本资源的方法，以及如何在代码中使用这些文本
+description: UIKit 项目中管理多语言文本资源的方法，以及如何在代码中使用这些文本
+usage:
+  - title: 创建 String Catalog 文件
+    description: |-
+      在项目中创建一个 String Catalog 文件来存储本地化文本。
+      1. 选择 File > New > File。
+      2. 在弹出的窗口中选择 String Catalog 并点击 Next。
+      3. 确认文件名（默认为 Localizable）和存储位置，点击 Create。
+    example: ''
+  - title: 添加目标语言
+    description: |-
+      为项目添加需要支持的语言。
+      1. 选择 String Catalog 文件，点击编辑器下方的 + 按钮。
+      2. 选择需要添加的语言。
+    example: ''
+  - title: 添加本地化文本
+    description: |-
+      在 String Catalog 文件中添加需要本地化的文本。
+      1. 在 String Catalog 编辑器中选择对应的语言。
+      2. 在表格中添加键值对，键为文本标识，值为对应的本地化文本。
+      3. 可以使用占位符来表示需要动态替换的内容，例如 %@ 表示字符串，%d 表示整数。
+    example: |
+      ```
+      "Hello, %@!" = "你好，%@！"
+      ```
+  - title: 处理复数形式
+    description: |-
+      为不同语言和地区配置复数形式。
+      1. 在 String Catalog 编辑器中选择需要添加复数形式的文本。
+      2. 右键点击该文本，选择 Vary by Plural > Argument Index。
+      3. 在弹出的窗口中选择对应的参数索引。
+      4. 根据不同语言的复数规则，填写对应的复数形式。
+    example: |
+      ```
+      "You have %d new messages." = {
+        "one": "You have 1 new message.",
+        "other": "You have %d new messages."
+      }
+      ```
+  - title: 根据设备差异化文本
+    description: |-
+      根据设备类型显示不同的文本内容。
+      1. 在 String Catalog 编辑器中选择需要根据设备类型显示不同内容的文本。
+      2. 右键点击该文本，选择 Vary by Device > Device Type。
+      3. 在弹出的窗口中选择对应的设备类型。
+      4. 为选定的设备类型填写对应的文本内容。
+    example: |
+      ```
+      "Learn More" = {
+        "Mac": "Click to learn more",
+        "iOS": "Tap to learn more"
+      }
+      ```
+  - title: 在代码中使用本地化文本
+    description: |-
+      使用 `String(localized:forKey:comment:)` 方法在代码中获取本地化文本。
+      1. 将 `forKey` 参数设置为 String Catalog 中定义的文本标识。
+      2. 可以使用 `comment` 参数为翻译人员提供额外的上下文信息。
+    example: |
+      ```swift
+      let name = "Tom"
+      let message = String(localized: "Hello, %@!", forKey: "greeting", comment: "Greeting message")
+      let localizedMessage = String(format: message, name)
+      print(localizedMessage) // 输出：你好，Tom！
+      ```
+  - title: 测试本地化
+    description: |-
+      在模拟器或真机上测试应用的本地化效果。
+      1. 选择 Product > Scheme > Edit Scheme。
+      2. 在弹出的窗口中选择 Run，点击 Options 标签页。
+      3. 在 App Language 下拉菜单中选择需要测试的语言。
+      4. 运行应用，即可查看本地化效果。
+    example: ''
+references:
+  - title: Localizing and varying text with a string catalog
+    url: https://developer.apple.com/documentation/xcode/localizing-and-varying-text-with-a-string-catalog
+  - title: Easy Way to Build iOS Apps that Support Multiple User ...
+    url: https://medium.com/@galangaji/easy-way-to-build-ios-apps-that-support-multiple-user-languages-on-uikit-and-swiftui-using-string-8023755f32f3

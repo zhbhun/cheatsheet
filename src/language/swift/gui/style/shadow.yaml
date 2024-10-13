@@ -1,109 +1,53 @@
 id: shadow
 title: 阴影
-query: Android 阴影样式
-comment: 尽量详尽的演示不同属性和场景用法
-description: "Kotlin Android 提供了多种方式来为视图添加阴影效果，包括使用 XML 属性。阴影可以提升用户界面的可读性和视觉效果。主要属性包括阴影颜色、偏移量和模糊半径等。"
+query: Swift UIKit Shadow Style
+comment: Swift UIKit 视图的阴影样式用法
+description: iOS 可以为任何 `UIView` 动态生成阴影，并且这些阴影会自动调整以适应视图内容的形状 - 甚至可以跟随 `UILabel` 内文本的曲线。此功能是内置的，因此您需要做的只是配置其属性，您需要关注以下四个属性：
 usage:
-  - title: TextView 阴影
-    content: 通过 `android:shadowColor`、`android:shadowDx`、`android:shadowDy` 和 `android:shadowRadius` 属性为 TextView 添加阴影。
+  - title: 设置阴影颜色
+    description: 使用 `shadowColor` 属性设置阴影的颜色，需要是 `CGColor` 类型。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Hello World"
-          android:textSize="30sp"
-          android:shadowColor="#FF0000"  <!-- 阴影颜色 -->
-          android:shadowDx="2"            <!-- 水平偏移 -->
-          android:shadowDy="2"            <!-- 垂直偏移 -->
-          android:shadowRadius="5"        <!-- 模糊半径 -->
-      />
+      ```swift
+      yourView.layer.shadowColor = UIColor.black.cgColor // 设置阴影颜色为黑色
       ```
-  - title: Button 阴影
-    content: 使用 `Button` 组件的阴影属性，使按钮的文本产生阴影效果。
+  - title: 设置阴影透明度
+    description: 使用 `shadowOpacity` 属性设置阴影的透明度，0 表示不可见，1 表示最强。
     example: |
-      ```xml
-      <Button
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Submit"
-          android:background="#0789C5"
-          android:textColor="#FFF"
-          android:textSize="25sp"
-          android:shadowColor="#000000"   <!-- 阴影颜色 -->
-          android:shadowDx="4"            <!-- 水平偏移 -->
-          android:shadowDy="5"            <!-- 垂直偏移 -->
-          android:shadowRadius="10"       <!-- 模糊半径 -->
-      />
+      ```swift
+      yourView.layer.shadowOpacity = 0.5 // 设置阴影透明度为 50%
       ```
-  - title: Card 组件阴影
-    content: 在 Card 组件中使用 `android:elevation` 属性添加阴影。
+  - title: 设置阴影偏移量
+    description: 使用 `shadowOffset` 属性设置阴影与视图的距离，以产生 3D 偏移效果。
     example: |
-      ```xml
-      <androidx.cardview.widget.CardView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          app:cardElevation="8dp"          <!-- 设置阴影高度 -->
-          app:cardBackgroundColor="#FFFFFF">
-
-          <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="这是一个有阴影的卡片"
-              android:textSize="20sp" />
-      </androidx.cardview.widget.CardView>
+      ```swift
+      yourView.layer.shadowOffset = CGSize(width: 5, height: 5) // 设置阴影向右下方偏移 5 个点
       ```
-  - title: 使用 Layout 添加阴影
-    content: 在 LinearLayout 或 RelativeLayout 中添加阴影效果。使用自定义背景 drawable。
+  - title: 设置阴影半径
+    description: 使用 `shadowRadius` 属性设置阴影的宽度。
     example: |
-      ```xml
-      <!-- res/drawable/shadow_background.xml -->
-      <shape xmlns:android="http://schemas.android.com/apk/res/android">
-          <solid android:color="#FFFFFF" /> <!-- 背景颜色 -->
-          <corners android:radius="8dp" />  <!-- 圆角 -->
-          <padding android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp" /> <!-- 内边距 -->
-          <shadow android:color="#AA000000" android:dx="0" android:dy="2" android:radius="4" /> <!-- 阴影 -->
-      </shape>
-
-      <!-- 使用自定义背景 -->
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:background="@drawable/shadow_background"> <!-- 自定义阴影背景 -->
-
-          <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="带阴影的布局"
-              android:textSize="24sp" />
-      </LinearLayout>
+      ```swift
+      yourView.layer.shadowRadius = 10 // 设置阴影半径为 10 个点
       ```
-  - title: 动态设置阴影
-    content: 使用代码动态设置视图的阴影效果，适用于需要根据条件或事件改变阴影的场景。
+  - title: 设置阴影路径
+    description: 动态生成阴影的性能开销很大，因为 iOS 必须围绕视图内容的确切形状绘制阴影。如果可以，请将 `shadowPath` 属性设置为特定值，以便 iOS 不需要动态计算透明度。例如，这将创建一个与视图框架等效的阴影路径：
     example: |
-      ```kotlin
-      // 创建一个视图
-      val myView = View(this)
-      myView.layoutParams = LinearLayout.LayoutParams(
-          LinearLayout.LayoutParams.WRAP_CONTENT,
-          LinearLayout.LayoutParams.WRAP_CONTENT
-      )
-      myView.setBackgroundColor(Color.WHITE) // 设置背景颜色
-
-      // 动态设置阴影（适用于 API 21 及以上）
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-          myView.elevation = 8f // 设置阴影高度
-          myView.translationZ = 4f // 设置 Z 轴偏移
-      }
-
-      // 添加视图到布局
-      val layout = findViewById<LinearLayout>(R.id.myLayout)
-      layout.addView(myView)
+      ```swift
+      yourView.layer.shadowPath = UIBezierPath(rect: yourView.bounds).cgPath // 使用视图边界创建一个矩形阴影路径
+      ```
+  - title: 缓存渲染阴影
+    description: 或者，请求 iOS 缓存渲染的阴影，这样就不需要重新绘制：
+    example: |
+      ```swift
+      yourView.layer.shouldRasterize = true // 启用阴影栅格化
+      ```
+  - title: 设置阴影栅格化比例
+    description: 如果您想采用栅格化方式，则应确保 iOS 以与主屏幕相同的绘图比例缓存阴影，否则阴影将看起来像素化：
+    example: |
+      ```swift
+      yourView.layer.rasterizationScale = UIScreen.main.scale // 设置阴影栅格化比例与主屏幕一致
       ```
 references:
-  - title: "Android TextView - Text Shadow"
-    url: https://developer.android.com/reference/android/widget/TextView#attr_android:shadowColor
-  - title: "Button Shadow in Android"
-    url: https://kotlinandroid.org/button-text-shadow
-  - title: "Adding Shadows to CardView"
-    url: https://developer.android.com/reference/androidx/cardview/widget/CardView
+  - title: Advanced UIView shadow effects using shadowPath
+    url: https://www.hackingwithswift.com/articles/155/advanced-uiview-shadow-effects-using-shadowpath
+  - title: How to add a shadow to a UIView
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-add-a-shadow-to-a-uiview

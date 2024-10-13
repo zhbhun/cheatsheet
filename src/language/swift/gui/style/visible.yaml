@@ -1,0 +1,45 @@
+id: visible
+title: 可见性
+query: Swift UIKit isHidden
+comment: Swift UIKit 视图的可见性控制
+description: 在 Swift UIKit 中，可以使用 `isHidden` 属性来控制视图的可见性。将 `isHidden` 属性设置为 `true` 将隐藏视图，设置为 `false` 则显示视图。
+usage:
+  - title: 隐藏视图
+    description: 将视图的 `isHidden` 属性设置为 `true`，可以将视图隐藏。 隐藏的视图将不再可见，也不会接收用户交互事件。
+    example: |
+      ```swift
+      // 隐藏 imageView
+      imageView.isHidden = true
+      ```
+  - title: 显示视图
+    description: 将视图的 `isHidden` 属性设置为 `false`，可以将视图显示。如果视图之前被隐藏，设置 `isHidden` 为 `false` 将使其重新可见。
+    example: |
+      ```swift
+      // 显示 imageView
+      imageView.isHidden = false
+      ```
+  - title: 根据条件控制视图可见性
+    description: 可以根据条件语句动态地控制视图的可见性。例如，可以根据用户是否登录来显示或隐藏某些视图。
+    example: |
+      ```swift
+      // 根据用户是否登录，显示或隐藏用户信息视图
+      if isUserLoggedIn {
+          userInfoView.isHidden = false
+      } else {
+          userInfoView.isHidden = true
+      }
+      ```
+  - title: 使用动画隐藏或显示视图
+    description: 可以使用 `UIView.animate` 方法以动画的方式隐藏或显示视图，从而创建更平滑的用户体验。
+    example: |
+      ```swift
+      // 以动画的方式隐藏 imageView
+      UIView.animate(withDuration: 0.5) {
+          imageView.isHidden = true
+      }
+      ```
+references:
+  - title: isHidden | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622585-ishidden
+  - title: isHidden | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uicellaccessory/customviewconfiguration/3667990-ishidden

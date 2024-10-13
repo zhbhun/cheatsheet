@@ -1,0 +1,111 @@
+id: common
+title: 通用
+query: XCode video, audio and other resource file management
+comment: 如何在 XCode 中管理视频、音频和 JSON 等这些通用给你的资源文件，以及如何在 UIKit 项目代码中使用获取并使用这些资源，必须分别演示不同类型文件的用法。
+description: 如何在 Xcode 中管理视频、音频和 JSON 等这些通用的资源文件，以及如何在 UIKit 项目代码中获取并使用这些资源。
+usage:
+  - title: 添加资源文件到 Xcode 项目
+    description: 将你的资源文件，例如图片、音频、视频、JSON 文件等，拖拽到 Xcode 项目导航器中，并确保勾选 'Copy items if needed'。 将文件添加到项目目录下更方便管理
+    example: 无
+  - title: 访问图片资源
+    description: 使用 `UIImage(named:)` 方法加载图片资源。图片文件名，不需要添加文件扩展名。
+    example: |
+      ```swift
+      // 加载名为 image 的图片
+      let image = UIImage(named: "image")
+
+      // 将图片显示在 UIImageView 中
+      let imageView = UIImageView(image: image)
+      ```
+  - title: 访问音频资源
+    description: 将音频文件添加到项目中后，可以使用 `AVAudioPlayer` 类来播放音频。
+    example: |
+      ```swift
+      import AVFoundation
+
+      // 创建 AVAudioPlayer 实例
+      var audioPlayer: AVAudioPlayer?
+
+      // 异步加载音频文件并播放
+      func playSound(fileName: String, fileExtension: String) {
+          guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
+              print("音频文件未找到")
+              return
+          }
+
+          do {
+              audioPlayer = try AVAudioPlayer(contentsOf: url)
+              audioPlayer?.play()
+          } catch {
+              print("无法播放音频: \(error.localizedDescription)")
+          }
+      }
+
+      // 调用函数播放名为 sound，扩展名为 mp3 的音频文件
+      playSound(fileName: "sound", fileExtension: "mp3")
+      ```
+  - title: 访问视频资源
+    description: 将视频文件添加到项目中后，可以使用 `AVPlayerViewController` 类来播放视频。
+    example: |
+      ```swift
+      import AVKit
+
+      // 创建 AVPlayerViewController 实例
+      let playerViewController = AVPlayerViewController()
+
+      // 异步加载视频文件并播放
+      func playVideo(fileName: String, fileExtension: String) {
+          guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
+              print("视频文件未找到")
+              return
+          }
+
+          // 创建 AVPlayer 实例并设置 playerViewController 的 player 属性
+          let player = AVPlayer(url: url)
+          playerViewController.player = player
+
+          // 将 playerViewController 以模态方式呈现
+          present(playerViewController, animated: true) {
+              player.play()
+          }
+      }
+
+      // 调用函数播放名为 video，扩展名为 mp4 的视频文件
+      playVideo(fileName: "video", fileExtension: "mp4")
+      ```
+  - title: 访问 JSON 资源
+    description: 可以使用 `Bundle` 类中的 `url(forResource:withExtension:)` 方法获取 JSON 文件的 URL，然后使用 `Data(contentsOf:)` 方法加载 JSON 数据，最后使用 `JSONDecoder` 类解析 JSON 数据。
+    example: |
+      ```swift
+      // 定义一个结构体来表示 JSON 数据结构
+      struct DataModel: Decodable {
+          let name: String
+          let age: Int
+      }
+
+      // 异步加载和解析 JSON 文件
+      func loadData(fileName: String, fileExtension: String) {
+          guard let url = Bundle.main.url(forResource: fileName, withExtension: fileExtension) else {
+              print("JSON 文件未找到")
+              return
+          }
+
+          do {
+              let data = try Data(contentsOf: url)
+              let decoder = JSONDecoder()
+              let jsonData = try decoder.decode(DataModel.self, from: data)
+              print(jsonData.name) // 输出: John
+              print(jsonData.age) // 输出: 30
+          } catch {
+              print("无法加载或解析 JSON 文件: \(error.localizedDescription)")
+          }
+      }
+
+      // 调用函数加载和解析名为 data，扩展名为 json 的 JSON 文件
+      loadData(fileName: "data", fileExtension: "json")
+      ```
+references:
+  - title: Managing files and folders in your Xcode project
+    url: https://developer.apple.com/documentation/xcode/managing-files-and-folders-in-your-xcode-project
+  - title: Resource Management | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/appkit/resource_management

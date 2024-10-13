@@ -8,6 +8,8 @@ children:
   - shadow
   - radius
   - text
+  - mask
   - opacity
   - transform
   - overflow
+  - visible

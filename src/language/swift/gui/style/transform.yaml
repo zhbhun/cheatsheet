@@ -1,105 +1,77 @@
 id: transform
 title: 变换
-query: Android 变换样式
-comment: 尽量详尽的演示不同属性和场景用法
-description: "在 Android 开发中，变换样式使得视图、活动和片段之间的过渡更加流畅与美观。通过属性配置，可以实现多种效果，如缩放、旋转、平移等，提升用户体验。"
+query: Swift UIKit Transform
+comment: Swift UIKit 视图的变换样式
+description: 在 Swift UIKit 中，可以使用 `CGAffineTransform` 结构体对视图进行变换，例如缩放、旋转、平移等。变换是相对于视图中心点进行的。`transform` 属性不会影响自动布局，自动布局会根据视图未变换的 frame 计算其对齐矩形。
 usage:
-  - title: 偏移
-    content: 使用 `translationX` 和 `translationY` 属性进行水平和垂直位移。
-    example: |
-      ```xml
-      <!-- 在 XML 中设置偏移 -->
-      <Button
-          android:id="@+id/myButton"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="偏移按钮"
-          android:translationX="50dp"  <!-- 水平偏移 50 像素 -->
-          android:translationY="100dp"/> <!-- 垂直偏移 100 像素 -->
-      ```
-
-      ```kotlin
-      // 创建一个按钮并设置其偏移
-      val myButton = Button(this).apply {
-          text = "偏移按钮"
-          translationX = 50f // 水平偏移 50 像素
-          translationY = 100f // 垂直偏移 100 像素
-      }
-      ```
-
-  - title: 旋转
-    content: 使用 `rotation` 属性来设置视图的旋转角度。
-    example: |
-      ```xml
-      <!-- 在 XML 中设置旋转 -->
-      <ImageView
-          android:id="@+id/myImageView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:src="@drawable/image"
-          android:rotation="45" /> <!-- 旋转 45 度 -->
-      ```
-
-      ```kotlin
-      // 创建一个 ImageView 并设置旋转
-      val myImageView = ImageView(this).apply {
-          setImageResource(R.drawable.image)
-          rotation = 45f // 旋转 45 度
-      }
-      ```
-
   - title: 缩放
-    content: 使用 `scaleX` 和 `scaleY` 属性来设置水平和垂直缩放因子。
+    description: 使用 `CGAffineTransform(scaleX:y:)` 初始化器创建缩放变换，分别指定水平和垂直方向的缩放比例。`1.0` 表示默认大小，大于 `1.0` 放大，小于 `1.0` 缩小。
     example: |
-      ```xml
-      <!-- 在 XML 中设置缩放 -->
-      <TextView
-          android:id="@+id/myTextView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="缩放文本"
-          android:scaleX="1.5"  <!-- 水平缩放 1.5 倍 -->
-          android:scaleY="1.5" /> <!-- 垂直缩放 1.5 倍 -->
-      ```
+      ```swift
+      // 将 imageView 放大 2 倍
+      imageView.transform = CGAffineTransform(scaleX: 2, y: 2)
 
-      ```kotlin
-      // 创建一个 TextView 并设置缩放
-      val myTextView = TextView(this).apply {
-          text = "缩放文本"
-          scaleX = 1.5f // 水平缩放 1.5 倍
-          scaleY = 1.5f // 垂直缩放 1.5 倍
-      }
+      // 将 imageView 缩小到一半
+      imageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
       ```
+  - title: 旋转
+    description: |
+      使用 `CGAffineTransform(rotationAngle:)` 初始化器创建旋转变换，参数为旋转角度（以弧度为单位）。
+      - 需要将角度转换为弧度，可以使用 `CGFloat.pi` 表示 π。
+      - Core Animation 会选择最短路径进行旋转。
+      - 旋转 360 度或其倍数不会产生任何动画效果。
+    example: |
+      ```swift
+      // 将 imageView 顺时针旋转 45 度
+      imageView.transform = CGAffineTransform(rotationAngle: CGFloat.pi / 4)
 
+      // 将 imageView 逆时针旋转 90 度
+      imageView.transform = CGAffineTransform(rotationAngle: -CGFloat.pi / 2)
+      ```
+  - title: 平移
+    description: 使用 `CGAffineTransform(translationX:y:)` 初始化器创建平移变换，分别指定水平和垂直方向的位移量。
+    example: |
+      ```swift
+      // 将 imageView 向右平移 50 点，向下平移 100 点
+      imageView.transform = CGAffineTransform(translationX: 50, y: 100)
+
+      // 将 imageView 向左平移 25 点，向上平移 75 点
+      imageView.transform = CGAffineTransform(translationX: -25, y: -75)
+      ```
   - title: 组合变换
-    content: 可以同时应用多个变换属性来实现复合效果。
+    description: |
+      可以使用以下方法组合多个变换：
+      - 使用 `concatenating(_:)` 方法将两个变换矩阵相乘，得到一个新的变换矩阵，表示先进行第一个变换，再进行第二个变换。
+      - 使用 `scaledBy(x:y:)`、`rotated(by:)`、`translatedBy(x:y:)` 方法在现有变换的基础上进行缩放、旋转和平移。
     example: |
-      ```xml
-      <!-- 在 XML 中设置组合变换 -->
-      <View
-          android:id="@+id/myView"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:translationX="20dp"  <!-- 水平偏移 20 像素 -->
-          android:translationY="30dp"  <!-- 垂直偏移 30 像素 -->
-          android:rotation="30"         <!-- 旋转 30 度 -->
-          android:scaleX="2"           <!-- 水平缩放 2 倍 -->
-          android:scaleY="2" />        <!-- 垂直缩放 2 倍 -->
-      ```
+      ```swift
+      // 先将 imageView 缩小到一半，然后顺时针旋转 45 度
+      let transform = CGAffineTransform(scaleX: 0.5, y: 0.5).rotated(by: CGFloat.pi / 4)
+      imageView.transform = transform
 
-      ```kotlin
-      // 同时设置偏移、旋转和缩放
-      val myView = View(this).apply {
-          translationX = 20f
-          translationY = 30f
-          rotation = 30f
-          scaleX = 2f
-          scaleY = 2f
+      // 先将 imageView 向右平移 50 点，然后在现有变换的基础上放大 2 倍
+      imageView.transform = imageView.transform.translatedBy(x: 50, y: 0).scaledBy(x: 2, y: 2)
+      ```
+  - title: 重置变换
+    description: 将 `transform` 属性设置为 `CGAffineTransform.identity` 可以重置视图的所有变换，使其恢复到默认状态。
+    example: |
+      ```swift
+      // 重置 imageView 的所有变换
+      imageView.transform = .identity
+      ```
+  - title: 动画
+    description: 可以在动画块中修改 `transform` 属性，以实现平滑的变换动画效果。可以使用 `UIView.animate(withDuration:animations:)` 方法创建动画。
+    example: |
+      ```swift
+      // 在 0.5 秒内将 imageView 顺时针旋转 90 度
+      UIView.animate(withDuration: 0.5) {
+          self.imageView.transform = CGAffineTransform(rotationAngle: CGFloat.pi / 2)
       }
       ```
-
 references:
-  - title: "Android View Properties"
-    url: https://developer.android.com/reference/android/view/View
-  - title: "Android Animations"
-    url: https://developer.android.com/guide/topics/graphics/view-animation
+  - title: transform | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622459-transform
+  - title: 'Transform: CGAffineTransform'
+    url: https://www.hackingwithswift.com/read/15/4/transform-cgaffinetransform
+  - title: rotation - How do you apply a transform to a UILabel before ...
+    url: https://stackoverflow.com/questions/53766632/how-do-you-apply-a-transform-to-a-uilabel-before-animating-in-swift

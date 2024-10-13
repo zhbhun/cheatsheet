@@ -1,23 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import * as dotenv from 'dotenv';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import puppeteer from 'puppeteer';
 import crypto from 'crypto';
 import { Feature, LanguageData, Reference } from './types.ts';
-import { isFileExit } from './utils.ts';
-
-const context = path.resolve(import.meta.dirname, '..');
-
-dotenv.config({
-  path: path.resolve(context, '.env.local'),
-});
-
-const gemini = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY as string
-).getGenerativeModel({
-  model: 'models/gemini-1.5-flash-latest',
-});
+import { context, isFileExit } from './utils.ts';
+import { getGeminiFlash } from './gemini.ts';
 
 async function searchByGoogle(
   query: string,
@@ -48,6 +35,9 @@ async function searchByGoogle(
     })
   )
     .filter((item) => {
+      if (item.url.indexOf('www.youtube.com') >= 0) {
+        return false;
+      }
       if (ignores.length > 0) {
         return !ignores.some(
           (ignore) =>
@@ -108,9 +98,7 @@ export async function loadReference(
     for (let i = 0; i <= language.documents.length; i++) {
       const site = language.documents[i];
       links = await searchByGoogle(
-        `${site ? `site:${site} ` : ''}${
-          feature.query || feature.title
-        }`,
+        `${site ? `site:${site} ` : ''}${feature.query || feature.title}`,
         language.ignores
       );
     }
@@ -151,7 +139,7 @@ export async function loadReference(
     references.push(reference);
   }
   if ((feature.references?.length ?? 0) === 0) {
-    const result = await gemini.generateContent({
+    const result = await getGeminiFlash().generateContent({
       contents: [
         {
           role: 'user',

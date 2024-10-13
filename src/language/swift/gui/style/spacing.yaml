@@ -1,95 +1,101 @@
 id: spacing
 title: 间距
-query: Android margin 和 padding 样式
-comment: 尽量详尽的演示不同属性和场景用法
-description: "在 Android 中，`margin` 和 `padding` 是用于控制视图间距的关键属性。`margin` 定义视图外部的空间，而 `padding` 则定义视图内部的空间。理解这两者的区别可以帮助创建更好的用户界面。"
+query: Swift UIKit Configuring content margins
+comment: 尽量详尽的介绍 UIKit 如何配置视图的内容间距配置
+description: UIKit 使用 layout margins 来管理视图内容与其边缘之间的间距。本文详细介绍如何配置和使用 layout margins，包括属性、方法以及如何避免内容拥挤，确保视图在不同屏幕尺寸和方向上都有一致的外观。
 usage:
-  - title: Margin 属性
-    content: "使用 `android:layout_margin` 属性设置视图周围的外边距。可以设置单个边距或四个边距的值。"
+  - title: 理解 Layout Margins
+    description: |
+      `layoutMargins` 属性定义了视图内容与其边缘之间的间距。它是一个 `UIEdgeInsets` 结构体，包含 `top`、`bottom`、`left` 和 `right` 四个属性，用于设置各个方向上的间距值。
+
+      默认情况下，视图控制器根视图的 `layoutMargins`  值反映了系统最小间距和安全区域边距，通常为 8 个点。子视图会继承父视图的 `layoutMargins`，除非你修改它们。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="带有外边距的文本"
-          android:layout_margin="16dp" <!-- 四周都设置为 16dp 的外边距 -->
-          android:layout_marginTop="24dp" <!-- 仅设置顶部外边距 -->
-      />
+      ```swift
+      // 打印视图的当前 layoutMargins
+      print(view.layoutMargins) 
       ```
+  - title: 设置 Layout Margins
+    description: |
+      你可以直接修改 `layoutMargins` 属性来改变视图的间距。 
 
-  - title: Padding 属性
-    content: "使用 `android:padding` 属性设置视图内容与边界之间的内部间距。可以单独设置每个边的填充值。"
+      **注意：** 从 iOS 11 开始，建议使用 `directionalLayoutMargins` 来代替 `layoutMargins`，以便更好地支持从右到左的语言。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="带有内边距的文本"
-          android:padding="8dp" <!-- 四周都设置为 8dp 的内边距 -->
-          android:paddingLeft="12dp" <!-- 仅设置左侧内边距 -->
-      />
+      ```swift
+      // 设置视图的 layoutMargins 为 16 个点
+      view.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
       ```
+  - title: 使用 Directional Layout Margins
+    description: |
+      `directionalLayoutMargins` 是一个 `NSDirectionalEdgeInsets` 结构体，与 `layoutMargins` 类似，但它使用 leading 和 trailing 而不是 left 和 right，更适合从右到左的语言。
 
-  - title: Margin 和 Padding 区别
-    content: "`margin` 是视图外部的空间，用于控制与其他视图的距离；`padding` 是视图内部的空间，影响内容与视图边缘的距离。"
+      `leading`  对应于从左到右语言的左边，trailing 对应于右边。在从右到左的语言中，`leading`  对应于右边，trailing 对应于左边。
     example: |
-      ```xml
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:padding="16dp" <!-- 内容与 LinearLayout 边缘之间的内边距 -->
-          android:layout_margin="8dp"> <!-- LinearLayout 与其他视图之间的外边距 -->
-
-          <Button
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="按钮" />
-      </LinearLayout>
+      ```swift
+      // 设置视图的 directionalLayoutMargins
+      view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 16, leading: 24, bottom: 16, trailing: 24)
       ```
+  - title: 保留父视图的 Layout Margins
+    description: |
+      `preservesSuperviewLayoutMargins` 属性决定了子视图是否要保留父视图的 layout margins。
 
-  - title: 使用不同的尺寸
-    content: "可以通过使用不同的尺寸来响应不同的屏幕尺寸和密度，确保 UI 一致性。"
+      当设置为 `true` 时，如果子视图的边缘与其父视图的边缘之间的距离小于相应的 margin 值，UIKit 会调整子视图的布局以尊重父视图的 margins。
     example: |
-      ```xml
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="适应不同屏幕的文本"
-          android:padding="@dimen/padding_large" <!-- 使用 dimens.xml 文件中定义的尺寸 -->
-          android:layout_margin="@dimen/margin_small" />
+      ```swift
+      // 设置子视图保留父视图的 layoutMargins
+      subview.preservesSuperviewLayoutMargins = true 
       ```
+  - title: 从安全区域嵌入 Layout Margins
+    description: |
+      `insetsLayoutMarginsFromSafeArea` 属性决定了视图是否要从安全区域嵌入 layout margins。
 
-      ```xml
-      <?xml version="1.0" encoding="utf-8"?>
-      <resources>
-          <dimen name="padding_small">4dp</dimen> <!-- 小内边距 -->
-          <dimen name="padding_medium">8dp</dimen> <!-- 中等内边距 -->
-          <dimen name="padding_large">16dp</dimen> <!-- 大内边距 -->
-          <dimen name="margin_small">4dp</dimen> <!-- 小外边距 -->
-          <dimen name="margin_medium">8dp</dimen> <!-- 中等外边距 -->
-          <dimen name="margin_large">16dp</dimen> <!-- 大外边距 -->
-      </resources>
-      ```
-
-  - title: 结合使用
-    content: "通常，`margin` 和 `padding` 会一起使用以实现更灵活的布局设计。"
+      当设置为 `true` 时，视图的 layout margins 会被安全区域边距所扩展。例如，如果安全区域顶部有 20 个点的边距，而你的视图设置了 16 个点的顶部边距，那么最终的顶部边距将是 36 个点。
     example: |
-      ```xml
-      <CardView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_margin="16dp" <!-- 外边距 -->
-          android:padding="16dp"> <!-- 内边距 -->
-
-          <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="卡片中的文本" />
-      </CardView>
+      ```swift 
+      // 设置视图从安全区域嵌入 layoutMargins
+      view.insetsLayoutMarginsFromSafeArea = true
       ```
+  - title: 使用 Layout Margins Guide
+    description: |
+      每个视图都有一个 `layoutMarginsGuide` 属性，它是一个 `UILayoutGuide` 对象，表示视图的 layout margins 区域。你可以使用它来创建相对于 layout margins 的约束，而不是直接使用视图的边缘。
+    example: |
+      ```swift
+      // 将子视图的左边与父视图的 leading margin 对齐
+      NSLayoutConstraint.activate([
+          subview.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor)
+      ])
+      ```
+  - title: 响应 Layout Margins 变化
+    description: |
+      当视图的 layout margins 发生变化时，会调用 `layoutMarginsDidChange()` 方法。你可以重写这个方法来进行一些自定义的布局调整。
+    example: |
+      ```swift
+      override func layoutMarginsDidChange() {
+          super.layoutMarginsDidChange()
 
+          // 在这里更新子视图的布局
+      }
+      ```
+  - title: 最佳实践
+    description: |
+      *   尽量使用 `directionalLayoutMargins`  来代替 `layoutMargins`。
+      *   在根视图上设置全局的 layout margins，然后让子视图继承。
+      *   使用 `layoutMarginsGuide` 来创建约束，以便更方便地管理间距。
+      *   避免在不同的地方设置不同的间距值，保持一致性。
+    example: |
+      ```swift
+      // 在 AppDelegate 中设置全局 layoutMargins
+      func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+          // ...
+          UIApplication.shared.windows.forEach { window in
+              window.rootViewController?.view.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 16, leading: 24, bottom: 16, trailing: 24)
+          }
+          return true
+      }
+      ```
 references:
-  - title: "Margin and Padding in an Android View"
-    url: https://www.studytonight.com/android/margin-and-padding-in-an-android-view
-  - title: "Layout basics"
-    url: https://developer.android.com/guide/topics/ui/declaring-layout
+  - title: Positioning content within layout margins - UIKit
+    url: https://developer.apple.com/documentation/uikit/uiview/positioning_content_within_layout_margins
+  - title: layoutMargins | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiview/1622566-layoutmargins
+  - title: Make friends UITableView with layout margins
+    url: https://otbivnoe.medium.com/make-friends-uitableview-with-layout-margins-3ddbd3bcd6d7
