@@ -1,11 +1,15 @@
 import clsx from 'clsx';
 import { ReactNode, useEffect, useState } from 'react';
-import { PanelLeftClose, PanelLeftOpenIcon } from 'lucide-react';
+import { Ellipsis, PanelLeftClose } from 'lucide-react';
 import {
   Breadcrumbs,
   BreadcrumbItem,
-  ScrollShadow,
   Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  ScrollShadow,
 } from '@nextui-org/react';
 import { ControlledTreeEnvironment, Tree, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
@@ -198,39 +202,70 @@ export function FeatureWrapper({
           }
         )}
       >
-        <div className="flex items-center">
-          {collapsed ? (
-            <Button
-              className="mr-2 p-0 !w-10"
-              variant="light"
-              fullWidth
-              isIconOnly
-              onClick={() => {
-                setCollapsed(false);
-              }}
-            >
-              <PanelLeftClose className="w-5 h-5 text-neutral-400" />
-            </Button>
-          ) : null}
-          <Breadcrumbs>
-            {feature.split('/').map((key, index, array) => {
-              const featureIndex = array.slice(0, index + 1).join('/');
-              const feature = treeData[featureIndex];
-              const url = `/${featureIndex}`;
-              return (
-                <BreadcrumbItem
-                  key={index}
-                  href={url}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    onSwitch?.(featureIndex);
+        <div className="flex w-full justify-between items-center">
+          <div className="flex items-center">
+            {collapsed ? (
+              <Button
+                className="mr-2 p-0 !w-10"
+                variant="light"
+                fullWidth
+                isIconOnly
+                onClick={() => {
+                  setCollapsed(false);
+                }}
+              >
+                <PanelLeftClose className="w-5 h-5 text-neutral-400" />
+              </Button>
+            ) : null}
+            <Breadcrumbs>
+              {feature.split('/').map((key, index, array) => {
+                const featureIndex = array.slice(0, index + 1).join('/');
+                const feature = treeData[featureIndex];
+                const url = `/${featureIndex}`;
+                return (
+                  <BreadcrumbItem
+                    key={index}
+                    href={url}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSwitch?.(featureIndex);
+                    }}
+                  >
+                    {feature?.data?.title ?? key}
+                  </BreadcrumbItem>
+                );
+              })}
+            </Breadcrumbs>
+          </div>
+          <div>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  className="p-0 !w-10"
+                  variant="light"
+                  fullWidth
+                  isIconOnly
+                  onClick={() => {
+                    setCollapsed(false);
                   }}
                 >
-                  {feature?.data?.title ?? key}
-                </BreadcrumbItem>
-              );
-            })}
-          </Breadcrumbs>
+                  <Ellipsis className="w-5 h-5 text-neutral-400" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Static Actions">
+                <DropdownItem key="new">New file</DropdownItem>
+                <DropdownItem key="copy">Copy link</DropdownItem>
+                <DropdownItem key="edit">Edit file</DropdownItem>
+                <DropdownItem
+                  key="delete"
+                  className="text-danger"
+                  color="danger"
+                >
+                  Delete file
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
         </div>
       </div>
       {children}

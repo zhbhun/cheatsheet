@@ -1,4 +1,4 @@
-id: object-animator
+id: basic-animation
 title: ObjectAnimator
 query: Android ObjectAnimator
 comment: 尽量详尽的演示不同属性和场景用法

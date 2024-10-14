@@ -1,10 +1,9 @@
 id: animation
 title: 动画
 children:
+  - basic-animation
   - view-property-animator
-  - object-animator
-  - value-animator
-  - transition-manager
-  - animation-drawable
-  - motion-layout
+  - key-frame-animation
+  - transition
+  - animated-image
   - physics-based-animations

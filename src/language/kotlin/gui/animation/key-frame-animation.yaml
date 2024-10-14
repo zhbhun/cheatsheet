@@ -1,4 +1,4 @@
-id: value-animator
+id: key-frame-animation
 title: ValueAnimator
 query: Android ValueAnimator
 comment: 尽量详尽的演示不同属性和场景用法

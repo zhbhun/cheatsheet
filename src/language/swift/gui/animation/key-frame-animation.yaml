@@ -1,0 +1,255 @@
+id: key-frame-animation
+title: CAKeyframeAnimation
+query: UIKit CAKeyframeAnimation
+comment: 尽量详尽的演示不同属性和场景用法
+description: CAKeyframeAnimation 继承自 CAPropertyAnimation，用于创建基于关键帧的动画。开发者可以通过设置一系列的值和时间来控制动画的进行过程，时间和值对应，并且时间都是0-1的相对时间，0代表动画开始，1代表动画结束。可以通过关键帧动画实现自定义动画曲线，以及更加复杂的动画效果，例如：视图淡入淡出、视图缩放、视图沿着指定路径运动等。
+usage:
+  - title: 创建基础关键帧动画
+    description: 创建 CAKeyframeAnimation 对象，并设置关键帧动画的属性，例如：持续时间、动画曲线、关键帧的值等。以下示例演示如何将视图从顶部移动到底部，并进行缩放。
+    example: |
+      ```swift
+      import UIKit
+      import QuartzCore
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var animatedView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+          }
+
+          @IBAction func startAnimationButtonTapped(_ sender: UIButton) {
+              createKeyframeAnimation()
+          }
+
+          func createKeyframeAnimation() {
+              // 创建 CAKeyframeAnimation 对象，并设置动画路径为 position
+              let animation = CAKeyframeAnimation(keyPath: "position")
+
+              // 设置动画路径，动画从视图当前位置移动到 (300, 300)
+              let path = UIBezierPath()
+              path.move(to: animatedView.center)
+              path.addQuadCurve(to: CGPoint(x: 300, y: 300), controlPoint: CGPoint(x: 150, y: 0))
+              animation.path = path.cgPath
+
+              // 设置动画时长
+              animation.duration = 2.0
+
+              // 设置动画曲线为 easeInOut
+              animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+              // 创建缩放动画
+              let scaleAnimation = CABasicAnimation(keyPath: "transform.scale")
+              // 设置初始缩放比例
+              scaleAnimation.fromValue = 1.0
+              // 设置结束缩放比例
+              scaleAnimation.toValue = 0.5
+              // 设置动画时长
+              scaleAnimation.duration = 2.0
+
+              // 将位移动画和缩放动画添加到动画组
+              let groupAnimation = CAAnimationGroup()
+              groupAnimation.animations = [animation, scaleAnimation]
+              // 设置动画时长
+              groupAnimation.duration = 2.0
+
+              // 将动画组添加到视图 layer 上
+              animatedView.layer.add(groupAnimation, forKey: "positionAndScale")
+          }
+      }
+      ```
+  - title: 修改动画时长
+    description: 通过设置 `duration` 属性的值来控制动画的时长。
+    example: |
+      ```swift
+      // 设置动画时长为 5 秒
+      animation.duration = 5.0
+      ```
+  - title: 设置动画曲线
+    description: |
+      通过 `timingFunction` 属性可以设置动画的时间节奏，使其看起来更真实、更平滑。常用的动画曲线有：
+        - `kCAMediaTimingFunctionLinear`：线性动画曲线，动画从开始到结束速度保持一致。
+        - `kCAMediaTimingFunctionEaseIn`： easeIn 动画曲线，动画开始时速度较慢，之后逐渐加快。
+        - `kCAMediaTimingFunctionEaseOut`：easeOut 动画曲线，动画结束时速度较慢，之前逐渐减慢。
+        - `kCAMediaTimingFunctionEaseInEaseOut`：easeInOut 动画曲线，动画开始和结束时速度较慢，中间逐渐变快。
+        - `kCAMediaTimingFunctionDefault`：默认动画曲线，一般情况下和 easeInOut 效果相同。
+    example: |
+      ```swift
+      // 设置动画曲线为 easeIn
+      animation.timingFunction = CAMediaTimingFunction(name: .easeIn)
+      ```
+  - title: 设置关键帧的值
+    description: |
+      `values` 属性用于设置关键帧的值，可以是以下几种类型：
+        - `NSNumber`：适用于单个数值的动画，例如：`opacity`、`transform.scale` 等。
+        - `CGPoint`：适用于二维坐标的动画，例如：`position`。
+        - `CGPath`：适用于沿着指定路径运动的动画。
+        - `CATransform3D`：适用于三维变换的动画，例如：`transform`。
+
+      如果需要设置多个关键帧的值，则需要将这些值添加到数组中，并赋值给 `values` 属性。
+
+      **注意**：`values` 数组中元素的个数必须和 `keyTimes` 数组中元素的个数相同，否则动画将无法正常播放。
+    example: |
+      ```swift
+      // 设置关键帧的值为 0.0、0.5、1.0，分别对应动画开始、中间、结束时的位置
+      animation.values = [0.0, 0.5, 1.0]
+      ```
+  - title: 设置关键帧的时间
+    description: 通过 `keyTimes` 属性可以设置每个关键帧对应的时间点，时间点是一个0-1的浮点数，0代表动画开始，1代表动画结束。`keyTimes` 数组中元素的个数必须和 `values` 数组中元素的个数相同，否则动画将无法正常播放。
+    example: |
+      ```swift
+      // 设置关键帧的时间为 0.0、0.5、1.0，分别对应动画开始、中间、结束的时间点
+      animation.keyTimes = [0.0, 0.5, 1.0]
+      ```
+  - title: 设置动画的计算模式
+    description: |
+      `calculationMode` 属性用于设置动画的计算模式，决定了动画如何使用关键帧的值来计算动画的中间状态。常用的计算模式有：
+        - `kCAAnimationLinear`：线性计算模式，动画按照关键帧的顺序依次进行，每个关键帧之间速度保持一致。
+        - `kCAAnimationDiscrete`：离散计算模式，动画只会在关键帧之间进行跳跃，不会计算中间状态。
+        - `kCAAnimationPaced`：平均计算模式，动画会根据关键帧之间的时间间隔来调整动画的速度，使其看起来更加平滑。
+        - `kCAAnimationCubic`：三阶贝塞尔曲线计算模式，动画使用三阶贝塞尔曲线来计算动画的中间状态，可以实现更加平滑的动画效果。
+        - `kCAAnimationCubicPaced`：平均三阶贝塞尔曲线计算模式，动画会根据关键帧之间的时间间隔来调整三阶贝塞尔曲线的控制点，使其看起来更加平滑。
+    example: |
+      ```swift
+      // 设置动画的计算模式为 paced
+      animation.calculationMode = .paced
+      ```
+  - title: 设置动画的填充模式
+    description: |
+      `fillMode` 属性用于设置动画的填充模式，决定了动画在开始之前和结束之后如何显示。常用的填充模式有：
+        - `kCAFillModeRemoved`：移除填充模式，动画在开始之前和结束之后都不会显示。
+        - `kCAFillModeForwards`：向前填充模式，动画结束后保持最后一帧的状态。
+        - `kCAFillModeBackwards`：向后填充模式，动画开始前就保持第一帧的状态。
+        - `kCAFillModeBoth`：双向填充模式，动画开始前就保持第一帧的状态，结束后保持最后一帧的状态。
+    example: |
+      ```swift
+      // 设置动画的填充模式为 both
+      animation.fillMode = .both
+      ```
+  - title: 设置动画是否自动翻转
+    description: 通过 `autoreverses` 属性可以设置动画是否自动翻转，如果设置为 true，则动画会在播放完成后自动反向播放。
+    example: |
+      ```swift
+      // 设置动画自动翻转
+      animation.autoreverses = true
+      ```
+  - title: 设置动画的重复次数
+    description: 通过 `repeatCount` 属性可以设置动画的重复次数，如果设置为 HUGE_VALF，则动画会一直重复播放。
+    example: |
+      ```swift
+      // 设置动画重复播放
+      animation.repeatCount = .infinity
+      ```
+  - title: 添加动画完成回调
+    description: 通过设置 `delegate` 属性，并实现 `animationDidStop(_:finished:)` 方法，可以监听动画的完成事件。
+    example: |
+      ```swift
+      class MyViewController: UIViewController, CAAnimationDelegate {
+          // ...
+
+          func createKeyframeAnimation() {
+              // ...
+
+              // 设置动画代理
+              animation.delegate = self
+              // ...
+          }
+
+          // 动画完成回调
+          func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+              if flag {
+                  // 动画已完成
+              }
+          }
+      }
+      ```
+  - title: 移除动画
+    description: 可以通过调用 `removeAnimation(forKey:)` 方法来移除指定的动画，或者调用 `removeAllAnimations()` 方法来移除所有的动画。
+    example: |
+      ```swift
+      // 移除 key 为 "myAnimation" 的动画
+      animatedView.layer.removeAnimation(forKey: "myAnimation")
+
+      // 移除所有动画
+      animatedView.layer.removeAllAnimations()
+      ```
+  - title: 暂停和恢复动画
+    description: |
+      可以通过设置 `speed` 属性为 0 来暂停动画，设置为 1 来恢复动画。
+      可以通过设置 `timeOffset` 属性来设置动画的偏移量，例如将 `timeOffset` 设置为动画总时长的 0.5，则动画将从一半的位置开始播放。
+    example: |
+      ```swift
+      // 暂停动画
+      animatedView.layer.speed = 0.0
+
+      // 恢复动画
+      animatedView.layer.speed = 1.0
+
+      // 设置动画偏移量
+      animatedView.layer.timeOffset = animation.duration * 0.5
+      ```
+  - title: 实现视图淡入淡出动画
+    description: 通过改变视图的透明度来实现视图的淡入淡出动画效果。
+    example: |
+      ```swift
+      func createFadeInOutAnimation() {
+          let animation = CAKeyframeAnimation(keyPath: "opacity")
+          animation.values = [1.0, 0.5, 0.0, 0.5, 1.0]
+          animation.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
+          animation.duration = 2.0
+          animation.repeatCount = .infinity
+          animatedView.layer.add(animation, forKey: "fadeInOut")
+      }
+      ```
+  - title: 实现视图缩放动画
+    description: 通过改变视图的 `transform.scale` 属性来实现视图的缩放动画效果。
+    example: |
+      ```swift
+      func createZoomAnimation() {
+          let animation = CAKeyframeAnimation(keyPath: "transform.scale")
+          animation.values = [1.0, 1.5, 0.5, 1.2, 1.0]
+          animation.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
+          animation.duration = 2.0
+          animation.repeatCount = .infinity
+          animatedView.layer.add(animation, forKey: "zoom")
+      }
+      ```
+  - title: 实现视图沿着指定路径运动
+    description: |
+      使用 `CGPath` 创建路径，并将 `path` 属性设置为创建的路径，可以使视图沿着指定的路径进行运动。
+      在设置路径时，需要保证路径的起点和视图的当前位置一致，否则动画将会出现跳跃。
+    example: |
+      ```swift
+      func createPathAnimation() {
+          let animation = CAKeyframeAnimation(keyPath: "position")
+          let path = UIBezierPath()
+          path.move(to: animatedView.center)
+          path.addCurve(to: CGPoint(x: view.frame.maxX - 50, y: view.frame.maxY - 50),
+                        controlPoint1: CGPoint(x: view.frame.maxX + 100, y: view.frame.minY - 100),
+                        controlPoint2: CGPoint(x: view.frame.minX - 100, y: view.frame.maxY + 100))
+          animation.path = path.cgPath
+          animation.duration = 2.0
+          animation.repeatCount = .infinity
+          animatedView.layer.add(animation, forKey: "path")
+      }
+      ```
+  - title: 实现抖动动画
+    description: 通过设置多个关键帧的值，并使用 easeInOut 动画曲线，可以实现视图的抖动动画效果。
+    example: |
+      ```swift
+      func createShakeAnimation() {
+          let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
+          animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+          animation.duration = 0.5
+          animation.values = [-20.0, 20.0, -20.0, 20.0, -10.0, 10.0, -5.0, 5.0, 0.0 ]
+          animatedView.layer.add(animation, forKey: "shake")
+      }
+      ```
+references:
+  - title: How to create keyframe animations using ...
+    url: https://www.hackingwithswift.com/example-code/calayer/how-to-create-keyframe-animations-using-cakeyframeanimation
+  - title: How Do You CAKeyframeAnimation Scale?
+    url: https://stackoverflow.com/questions/1998615/how-do-you-cakeyframeanimation-scale
+  - title: Keyframe Animations in iOS Development | by Adi Mizrahi
+    url: https://medium.com/codex/unlocking-the-power-of-keyframe-animations-in-ios-development-3140c93ddea3

@@ -2,3 +2,134 @@ id: scroll
 title: 滚动
 query: UIKit scroll event
 comment: 尽量详尽的演示不同属性和场景用法
+description: UIScrollView 用于显示超过屏幕大小的内容，并允许用户通过滚动和缩放来浏览内容。它是许多 UIKit 类的超类，包括 UITableView 和 UITextView。
+usage:
+  - title: 创建滚动视图
+    description: 可以使用 Interface Builder 或代码创建 UIScrollView 实例。在代码中创建时，需要设置其 frame 和 contentSize 属性。
+    example: |
+      ```swift
+      // 创建一个 frame 为 (0, 0, 320, 480) 的 UIScrollView
+      let scrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+
+      // 设置 contentSize 为 (320, 960)，表示内容视图是滚动视图的两倍高
+      scrollView.contentSize = CGSize(width: 320, height: 960)
+      ```
+  - title: 设置内容
+    description: 将需要显示的内容添加到 UIScrollView 的子视图中。内容视图的大小应该等于或大于 UIScrollView 的 contentSize。
+    example: |
+      ```swift
+      // 创建一个 UIImageView 作为内容视图
+      let imageView = UIImageView(image: UIImage(named: "myImage"))
+
+      // 将 imageView 添加到 scrollView 的子视图中
+      scrollView.addSubview(imageView)
+
+      // 设置 contentSize 等于 imageView 的大小
+      scrollView.contentSize = imageView.bounds.size
+      ```
+  - title: 启用滚动
+    description: 默认情况下，UIScrollView 是启用滚动的。可以通过设置 isScrollEnabled 属性为 false 来禁用滚动。
+    example: |
+      ```swift
+      // 禁用滚动
+      scrollView.isScrollEnabled = false
+      ```
+  - title: 滚动方向
+    description: 默认情况下，UIScrollView 支持水平和垂直方向的滚动。可以通过设置 contentSize 属性来控制滚动方向。如果 contentSize 的宽度大于 UIScrollView 的宽度，则支持水平滚动；如果 contentSize 的高度大于 UIScrollView 的高度，则支持垂直滚动。
+    example: |
+      ```swift
+      // 只允许垂直滚动
+      scrollView.contentSize = CGSize(width: scrollView.bounds.width, height: 960)
+      ```
+  - title: 分页滚动
+    description: 可以通过设置 isPagingEnabled 属性为 true 来启用分页滚动。启用分页滚动后，UIScrollView 会在每次滚动停止时自动将内容视图对齐到页面边界。
+    example: |
+      ```swift
+      // 启用分页滚动
+      scrollView.isPagingEnabled = true
+      ```
+  - title: 回弹效果
+    description: 默认情况下，UIScrollView 在滚动到内容边缘时会产生回弹效果。可以通过设置 bounces 属性为 false 来禁用回弹效果。
+    example: |
+      ```swift
+      // 禁用回弹效果
+      scrollView.bounces = false
+      ```
+  - title: 滚动指示器
+    description: 默认情况下，UIScrollView 会显示水平和垂直方向的滚动指示器。可以通过设置 showsHorizontalScrollIndicator 和 showsVerticalScrollIndicator 属性为 false 来隐藏滚动指示器。
+    example: |
+      ```swift
+      // 隐藏水平滚动指示器
+      scrollView.showsHorizontalScrollIndicator = false
+
+      // 隐藏垂直滚动指示器
+      scrollView.showsVerticalScrollIndicator = false
+      ```
+  - title: 内容偏移
+    description: 可以使用 contentOffset 属性来获取或设置 UIScrollView 的内容偏移量。contentOffset 属性是一个 CGPoint 值，表示内容视图的原点相对于 UIScrollView 原点的偏移量。
+    example: |
+      ```swift
+      // 获取当前内容偏移量
+      let offset = scrollView.contentOffset
+
+      // 设置内容偏移量为 (100, 100)
+      scrollView.contentOffset = CGPoint(x: 100, y: 100)
+      ```
+  - title: 滚动到指定位置
+    description: 可以使用 setContentOffset(_:animated:) 方法将 UIScrollView 滚动到指定位置。如果 animated 参数为 true，则滚动过程会有动画效果。
+    example: |
+      ```swift
+      // 将 UIScrollView 滚动到 (100, 100) 位置，并带有动画效果
+      scrollView.setContentOffset(CGPoint(x: 100, y: 100), animated: true)
+      ```
+  - title: 缩放
+    description: 可以通过设置 minimumZoomScale 和 maximumZoomScale 属性来控制 UIScrollView 的缩放比例。minimumZoomScale 属性指定最小缩放比例，maximumZoomScale 属性指定最大缩放比例。
+    example: |
+      ```swift
+      // 设置最小缩放比例为 0.5，最大缩放比例为 2.0
+      scrollView.minimumZoomScale = 0.5
+      scrollView.maximumZoomScale = 2.0
+      ```
+  - title: 处理缩放手势
+    description: 要处理缩放手势，需要设置 UIScrollView 的 delegate 属性，并实现 viewForZooming(in:) 方法。viewForZooming(in:) 方法返回一个 UIView 对象，表示要缩放的内容视图。
+    example: |
+      ```swift
+      // 设置 UIScrollView 的 delegate
+      scrollView.delegate = self
+
+      // 实现 viewForZooming(in:) 方法
+      func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+          // 返回要缩放的内容视图
+          return imageView
+      }
+      ```
+  - title: 内容插图
+    description: 可以使用 contentInset 属性来设置 UIScrollView 的内容插图。contentInset 属性是一个 UIEdgeInsets 值，表示内容视图与 UIScrollView 边缘之间的间距。
+    example: |
+      ```swift
+      // 设置内容插图，顶部和底部为 20，左右为 10
+      scrollView.contentInset = UIEdgeInsets(top: 20, left: 10, bottom: 20, right: 10)
+      ```
+  - title: 键盘处理
+    description: 当键盘出现时，可以使用 UIScrollView 的 keyboardDismissMode 属性来控制键盘的关闭方式。keyboardDismissMode 属性是一个 UIScrollView.KeyboardDismissMode 值，可以设置为以下值之一： - .none：键盘不会自动关闭。 - .onDrag：当用户在 UIScrollView 中拖动时，键盘会自动关闭。 - .interactive：当键盘出现时，UIScrollView 的内容会向上滚动，以便用户可以看到被键盘遮挡的内容。
+    example: |
+      ```swift
+      // 设置键盘关闭方式为 onDrag
+      scrollView.keyboardDismissMode = .onDrag
+      ```
+  - title: 滚动事件
+    description: 可以通过 UIScrollViewDelegate 协议来监听 UIScrollView 的滚动事件。UIScrollViewDelegate 协议定义了许多方法，可以用来响应 UIScrollView 的各种滚动事件，例如： - scrollViewDidScroll(_:)：当 UIScrollView 滚动时调用。 - scrollViewWillBeginDragging(_:)：当用户开始拖动 UIScrollView 时调用。 - scrollViewDidEndDragging(_:willDecelerate:)：当用户结束拖动 UIScrollView 时调用。 - scrollViewWillBeginDecelerating(_:)：当 UIScrollView 开始减速时调用。 - scrollViewDidEndDecelerating(_:)：当 UIScrollView 停止滚动时调用。
+    example: |
+      ```swift
+      // 实现 scrollViewDidScroll(_:) 方法
+      func scrollViewDidScroll(_ scrollView: UIScrollView) {
+          // 获取当前内容偏移量
+          let offset = scrollView.contentOffset
+
+          // 打印当前内容偏移量
+          print("Content offset: \(offset)")
+      }
+      ```
+references:
+  - title: UIScrollView | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiscrollview

@@ -1,4 +1,4 @@
-id: transition-manager
+id: transition
 title: TransitionManager
 query: Android TransitionManager
 comment: 尽量详尽的演示不同属性和场景用法

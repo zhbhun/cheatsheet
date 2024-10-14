@@ -1,4 +1,340 @@
 id: gesture
 title: 手势
 query: UIKit Gesture Recognizer
-comment: UIKit 手势识别，包括：轻点、捏合、旋转、滑动、平移和长安等手势。
+comment: 返回应该应该包含：如何管理手势监听，手势识别器的配置属性，分别演示如何处理轻点、捏合、旋转、滑动、平移和长安等手势，以及如何处理事件信息。
+description: 在 iOS 中，您可以使用手势识别器 (UIGestureRecognizer) 来识别用户在屏幕上的触摸交互。手势识别器可以监听特定类型的手势，例如轻点、捏合、旋转、滑动、平移和长按，并在识别到相应手势时触发相应的操作。
+usage:
+  - title: 管理手势监听
+    description: |
+      **1. 创建手势识别器**
+
+      您可以通过代码创建手势识别器实例，并指定要监听的手势类型。例如，要创建一个监听轻点手势的识别器，可以使用以下代码：
+
+      ```swift
+      let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+      ```
+
+      **2. 添加手势识别器到视图**
+
+      创建手势识别器后，您需要将其添加到要监听手势事件的视图中。例如，要将轻点手势识别器添加到名为 `myView` 的视图中，可以使用以下代码：
+
+      ```swift
+      myView.addGestureRecognizer(tapRecognizer)
+      ```
+
+      **3. 处理手势事件**
+
+      当手势识别器识别到相应的手势时，它会调用您在创建时指定的方法。您可以在此方法中编写处理手势事件的代码。例如，以下代码展示了如何处理轻点手势事件：
+
+      ```swift
+      @objc func handleTap(_ sender: UITapGestureRecognizer) {
+          // 处理轻点手势事件
+          print("轻点手势被识别")
+      }
+      ```
+
+      **4. 移除手势识别器 (可选)**
+
+      如果不再需要监听手势事件，您可以从视图中移除手势识别器。例如，要从 `myView` 中移除 `tapRecognizer`，可以使用以下代码：
+
+      ```swift
+      myView.removeGestureRecognizer(tapRecognizer)
+      ```
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var myView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建轻点手势识别器
+              let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+              // 添加手势识别器到视图
+              myView.addGestureRecognizer(tapRecognizer)
+          }
+
+          @objc func handleTap(_ sender: UITapGestureRecognizer) {
+              // 处理轻点手势事件
+              print("轻点手势被识别")
+          }
+      }
+      ```
+  - title: 手势识别器的配置属性
+    description: |
+      手势识别器具有一些可配置的属性，可以用来调整其行为。以下是一些常用的属性：
+
+      - **isEnabled**:  布尔值，指示手势识别器是否启用。默认为 true。
+
+      - **numberOfTapsRequired**:  整数值，指示识别手势所需的轻点次数。默认为 1。
+
+      - **numberOfTouchesRequired**:  整数值，指示识别手势所需的手指数量。默认为 1。
+
+      - **cancelsTouchesInView**:  布尔值，指示手势识别器在识别到手势后是否取消传递给视图的触摸事件。默认为 true。
+
+      - **delaysTouchesBegan**:  布尔值，指示手势识别器是否延迟将触摸开始事件传递给视图。默认为 false。
+
+      - **delaysTouchesEnded**:  布尔值，指示手势识别器是否延迟将触摸结束事件传递给视图。默认为 true。
+    example: |
+      ```swift
+      // 设置轻点手势识别器需要双击才能触发
+      tapRecognizer.numberOfTapsRequired = 2
+
+      // 设置平移手势识别器需要两个手指才能触发
+      panRecognizer.minimumNumberOfTouches = 2
+
+      // 设置长按手势识别器需要按住 2 秒才能触发
+      longPressRecognizer.minimumPressDuration = 2.0
+      ```
+  - title: 处理轻点手势
+    description: |
+      轻点手势是最简单的手势之一，表示用户用手指快速地触摸屏幕一次或多次。`UITapGestureRecognizer` 用于识别轻点手势。
+
+      **属性：**
+
+      - `numberOfTapsRequired`：用于设置需要多少次点击才能触发手势识别器。
+      - `numberOfTouchesRequired`：用于设置需要多少个手指点击才能触发手势识别器。
+
+      **事件信息：**
+
+      - `location(in:)`：获取点击位置相对于指定视图的坐标。
+
+      **示例：**
+
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var myView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建一个需要双击的轻点手势识别器
+              let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+              doubleTapRecognizer.numberOfTapsRequired = 2
+              myView.addGestureRecognizer(doubleTapRecognizer)
+          }
+
+          @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
+              // 处理双击事件
+              print("双击手势被识别")
+
+              // 获取点击位置
+              let location = sender.location(in: view)
+              print("点击位置：\(location)")
+          }
+      }
+      ```
+  - title: 处理捏合手势
+    description: |
+      捏合手势通常用于缩放视图或图像。`UIPinchGestureRecognizer` 用于识别捏合手势。
+
+      **属性：**
+
+      - `scale`：获取捏合的比例值。
+
+      **事件信息：**
+
+      - `location(in:)`：获取捏合中心点相对于指定视图的坐标。
+
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var imageView: UIImageView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建捏合手势识别器
+              let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+              imageView.addGestureRecognizer(pinchRecognizer)
+          }
+
+          @objc func handlePinch(_ sender: UIPinchGestureRecognizer) {
+              // 处理捏合事件
+              print("捏合手势被识别，比例：\(sender.scale)")
+
+              // 缩放图像
+              imageView.transform = imageView.transform.scaledBy(x: sender.scale, y: sender.scale)
+
+              // 重置缩放比例，以便下次捏合操作从 1.0 开始计算
+              sender.scale = 1.0
+          }
+      }
+      ```
+  - title: 处理旋转手势
+    description: |
+      旋转手势通常用于旋转视图或图像。`UIRotationGestureRecognizer` 用于识别旋转手势。
+
+      **属性：**
+
+      - `rotation`：获取旋转的角度值，以弧度为单位。
+
+      **事件信息：**
+
+      - `location(in:)`：获取旋转中心点相对于指定视图的坐标。
+
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var imageView: UIImageView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建旋转手势识别器
+              let rotationRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
+              imageView.addGestureRecognizer(rotationRecognizer)
+          }
+
+          @objc func handleRotation(_ sender: UIRotationGestureRecognizer) {
+              // 处理旋转事件
+              print("旋转手势被识别，角度：\(sender.rotation)")
+
+              // 旋转图像
+              imageView.transform = imageView.transform.rotated(by: sender.rotation)
+          }
+      }
+      ```
+  - title: 处理滑动手势
+    description: |
+      滑动手势表示用户用手指在屏幕上快速地滑动。`UISwipeGestureRecognizer` 用于识别滑动手势。
+
+      **属性：**
+
+      - `direction`：设置滑动方向，可以是 `.right`、`.left`、`.up` 或 `.down`。
+
+      **事件信息：**
+
+      - `location(in:)`：获取滑动结束位置相对于指定视图的坐标。
+
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var myView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建向左滑动的手势识别器
+              let swipeLeftRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipeLeft(_:)))
+              swipeLeftRecognizer.direction = .left
+              myView.addGestureRecognizer(swipeLeftRecognizer)
+          }
+
+          @objc func handleSwipeLeft(_ sender: UISwipeGestureRecognizer) {
+              // 处理向左滑动事件
+              print("向左滑动手势被识别")
+
+              // 获取滑动结束位置
+              let location = sender.location(in: view)
+              print("滑动结束位置：\(location)")
+          }
+      }
+      ```
+  - title: 处理平移手势
+    description: |
+      平移手势表示用户用手指在屏幕上拖动。`UIPanGestureRecognizer` 用于识别平移手势。
+
+      **属性：**
+
+      - `minimumNumberOfTouches`：设置触发平移手势所需的最少手指数。
+      - `maximumNumberOfTouches`：设置触发平移手势所需的最大手指数。
+      - `translation(in:)`：获取平移的距离，以 CGPoint 类型返回，表示水平和垂直方向上的位移。
+
+      **事件信息：**
+
+      - `location(in:)`：获取平移手势的当前位置相对于指定视图的坐标。
+      - `velocity(in:)`：获取平移手势的速度，以 CGPoint 类型返回，表示水平和垂直方向上的速度。
+
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var myView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建平移手势识别器
+              let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+              myView.addGestureRecognizer(panRecognizer)
+          }
+
+          @objc func handlePan(_ sender: UIPanGestureRecognizer) {
+              // 处理平移事件
+              print("平移手势被识别")
+
+              // 获取平移距离
+              let translation = sender.translation(in: view)
+              print("平移距离：\(translation)")
+
+              // 移动视图
+              myView.center = CGPoint(x: myView.center.x + translation.x, y: myView.center.y + translation.y)
+
+              // 重置平移距离，以便下次平移操作从 0 开始计算
+              sender.setTranslation(.zero, in: view)
+          }
+      }
+      ```
+  - title: 处理长按手势
+    description: |
+      长按手势表示用户用手指按住屏幕一段时间。`UILongPressGestureRecognizer` 用于识别长按手势。
+
+      **属性：**
+
+      - `minimumPressDuration`：设置触发长按手势所需的最短按压时间。
+
+      **事件信息：**
+
+      - `location(in:)`：获取长按位置相对于指定视图的坐标。
+
+    example: |
+      ```swift
+      import UIKit
+
+      class MyViewController: UIViewController {
+
+          @IBOutlet weak var myView: UIView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 创建长按手势识别器
+              let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+              myView.addGestureRecognizer(longPressRecognizer)
+          }
+
+          @objc func handleLongPress(_ sender: UILongPressGestureRecognizer) {
+              // 处理长按事件
+              print("长按手势被识别")
+
+              // 获取长按位置
+              let location = sender.location(in: view)
+              print("长按位置：\(location)")
+          }
+      }
+      ```
+references:
+  - title: UIGestureRecognizer | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uigesturerecognizer
+  - title: Handling UIKit gestures | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/touches_presses_and_gestures/handling_uikit_gestures
+  - title: A Brief Intro to UIGestureRecognizers in Swift | by TJ Carney
+    url: https://medium.com/@tjcarney89/a-brief-intro-to-uigesturerecognizers-in-swift-c50a8fddbf69

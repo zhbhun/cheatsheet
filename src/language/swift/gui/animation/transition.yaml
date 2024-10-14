@@ -1,0 +1,117 @@
+id: transition
+title: Transition
+query: UIKit transition
+comment: 尽量详尽的演示不同属性和场景用法
+description: UIKit 提供了 `transition(from:to:duration:options:animations:completion:)` 方法，可以在两个子视图控制器之间进行转场动画。您可以使用此方法创建自定义的容器视图控制器，并在子视图控制器之间进行平滑的过渡。
+usage:
+  - title: 基础转场
+    description: |-
+      在两个子视图控制器之间执行简单的转场动画，例如淡入淡出、滑动等。
+
+      **属性：**
+
+      *   `fromViewController`: 转场动画开始时可见的视图控制器。
+      *   `toViewController`: 转场动画结束时可见的视图控制器。
+      *   `duration`: 转场动画的持续时间（以秒为单位）。
+      *   `options`: 动画选项，例如 `.transitionCrossDissolve`、`.transitionFlipFromLeft` 等。
+      *   `animations`: 在转场动画过程中执行的动画块。
+      *   `completion`: 动画完成后执行的完成块。
+    example: |
+      ```swift
+      // 假设你有一个名为 containerView 的容器视图，其中包含两个子视图控制器：firstViewController 和 secondViewController
+
+      // 从 firstViewController 过渡到 secondViewController，使用淡入淡出效果
+      let options: UIView.AnimationOptions = [.transitionCrossDissolve, .curveEaseInOut]
+      containerView.transition(from: firstViewController, to: secondViewController, duration: 0.5, options: options) { finished in
+          // 转场动画完成后的操作
+      }
+      ```
+  - title: 带动画的转场
+    description: |-
+      在转场过程中添加自定义动画，例如缩放、旋转等。
+
+      **属性：**
+
+      *   与“基础转场”相同。
+
+      **示例：**
+
+      以下示例演示了如何使用 `animations` 参数在转场过程中对 `toViewController` 的视图进行缩放动画。
+    example: |
+      ```swift
+      // ... (与基础转场示例相同的设置)
+
+      // 从 firstViewController 过渡到 secondViewController，并在过程中缩放 secondViewController 的视图
+      let options: UIView.AnimationOptions = [.transitionCrossDissolve, .curveEaseInOut]
+      containerView.transition(from: firstViewController, to: secondViewController, duration: 0.5, options: options) { finished in
+          // 转场动画完成后的操作
+      } animations: {
+          // 在动画块中，将 toViewController 的视图缩放到两倍大小
+          secondViewController.view.transform = CGAffineTransform(scaleX: 2, y: 2)
+      }
+      ```
+  - title: 使用完成块处理转场结束
+    description: |-
+      使用 `completion` 参数在转场动画完成后执行特定操作。
+
+      **属性：**
+
+      *   与“基础转场”相同。
+
+      **示例：**
+
+      以下示例演示了如何在转场动画完成后打印一条消息，并检查动画是否成功完成。
+    example: |
+      ```swift
+      // ... (与基础转场示例相同的设置)
+
+      // 从 firstViewController 过渡到 secondViewController，并在完成后打印消息
+      let options: UIView.AnimationOptions = [.transitionCrossDissolve, .curveEaseInOut]
+      containerView.transition(from: firstViewController, to: secondViewController, duration: 0.5, options: options) { finished in
+          // 转场动画完成后的操作
+          print("转场动画已完成")
+
+          // 检查动画是否成功完成
+          if finished {
+              print("动画成功完成")
+          } else {
+              print("动画被中断")
+          }
+      } 
+      ```
+  - title: 管理子视图控制器
+    description: |-
+      除了使用 `transition(from:to:duration:options:animations:completion:)` 方法执行转场动画外，还需要正确管理子视图控制器的生命周期。
+
+      **方法：**
+
+      *   `addChild(_:)`: 将一个视图控制器添加为当前视图控制器的子视图控制器。
+      *   `removeFromParent()`: 从其父视图控制器中删除视图控制器。
+      *   `didMove(toParent:)`: 当视图控制器被添加或从父视图控制器中删除时调用。
+
+      **示例：**
+
+      以下示例演示了如何将 `secondViewController` 添加为 `containerView` 的子视图控制器，并在转场动画完成后将其从父视图控制器中删除。
+    example: |
+      ```swift
+      // ... (与之前的示例相同的设置)
+
+      // 将 secondViewController 添加为子视图控制器
+      containerView.addChild(secondViewController)
+
+      // ... (执行转场动画)
+
+      // 在完成块中，从父视图控制器中删除 secondViewController
+      containerView.transition(from: firstViewController, to: secondViewController, duration: 0.5, options: options) { finished in
+          // ...
+          firstViewController.removeFromParent()
+          secondViewController.didMove(toParent: containerView)
+      }
+      ```
+references:
+  - title: UIKit Animation Part 3 (ViewController Custom Transition)
+    url: https://ali-akhtar.medium.com/uikit-animation-part-3-viewcontroller-custom-transition-fb10b4c5115c
+  - title: transition(from:to:duration:options:animations:completion:)
+    url: https://developer.apple.com/documentation/uikit/uiviewcontroller/1621363-transition
+  - title: Transition
+    url: https://getuikit.com/docs/transition

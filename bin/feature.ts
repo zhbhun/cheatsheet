@@ -49,9 +49,10 @@ const instruction = `
   description: "该编程语言特性是什么，在什么场景用，使用什么来实现。"
   usage:
     - title: "用法标题"
-      description: "用法描述（Markdown）"
-      example: "代码示例（Markdown）"
-  }
+      description: ｜
+        用法描述，采用 Markdown 格式
+      example: ｜
+        代码示例，采用 Markdown 格式
   \`\`\`
 - 示例
   - Kotlin 数组

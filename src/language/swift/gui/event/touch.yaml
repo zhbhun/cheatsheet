@@ -1,4 +1,109 @@
 id: touch
 title: 触摸
 query: UIKit touch event
-comment: UIKit 触摸事件，包括：触摸开始、触摸移动、触摸结束和触摸取消等事件，以及处理事件提供的信息使用
+comment: UIKit 触摸事件，包括：触摸开始、触摸移动、触摸结束和触摸取消等事件，要如何绑定事件，以及处理事件提供的信息使用
+description: UIKit 触摸事件，包括：触摸开始、触摸移动、触摸结束和触摸取消等事件，要如何绑定事件，以及处理事件提供的信息使用
+usage:
+  - title: 绑定触摸事件
+    description: |-
+      UIKit 为 UIView 提供了四个触摸事件处理方法，分别对应触摸的不同阶段：
+
+      -   **touchesBegan(_:with:)**：手指触摸屏幕时调用。
+      -   **touchesMoved(_:with:)**：手指在屏幕上移动时调用。
+      -   **touchesEnded(_:with:)**：手指离开屏幕时调用。
+      -   **touchesCancelled(_:with:)**：触摸事件被取消时调用，例如被打断电话。
+    example: |
+      ```swift 
+      import UIKit
+
+      class MyView: UIView {
+
+          override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+              super.touchesBegan(touches, with: event)
+              // 处理触摸开始事件
+              print("触摸开始")
+          }
+
+          override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+              super.touchesMoved(touches, with: event)
+              // 处理触摸移动事件
+              print("触摸移动")
+          }
+
+          override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+              super.touchesEnded(touches, with: event)
+              // 处理触摸结束事件
+              print("触摸结束")
+          }
+
+          override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+              super.touchesCancelled(touches, with: event)
+              // 处理触摸取消事件
+              print("触摸取消")
+          }
+      }
+      ```
+  - title: 获取触摸信息
+    description: |
+      在触摸事件处理方法中，可以通过 `UITouch` 对象获取触摸的相关信息，例如：
+        
+      -   **location(in:)**：获取触摸点在指定视图坐标系中的位置。
+      -   **previousLocation(in:)**：获取上一个触摸点在指定视图坐标系中的位置。
+      -   **tapCount**：获取触摸的次数，例如单击、双击。
+      -   **timestamp**：获取触摸事件发生的时间戳。
+      -   **force**：获取触摸的力度 (3D Touch)。
+    example: |
+      ```swift
+      override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+          super.touchesMoved(touches, with: event)
+
+          // 获取触摸对象
+          guard let touch = touches.first else { return }
+
+          // 获取触摸点在视图中的位置
+          let location = touch.location(in: self)
+
+          // 获取上一个触摸点的位置
+          let previousLocation = touch.previousLocation(in: self)
+
+          // 计算触摸点移动的距离
+          let deltaX = location.x - previousLocation.x
+          let deltaY = location.y - previousLocation.y
+
+          // 更新视图位置
+          frame.origin.x += deltaX
+          frame.origin.y += deltaY
+      }
+      ```
+  - title: 多点触摸
+    description: 当多个手指同时触摸屏幕时，可以通过 `touches` 集合区分不同的触摸点，并进行相应的处理。
+    example: |
+      ```swift
+      override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+          super.touchesBegan(touches, with: event)
+
+          for touch in touches {
+              // 为每个触摸点创建一个新的视图
+              let newView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+              newView.center = touch.location(in: self)
+              newView.backgroundColor = .random()
+              addSubview(newView)
+          }
+      }
+      ```
+  - title: 触摸取消
+    description: 当触摸事件被取消时，例如被打断电话，会调用 `touchesCancelled(_:with:)` 方法。应该在该方法中进行一些清理工作，例如移除临时创建的视图或重置状态。
+    example: |
+      ```swift
+      override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+          super.touchesCancelled(touches, with: event)
+
+          // 移除所有子视图
+          subviews.forEach { $0.removeFromSuperview() }
+      }
+      ```
+references:
+  - title: Touches, presses, and gestures
+    url: https://developer.apple.com/documentation/uikit/touches_presses_and_gestures
+  - title: Handling touches in your view - UIKit
+    url: https://developer.apple.com/documentation/uikit/touches_presses_and_gestures/handling_touches_in_your_view

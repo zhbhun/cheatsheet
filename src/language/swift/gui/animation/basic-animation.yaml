@@ -1,0 +1,165 @@
+id: basic-animation
+title: CABasicAnimation
+query: UIKit CABasicAnimation
+comment: 尽量详尽的演示不同属性和场景用法
+description: CABasicAnimation是Core Animation框架中用于创建单关键帧动画的对象，它可以对CALayer的属性进行动画处理，例如改变位置、透明度、颜色、旋转、缩放等。开发者可以通过设置动画的起始值、结束值、持续时间等属性，以及控制动画的时间函数和填充模式来实现各种动画效果。CABasicAnimation常用于创建简单、线性的动画效果，例如淡入淡出、移动、旋转等。
+usage:
+  - title: 创建动画
+    description: '创建一个CABasicAnimation实例，需要指定要进行动画处理的属性的键路径（keyPath），例如`opacity`代表透明度，`position`代表位置等。 创建实例后，可以设置动画的起始值（fromValue）、结束值（toValue）和其他属性。 '
+    example: |
+      ```swift
+      // 创建一个改变透明度的动画
+      let fadeAnimation = CABasicAnimation(keyPath: "opacity")
+      fadeAnimation.fromValue = 1.0 // 初始透明度为1.0（完全不透明）
+      fadeAnimation.toValue = 0.5   // 最终透明度为0.5（半透明）
+      fadeAnimation.duration = 2.0  // 动画持续时间为2秒
+
+      // 将动画添加到layer上
+      myView.layer.addAnimation(fadeAnimation, forKey: "fade") 
+      ```
+  - title: 设置动画时长
+    description: 使用`duration`属性设置动画的持续时间，单位为秒。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "transform.scale")
+      animation.fromValue = 1.0
+      animation.toValue = 2.0
+      animation.duration = 0.5  // 动画持续时间为0.5秒
+      ```
+  - title: 设置动画延迟
+    description: 使用`beginTime`属性可以设置动画的延迟执行时间，单位为秒。`beginTime`的值是相对于父动画或当前时间的时间偏移量，需要使用`CACurrentMediaTime()`函数获取当前时间。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "position.x")
+      animation.fromValue = 0
+      animation.toValue = 100
+      animation.duration = 1.0
+      animation.beginTime = CACurrentMediaTime() + 2.0  // 延迟2秒后执行动画
+      ```
+  - title: 设置动画时间函数
+    description: 使用`timingFunction`属性可以设置动画的时间函数，控制动画的速度变化曲线，例如匀速、 ease-in、ease-out等。可以使用预定义的CAMediaTimingFunction实例，或者自定义时间函数。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "transform.rotation.z")
+      animation.fromValue = 0
+      animation.toValue = CGFloat.pi / 2
+      animation.duration = 1.0
+
+      // 使用预定义的 ease-in-out 时间函数
+      animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut) 
+
+      // 自定义时间函数
+      // let customTimingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.8, 0.2)
+      // animation.timingFunction = customTimingFunction
+      ```
+  - title: 设置动画填充模式
+    description: |
+      使用`fillMode`属性可以设置动画的填充模式，控制动画开始之前和结束之后的状态。
+      - `kCAFillModeRemoved`：默认值，动画结束后，layer会回到初始状态。
+      - `kCAFillModeForwards`：动画结束后，layer保持动画结束时的状态。
+      - `kCAFillModeBackwards`：动画开始之前，layer就保持动画初始状态。
+      - `kCAFillModeBoth`：结合`kCAFillModeForwards`和`kCAFillModeBackwards`的效果。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "opacity")
+      animation.fromValue = 0
+      animation.toValue = 1
+      animation.duration = 1.0
+      animation.fillMode = .forwards  // 动画结束后保持最终状态（不透明）
+      animation.isRemovedOnCompletion = false // 动画结束后不移除
+
+      myView.layer.addAnimation(animation, forKey: "fade")
+      ```
+  - title: 设置动画自动反转
+    description: 使用`autoreverses`属性可以设置动画是否自动反转。如果设置为true，动画会先正向执行，然后反向执行，回到初始状态。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "transform.scale.x")
+      animation.fromValue = 1.0
+      animation.toValue = 1.5
+      animation.duration = 1.0
+      animation.autoreverses = true  // 动画自动反转
+      ```
+  - title: 设置动画重复次数
+    description: 使用`repeatCount`属性可以设置动画的重复执行次数。可以设置为整数或浮点数，例如设置为2.5表示重复执行2.5次。
+    example: |
+      ```swift
+      let animation = CABasicAnimation(keyPath: "position.y")
+      animation.fromValue = 0
+      animation.toValue = 100
+      animation.duration = 1.0
+      animation.repeatCount = 3  // 动画重复执行3次
+      ```
+  - title: 设置动画代理
+    description: 使用`delegate`属性可以设置动画的代理对象，监听动画的开始、结束等事件。代理对象需要遵守`CAAnimationDelegate`协议，实现协议中定义的方法。
+    example: |
+      ```swift
+      class MyAnimationDelegate: NSObject, CAAnimationDelegate {
+          func animationDidStart(_ anim: CAAnimation) {
+              print("动画开始了")
+          }
+
+          func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+              print("动画结束了")
+          }
+      }
+
+      let animation = CABasicAnimation(keyPath: "opacity")
+      animation.delegate = MyAnimationDelegate()  // 设置动画代理
+      ```
+  - title: 移除动画
+    description: |
+      可以使用以下方法移除layer上的动画：
+      - `layer.removeAnimation(forKey:)`：根据动画的键值移除指定的动画。
+      - `layer.removeAllAnimations()`：移除layer上的所有动画。
+    example: |
+      ```swift
+      // 移除键值为"fade"的动画
+      myView.layer.removeAnimation(forKey: "fade")
+
+      // 移除所有动画
+      myView.layer.removeAllAnimations()
+      ```
+  - title: 组合动画
+    description: CABasicAnimation可以和其他动画组合使用，例如使用`CAAnimationGroup`将多个CABasicAnimation组合在一起，或者使用`CATransition`创建转场动画。
+    example: |
+      ```swift
+      // 创建两个CABasicAnimation，分别改变透明度和位置
+      let fadeAnimation = CABasicAnimation(keyPath: "opacity")
+      fadeAnimation.fromValue = 1.0
+      fadeAnimation.toValue = 0.5
+      fadeAnimation.duration = 1.0
+
+      let moveAnimation = CABasicAnimation(keyPath: "position.x")
+      moveAnimation.fromValue = 0
+      moveAnimation.toValue = 100
+      moveAnimation.duration = 1.0
+
+      // 创建CAAnimationGroup，将两个动画添加到组中
+      let animationGroup = CAAnimationGroup()
+      animationGroup.animations = [fadeAnimation, moveAnimation]
+      animationGroup.duration = 1.0
+
+      // 将动画组添加到layer上
+      myView.layer.addAnimation(animationGroup, forKey: "groupAnimation")
+      ```
+  - title: 动画暂停和恢复
+    description: |
+      可以使用`layer.speed`属性来暂停和恢复layer上的所有动画。
+      - 设置`layer.speed = 0`可以暂停动画。
+      - 设置`layer.speed = 1`可以恢复动画。
+    example: |
+      ```swift
+      // 暂停动画
+      myView.layer.speed = 0
+
+      // 恢复动画
+      myView.layer.speed = 1
+      ```
+references:
+  - title: CABasicAnimation | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/quartzcore/cabasicanimation
+  - title: CABasicAnimation resets to initial value after animation ...
+    url: https://stackoverflow.com/questions/6059054/cabasicanimation-resets-to-initial-value-after-animation-completes
+  - title: Quickstart with CALayer and CABasicAnimation
+    url: https://medium.com/macoclock/quick-start-with-calayer-and-cabasicanimation-e3ff17ea6f11

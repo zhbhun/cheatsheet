@@ -1,156 +1,142 @@
 id: view-property-animator
-title: ViewPropertyAnimator
-query: Android ViewPropertyAnimator
+title: UIViewPropertyAnimator
+query: UIKit UIViewPropertyAnimator
 comment: 尽量详尽的演示不同属性和场景用法
-description: "ViewPropertyAnimator 是 Android 中用于简化视图属性动画的工具，提供了更高效和易用的方式来实现动画效果。它可以处理多个属性如透明度、位置、缩放等，适合在 UI 交互中使用。"
+description: '`UIViewPropertyAnimator` 是 iOS 10 引入的一种基于闭包的动画类，用于创建可中断、可擦洗和可反转的视图动画。它允许你动态修改动画的执行，例如暂停、继续、反转和改变动画进度等。'
 usage:
-  - title: 透明度动画
-    content: 使用 alpha() 方法设置视图的透明度。
+  - title: 创建基础动画
+    description: 使用 `UIViewPropertyAnimator` 创建一个简单的动画，例如将视图从一个位置移动到另一个位置。
     example: |
-      ```kotlin
-      // 使按钮透明度减小到 0.5
-      button.animate().alpha(0.5f).setDuration(300).start() // 持续 300 毫秒
+      ```swift
+      // 创建一个 UIViewPropertyAnimator 对象，指定动画的持续时间、动画曲线和动画块。
+      let animator = UIViewPropertyAnimator(duration: 1.0, curve: .easeInOut) {
+          // 在动画块中修改视图的属性，例如改变视图的位置。
+          view.center.x = view.superview!.bounds.midX + 100
+      }
+      // 启动动画。
+      animator.startAnimation()
       ```
-
-  - title: 位移动画
-    content: 使用 translationX() 和 translationY() 方法进行视图的平移。
+  - title: 暂停和继续动画
+    description: 使用 `pauseAnimation()` 方法暂停动画，使用 `continueAnimation(withTimingParameters:durationFactor:)` 方法继续动画。
     example: |
-      ```kotlin
-      // 将按钮向右移动 100 像素
-      button.animate().translationX(100f).setDuration(300).start() // 持续 300 毫秒
+      ```swift
+      // 暂停动画
+      animator.pauseAnimation()
+
+      // 继续动画
+      animator.continueAnimation(withTimingParameters: nil, durationFactor: 1.0)
       ```
-
-  - title: 组合动画
-    content: 同时处理多个属性动画。
+  - title: 停止动画
+    description: 使用 `stopAnimation()` 方法可以停止动画，可以选择是否完成动画。
     example: |
-      ```kotlin
-      // 同时改变透明度、旋转和缩放
-      button.animate()
-          .alpha(0.5f) // 透明度
-          .rotation(90f) // 旋转
-          .scaleX(1.5f) // 水平缩放
-          .scaleY(1.5f) // 垂直缩放
-          .setDuration(500) // 持续 500 毫秒
-          .start()
+      ```swift
+      // 立即停止动画，并停留在当前位置。
+      animator.stopAnimation(false)
+
+      // 停止动画，并完成动画，将视图移动到最终状态。
+      animator.stopAnimation(true)
       ```
-
-  - title: 动画延迟
-    content: 使用 setStartDelay() 设置动画开始前的延迟。
+  - title: 反转动画
+    description: 使用 `isReversed` 属性可以反转动画的方向。
     example: |
-      ```kotlin
-      // 设置延迟 200 毫秒后开始移动
-      button.animate().translationY(200f).setStartDelay(200).setDuration(300).start()
+      ```swift
+      // 反转动画方向。
+      animator.isReversed = true
       ```
-
-  - title: 动画监听
-    content: 为动画设置监听器，以响应动画的开始和结束。
+  - title: 改变动画进度
+    description: 使用 `fractionComplete` 属性可以获取或设置动画的完成进度，取值范围为 0.0 到 1.0。
     example: |
-      ```kotlin
-      // 设置动画监听器
-      button.animate()
-          .alpha(0f)
-          .setDuration(300)
-          .setListener(object : AnimatorListenerAdapter() {
-              override fun onAnimationStart(animation: Animator?) {
-                  Toast.makeText(context, "动画开始", Toast.LENGTH_SHORT).show()
-              }
-              override fun onAnimationEnd(animation: Animator?) {
-                  Toast.makeText(context, "动画结束", Toast.LENGTH_SHORT).show()
-              }
-          })
-          .start()
+      ```swift
+      // 将动画进度设置为 50%。
+      animator.fractionComplete = 0.5
       ```
-
-  - title: 使用插值器
-    content: 自定义动画插值器以调整动画的效果。
+  - title: 添加动画完成回调
+    description: 使用 `addCompletion()` 方法可以添加动画完成回调，以便在动画完成时执行一些操作。
     example: |
-      ```kotlin
-      // 使用自定义插值器
-      button.animate()
-          .translationX(100f)
-          .setInterpolator(AccelerateInterpolator()) // 使用加速插值器
-          .setDuration(300)
-          .start()
-
-      // 其他可用的插值器：
-      // - LinearInterpolator: 线性变化，动画以恒定速度进行
-      // - DecelerateInterpolator: 动画开始时快，后面减速
-      // - BounceInterpolator: 动画结束时有弹跳效果
-      // - OvershootInterpolator: 动画结束时超过目标值，然后返回
-      ```
-
-  - title: 创建动画队列
-    content: 使用 `ViewPropertyAnimatorQueue.from(view)` 创建一个动画队列，接着可以添加多个动画属性。
-    example: |
-      ```kotlin
-      class MainActivity : AppCompatActivity() {
-
-          private lateinit var myView: View
-          private lateinit var startAnimationButton: Button
-
-          override fun onCreate(savedInstanceState: Bundle?) {
-              super.onCreate(savedInstanceState)
-              setContentView(R.layout.activity_main)
-
-              myView = findViewById(R.id.myView) // 获取需要动画的视图
-              startAnimationButton = findViewById(R.id.startAnimationButton)
-
-              startAnimationButton.setOnClickListener {
-                  startAnimationQueue()
-              }
-          }
-
-          private fun startAnimationQueue() {
-              // 创建动画队列
-              val animatorQueue = ViewPropertyAnimatorQueue.from(myView)
-
-              // 第一个动画：向右平移
-              animatorQueue
-                  .newAnimation()
-                  .setDuration(500)
-                  .translationX(300f) // 向右平移300像素
-                  .setListener(object : AnimatorListenerAdapter() {
-                      override fun onAnimationEnd(animation: Animator) {
-                          super.onAnimationEnd(animation)
-                          println("第一动画结束")
-                      }
-                  })
-                  .start()
-
-              // 第二个动画：向下平移
-              animatorQueue
-                  .newAnimation()
-                  .setDuration(500)
-                  .translationY(200f) // 向下平移200像素
-                  .setListener(object : AnimatorListenerAdapter() {
-                      override fun onAnimationEnd(animation: Animator) {
-                          super.onAnimationEnd(animation)
-                          println("第二动画结束")
-                      }
-                  })
-                  .start()
-
-              // 第三个动画：旋转
-              animatorQueue
-                  .newAnimation()
-                  .setDuration(500)
-                  .rotation(360f) // 旋转360度
-                  .setListener(object : AnimatorListenerAdapter() {
-                      override fun onAnimationEnd(animation: Animator) {
-                          super.onAnimationEnd(animation)
-                          println("第三动画结束")
-                      }
-                  })
-                  .start()
-          }
+      ```swift
+      // 添加动画完成回调。
+      animator.addCompletion { position in
+          // 在动画完成时打印动画的最终位置。
+          print("Animation completed with position: \(position.rawValue)")
       }
       ```
+  - title: 创建可交互动画
+    description: 使用 `fractionComplete` 属性和手势识别器，可以创建可与用户交互的动画，例如拖动手势控制动画进度。
+    example: |
+      ```swift
+      // 创建一个 UIPanGestureRecognizer 对象。
+      let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+      // 将手势识别器添加到视图中。
+      view.addGestureRecognizer(panGesture)
+
+      // 处理平移手势。
+      @objc func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+          // 计算动画进度。
+          let translation = gesture.translation(in: view)
+          let progress = translation.x / view.bounds.width
+
+          // 更新动画进度。
+          animator.fractionComplete = progress
+      }
+      ```
+  - title: 添加多个动画块
+    description: 使用 `addAnimations()` 方法可以添加多个动画块，这些动画块将按顺序执行。
+    example: |
+      ```swift
+      // 创建一个 UIViewPropertyAnimator 对象。
+      let animator = UIViewPropertyAnimator(duration: 2.0, curve: .easeInOut) {
+          // 添加第一个动画块。
+          UIView.animate(withDuration: 1.0) {
+              view.center.x = view.superview!.bounds.midX + 100
+          }
+
+          // 添加第二个动画块。
+          UIView.animate(withDuration: 1.0) {
+              view.transform = CGAffineTransform(rotationAngle: .pi / 2)
+          }
+      }
+      // 启动动画。
+      animator.startAnimation()
+      ```
+  - title: 使用 spring 动画
+    description: 使用 `init(duration:dampingRatio:animations:)` 方法可以创建带有弹簧效果的动画。
+    example: |
+      ```swift
+      // 创建一个带有弹簧效果的 UIViewPropertyAnimator 对象。
+      let animator = UIViewPropertyAnimator(duration: 1.0, dampingRatio: 0.5) {
+          view.center.x = view.superview!.bounds.midX + 100
+      }
+      // 启动动画。
+      animator.startAnimation()
+      ```
+  - title: 使用关键帧动画
+    description: 使用 `addKeyframe(withRelativeStartTime:relativeDuration:animations:)` 方法可以创建关键帧动画。
+    example: |
+      ```swift
+      // 创建一个 UIViewPropertyAnimator 对象。
+      let animator = UIViewPropertyAnimator(duration: 2.0, curve: .linear) {
+          // 添加第一个关键帧。
+          animator.addAnimations {
+              view.center.x = view.superview!.bounds.midX + 100
+          }, delayFactor: 0.0
+
+          // 添加第二个关键帧。
+          animator.addAnimations {
+              view.transform = CGAffineTransform(rotationAngle: .pi / 2)
+          }, delayFactor: 0.5
+
+          // 添加第三个关键帧。
+          animator.addAnimations {
+              view.center.y = view.superview!.bounds.midY + 100
+          }, delayFactor: 1.0
+      }
+      // 启动动画。
+      animator.startAnimation()
+      ```
 references:
-  - title: "Property Animations Overview"
-    url: https://developer.android.com/guide/topics/graphics/prop-animation
-  - title: "ViewPropertyAnimator"
-    url: https://developer.android.com/reference/android/view/ViewPropertyAnimator
-  - title: "Using ViewPropertyAnimator"
-    url: https://guides.codepath.com/android/Animations
-  - title: "Animating Views with ViewPropertyAnimator"
-    url: https://www.demo2s.com/android/android-viewpropertyanimator-tutorial-with-examples.html
+  - title: UIViewPropertyAnimator | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiviewpropertyanimator
+  - title: Building Better iOS App Animations | by Nathan Gitter
+    url: https://medium.com/swiftkickmobile/building-better-ios-app-animations-swift-uiviewpropertyanimator-ca05728b1fa4
+  - title: How to animate views using UIViewPropertyAnimator
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-animate-views-using-uiviewpropertyanimator

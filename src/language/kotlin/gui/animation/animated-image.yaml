@@ -1,4 +1,4 @@
-id: animation-drawable
+id: animated-image
 title: AnimationDrawable
 query: Android AnimationDrawable
 comment: 尽量详尽的演示不同属性和场景用法

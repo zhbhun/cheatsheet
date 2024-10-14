@@ -2,3 +2,138 @@ id: keyboard
 title: 键盘事件
 query: UIKit keyboard event
 comment: 尽量详尽的演示不同属性和场景用法
+description: UIKit 通过 `pressesBegan()` 和 `pressesEnded()` 方法让我们能够检测来自用户的硬件键盘输入。这两个方法都会传递一组 `UIPress` 实例，包含我们可以检查的键码和修饰键。如果实现了这两个方法中的任何一个，则应该调用 `super` 以将消息转发给未处理的任何键盘事件。
+usage:
+  - title: 检测按键按下
+    description: |-
+      要检测用户在物理键盘上按下了哪个键，需要在响应器对象（如应用程序委托或主视图控制器）中重写 `pressesBegan(_:with:)` 方法。
+
+      要确定用户按下了哪个键，需要迭代 `presses` 集合，检查每个 `press` 的 `key` 属性。可以使用 `keyCode` 常量来识别按键，并决定响应器是否应该处理该按键。如果响应器不处理该按键，则调用父类的 `pressesBegan(_:with:)` 方法将按键事件发送到活动响应链中的下一个响应器。
+    example: |
+      ```swift
+      override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+          guard let key = presses.first?.key else { return }
+
+          switch key.keyCode {
+          case .keyboardR:
+              print("Roll dice")
+          case .keyboardH:
+              print("Show help")
+          default:
+              super.pressesBegan(presses, with: event)
+          }
+      }
+      ```
+  - title: 检测按键释放
+    description: |-
+      重写响应器的 `pressesEnded(_:with:)` 方法，以检测用户何时释放按键。
+
+      要获取有关按键的信息，请执行与检测按键按下时相同的操作；检查 `presses` 集合中每个 `press` 的 `key` 属性。例如，以下代码清单处理了用户释放左箭头键或右箭头键的情况。
+    example: |
+      ```swift
+      override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+          guard let key = presses.first?.key else { return }
+
+          switch key.keyCode {
+          case .keyboardSpacebar:
+              print("Continue the quiz…")
+          default:
+              super.pressesEnded(presses, with: event)
+          }
+      }
+      ```
+  - title: 检测按键按下和释放
+    description: 如果将 `pressesBegan()` 和 `pressesEnded()` 结合使用，则可以有效地检测用户何时按住某个键。例如，这会创建一个自定义 `AVPlayerViewController` 子类，该子类仅在按住空格键时才播放影片：
+    example: |
+      ```swift
+      import AVKit
+      import UIKit
+
+      class CustomMovieController: AVPlayerViewController {
+          override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+              guard let key = presses.first?.key else { return }
+
+              switch key.keyCode {
+              case .keyboardSpacebar:
+                  player?.play()
+              case .keyboardLeftArrow:
+                  player?.seek(to: .zero)
+              default:
+                  super.pressesBegan(presses, with: event)
+              }
+          }
+
+          override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+              guard let key = presses.first?.key else { return }
+
+              switch key.keyCode {
+              case .keyboardSpacebar:
+                  player?.pause()
+              default:
+                  super.pressesEnded(presses, with: event)
+              }
+          }
+      }
+      ```
+  - title: 读取修饰键
+    description: |-
+      除了按下的键之外，UIKit 还会向我们发送按住的任何修饰键，例如 Option 和 Shift。这些键以集合的形式提供，因此您可以使用 `contains()` 然后使用 `UIKeyModifierFlags` 之一（例如 `.control`）来检查特定键。
+
+      例如，这将创建一个在中心带有红色矩形的视图控制器，如果您按下 Shift 键，然后按左箭头键或右箭头键，则矩形将沿相应的方向旋转：
+    example: |
+      ```swift 
+      class ViewController: UIViewController {
+          let rectangle = UIView(frame: CGRect(x: 0, y: 0, width: 256, height: 256))
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+              view.addSubview(rectangle)
+              rectangle.backgroundColor = .red
+          }
+
+          override func viewDidLayoutSubviews() {
+              rectangle.center = view.center
+          }
+
+          override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+              guard let key = presses.first?.key else { return }
+              guard key.modifierFlags.contains(.shift) else { return }
+
+              UIView.animate(withDuration: 0.5) {
+                  switch key.keyCode {
+                  case .keyboardLeftArrow:
+                      self.rotate(by: -.pi / 2)
+                  case .keyboardRightArrow:
+                      self.rotate(by: .pi / 2)
+                  default:
+                      super.pressesBegan(presses, with: event)
+                  }
+              }
+          }
+
+          func rotate(by amount: CGFloat) {
+              rectangle.transform = rectangle.transform.concatenating(CGAffineTransform(rotationAngle: amount))
+          }
+      }
+      ```
+  - title: 读取所有按键
+    description: |-
+      您可能想要做的最后一件事是读取新按键按下时处于活动状态的所有当前键盘按键。如果您想检查用户是否同时按下了两个或三个特定键，这将非常有用。
+
+      为此，请在 `pressesBegan()` 或 `pressesEnded()` 中读取 `event?.allPresses` 属性，并根据需要评估按键。例如，当同时按住键“ a”，“ b”和“ c”时，这将打印一条消息：
+    example: |
+      ```swift
+      override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+          let keys = event?.allPresses.compactMap { $0.key?.characters }.sorted()
+          if keys == ["a", "b", "c"] {
+              print("Key combination pressed!")
+          }
+      }
+      ```
+references:
+  - title: Handling key presses made on a physical keyboard
+    url: https://developer.apple.com/documentation/uikit/mac_catalyst/handling_key_presses_made_on_a_physical_keyboard
+  - title: How to detect keyboard input using pressesBegan() and ...
+    url: https://www.hackingwithswift.com/example-code/uikit/how-to-detect-keyboard-input-using-pressesbegan-and-pressesended
+  - title: Keyboards and input | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/keyboards_and_input

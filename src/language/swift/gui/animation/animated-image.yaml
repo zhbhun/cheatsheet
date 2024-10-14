@@ -1,0 +1,106 @@
+id: animated-image
+title: Animated Image
+query: UIKit Animated Image
+comment: 尽量详尽的演示不同属性和场景用法
+description: 在 iOS 中，可以使用 `UIImageView` 来展示静态图片，也可以用来播放帧动画。`UIImageView` 的帧动画功能是通过 `animationImages`、`animationDuration` 和 `animationRepeatCount` 等属性来实现的。`UIImage` 也提供了创建动画图片的方法。
+usage:
+  - title: 使用 UIImageView 播放帧动画
+    description: 可以通过设置 `UIImageView` 的 `animationImages`、`animationDuration`、`animationRepeatCount` 属性，以及调用 `startAnimating()` 和 `stopAnimating()` 方法来实现帧动画。
+    example: |
+      ```swift
+      import UIKit
+
+      class ViewController: UIViewController {
+
+          @IBOutlet weak var imageView: UIImageView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 1. 创建 UIImage 数组
+              var images: [UIImage] = []
+              for i in 1...4 {
+                  if let image = UIImage(named: "frame_\(i)") {
+                      images.append(image)
+                  }
+              }
+
+              // 2. 设置动画图片数组
+              imageView.animationImages = images
+
+              // 3. 设置动画时长
+              imageView.animationDuration = 0.8 
+
+              // 4. 设置动画重复次数，0 表示无限循环
+              imageView.animationRepeatCount = 0
+
+              // 5. 开始动画
+              imageView.startAnimating()
+          }
+      }
+      ```
+  - title: 使用 UIImage 创建动画图片
+    description: 可以使用 `UIImage.animatedImage(with:duration:)` 方法从 `UIImage` 数组创建动画图片，并设置动画时长。然后，将动画图片设置给 `UIImageView` 的 `image` 属性即可。
+    example: |
+      ```swift
+      import UIKit
+
+      class ViewController: UIViewController {
+
+          @IBOutlet weak var imageView: UIImageView!
+
+          override func viewDidLoad() {
+              super.viewDidLoad()
+
+              // 1. 创建 UIImage 数组
+              var images: [UIImage] = []
+              for i in 1...4 {
+                  if let image = UIImage(named: "frame_\(i)") {
+                      images.append(image)
+                  }
+              }
+
+              // 2. 创建动画图片，并设置动画时长
+              if let animatedImage = UIImage.animatedImage(with: images, duration: 0.8) {
+
+                  // 3. 将动画图片设置给 UIImageView
+                  imageView.image = animatedImage
+              }
+          }
+      }
+      ```
+  - title: 控制动画播放
+    description: 可以使用 `startAnimating()` 和 `stopAnimating()` 方法来控制动画的开始和停止，使用 `isAnimating` 属性判断动画是否正在播放。
+    example: |
+      ```swift
+      // 开始动画
+      imageView.startAnimating()
+
+      // 停止动画
+      imageView.stopAnimating()
+
+      // 判断动画是否正在播放
+      if imageView.isAnimating {
+          print("动画正在播放")
+      } else {
+          print("动画已停止")
+      }
+      ```
+  - title: 高亮状态下的动画图片
+    description: 可以通过设置 `highlightedAnimationImages` 属性来设置 `UIImageView` 在高亮状态下播放的动画图片。其他属性，如 `animationDuration`、`animationRepeatCount` 等，对高亮状态下的动画也有效。
+    example: |
+      ```swift
+      // 设置高亮状态下的动画图片数组
+      imageView.highlightedAnimationImages = highlightedImages
+
+      // 设置高亮状态
+      imageView.isHighlighted = true
+
+      // 开始动画
+      imageView.startAnimating()
+      ```
+references:
+  - title: animationImages | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/uikit/uiimageview/1621068-animationimages
+  - title: animatedImage(with:duration:)
+    url: https://developer.apple.com/documentation/uikit/uiimage/1624149-animatedimage
