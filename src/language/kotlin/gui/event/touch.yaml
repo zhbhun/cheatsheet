@@ -1,141 +1,145 @@
 id: touch
 title: 触摸
 query: Android 触摸事件
-comment: 尽量详尽的演示不同属性和场景用法
-description: "Kotlin 中的触摸事件处理是通过 `onTouchEvent()` 方法和 `MotionEvent` 类实现的。开发者可以捕捉到用户的触摸动作，包括单点触摸和多点触摸，从而提供丰富的交互体验。常用的触摸事件包括 `ACTION_DOWN`、`ACTION_MOVE` 和 `ACTION_UP`。"
+comment: 尽量详触摸事件的用法，包括：如何绑定事件、触摸事件信息、事件传播链路、父视图拦截事件、子视图标记事件已处理等
+description: Android 触摸事件是用户与应用程序交互的重要方式，了解触摸事件的处理机制对于开发流畅且响应迅速的应用程序至关重要。本文详细介绍 Android 触摸事件的用法，包括如何绑定事件、触摸事件信息、事件传播链路、父视图拦截事件、子视图标记事件已处理等。
 usage:
-  - title: 单点触摸事件
-    content: "使用 `onTouchEvent()` 方法来处理用户的单点触摸事件，通常将其绑定到一个 `View`，如按钮或自定义视图。"
+  - title: 绑定触摸事件
+    description: 在 Android 中，可以使用 `View.OnTouchListener` 接口来绑定触摸事件监听器。`OnTouchListener` 接口中定义了一个 `onTouch(View view, MotionEvent event)` 方法，当绑定到 View 的监听器检测到触摸事件时，会回调该方法。
     example: |
       ```kotlin
-      import android.graphics.Color
-      import android.os.Bundle
-      import android.view.MotionEvent
-      import android.widget.Toast
-      import androidx.appcompat.app.AppCompatActivity
-      import androidx.core.content.ContextCompat
+      val myView = findViewById<View>(R.id.my_view)
 
-      class MainActivity : AppCompatActivity() {
-          override fun onCreate(savedInstanceState: Bundle?) {
-              super.onCreate(savedInstanceState)
-              setContentView(R.layout.activity_main)
-
-              // 获取要绑定触摸事件的视图
-              val myView = findViewById<View>(R.id.my_view)
-              myView.setOnTouchListener { _, event ->
-                  when (event.action) {
-                      MotionEvent.ACTION_DOWN -> {
-                          // 当触摸视图时显示提示
-                          Toast.makeText(this, "Touch down", Toast.LENGTH_SHORT).show()
-                          myView.setBackgroundColor(Color.GREEN) // 设置背景色为绿色
-                      }
-                      MotionEvent.ACTION_MOVE -> {
-                          // 当手指在视图上滑动时的响应
-                          myView.setBackgroundColor(Color.YELLOW) // 设置背景色为黄色
-                      }
-                      MotionEvent.ACTION_UP -> {
-                          // 当手指离开视图时的响应
-                          myView.setBackgroundColor(Color.RED) // 设置背景色为红色
-                      }
-                  }
-                  true // 返回 true 表示事件已处理
+      myView.setOnTouchListener { view, event ->
+          when (event.action) {
+              MotionEvent.ACTION_DOWN -> {
+                  // 处理按下事件
+              }
+              MotionEvent.ACTION_MOVE -> {
+                  // 处理移动事件
+              }
+              MotionEvent.ACTION_UP -> {
+                  // 处理抬起事件
               }
           }
+          true // 返回 true 表示事件已消耗
       }
       ```
-
-  - title: 多点触摸事件
-    content: "使用 `MotionEvent` 处理多点触摸事件，如缩放或旋转。可以通过 `getPointerCount()` 和 `getX()`、`getY()` 方法获取每个触点的信息。"
+  - title: 触摸事件信息
+    description: 触摸事件的相关信息封装在 `MotionEvent` 对象中，可以通过 `MotionEvent` 对象获取以下信息：
     example: |
       ```kotlin
-      override fun onTouchEvent(event: MotionEvent): Boolean {
-          val pointerCount = event.pointerCount // 获取触点数量
-          for (i in 0 until pointerCount) {
-              val pointerId = event.getPointerId(i) // 获取指针 ID
-              val x = event.getX(i) // 获取 X 坐标
-              val y = event.getY(i) // 获取 Y 坐标
-              // 处理多点触摸逻辑，例如显示坐标
-              Log.d("TouchEvent", "Pointer $pointerId at ($x, $y)")
-          }
-          return true
+      myView.setOnTouchListener { view, event ->
+          // 获取事件类型
+          val action = event.actionMasked
+
+          // 获取触摸点坐标
+          val x = event.x
+          val y = event.y
+
+          // 获取事件时间
+          val eventTime = event.eventTime
+
+          // 获取触摸点 ID
+          val pointerId = event.getPointerId(0)
+
+          // ... 处理事件 ...
+
+          true
       }
       ```
+  - title: 事件传播链路
+    description: |-
+      Android 触摸事件的传播顺序是 Activity -> Window -> ViewGroup -> View。
 
-  - title: 手势检测
-    content: "为了处理复杂的手势（如双击、长按等），可以使用 `GestureDetector` 类来简化手势识别。"
+      当触摸事件发生时，事件会按照上述顺序依次传递，每个层级的视图都有机会处理或拦截该事件。
+
+      - **分发（dispatchTouchEvent）：** 将事件分发到下一级，决定事件是否继续传递。
+      - **拦截（onInterceptTouchEvent）：** ViewGroup 特有，判断是否拦截事件，拦截后事件将在 ViewGroup 的 onTouchEvent 中处理。
+      - **处理（onTouchEvent）：** 处理触摸事件，返回 true 表示事件已消耗，不再继续传递。
+    example: |
+      ```
+      // 事件传播顺序
+      Activity.dispatchTouchEvent()
+          -> Window.superDispatchTouchEvent()
+              -> DecorView.superDispatchTouchEvent()
+                  -> ViewGroup.dispatchTouchEvent()
+                      -> ViewGroup.onInterceptTouchEvent()
+                      -> View.dispatchTouchEvent()
+                          -> View.onTouchEvent()
+                      -> ViewGroup.onTouchEvent()
+                  -> ...
+              -> View.onTouchEvent()
+          -> ViewGroup.onTouchEvent()
+      -> Activity.onTouchEvent()
+      ```
+  - title: 父视图拦截事件
+    description: |-
+      ViewGroup 可以通过 `onInterceptTouchEvent()` 方法拦截触摸事件，如果返回 `true`，则事件将不会继续传递给子视图，而是由 ViewGroup 自身处理。
+
+      在以下情况下，ViewGroup 通常会拦截事件：
+
+      - ViewGroup 需要处理滑动、缩放等手势。
+      - ViewGroup 需要拦截子视图的点击事件。
     example: |
       ```kotlin
-      import android.os.Bundle
-      import android.view.GestureDetector
-      import android.view.MotionEvent
-      import android.widget.Toast
-      import androidx.appcompat.app.AppCompatActivity
+      class MyViewGroup(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
 
-      class MainActivity : AppCompatActivity() {
-          private lateinit var gestureDetector: GestureDetector
-
-          override fun onCreate(savedInstanceState: Bundle?) {
-              super.onCreate(savedInstanceState)
-              setContentView(R.layout.activity_main)
-
-              gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-                  override fun onDoubleTap(e: MotionEvent?): Boolean {
-                      Toast.makeText(this@MainActivity, "Double Tap", Toast.LENGTH_SHORT).show()
-                      return true
-                  }
-
-                  override fun onLongPress(e: MotionEvent?) {
-                      Toast.makeText(this@MainActivity, "Long Press", Toast.LENGTH_SHORT).show()
-                  }
-              })
+          override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+              // 判断是否需要拦截事件
+              return true // 拦截事件
           }
 
-          override fun onTouchEvent(event: MotionEvent): Boolean {
-              gestureDetector.onTouchEvent(event) // 将触摸事件传递给手势检测器
-              return super.onTouchEvent(event)
-          }
+          // ... 处理事件 ...
       }
       ```
-
-  - title: 自定义触摸处理
-    content: "可以在自定义视图中重写 `onTouchEvent()` 方法，处理特定的触摸事件逻辑。"
+  - title: 子视图标记事件已处理
+    description: |-
+      如果子视图已经处理了触摸事件，不希望父视图再处理，可以调用 `MotionEvent.ACTION_CANCEL` 方法将事件标记为已取消。父视图在收到 `ACTION_CANCEL` 事件后，应该停止处理该事件序列（不再执行 onTouchEvent）
     example: |
       ```kotlin
-      import android.content.Context
-      import android.graphics.Canvas
-      import android.graphics.Color
-      import android.graphics.Paint
-      import android.util.AttributeSet
-      import android.view.View
-
-      class CustomView @JvmOverloads constructor(
-          context: Context, attrs: AttributeSet? = null
-      ) : View(context, attrs) {
-          private val paint = Paint()
-
-          override fun onDraw(canvas: Canvas) {
-              super.onDraw(canvas)
-              canvas.drawColor(Color.WHITE) // 设置背景为白色
-              paint.color = Color.BLUE
-              canvas.drawCircle(width / 2f, height / 2f, 100f, paint) // 绘制蓝色圆形
-          }
+      class MyView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
           override fun onTouchEvent(event: MotionEvent): Boolean {
               when (event.action) {
                   MotionEvent.ACTION_DOWN -> {
-                      paint.color = Color.RED // 改变圆形颜色为红色
-                      invalidate() // 重新绘制
+                      // ... 处理按下事件 ...
+                  }
+                  MotionEvent.ACTION_MOVE -> {
+                      // ... 处理移动事件 ...
+                  }
+                  MotionEvent.ACTION_UP -> {
+                      // ... 处理抬起事件 ...
+
+                      // 标记事件已处理
+                      event.action = MotionEvent.ACTION_CANCEL
                   }
               }
-              return true
+              true // 返回 true 表示事件已消耗
           }
       }
       ```
+  - title: 请求父视图不拦截事件
+    description: |-
+      子视图可以通过调用父视图的 `requestDisallowInterceptTouchEvent(true)` 方法请求父视图不要拦截事件。
 
+      调用该方法后，父视图在 `onInterceptTouchEvent()` 方法中会收到 `disallowIntercept` 参数为 `true`，表示子视图请求不要拦截事件。
+    example: |
+      ```kotlin
+      class MyView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+
+          override fun onTouchEvent(event: MotionEvent): Boolean {
+              when (event.action) {
+                  MotionEvent.ACTION_DOWN -> {
+                      // 请求父视图不要拦截事件
+                      parent.requestDisallowInterceptTouchEvent(true)
+                  }
+                  // ... 处理其他事件 ...
+              }
+              true // 返回 true 表示事件已消耗
+          }
+      }
+      ```
 references:
-  - title: "Handling Touch Events in Android"
-    url: https://developer.android.com/training/gestures
-  - title: "Understanding Android Touch Events"
-    url: https://lynxbee.com/android-touch-events
-  - title: "Responding to Touch Events"
-    url: https://riptutorial.com/android/example/2577/responding-to-touch-events
+  - title: 一文读懂Android TouchEvent 事件分发、拦截、处理过程
+    url: https://libill.github.io/2019/09/09/android-touch-event/

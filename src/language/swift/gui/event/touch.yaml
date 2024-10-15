@@ -1,105 +1,113 @@
 id: touch
 title: 触摸
 query: UIKit touch event
-comment: UIKit 触摸事件，包括：触摸开始、触摸移动、触摸结束和触摸取消等事件，要如何绑定事件，以及处理事件提供的信息使用
-description: UIKit 触摸事件，包括：触摸开始、触摸移动、触摸结束和触摸取消等事件，要如何绑定事件，以及处理事件提供的信息使用
+comment: 尽量详触摸事件的用法，包括：如何绑定事件、触摸事件信息、事件传播链路、父视图拦截事件、子视图标记事件已处理等用
+description: 在 iOS 中，您可以通过触摸与应用程序进行交互。UIKit 使用触摸事件来处理这些交互。触摸事件会在用户的手指或 Apple Pencil 触碰屏幕时触发，并在用户的手指离开屏幕时结束。触摸事件会在事件发生的不同阶段传递给您的应用程序，让您有机会以各种方式作出响应。
 usage:
   - title: 绑定触摸事件
-    description: |-
-      UIKit 为 UIView 提供了四个触摸事件处理方法，分别对应触摸的不同阶段：
-
-      -   **touchesBegan(_:with:)**：手指触摸屏幕时调用。
-      -   **touchesMoved(_:with:)**：手指在屏幕上移动时调用。
-      -   **touchesEnded(_:with:)**：手指离开屏幕时调用。
-      -   **touchesCancelled(_:with:)**：触摸事件被取消时调用，例如被打断电话。
+    description: UIKit 使用 `UIResponder` 类来处理事件，包括触摸事件。`UIView`, `UIViewController`, `UIApplication` 都继承自 `UIResponder`，因此都可以处理触摸事件。您需要重写 `UIResponder` 类中与触摸事件相关的四个方法：
     example: |
-      ```swift 
-      import UIKit
+      ```swift
+      // 当用户的手指触碰屏幕时调用
+      override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+          // 处理触摸开始事件
+      }
 
-      class MyView: UIView {
+      // 当用户的手指在屏幕上移动时调用
+      override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+          // 处理触摸移动事件
+      }
 
-          override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-              super.touchesBegan(touches, with: event)
-              // 处理触摸开始事件
-              print("触摸开始")
-          }
+      // 当用户的手指离开屏幕时调用
+      override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+          // 处理触摸结束事件
+      }
 
-          override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-              super.touchesMoved(touches, with: event)
-              // 处理触摸移动事件
-              print("触摸移动")
-          }
-
-          override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-              super.touchesEnded(touches, with: event)
-              // 处理触摸结束事件
-              print("触摸结束")
-          }
-
-          override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-              super.touchesCancelled(touches, with: event)
-              // 处理触摸取消事件
-              print("触摸取消")
-          }
+      // 当系统中断触摸事件时调用，例如来电
+      override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+          // 处理触摸取消事件
       }
       ```
-  - title: 获取触摸信息
+  - title: 触摸事件信息
     description: |
-      在触摸事件处理方法中，可以通过 `UITouch` 对象获取触摸的相关信息，例如：
-        
-      -   **location(in:)**：获取触摸点在指定视图坐标系中的位置。
-      -   **previousLocation(in:)**：获取上一个触摸点在指定视图坐标系中的位置。
-      -   **tapCount**：获取触摸的次数，例如单击、双击。
-      -   **timestamp**：获取触摸事件发生的时间戳。
-      -   **force**：获取触摸的力度 (3D Touch)。
+      在触摸事件处理方法中，您可以通过 `touches` 参数获取触摸事件的信息，`touches` 是一个 `Set` 集合，包含了当前屏幕上的所有触摸点。每个 `UITouch` 对象都包含以下信息：
+      - `view`: 触摸事件发生的视图
+      - `phase`: 触摸事件的阶段，包括 began, moved, stationary, ended, cancelled
+      - `timestamp`: 触摸事件发生的时间戳
+      - `location(in: view)`: 触摸点在指定视图坐标系中的位置
+      - `previousLocation(in: view)`: 触摸点在上一个事件时的位置
+      - `tapCount`: 触摸事件的点击次数，例如双击
+      - `force`: 触摸事件的力度，仅适用于支持 3D Touch 的设备
     example: |
       ```swift
       override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-          super.touchesMoved(touches, with: event)
-
-          // 获取触摸对象
           guard let touch = touches.first else { return }
-
+          
           // 获取触摸点在视图中的位置
-          let location = touch.location(in: self)
-
-          // 获取上一个触摸点的位置
-          let previousLocation = touch.previousLocation(in: self)
-
+          let location = touch.location(in: self.view)
+          
+          // 获取触摸点在上一个事件时的位置
+          let previousLocation = touch.previousLocation(in: self.view)
+          
           // 计算触摸点移动的距离
           let deltaX = location.x - previousLocation.x
           let deltaY = location.y - previousLocation.y
-
-          // 更新视图位置
-          frame.origin.x += deltaX
-          frame.origin.y += deltaY
+          
+          // 使用移动距离更新视图
+          // ...
       }
       ```
-  - title: 多点触摸
-    description: 当多个手指同时触摸屏幕时，可以通过 `touches` 集合区分不同的触摸点，并进行相应的处理。
+  - title: 事件传递链
+    description: |
+      当触摸事件发生时，系统会将事件添加到一个由 `UIApplication` 管理的事件队列中。事件队列会按照先进先出的顺序处理事件。
+
+      系统会首先尝试找到触摸事件发生的最前端的视图，称为“命中测试”。系统会从窗口的根视图开始遍历视图层次结构，直到找到包含触摸点的最深层子视图。
+
+      如果命中测试成功，系统会将事件传递给该视图处理。如果该视图不处理该事件，系统会将事件传递给该视图的父视图。以此类推，直到事件被处理或者传递到根视图。
     example: |
       ```swift
+      // 在子视图中处理触摸事件
       override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-          super.touchesBegan(touches, with: event)
+          print("子视图 - 触摸开始")
+      }
 
-          for touch in touches {
-              // 为每个触摸点创建一个新的视图
-              let newView = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
-              newView.center = touch.location(in: self)
-              newView.backgroundColor = .random()
-              addSubview(newView)
-          }
+      // 在父视图中处理触摸事件
+      override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+          print("父视图 - 触摸开始")
+          // 将事件传递给下一个响应者
+          super.touchesBegan(touches, with: event)
       }
       ```
-  - title: 触摸取消
-    description: 当触摸事件被取消时，例如被打断电话，会调用 `touchesCancelled(_:with:)` 方法。应该在该方法中进行一些清理工作，例如移除临时创建的视图或重置状态。
+  - title: 父视图拦截事件
+    description: |
+      默认情况下，触摸事件会传递给命中测试的子视图。但是，父视图可以通过重写 `hitTest(_:with:)` 方法来拦截触摸事件。
+
+      `hitTest(_:with:)` 方法有两个参数：触摸点的位置和事件对象。该方法应该返回一个视图对象，表示哪个视图应该处理该事件。如果该方法返回 nil，则表示没有视图应该处理该事件。
     example: |
       ```swift
-      override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-          super.touchesCancelled(touches, with: event)
+      // 在父视图中重写 hitTest 方法
+      override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+          // 检查触摸点是否在子视图的范围内
+          if !self.subview.frame.contains(point) {
+              // 如果不在，则父视图处理该事件
+              return self
+          }
+          // 否则，将事件传递给子视图
+          return super.hitTest(point, with: event)
+      }
+      ```
+  - title: 子视图标记事件已处理
+    description: |
+      默认情况下，如果子视图处理了触摸事件，则事件不会传递给父视图。但是，子视图可以通过调用 `touchesBegan(_:with:)` 方法中的 `super.touchesBegan(_:with:)` 方法来将事件传递给父视图。
 
-          // 移除所有子视图
-          subviews.forEach { $0.removeFromSuperview() }
+      如果子视图不想处理某个特定的触摸事件，它可以简单地不调用 `super.touchesBegan(_:with:)` 方法。
+    example: |
+      ```swift
+      // 在子视图中处理触摸事件
+      override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+          print("子视图 - 触摸开始")
+          // 将事件传递给父视图
+          super.touchesBegan(touches, with: event)
       }
       ```
 references:

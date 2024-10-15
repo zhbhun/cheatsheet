@@ -41,7 +41,6 @@ const geminiFlashs = keys.map((key) =>
 const geminiPros = keys.map((key) =>
   new GoogleGenerativeAI(key).getGenerativeModel({
     model: 'models/gemini-1.5-pro-latest',
-
     safetySettings: [
       {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
