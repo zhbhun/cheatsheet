@@ -420,6 +420,7 @@ async function generateFeature(language: LanguageData, target: string) {
         title: link.title,
         url: link.url,
         content,
+        rate: -1,
       };
       await fs.promises.writeFile(
         cachePath,
