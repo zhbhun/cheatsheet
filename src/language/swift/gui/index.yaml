@@ -1,5 +1,11 @@
 id: gui
 title: 图形用户界面
+children:
+  - view
+  - style
+  - resource
+  - event
+  - animation
 references:
   - title: UIKit
     url: https://developer.apple.com/documentation/uikit

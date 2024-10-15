@@ -43,8 +43,8 @@ outlines:
             title: Enum
           - id: object
             title: Object
-          - id: "null"
-            title: "Null"
+          - id: 'null'
+            title: 'Null'
           - id: optional
             title: 可空
           - id: alias
@@ -170,8 +170,8 @@ outlines:
       - id: stdlib
         title: 标准库
         children:
-          - id: print
-            title: 日志
+          - id: log
+            title: Log
           - id: collections
             title: 集合
             children:
@@ -206,3 +206,147 @@ outlines:
         title: 垃圾回收
   - id: gui
     title: 图形用户界面
+    children:
+      - id: view
+        title: 视图
+        children:
+          - id: base
+            title: 基础
+            children:
+              - id: view
+                title: View
+              - id: text
+                title: TextView
+              - id: button
+                title: Button
+              - id: image
+                title: ImageView
+          - id: layout
+            title: 布局
+            children:
+              - id: relative
+                title: RelativeLayout
+              - id: frame
+                title: FrameLayout
+              - id: constraint
+                title: ConstraintLayout
+              - id: linear
+                title: LinearLayout
+          - id: container
+            title: 滚动
+            children:
+              - id: list
+                title: RecyclerView
+          - id: form
+            title: 基础
+            children:
+              - id: inputType
+                title: EditText Input Types and Styles
+              - id: checkbox
+                title: CheckBox
+              - id: radio
+                title: RadioButton
+              - id: select
+                title: Spinner
+              - id: select
+                title: Spinner
+              - id: switch
+                title: Switch
+              - id: time
+                title: 时间选择器
+          - id: popup
+            title: Popup
+            children:
+              - id: dialog
+                title: DialogFragment
+              - id: alert
+                title: AlertDialog
+              - id: bottom-sheet
+                title: BottomSheetDialog
+              - id: menu
+                title: PopupMenu
+          - id: feedback
+            title: 反馈
+            children:
+              - id: progress
+                title: ProgressBar
+              - id: snackbar
+                title: Snackbar
+              - id: toast
+                title: Toast
+          - id: custom
+            title: 自定义视图
+      - id: style
+        title: 样式
+        children:
+          - id: size
+            title: 大小
+          - id: spacing
+            title: 间距
+          - id: background
+            title: 背景样式
+          - id: border
+            title: 边框
+          - id: shadow
+            title: 阴影
+          - id: border-radius
+            title: 圆角
+          - id: text
+            title: 文本
+          - id: opacity
+            title: 透明度
+          - id: transform
+            title: 变换
+          - id: overflow
+            title: Overflow
+      - id: resource
+        title: 资源
+        children:
+          - id: layout
+            title: 布局
+          - id: values
+            title: 值资源
+          - id: drawable
+            title: 图片资源
+          - id: animation
+            title: 动画资源
+          - id: menu
+            title: 菜单资源
+          - id: raw
+            title: 原始资源
+          - id: font
+            title: 字体资源
+          - id: mipmap
+            title: Mipmap 资源
+          - id: xml
+            title: 使用自定义 XML 文件管理偏好设置
+      - id: event
+        title: 事件
+        children:
+          - id: click
+            title: 点击
+          - id: touch
+            title: 触摸
+          - id: gesture
+            title: 手势
+          - id: drag
+            title: 拖拽
+          - id: scroll
+            title: 滚动
+          - id: keyboard
+            title: 键盘事件
+      - id: animation
+        title: 动画
+        children:
+          - id: basic-animation
+            title: ObjectAnimator
+          - id: view-property-animator
+            title: ViewPropertyAnimator
+          - id: key-frame-animation
+            title: ValueAnimator
+          - id: transition
+            title: TransitionManager
+          - id: animated-image
+            title: AnimationDrawable
+          - id: motion-layout
+            title: MotionLayout

@@ -25,31 +25,27 @@ outlines:
         title: 数据类型
         children:
           - id: number
-            title: 数字
-          - id: bigint
-            title: BigInt
+            title: 数值
           - id: boolean
             title: 布尔值
+          - id: character
+            title: 字符
           - id: string
             title: 字符串
-          - id: symbol
-            title: Symbol
           - id: tuple
-            title: Tuple
+            title: 元组
           - id: enum
             title: 枚举
-          - id: object
-            title: 对象
-          - id: "null"
-            title: "Null"
-          - id: undefined
-            title: Undefined
-          - id: never
-            title: Never
+          - id: struct
+            title: 结构
+          - id: 'null'
+            title: Nil
+          - id: optional
+            title: 可空
+          - id: alias
+            title: 类型别名
           - id: void
             title: Void
-          - id: unknown
-            title: Unknown
           - id: any
             title: Any
       - id: converts
@@ -73,30 +69,31 @@ outlines:
           - id: ternary
             title: 三元表达式
           - id: spread
-            title: 展开运算符
+            title: 展开操作符
+          - id: range
+            title: 范围表达式
+          - id: infix
+            title: 中缀操作符
           - id: in
             title: 包含表达式
           - id: is
             title: 类型检查
+          - id: try
+            title: Try 操作符
           - id: non-null-assertion
             title: 非空断言表达式
           - id: nullish-coalescing
             title: 空值合并表达式
           - id: optional-chaining
             title: 可选链表达式
+          - id: keypath
+            title: KeyPath
           - id: function
             title: 函数表达式
-      - id: statements
-        title: 语句
-        children:
-          - id: branch
-            title: 条件分支
-          - id: switch
-            title: Switch
-          - id: loop
-            title: Loop
-          - id: try
-            title: 异常处理
+          - id: implicit-member
+            title: 隐式成员表达式
+          - id: selector
+            title: 选择器表达式
       - id: functions
         title: 函数
         children:
@@ -107,13 +104,13 @@ outlines:
           - id: return
             title: 返回值
           - id: anonymous
-            title: 匿名函数
+            title: 闭包
           - id: type
-            title: 类型
+            title: 函数类型
           - id: scope
-            title: 作用域
+            title: 函数作用域
           - id: overload
-            title: 重载
+            title: 函数重载
           - id: generic
             title: 函数泛型
       - id: classes
@@ -124,17 +121,27 @@ outlines:
           - id: constructors
             title: 构造函数
           - id: property
-            title: 类属性
+            title: 属性
           - id: method
-            title: 类方法
+            title: 方法
           - id: visibility
             title: 可见性
           - id: inheritance
             title: 继承
-          - id: class-implements-interface
-            title: 类实现接口
+          - id: interface
+            title: 协议
+          - id: delegation
+            title: 代理
           - id: static
             title: 静态属性
+          - id: extension
+            title: 扩展
+          - id: struct
+            title: Struct
+          - id: sealed
+            title: 密封类
+          - id: nest
+            title: 嵌套类
           - id: generic
             title: 泛型
       - id: modules
@@ -143,9 +150,9 @@ outlines:
           - id: package
             title: 包
           - id: folder
-            title: 文件夹模块
+            title: 子模块
           - id: file
-            title: 模块
+            title: 文件
       - id: stdlib
         title: 标准库
         children:
@@ -157,11 +164,11 @@ outlines:
               - id: array
                 title: 数组
               - id: set
-                title: Set
+                title: 集合
               - id: map
-                title: Map
+                title: 字典
           - id: http
-            title: HTTP
+            title: HTTP 请求
           - id: regexp
             title: 正则表达式
           - id: time
@@ -178,10 +185,136 @@ outlines:
         title: 异步
         children:
           - id: thread
-            title: Worker
+            title: 线程
           - id: async
             title: Async & Await
       - id: gc
         title: 垃圾回收
   - id: gui
     title: 图形用户界面
+    children:
+      - id: view
+        title: 视图
+        children:
+          - id: base
+            title: 基础
+            children:
+              - id: view
+                title: UIView
+              - id: text
+                title: UILabel
+              - id: button
+                title: UIButton
+              - id: image
+                title: UIImageView
+          - id: layout
+            title: 布局
+            children:
+              - id: constraint
+                title: Auto Layout
+              - id: linear
+                title: UIStackView
+              - id: frame
+                title: Frame
+              - id: snapkit
+                title: SnapKit
+          - id: collection
+            title: 容器
+            children:
+              - id: scroll
+                title: UIScrollView
+              - id: table
+                title: UITableView
+              - id: collection
+                title: UICollectionView
+          - id: form
+            title: 基础
+            children:
+              - id: input
+                title: UITextField
+          - id: popup
+            title: Popup
+            children:
+              - id: alert
+                title: UIAlertController
+          - id: feedback
+            title: 反馈
+            children:
+              - id: indicator
+                title: UIActivityIndicatorView
+              - id: progress
+                title: UIProgressView
+              - id: empty
+                title: UIContentUnavailableView
+          - id: custom
+            title: 自定义视图
+      - id: style
+        title: 样式
+        children:
+          - id: size
+            title: Bounds and Frame
+          - id: spacing
+            title: 间距
+          - id: background
+            title: 背景
+          - id: border
+            title: 边框
+          - id: shadow
+            title: 阴影
+          - id: border-radius
+            title: 圆角
+          - id: text
+            title: 文本
+          - id: mask
+            title: 蒙版
+          - id: opacity
+            title: 透明度
+          - id: transform
+            title: 变换
+          - id: overflow
+            title: Overflow
+          - id: visible
+            title: 可见性
+      - id: resource
+        title: 资源
+        children:
+          - id: layout
+            title: 布局
+          - id: image
+            title: 图像
+          - id: color
+            title: 颜色
+          - id: font
+            title: 字体
+          - id: string
+            title: 文本
+          - id: property
+            title: 配置
+          - id: common
+            title: 通用
+      - id: event
+        title: 事件
+        children:
+          - id: touch
+            title: 触摸
+          - id: gesture
+            title: 手势
+          - id: scroll
+            title: 滚动
+          - id: keyboard
+            title: 键盘事件
+      - id: animation
+        title: 动画
+        children:
+          - id: basic-animation
+            title: CABasicAnimation
+          - id: view-property-animator
+            title: UIViewPropertyAnimator
+          - id: key-frame-animation
+            title: CAKeyframeAnimation
+          - id: transition
+            title: Transition
+          - id: animated-image
+            title: Animated Image
+          - id: physics-based-animations
+            title: 物理动画库

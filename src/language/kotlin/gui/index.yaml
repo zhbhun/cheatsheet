@@ -1,2 +1,8 @@
 id: gui
 title: 图形用户界面
+children:
+  - view
+  - style
+  - resource
+  - event
+  - animation
