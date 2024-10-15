@@ -20,17 +20,22 @@ export interface FeatureContentProps {
 }
 
 export function FeatureContent({ feature }: FeatureContentProps) {
-  const example = useMemo(() => {
+  console.log(feature);
+  const description = useMemo(() => {
+    return marked.parse(feature.description || '') as string;
+  }, [feature]);
+  const usage = useMemo(() => {
     if (!feature) {
       return '';
     }
-    if (typeof feature.example === 'string') {
-      return feature.example;
+    if (typeof feature.usage === 'string') {
+      return feature.usage;
     }
     return (
-      feature.example?.map((item) => ({
+      feature.usage?.map((item) => ({
         title: item.title,
-        content: marked.parse(item.content),
+        content: item.content ? marked.parse(item.content) : '',
+        example: item.example ? marked.parse(item.example) : '',
       })) ?? []
     );
   }, [feature]);
@@ -39,26 +44,34 @@ export function FeatureContent({ feature }: FeatureContentProps) {
     content = (
       <>
         <h1 className="mb-6 pt-2 text-3xl font-semibold">{feature.title}</h1>
-        <div className="mb-6">{feature.description}</div>
-        {typeof example === 'string' ? (
-          <Highlight lang="kotlin" code={example as any} />
+        <div
+          className="mb-8"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+        {typeof usage === 'string' ? (
+          <Highlight lang="kotlin" code={usage as any} />
         ) : (
-          <ul>
+          <div>
             {(
-              example as {
+              usage as {
                 title: string;
                 content: string;
+                example: string;
               }[]
-            ).map((example, index) => (
-              <li key={index} className="mb-4">
-                <h2 className="mb-2 font-medium">{example.title}</h2>
+            ).map((item, index) => (
+              <div key={index} className="mb-8">
+                <h2 className="mb-2 text-lg font-medium">{item.title}</h2>
                 <div
-                  className="h-fit text-small rounded-medium bg-default/40 text-default-foreground w-full max-w-full overflow-x-auto"
-                  dangerouslySetInnerHTML={{ __html: example.content }}
+                  className="markdown mb-4"
+                  dangerouslySetInnerHTML={{ __html: item.content }}
                 />
-              </li>
+                <div
+                  className="markdown mb-4"
+                  dangerouslySetInnerHTML={{ __html: item.example }}
+                />
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </>
     );

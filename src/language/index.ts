@@ -37,11 +37,12 @@ export interface LanguageFeauture {
   query?: string;
   comment?: string;
   description: string;
-  example?:
+  usage?:
     | string
     | {
         title: string;
         content: string;
+        example: string;
       }[];
   references: {
     title: string;
@@ -70,6 +71,16 @@ export function loadLanguageFeature(
     return Promise.resolve(null);
   }
   return modules[key]().then(({ default: source }: any) => {
-    return yaml.parse(source) as LanguageFeauture;
+    const { example, usage, ...result } = yaml.parse(source);
+    if (example && usage) {
+      return {
+        ...result,
+        usage: example || usage,
+      };
+    }
+    return {
+      ...result,
+      usage: usage || example,
+    };
   });
 }

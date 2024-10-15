@@ -1,0 +1,8 @@
+.markdown .hljs {
+  max-width: 100%;
+  height: fit-content;
+  font-size: 14px;
+  background-color: #f1f1f1 !important;
+  border-radius: 6px;
+  overflow-x: auto;
+}
