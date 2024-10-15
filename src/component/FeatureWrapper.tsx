@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ReactNode, useEffect, useState } from 'react';
-import { Plus, PanelLeftClose } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Plus } from 'lucide-react';
 import {
   Breadcrumbs,
   BreadcrumbItem,
@@ -14,6 +14,7 @@ import {
 import { ControlledTreeEnvironment, Tree, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import 'devicon/devicon.min.css';
+import LOGO from '@/asset/logo.svg';
 import { loadLanguage, LanguageOutline } from '@/language';
 import Feature from './Feature';
 
@@ -120,77 +121,92 @@ export function FeatureWrapper({
       }, 0);
     }
   }, [treeData, feature]);
+  const menu = (
+    <ScrollShadow className="flex-1 px-2">
+      <ControlledTreeEnvironment
+        items={treeData}
+        viewState={{
+          outline: {
+            selectedItems: selectedItems,
+            expandedItems: expandedItems,
+          },
+        }}
+        getItemTitle={(item) => item.data?.title ?? ''}
+        canDragAndDrop={false}
+        canDropOnFolder={false}
+        canReorderItems={false}
+        canRename={false}
+        onCollapseItem={(item) => {
+          setExpandedItems((prev) => {
+            return prev.includes(item.index as string)
+              ? prev.filter((id) => id !== item.index)
+              : prev;
+          });
+        }}
+        onExpandItem={(item) => {
+          setExpandedItems((prev) => {
+            return prev.includes(item.index as string)
+              ? prev
+              : [...prev, item.index as string];
+          });
+        }}
+        onSelectItems={(itemIndexes) => {
+          const selectedIndex = itemIndexes[0] as string;
+          const selectedItem = treeData[selectedIndex];
+          if ((selectedItem.children?.length ?? 0) > 0) {
+            return;
+          }
+          const previousSelectedIndex = selectedItems[0];
+          if (selectedIndex !== previousSelectedIndex) {
+            if (selectedIndex) {
+              setSelectedItems([selectedIndex]);
+              onSwitch?.(selectedIndex);
+            } else {
+              setSelectedItems([]);
+            }
+          }
+        }}
+      >
+        <Tree treeId="outline" rootItem={language} treeLabel="Outline" />
+      </ControlledTreeEnvironment>
+    </ScrollShadow>
+  );
   const sidebar = (
     <div
       className={clsx(
-        'fixed top-0 left-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-100 duration-300 ease-in-out overflow-hidden hover:shadow',
+        'group fixed top-0 left-0 bottom-0 w-64 bg-neutral-50 border-r border-neutral-100 overflow-hidden duration-300 ease-in-out hover:shadow',
         {
           '!w-0': collapsed,
         }
       )}
     >
       <div className="flex flex-col w-64 h-full">
-        <div className="flex items-center h-11 px-2">
+        <div className="flex justify-between items-center h-11 px-1">
           <Button
-            className="p-0 !w-10"
+            size="sm"
             variant="light"
-            fullWidth
+            startContent={
+              <img className="block w-5 h-5 rounded-full" src={LOGO} />
+            }
+            onClick={() => {
+              setCollapsed(true);
+            }}
+          >
+            <span className="font-semibold text-neutral-600">CHEATSHEET</span>
+          </Button>
+          <Button
+            className="hidden p-0 !w-10 group-hover:flex"
+            size="sm"
+            variant="light"
             isIconOnly
             onClick={() => {
               setCollapsed(true);
             }}
           >
-            <PanelLeftClose className="w-5 h-5 text-neutral-400" />
+            <ChevronsLeft className="w-5 h-5 text-neutral-400" />
           </Button>
         </div>
-        <ScrollShadow className="flex-1 px-2">
-          <ControlledTreeEnvironment
-            items={treeData}
-            viewState={{
-              outline: {
-                selectedItems: selectedItems,
-                expandedItems: expandedItems,
-              },
-            }}
-            getItemTitle={(item) => item.data?.title ?? ''}
-            canDragAndDrop={false}
-            canDropOnFolder={false}
-            canReorderItems={false}
-            canRename={false}
-            onCollapseItem={(item) => {
-              setExpandedItems((prev) => {
-                return prev.includes(item.index as string)
-                  ? prev.filter((id) => id !== item.index)
-                  : prev;
-              });
-            }}
-            onExpandItem={(item) => {
-              setExpandedItems((prev) => {
-                return prev.includes(item.index as string)
-                  ? prev
-                  : [...prev, item.index as string];
-              });
-            }}
-            onSelectItems={(itemIndexes) => {
-              const selectedIndex = itemIndexes[0] as string;
-              const selectedItem = treeData[selectedIndex];
-              if ((selectedItem.children?.length ?? 0) > 0) {
-                return;
-              }
-              const previousSelectedIndex = selectedItems[0];
-              if (selectedIndex !== previousSelectedIndex) {
-                if (selectedIndex) {
-                  setSelectedItems([selectedIndex]);
-                  onSwitch?.(selectedIndex);
-                } else {
-                  setSelectedItems([]);
-                }
-              }
-            }}
-          >
-            <Tree treeId="outline" rootItem={language} treeLabel="Outline" />
-          </ControlledTreeEnvironment>
-        </ScrollShadow>
+        {menu}
       </div>
     </div>
   );
@@ -207,7 +223,7 @@ export function FeatureWrapper({
             setCollapsed(false);
           }}
         >
-          <PanelLeftClose className="w-5 h-5 text-neutral-400" />
+          <ChevronsRight className="w-5 h-5 text-neutral-400" />
         </Button>
       ) : null}
       <Breadcrumbs>
