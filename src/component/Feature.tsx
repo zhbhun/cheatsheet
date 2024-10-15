@@ -4,17 +4,20 @@ import FeatureContent from './FeatureContent';
 import FeatureWrapper from './FeatureWrapper';
 
 export interface FeatureProps {
+  comparer?: string;
   language: string;
   index: string;
   sidebarEnable?: boolean;
   onSwitch?: (newIndex: string) => void;
+  onClose?: () => void;
 }
 
 export function Feature({
+  comparer,
   language,
   index,
-  sidebarEnable = true,
   onSwitch,
+  onClose,
 }: FeatureProps) {
   const [feature, setFeature] = useState<LanguageFeauture | null>(null);
   useEffect(() => {
@@ -25,10 +28,11 @@ export function Feature({
   }, [index]);
   return (
     <FeatureWrapper
+      comparer={comparer}
       language={language}
       feature={index}
-      sidebarEnable={sidebarEnable}
       onSwitch={onSwitch}
+      onClose={onClose}
     >
       {feature ? <FeatureContent feature={feature} /> : null}
     </FeatureWrapper>

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ReactNode, useEffect, useState } from 'react';
-import { ChevronsLeft, ChevronsRight, Plus } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Plus, X } from 'lucide-react';
 import {
   Breadcrumbs,
   BreadcrumbItem,
@@ -15,7 +15,7 @@ import { ControlledTreeEnvironment, Tree, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import 'devicon/devicon.min.css';
 import LOGO from '@/asset/logo.svg';
-import { loadLanguage, LanguageOutline } from '@/language';
+import { LanguageOutline, languages, loadLanguage } from '@/language';
 import Feature from './Feature';
 
 type OutlineTreeItem = TreeItem<{
@@ -58,21 +58,23 @@ const convertToTreeItems = (
 };
 
 export interface FeatureWrapperProps {
+  comparer?: string;
   language: string;
   feature: string;
-  sidebarEnable: boolean;
   children: ReactNode;
   onSwitch?: (index: string) => void;
+  onClose?: () => void;
 }
 
 export function FeatureWrapper({
+  comparer,
   language,
   feature,
-  sidebarEnable,
   children,
   onSwitch,
+  onClose,
 }: FeatureWrapperProps) {
-  const [collapsed, setCollapsed] = useState(sidebarEnable ? false : true);
+  const [collapsed, setCollapsed] = useState(comparer ? true : false);
   const [treeData, setTreeData] = useState<Record<string, OutlineTreeItem>>({});
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -213,7 +215,7 @@ export function FeatureWrapper({
 
   const toolbarLeft = (
     <div className="flex items-center">
-      {collapsed && sidebarEnable ? (
+      {collapsed && !comparer ? (
         <Button
           className="mr-2 p-0 !w-10"
           variant="light"
@@ -230,17 +232,65 @@ export function FeatureWrapper({
         {feature.split('/').map((key, index, array) => {
           const featureIndex = array.slice(0, index + 1).join('/');
           const feature = treeData[featureIndex];
-          const url = `/${featureIndex}`;
+          // const url = `/${featureIndex}`;
+          const featureItem = treeData[featureIndex];
+          const parentItem = treeData[featureItem?.data?.parentIndex ?? ''];
+          let content: ReactNode = (
+            <span className="cursor-pointer">
+              {feature?.data?.title ?? key}
+            </span>
+          );
+          if (parentItem && (parentItem.children?.length ?? 0) > 0) {
+            content = (
+              <Dropdown>
+                <DropdownTrigger>{content}</DropdownTrigger>
+                <DropdownMenu>
+                  {(parentItem.children || []).map((childIndex) => {
+                    const childItem = treeData[childIndex];
+                    return (
+                      <DropdownItem
+                        key={childIndex}
+                        onClick={() => {
+                          onSwitch?.(String(childItem?.index ?? ''));
+                        }}
+                      >
+                        {childItem.data?.title ?? ''}
+                      </DropdownItem>
+                    );
+                  })}
+                </DropdownMenu>
+              </Dropdown>
+            );
+          } else if (index === 0) {
+            content = (
+              <Dropdown>
+                <DropdownTrigger>{content}</DropdownTrigger>
+                <DropdownMenu>
+                  {languages
+                    .filter((item) => item.value !== comparer)
+                    .map((item) => (
+                      <DropdownItem
+                        key={item.value}
+                        onClick={() => {
+                          onSwitch?.(item.value);
+                        }}
+                      >
+                        {item.label}
+                      </DropdownItem>
+                    ))}
+                </DropdownMenu>
+              </Dropdown>
+            );
+          }
           return (
             <BreadcrumbItem
               key={index}
-              href={url}
               onClick={(event) => {
                 event.preventDefault();
-                onSwitch?.(featureIndex);
+                // onSwitch?.(featureIndex);
               }}
             >
-              {feature?.data?.title ?? key}
+              {content}
             </BreadcrumbItem>
           );
         })}
@@ -262,7 +312,7 @@ export function FeatureWrapper({
       <DropdownTrigger>
         <Button
           className={clsx('p-0 !w-10', {
-            hidden: !sidebarEnable,
+            hidden: comparer,
           })}
           variant="light"
           fullWidth
@@ -271,7 +321,6 @@ export function FeatureWrapper({
             setCollapsed(false);
           }}
         >
-          {compareLang}
           <Plus className="w-5 h-5 text-neutral-400" />
         </Button>
       </DropdownTrigger>
@@ -280,28 +329,40 @@ export function FeatureWrapper({
           setCompareLang(key);
         }}
       >
-        <DropdownItem
-          key="kotlin"
-          startContent={<i className="devicon-kotlin-plain" />}
-        >
-          Kotlin
-        </DropdownItem>
-        <DropdownItem
-          key="Swift"
-          startContent={<i className="devicon-swift-plain" />}
-        >
-          Swift
-        </DropdownItem>
-        <DropdownItem
-          key="typescript"
-          startContent={<i className="devicon-typescript-plain" />}
-        >
-          Typescript
-        </DropdownItem>
+        {languages
+          .filter((item) => item.value !== language)
+          .map((item) => {
+            return (
+              <DropdownItem
+                key={item.value}
+                startContent={<i className={`devicon-${item.value}-plain`} />}
+              >
+                {item.label}
+              </DropdownItem>
+            );
+          })}
       </DropdownMenu>
     </Dropdown>
   );
-  const toolbarRight = <div>{compareButton}</div>;
+  const closeButton = (
+    <Button
+      className={clsx('p-0 !w-10', {
+        hidden: !comparer,
+      })}
+      variant="light"
+      fullWidth
+      isIconOnly
+      onClick={onClose}
+    >
+      <X className="w-5 h-5 text-neutral-400" />
+    </Button>
+  );
+  const toolbarRight = (
+    <div className="flex items-center">
+      {closeButton}
+      {compareButton}
+    </div>
+  );
   const toolbar = (
     <div
       className={clsx(
@@ -341,12 +402,16 @@ export function FeatureWrapper({
       <div className="w-full h-full pointer-events-auto bg-white overflow-auto">
         {compareLang ? (
           <Feature
+            comparer={language}
             language={compareLang}
             index={compareFeature}
             sidebarEnable={false}
             onSwitch={(newIndex) => {
-              console.log(newIndex);
-              // navigate(`/${newIndex}`);
+              setCompareFeature(newIndex);
+            }}
+            onClose={() => {
+              setCompareLang('');
+              setCompareFeature('');
             }}
           />
         ) : null}
