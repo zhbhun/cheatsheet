@@ -6,10 +6,16 @@ import FeatureWrapper from './FeatureWrapper';
 export interface FeatureProps {
   language: string;
   index: string;
+  sidebarEnable?: boolean;
   onSwitch?: (newIndex: string) => void;
 }
 
-export function Feature({ language, index, onSwitch }: FeatureProps) {
+export function Feature({
+  language,
+  index,
+  sidebarEnable = true,
+  onSwitch,
+}: FeatureProps) {
   const [feature, setFeature] = useState<LanguageFeauture | null>(null);
   useEffect(() => {
     const pathes = index.split('/');
@@ -18,7 +24,12 @@ export function Feature({ language, index, onSwitch }: FeatureProps) {
     });
   }, [index]);
   return (
-    <FeatureWrapper language={language} feature={index} onSwitch={onSwitch}>
+    <FeatureWrapper
+      language={language}
+      feature={index}
+      sidebarEnable={sidebarEnable}
+      onSwitch={onSwitch}
+    >
       {feature ? <FeatureContent feature={feature} /> : null}
     </FeatureWrapper>
   );
