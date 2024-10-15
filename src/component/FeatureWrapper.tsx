@@ -1,6 +1,12 @@
 import clsx from 'clsx';
-import { ReactNode, useEffect, useState } from 'react';
-import { ChevronsLeft, ChevronsRight, Plus, X } from 'lucide-react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  ListCollapse,
+  Plus,
+  X,
+} from 'lucide-react';
 import {
   Breadcrumbs,
   BreadcrumbItem,
@@ -78,6 +84,11 @@ export function FeatureWrapper({
   const [treeData, setTreeData] = useState<Record<string, OutlineTreeItem>>({});
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const collapsableItems = useMemo(() => {
+    return Object.keys(treeData).filter((key) => {
+      return (treeData[key].children?.length ?? 0) > 0;
+    });
+  }, [treeData]);
   useEffect(() => {
     if (language) {
       loadLanguage(language).then((data) => {
@@ -196,17 +207,34 @@ export function FeatureWrapper({
           >
             <span className="font-semibold text-neutral-600">CHEATSHEET</span>
           </Button>
-          <Button
-            className="hidden p-0 !w-10 group-hover:flex"
-            size="sm"
-            variant="light"
-            isIconOnly
-            onClick={() => {
-              setCollapsed(true);
-            }}
-          >
-            <ChevronsLeft className="w-5 h-5 text-neutral-400" />
-          </Button>
+          <div className="flex items-center">
+            <Button
+              className="hidden p-0 !w-10 group-hover:flex"
+              size="sm"
+              variant="light"
+              isIconOnly
+              onClick={() => {
+                setCollapsed(true);
+              }}
+            >
+              <ChevronsLeft className="w-5 h-5 text-neutral-400" />
+            </Button>
+            <Button
+              className="hidden p-0 !w-10 group-hover:flex"
+              size="sm"
+              variant="light"
+              isIconOnly
+              onClick={() => {
+                if (collapsableItems.length != expandedItems.length) {
+                  setExpandedItems(collapsableItems);
+                } else {
+                  setExpandedItems(['swift']);
+                }
+              }}
+            >
+              <ListCollapse className="w-5 h-5 text-neutral-400" />
+            </Button>
+          </div>
         </div>
         {menu}
       </div>
