@@ -50,7 +50,9 @@ export function FeatureContent({ feature }: FeatureContentProps) {
           dangerouslySetInnerHTML={{ __html: description }}
         />
         {typeof usage === 'string' ? (
-          <Highlight lang="kotlin" code={usage as any} />
+          <div className="mb-8">
+            <Highlight lang="kotlin" code={usage as any} />
+          </div>
         ) : (
           <div>
             {(
@@ -72,20 +74,22 @@ export function FeatureContent({ feature }: FeatureContentProps) {
                 />
               </div>
             ))}
-            {references && references.length > 0 ? (
-              <div className="mb-8">
-                <h2 className="mb-2 text-lg font-medium">参考文档</h2>
-                <ul className="pl-6 list-disc">
-                  {references.map((item, index) => (
-                    <li key={index}>
-                      <Link className="leading-8" href={item.url}>{item.title}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
           </div>
         )}
+        {references && references.length > 0 ? (
+          <div className="mb-8">
+            <h2 className="mb-2 text-lg font-medium">参考文档</h2>
+            <ul className="pl-6 list-disc">
+              {references.map((item, index) => (
+                <li key={index}>
+                  <Link className="leading-8" href={item.url}>
+                    {item.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </>
     );
   }
