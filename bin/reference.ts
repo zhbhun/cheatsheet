@@ -35,7 +35,10 @@ async function searchByGoogle(
     })
   )
     .filter((item) => {
-      if (item.url.indexOf('www.youtube.com') >= 0) {
+      if (
+        item.url.indexOf('www.youtube.com') >= 0 ||
+        item.url.indexOf('blog.csdn.net') >= 0
+      ) {
         return false;
       }
       if (ignores.length > 0) {
@@ -98,7 +101,9 @@ export async function loadReference(
     for (let i = 0; i <= language.documents.length; i++) {
       const site = language.documents[i];
       links = await searchByGoogle(
-        `${site ? `site:${site} ` : ''}${feature.query || feature.title}`,
+        `${site ? `site:${site} ` : ''}${
+          feature.query || `${language.title} ${feature.title}`
+        }`,
         language.ignores
       );
     }

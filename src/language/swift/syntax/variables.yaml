@@ -1,0 +1,99 @@
+id: variable
+title: 变量
+query: Swift 变量
+comment: 变量和常量、变量赋值、解构赋值、类型推断、显式指定类型、打印变量、变量命名规则、驼峰命名法
+description: Swift 中的变量是用来存储数据的占位符，其值可以被修改。在使用变量之前，需要先声明并为其指定数据类型。
+usage:
+  - title: 声明变量
+    description: |
+      使用 `var` 关键字声明一个变量，并可以使用类型标注来指定变量的数据类型。
+
+      - 语法：
+        - `var 变量名 = 初始值`
+        - `var 变量名: 数据类型 = 初始值`
+    example: |
+      ```swift
+      // 声明一个名为 age 的变量，并赋值为 25
+      var age = 25
+
+      // 声明一个名为 name 的变量，并指定数据类型为 String，赋值为 "John"
+      var name: String = "John"
+      ```
+  - title: 常量
+    description: |
+      使用 `let` 关键字声明一个常量，其值一旦设定就不能再更改。
+      - 语法：
+        - `let 常量名 = 初始值`
+        - `let 常量名: 数据类型 = 初始值`
+    example: |
+      ```swift
+      let birthYear = 1995 // 声明一个名为 birthYear 的常量，并赋值为 1995
+      // birthYear = 2000  // 编译错误：常量不能被修改
+      ```
+  - title: 变量赋值
+    description: 使用等号 `=` 将值赋给变量。Swift 中的变量赋值是类型安全的，这意味着不能将错误类型的值赋给变量。
+    example: |
+      ```swift
+      var age = 25 // 将 25 赋给 age 变量
+      age = 30    // 修改 age 变量的值为 30
+
+      var name: String = "John" // 将 "John" 赋给 name 变量
+      name = "Peter"           // 修改 name 变量的值为 "Peter"
+      ```
+  - title: 解构赋值
+    description: 解构是一种可以将元组（Tuple）拆解为多个变量的语法。通过一次赋值操作，可以从函数返回的元组中提取多个值，并分别赋给多个变量。
+    example: |
+      ```swift
+      // 简单的元组解构
+      let (firstName, lastName) = ("Taylor", "Swift")
+      print(firstName)  // 输出: Taylor
+      print(lastName)   // 输出: Swift
+
+      // 在函数返回值中使用解构
+      func getUserInfo() -> (name: String, age: Int) {
+          return ("Alice", 30)
+      }
+      let (name, age) = getUserInfo()
+      print("\(name) is \(age) years old")  // 输出: Alice is 30 years old
+
+      // 在循环中使用解构
+      let items = [("Apple", 2.99), ("Banana", 1.99)]
+      for (item, price) in items {
+          print("\(item) costs \(price)")
+      }
+      // 输出:
+      // Apple costs 2.99
+      // Banana costs 1.99
+      ```
+  - title: 类型推断
+    description: 如果没有显式指定变量的数据类型，Swift 会根据赋给变量的初始值自动推断其类型。
+    example: |
+      ```swift
+      var age = 25       // Swift 推断 age 的数据类型为 Int
+      var name = "John"  // Swift 推断 name 的数据类型为 String
+      ```
+  - title: 打印变量
+    description: 使用 `print()` 函数打印变量的值。
+    example: |
+      ```swift
+      var name = "John"
+      print(name) // 输出：John
+
+      print("My name is \(name)") // 输出：My name is John
+      ```
+  - title: 变量命名规则
+    description: |
+      - 变量名可以使用字母、数字、下划线和 Unicode 字符。
+      - 变量名必须以字母或下划线开头。
+      - 变量名区分大小写。
+      - 建议使用驼峰命名法，例如 `userName`、`productPrice`。
+    example: |
+      ```swift
+      var userName = "John"   // 正确
+      var user_age = 25      // 可以，但不建议
+      var 1user = "Peter"   // 错误：变量名不能以数字开头
+      var user-name = "Jane"  // 错误：变量名不能包含 "-"
+      ```
+references:
+  - title: Swift 变量
+    url: http://www.runoob.com/swift/swift-variables.html

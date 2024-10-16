@@ -1,0 +1,85 @@
+id: variable
+title: 变量
+query: Kotlin 变量
+comment: 声明变量、变量赋值、解构赋值、类型推断、显式指定类型、打印变量、变量命名规则、驼峰命名法
+description: 变量是用于存储数据值的容器。Kotlin 中使用 `var` 定义可变变量，`val` 定义常量，并可以自动推断类型。让我们学习如何声明、赋值和使用 Kotlin 变量，以及一些最佳实践。
+usage:
+  - title: 声明变量
+    description: 在 Kotlin 中，使用 `var` 或 `val` 关键字来声明变量。`var` 用于声明可变变量，而 `val` 用于声明不可变变量（常量）。
+    example: |
+      ```kotlin
+      var name = "John" // 可变变量
+      val birthyear = 1975 // 不可变变量
+      ```
+  - title: 变量赋值
+    description: 使用等号（=）为变量赋值。Kotlin 支持类型推断，可以自动确定变量的数据类型。你也可以选择显式指定变量的类型。
+    example: |
+      ```kotlin
+      var name: String = "John" // 显式指定类型
+      name = "Peter" // 修改可变变量的值
+      val pi = 3.14159 // 类型推断为 Double
+      ```
+  - title: 解构赋值
+    description: 解构赋值允许你从对象、函数返回值或集合中一次性提取多个值。常用于数据类（data class）、Pair、Map 等场景。通过 componentN() 函数可以将对象的多个字段拆解为不同的变量。
+    example: |
+      ```kotlin
+      // 定义数据类
+      data class User(val name: String, val age: Int)
+
+      // 使用解构赋值提取数据类的字段
+      val (userName, userAge) = User("Alice", 30)
+      println("Name: $userName, Age: $userAge")  // 输出: Name: Alice, Age: 30
+
+      // 忽略不需要的值
+      val (_, onlyAge) = User("Bob", 25)
+      println("Only Age: $onlyAge")  // 输出: Only Age: 25
+
+      // 在循环中解构 Map
+      val map = mapOf(1 to "One", 2 to "Two")
+      for ((key, value) in map) {
+          println("Key: $key, Value: $value")
+      }
+      ```
+  - title: val 与 var 的选择
+    description: 使用 `val` 声明常量，一旦赋值就不能更改。使用 `var` 声明变量，可以根据需要多次修改其值。优先使用 `val`，除非你需要改变变量的值。
+    example: |
+      ```kotlin
+      val daysOfWeek = 7 // 常量，不可修改
+      var temperature = 25
+      temperature = 20 // 修改变量的值
+      ```
+  - title: 打印变量
+    description: 使用 `println()` 函数打印变量的值。可以使用 `+` 连接字符串和变量，或执行字符串模板。
+    example: |
+      ```kotlin
+      val name = "John"
+      println("Hello, $name!") // 字符串模板
+      println("Your age is: " + (2023 - birthyear)) // 字符串连接
+      ```
+  - title: 变量命名规则
+    description: |-
+      变量名必须遵循 Kotlin 的标识符规则：
+      - 以字母、下划线（_）或美元符号（$）开头
+      - 可以包含字母、数字、下划线和美元符号
+      - 区分大小写
+      - 不能使用 Kotlin 关键字
+    example: |
+      ```kotlin
+      var userName = "JohnDoe" // 正确
+      var user_name = "JohnDoe" // 正确
+      var 1user = "JohnDoe" // 错误，不能以数字开头
+      var val = "JohnDoe" // 错误，不能使用关键字
+      ```
+  - title: 驼峰命名法
+    description: 使用驼峰命名法提高代码可读性。变量名以小写字母开头，后续单词首字母大写，例如 `firstName`、`numberOfDays`。
+    example: |
+      ```kotlin
+      val firstName = "John"
+      val lastName = "Doe"
+      val numberOfDays = 7
+      ```
+references:
+  - title: Kotlin 变量详解：声明、赋值与最佳实践指南
+    url: https://www.cnblogs.com/xiaowange/p/18259497
+  - title: Kotlin 变量和基本类型
+    url: https://www.cainiaoplus.com/kotlin/kotlin-variable-types.html
