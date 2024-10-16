@@ -90,6 +90,9 @@ export function FeatureWrapper({
     });
   }, [treeData]);
   useEffect(() => {
+    setExpandedItems(collapsableItems);
+  }, [collapsableItems]);
+  useEffect(() => {
     if (language) {
       loadLanguage(language).then((data) => {
         setTreeData(
