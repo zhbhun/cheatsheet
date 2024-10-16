@@ -1,5 +1,5 @@
 id: any
-title: Any
+title: 任意
 description: |
   `Any` 是 Swift 中用于表示任何类型的通用类型（类型擦除）。它可以表示任何数据类型，包括类、结构体、枚举、甚至函数。`Any` 是一种存在类型（existential type），可以存储不同类型的值在一个集合中。但请注意，使用 `Any` 会牺牲类型安全，您可能需要进行类型检查和转换（如使用 `as?` 或 `as!`）。
 
@@ -12,11 +12,11 @@ example: |
   var anything: Any = 42
   anything = "Hello, World!"
   anything = [1, 2, 3]
-  
+
   // nil 处理 - 使用 Optional<Any>
   var optionalAnything: Any? = 42
   optionalAnything = nil
-  
+
   // Any 数组示例
   let mixedArray: [Any] = [1, "two", 3.0, [4, 5]]
 

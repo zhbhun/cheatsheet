@@ -1,5 +1,5 @@
 id: print
-title: 日志
+title: 打印日志
 query: 打印日志
 comment: print
 description: |
@@ -31,7 +31,7 @@ example:
     content: |
       ```swift
       let array = [1, 2, 3]
-      dump(array)  
+      dump(array)
       // 输出详细的数组信息，包括每个元素的结构
       ```
 

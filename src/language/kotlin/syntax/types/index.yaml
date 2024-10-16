@@ -1,12 +1,11 @@
 id: types
-title: 数据类型
+title: 类型
 children:
   - number
   - boolean
   - character
   - string
-  - pair
-  - triple
+  - tuple
   - enum
   - object
   - "null"

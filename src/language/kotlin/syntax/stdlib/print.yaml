@@ -1,5 +1,5 @@
 id: log
-title: Log
+title: 打印
 query: 打印日志
 comment: print, println, 日志库
 description: |
@@ -12,7 +12,7 @@ example:
           print("Hello, ")
           print("World!")
           // 输出结果: Hello, World!
-          
+
           println("Hello, ")
           println("World!")
           // 输出结果:

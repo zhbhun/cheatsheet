@@ -1,5 +1,5 @@
 id: converts
-title: 类型转换
+title: 转换
 children:
   - explicit
   - implicit

@@ -1,10 +1,9 @@
 id: form
-title: 基础
+title: 表单
 children:
   - input
   - checkbox
   - radio
   - select
-  - slider
   - switch
   - time

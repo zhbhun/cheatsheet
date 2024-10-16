@@ -25,7 +25,7 @@ outlines:
       - id: comment
         title: 注释
       - id: types
-        title: 数据类型
+        title: 类型
         children:
           - id: number
             title: 数字
@@ -35,28 +35,26 @@ outlines:
             title: 字符
           - id: string
             title: 字符串
-          - id: pair
-            title: Pair
-          - id: triple
-            title: Triple
+          - id: tuple
+            title: 元组
           - id: enum
-            title: Enum
+            title: 枚举
           - id: object
-            title: Object
+            title: 对象
           - id: 'null'
-            title: 'Null'
+            title: 空值
           - id: optional
             title: 可空
           - id: alias
-            title: 别名类型
-          - id: unit
-            title: Unit
+            title: 别名
+          - id: void
+            title: 无返回值
           - id: nothing
-            title: Nothing
+            title: 永不返回
           - id: any
-            title: Any
+            title: 任意
       - id: converts
-        title: 类型转换
+        title: 转换
         children:
           - id: explicit
             title: 显示类型转换
@@ -66,44 +64,44 @@ outlines:
         title: 表达式
         children:
           - id: arithmetic
-            title: 算术表达式
+            title: 算术
           - id: assignment
-            title: 赋值表达式
+            title: 赋值
           - id: comparison
-            title: 比较表达式
+            title: 比较
           - id: logic
-            title: 逻辑表达式
+            title: 逻辑
           - id: ternary
-            title: If Expression
+            title: 三元运算
           - id: spread
-            title: 展开运算符
+            title: 展开
           - id: infix
-            title: 中缀操作符
+            title: 中缀
           - id: when
-            title: When Expression
+            title: 匹配
           - id: in
-            title: 包含表达式
+            title: 包含
           - id: is
             title: 类型检查
           - id: non-null-assertion
-            title: 非空断言表达式
+            title: 非空断言
           - id: nullish-coalescing
-            title: Elvis 操作符
+            title: 空合并运算
           - id: optional-chaining
-            title: 可选链表达式
+            title: 可选链
           - id: function
-            title: 函数表达式
+            title: 函数
       - id: statements
         title: 语句
         children:
           - id: branch
-            title: 条件分支
+            title: 条件
           - id: switch
-            title: When
+            title: 匹配
           - id: loop
             title: 循环
           - id: try
-            title: 异常处理
+            title: 异常
       - id: functions
         title: 函数
         children:
@@ -126,7 +124,7 @@ outlines:
           - id: generic
             title: 函数泛型
           - id: inline
-            title: Inline
+            title: 内联
       - id: classes
         title: 类
         children:
@@ -170,17 +168,17 @@ outlines:
       - id: stdlib
         title: 标准库
         children:
-          - id: log
-            title: Log
+          - id: print
+            title: 打印
           - id: collections
             title: 集合
             children:
               - id: array
                 title: 数组
               - id: set
-                title: Set
+                title: 集合
               - id: map
-                title: Map
+                title: 映射
           - id: http
             title: HTTP 请求
           - id: regexp
@@ -238,16 +236,14 @@ outlines:
               - id: list
                 title: RecyclerView
           - id: form
-            title: 基础
+            title: 表单
             children:
-              - id: inputType
-                title: EditText Input Types and Styles
+              - id: input
+                title: EditText
               - id: checkbox
                 title: CheckBox
               - id: radio
                 title: RadioButton
-              - id: select
-                title: Spinner
               - id: select
                 title: Spinner
               - id: switch
@@ -319,7 +315,7 @@ outlines:
           - id: mipmap
             title: Mipmap 资源
           - id: xml
-            title: 使用自定义 XML 文件管理偏好设置
+            title: XML
       - id: event
         title: 事件
         children:

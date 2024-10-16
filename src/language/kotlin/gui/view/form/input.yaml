@@ -1,5 +1,5 @@
-id: inputType
-title: EditText Input Types and Styles
+id: input
+title: EditText
 query: Android EditText inputType and styles
 comment: 包含所有可用的输入类型及其样式配置
 description: "Android 的 `EditText` 控件提供多种输入类型，允许开发者根据输入需求进行配置。同时，它还支持多种样式属性来定制外观。"

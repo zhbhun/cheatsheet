@@ -1,5 +1,5 @@
 id: ternary
-title: If Expression
+title: 三元运算
 description: 在 Kotlin 中，`if` 是一种表达式，它不仅用于控制流，还会返回一个值。这使得 `if` 表达式可以用于变量赋值，与 Java 等其他语言中的三元运算符类似。由于 `if` 是一个表达式，Kotlin 不需要单独的三元运算符，您可以直接使用 `if` 来实现类似的逻辑。
 example: |
   val number = -10

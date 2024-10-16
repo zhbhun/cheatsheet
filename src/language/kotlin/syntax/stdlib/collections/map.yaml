@@ -1,5 +1,5 @@
 id: map
-title: Map
+title: 映射
 query: Kotlin Map usage and examples
 comment: 介绍 Kotlin Map 的基本使用，区别可变和不可变的 Map，并展示常用操作
 description: |

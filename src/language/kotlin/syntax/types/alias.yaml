@@ -1,5 +1,5 @@
 id: alias
-title: 别名类型
+title: 别名
 description: 别名类型（Type Aliases）允许您为现有类型定义一个替代名称。这在处理复杂或冗长的类型时特别有用，可以使代码更简洁易读。别名类型并不会创建新的类型，而只是为原有类型提供一个替代名称，在编译时会被展开为原类型。
 example: |
   typealias NodeSet = Set<Network.Node> // 为 Set<Network.Node> 类型定义别名

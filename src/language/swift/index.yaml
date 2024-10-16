@@ -39,15 +39,15 @@ outlines:
           - id: struct
             title: 结构
           - id: 'null'
-            title: Nil
+            title: 空
           - id: optional
             title: 可空
           - id: alias
-            title: 类型别名
+            title: 别名
           - id: void
-            title: Void
+            title: 无返回值
           - id: any
-            title: Any
+            title: 任意
       - id: converts
         title: 类型转换
         children:
@@ -59,41 +59,41 @@ outlines:
         title: 表达式
         children:
           - id: arithmetic
-            title: 算术表达式
+            title: 算术
           - id: assignment
-            title: 赋值表达式
+            title: 赋值
           - id: comparison
-            title: 比较表达式
+            title: 比较
           - id: logic
-            title: 逻辑表达式
+            title: 逻辑
           - id: ternary
-            title: 三元表达式
+            title: 三元
           - id: spread
             title: 展开操作符
           - id: range
-            title: 范围表达式
+            title: 范围
           - id: infix
-            title: 中缀操作符
+            title: 中缀
           - id: in
-            title: 包含表达式
+            title: 包含
           - id: is
             title: 类型检查
           - id: try
-            title: Try 操作符
+            title: Try
           - id: non-null-assertion
-            title: 非空断言表达式
+            title: 非空断言
           - id: nullish-coalescing
-            title: 空值合并表达式
+            title: 空值合并
           - id: optional-chaining
-            title: 可选链表达式
+            title: 可选链
           - id: keypath
-            title: KeyPath
+            title: 访问路径
           - id: function
-            title: 函数表达式
+            title: 函数
           - id: implicit-member
-            title: 隐式成员表达式
+            title: 隐式成员
           - id: selector
-            title: 选择器表达式
+            title: 选择器
       - id: functions
         title: 函数
         children:

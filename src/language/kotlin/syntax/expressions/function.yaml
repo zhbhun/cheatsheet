@@ -1,8 +1,8 @@
 id: function
-title: 函数表达式
+title: 函数
 description: |
   在 Kotlin 中，Lambda 表达式是一种匿名函数，通常用于简洁地表示可传递或可返回的函数。Lambda 表达式允许将函数作为一等公民来使用，并提供了一种轻量级的语法来处理函数。Lambda 常用于高阶函数的参数中，使代码更加简洁和易读。
-  
+
   此外，Kotlin 还支持匿名函数，它们与 Lambda 类似，但语法更接近常规函数，并且可以显式声明返回类型。区别在于：
 
   - Lambda 表达式：语法更加简洁，适合简短的代码片段。可以省略参数类型，Kotlin 编译器会自动推断。Lambda 表达式通常不显式声明返回类型，返回值是 Lambda 体中最后一个表达式的值。
@@ -10,7 +10,7 @@ description: |
 example: |
   // 单行的 Lambda 表达式
   val sum: (Int, Int) -> Int = { x, y -> x + y }
-  
+
   // 使用 Lambda 表达式
   val result = sum(3, 4) // result 是 7
 

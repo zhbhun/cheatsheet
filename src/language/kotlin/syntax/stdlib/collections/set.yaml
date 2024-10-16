@@ -1,10 +1,10 @@
 id: set
-title: Set
+title: 集合
 query: Kotlin Set usage examples
 comment: Demonstrates how to work with immutable and mutable sets in Kotlin, covering creation, operations, and key methods.
 description: |
   In Kotlin, a `Set` is a collection that contains unique elements and does not maintain a specific order. There are two types of sets:
-  
+
   1. **Immutable Set**: Created using `setOf()`, the elements of an immutable set cannot be modified after its creation.
   2. **Mutable Set**: Created using `mutableSetOf()`, this type of set allows adding or removing elements.
 
@@ -18,7 +18,7 @@ example:
       val numbers: Set<Int> = setOf(1, 2, 3, 4, 5)
       println(numbers) // Output: [1, 2, 3, 4, 5]
       ```
-  
+
   - title: Creating a Mutable Set
     content: |
       ```kotlin

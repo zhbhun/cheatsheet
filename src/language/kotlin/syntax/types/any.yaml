@@ -1,5 +1,5 @@
 id: any
-title: Any
+title: 任意
 description: |
   `Any` 是 Kotlin 中所有非空类型的超类型，相当于 Java 中的 `Object`。它表示所有可能的对象类型，任何类型的实例都可以被分配给 `Any` 类型的变量。`Any` 类型定义了三个主要的成员：`equals()`、`hashCode()` 和 `toString()`，可以在任何继承自 `Any` 的类型上重写这些方法。\n需要注意的是，`Any` 不包含 `null`，如果需要允许 `null` 值，可以使用 `Any?`，这表示 `Any` 或 `null`。
 

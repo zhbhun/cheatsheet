@@ -1,11 +1,11 @@
 id: object
-title: Object
+title: 对象
 description: "在 Kotlin 中，`object` 关键字用于声明一个单例对象，它可以直接包含属性、方法、初始化块以及实现接口或继承类。使用 `object` 声明的对象在整个应用程序生命周期内只有一个实例。Kotlin 的 `object` 关键字可以用于创建单例模式（Singleton）、匿名对象和伴生对象（Companion Object），这些对象在 Kotlin 中都具有特殊的语义和用法。\n单例对象（Singleton Object）: 使用 `object` 直接声明一个对象，该对象在整个应用程序中只有一个实例。常用于需要共享全局状态或服务的场景。\n匿名对象（Anonymous Object）: 使用 `object` 可以创建一个没有名字的对象，通常用于简化某些类的实例化，特别是在需要临时实现某些接口或类的情况下。\n伴生对象（Companion Object）: 在类内部使用 `object` 关键字可以创建一个伴生对象，用来在没有实例化类的情况下访问其成员，类似于 Java 中的静态方法和属性。"
 example: |
   // 单例对象
   object DataProviderManager {
       val allDataProviders: List<String> = listOf("Provider1", "Provider2")
-      
+
       fun registerDataProvider(provider: String) {
           // 注册新的数据提供者
       }

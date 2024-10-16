@@ -1,5 +1,5 @@
 id: nullish-coalescing
-title: Elvis 操作符
+title: 空合并运算
 description: Elvis 操作符用于在处理可为空的变量时提供默认值。如果变量为 `null`，表达式将返回指定的默认值。它常用于避免 `NullPointerException`。
 example: |
   val name: String? = null

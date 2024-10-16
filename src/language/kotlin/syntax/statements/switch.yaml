@@ -1,5 +1,5 @@
 id: switch
-title: When
+title: 匹配
 description: 在 Kotlin 中，`when` 表达式是一种功能强大的条件分支语句，它类似于其他编程语言中的 `switch` 语句。`when` 可以用于检查变量的值，并根据匹配的条件执行不同的代码块。`when` 语句不仅支持简单的常量匹配，还支持任意表达式、类型检查等多种复杂条件。此外，`when` 表达式返回的值也可以直接赋给变量，类似于三元运算符。
 example: |
   val x = 10

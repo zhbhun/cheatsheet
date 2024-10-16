@@ -1,5 +1,5 @@
 id: in
-title: 包含表达式
+title: 包含
 description: "`in` 表达式用于判断某个值是否属于某个范围、集合或定义了 `contains` 方法的其他实体。相应地，`!in` 表达式则用于判断某个值是否不属于指定范围或集合。`in` 表达式常用于控制流语句中，例如 `when` 表达式。"
 example: |
   val number = 5

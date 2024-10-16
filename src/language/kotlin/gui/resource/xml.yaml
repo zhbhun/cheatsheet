@@ -1,5 +1,5 @@
 id: xml
-title: 使用自定义 XML 文件管理偏好设置
+title: XML
 query: Android 自定义 XML 配置文件 preferences.xml
 comment: 介绍如何在 Android 应用中创建和使用自定义 XML 文件管理用户偏好设置，展示如何在 XML 中定义偏好设置并通过 Kotlin 代码加载和操作。
 description: |

@@ -1,5 +1,5 @@
 id: spread
-title: 展开运算符
+title: 展开
 description: 展开运算符（Spread Operator）在 Kotlin 中用于将数组或集合的元素展开，并作为单独的参数传递给函数。它通常与 `vararg` 关键字配合使用，允许将现有的数组或集合解包成多个参数进行传递。
 example: |
   fun printAll(vararg strings: String) {

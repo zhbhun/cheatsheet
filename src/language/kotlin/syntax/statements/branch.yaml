@@ -1,5 +1,5 @@
 id: branch
-title: 条件分支
+title: 条件
 description: |
   条件分支语句 `if` 是 Kotlin 中用于控制程序执行流程的基本语法结构。Kotlin 的 `if` 语句既可以作为语句使用，也可以作为表达式使用。这意味着它可以返回一个值，并且可以用于赋值操作。
 
