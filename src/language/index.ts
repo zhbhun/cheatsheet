@@ -41,7 +41,7 @@ export interface LanguageFeauture {
     | string
     | {
         title: string;
-        content: string;
+        description: string;
         example: string;
       }[];
   references: {
@@ -72,15 +72,28 @@ export function loadLanguageFeature(
   }
   return modules[key]().then(({ default: source }: any) => {
     const { example, usage, ...result } = yaml.parse(source);
+    let data: any = result;
     if (example && usage) {
-      return {
+      data = {
         ...result,
         usage: example || usage,
       };
+    } else {
+      data = {
+        ...result,
+        usage: usage || example,
+      };
     }
-    return {
-      ...result,
-      usage: usage || example,
-    };
+    if (data.usage && Array.isArray(data.usage)) {
+      data.usage = data.usage.map(({ content, ...item }: any) =>
+        content
+          ? {
+              ...item,
+              description: content,
+            }
+          : item
+      );
+    }
+    return data;
   });
 }

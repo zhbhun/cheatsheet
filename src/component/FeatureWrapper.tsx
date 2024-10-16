@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -331,6 +331,7 @@ export function FeatureWrapper({
 
   const [compareLang, setCompareLang] = useState('');
   const [compareFeature, setCompareFeature] = useState('');
+  const compareContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (compareLang) {
       const items = feature.split('/');
@@ -338,6 +339,12 @@ export function FeatureWrapper({
       setCompareFeature(items.join('/'));
     }
   }, [compareLang, feature]);
+  useEffect(() => {
+    const { current: compareContainerEle } = compareContainerRef;
+    if (compareContainerEle && compareLang && compareFeature) {
+      compareContainerEle.scrollTo(0, 0);
+    }
+  }, [compareLang, compareFeature]);
   const compareButton = (
     <Dropdown>
       <DropdownTrigger>
@@ -430,7 +437,10 @@ export function FeatureWrapper({
         }
       )}
     >
-      <div className="w-full h-full pointer-events-auto bg-white overflow-auto">
+      <div
+        ref={compareContainerRef}
+        className="w-full h-full pointer-events-auto bg-white overflow-auto"
+      >
         {compareLang ? (
           <Feature
             comparer={language}

@@ -35,7 +35,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
     return (
       feature.usage?.map((item) => ({
         title: item.title,
-        content: item.content ? marked.parse(item.content) : '',
+        description: item.description ? marked.parse(item.description) : '',
         example: item.example ? marked.parse(item.example) : '',
       })) ?? []
     );
@@ -46,7 +46,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
       <>
         <h1 className="mb-6 pt-2 text-3xl font-semibold">{feature.title}</h1>
         <div
-          className="mb-8"
+          className="markdown mb-8"
           dangerouslySetInnerHTML={{ __html: description }}
         />
         {typeof usage === 'string' ? (
@@ -58,7 +58,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
             {(
               usage as {
                 title: string;
-                content: string;
+                description: string;
                 example: string;
               }[]
             ).map((item, index) => (
@@ -66,7 +66,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
                 <h2 className="mb-2 text-lg font-medium">{item.title}</h2>
                 <div
                   className="markdown mb-4"
-                  dangerouslySetInnerHTML={{ __html: item.content }}
+                  dangerouslySetInnerHTML={{ __html: item.description }}
                 />
                 <div
                   className="markdown mb-4"

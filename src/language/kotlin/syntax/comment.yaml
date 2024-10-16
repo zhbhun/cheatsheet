@@ -5,7 +5,7 @@ example: |
   // 单行注释：用于简短描述
   val x = 10 // 定义变量 x 并赋值为 10
 
-  /* 
+  /*
    * 多行注释：用于较长的描述
    * 例如，这里可以详细解释函数的逻辑
    */
@@ -15,7 +15,7 @@ example: |
 
   /**
    * 这是一个简单的加法函数
-   * 
+   *
    * @param a 第一个加数
    * @param b 第二个加数
    * @return 两数之和
@@ -26,7 +26,7 @@ example: |
 references:
   - title: "Document Kotlin code: KDoc"
     url: https://kotlinlang.org/docs/kotlin-doc.html
-  - title: Documentation comments﻿
+  - title: Documentation comments
     url: https://kotlinlang.org/docs/coding-conventions.html#documentation-comments
   - title: An Introduction to KDoc
     url: https://www.baeldung.com/kotlin/kdoc

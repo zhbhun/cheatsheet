@@ -21,6 +21,11 @@ export function Feature({
 }: FeatureProps) {
   const [feature, setFeature] = useState<LanguageFeauture | null>(null);
   useEffect(() => {
+    if (!comparer && language && feature) {
+      document.scrollingElement?.scrollTo(0, 0)
+    }
+  }, [comparer, language, feature])
+  useEffect(() => {
     const pathes = index.split('/');
     loadLanguageFeature(pathes[0], pathes.slice(1)).then((data) => {
       setFeature(data);

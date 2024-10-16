@@ -1,3 +1,18 @@
+.markdown {
+  line-height: 1.5;
+}
+
+.markdown p {
+  margin-bottom: 10px;
+}
+
+.markdown ul {
+  margin-bottom: 10px;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+
 .markdown .hljs {
   max-width: 100%;
   height: fit-content;

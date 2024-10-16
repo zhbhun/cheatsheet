@@ -8,9 +8,14 @@ usage:
     description: |
       使用 `var` 关键字声明一个变量，并可以使用类型标注来指定变量的数据类型。
 
-      - 语法：
-        - `var 变量名 = 初始值`
-        - `var 变量名: 数据类型 = 初始值`
+      - `var 变量名 = 初始值`
+      - `var 变量名: 数据类型 = 初始值`
+
+      使用 `let` 关键字声明一个常量，其值一旦设定就不能再更改。
+
+      - `let 常量名 = 初始值`
+      - `let 常量名: 数据类型 = 初始值`
+
     example: |
       ```swift
       // 声明一个名为 age 的变量，并赋值为 25
@@ -18,15 +23,7 @@ usage:
 
       // 声明一个名为 name 的变量，并指定数据类型为 String，赋值为 "John"
       var name: String = "John"
-      ```
-  - title: 常量
-    description: |
-      使用 `let` 关键字声明一个常量，其值一旦设定就不能再更改。
-      - 语法：
-        - `let 常量名 = 初始值`
-        - `let 常量名: 数据类型 = 初始值`
-    example: |
-      ```swift
+
       let birthYear = 1995 // 声明一个名为 birthYear 的常量，并赋值为 1995
       // birthYear = 2000  // 编译错误：常量不能被修改
       ```
