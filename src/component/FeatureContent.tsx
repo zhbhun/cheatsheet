@@ -1,4 +1,5 @@
 import { ReactNode, useMemo } from 'react';
+import { Link } from '@nextui-org/react';
 import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
@@ -20,7 +21,7 @@ export interface FeatureContentProps {
 }
 
 export function FeatureContent({ feature }: FeatureContentProps) {
-  console.log(feature);
+  const { references } = feature;
   const description = useMemo(() => {
     return marked.parse(feature.description || '') as string;
   }, [feature]);
@@ -71,6 +72,18 @@ export function FeatureContent({ feature }: FeatureContentProps) {
                 />
               </div>
             ))}
+            {references && references.length > 0 ? (
+              <div className="mb-8">
+                <h2 className="mb-2 text-lg font-medium">参考文档</h2>
+                <ul className="pl-6 list-disc">
+                  {references.map((item, index) => (
+                    <li key={index}>
+                      <Link className="leading-8" href={item.url}>{item.title}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         )}
       </>
