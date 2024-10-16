@@ -12,13 +12,6 @@ outlines:
     children:
       - id: variables
         title: 变量
-        children:
-          - id: variable
-            title: 变量
-          - id: destructuring
-            title: 解构
-          - id: naming
-            title: 命名
       - id: comment
         title: 注释
       - id: types
