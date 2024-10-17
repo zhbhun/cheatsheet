@@ -211,7 +211,7 @@ outlines:
                 title: Frame
               - id: snapkit
                 title: SnapKit
-          - id: collection
+          - id: container
             title: 容器
             children:
               - id: scroll
