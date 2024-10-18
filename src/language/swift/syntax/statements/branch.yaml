@@ -1,4 +1,4 @@
-id: if
+id: branch
 title: 条件语句
 description: |
   Swift 中的 `if` 条件语句用于根据表达式的布尔值执行不同的代码块。它通常用于判断程序逻辑的分支，并可以与 `else` 和 `else if` 搭配使用。此外，Swift 还引入了 `if let` 和 `guard let` 语法，用于安全地解包可选值（Optional），确保程序不会因为未解包的可选值导致崩溃。
@@ -18,7 +18,7 @@ example: |
   } else {
       print("No name provided.")
   }
-  
+
   // 多个 `if let` 语句用于解包多个可选值
   var firstName: String? = "John"
   var lastName: String? = "Doe"

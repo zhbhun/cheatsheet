@@ -1,3 +1,3 @@
 import { generateFeature } from './feature.ts';
 
-generateFeature('kotlin', 'gui/view/custom').catch(console.error);
+generateFeature('swift', 'gui/view/custom').catch(console.error);
