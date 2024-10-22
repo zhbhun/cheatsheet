@@ -1,4 +1,4 @@
-id: border-radius
+id: radius
 title: 圆角
 query: Swift UIKit Corner Radius
 comment: Swift UIKit 视图的圆角样式用法（仅 UIKit，不包含 SwiftUI）

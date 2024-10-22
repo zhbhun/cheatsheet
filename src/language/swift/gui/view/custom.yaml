@@ -10,3 +10,185 @@ comment: |
   - 自定义视图的初始化生命周期回调
   - 自定义视图布局或大小更新时的生命周期回调
   - View 的生命周期和回调：初始化、大小变化以及父类重新布局的回调
+description: UIKit 提供了 UIView 类作为所有视图的基类，开发者可以继承 UIView 来创建自定义视图，实现特定的 UI 效果或功能。
+usage:
+  - title: 创建自定义视图类
+    description: 要创建自定义视图，需要定义一个继承自 UIView 的新类。在该类中，可以重写 UIView 的方法来定制视图的外观和行为。
+    example: |
+      ```swift
+      import UIKit
+
+      class CustomView: UIView {
+          // 自定义属性
+          var color: UIColor = .red
+
+          // 初始化方法
+          override init(frame: CGRect) {
+              super.init(frame: frame)
+              setup()
+          }
+
+          required init?(coder: NSCoder) {
+              super.init(coder: coder)
+              setup()
+          }
+
+          // 初始化视图
+          private func setup() {
+              backgroundColor = color
+          }
+      }
+      ```
+  - title: 整合多个视图实现特定效果
+    description: 可以将多个 UIKit 标准视图添加到自定义视图中，并使用 Auto Layout 或 frame 布局来排列它们，以创建更复杂的 UI 元素。
+    example: |
+      ```swift
+      import UIKit
+
+      class CustomButton: UIView {
+          // 子视图
+          private let label = UILabel()
+          private let imageView = UIImageView()
+
+          // 初始化方法
+          override init(frame: CGRect) {
+              super.init(frame: frame)
+              setup()
+          }
+
+          required init?(coder: NSCoder) {
+              super.init(coder: coder)
+              setup()
+          }
+
+          // 初始化视图
+          private func setup() {
+              // 添加子视图
+              addSubview(label)
+              addSubview(imageView)
+
+              // 设置子视图的布局约束
+              label.translatesAutoresizingMaskIntoConstraints = false
+              imageView.translatesAutoresizingMaskIntoConstraints = false
+
+              NSLayoutConstraint.activate([
+                  // ... 布局约束 ...
+              ])
+          }
+      }
+      ```
+  - title: 自定义渲染
+    description: 通过重写 `draw(_:)` 方法，可以使用 Core Graphics 或 Metal 等框架来自定义视图的绘制方式。
+    example: |
+      ```swift
+      import UIKit
+
+      class CustomCircleView: UIView {
+          // 圆形的颜色
+          var circleColor: UIColor = .blue
+
+          // 重写 draw 方法
+          override func draw(_ rect: CGRect) {
+              guard let context = UIGraphicsGetCurrentContext() else { return }
+              context.setFillColor(circleColor.cgColor)
+              context.fillEllipse(in: rect)
+          }
+      }
+      ```
+  - title: 处理用户交互
+    description: 可以通过添加手势识别器或重写 `touchesBegan(_:with:)`、`touchesMoved(_:with:)`、`touchesEnded(_:with:)` 和 `touchesCancelled(_:with:)` 等方法来处理用户的触摸事件。
+    example: |
+      ```swift
+      import UIKit
+
+      class CustomTapView: UIView {
+          // 点击回调
+          var onTap: (() -> Void)?
+
+          // 初始化方法
+          override init(frame: CGRect) {
+              super.init(frame: frame)
+              setup()
+          }
+
+          required init?(coder: NSCoder) {
+              super.init(coder: coder)
+              setup()
+          }
+
+          // 初始化视图
+          private func setup() {
+              let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+              addGestureRecognizer(tapRecognizer)
+          }
+
+          // 处理点击事件
+          @objc private func handleTap() {
+              onTap?()
+          }
+      }
+      ```
+  - title: 初始化方法
+    description: |
+      自定义视图的初始化方法决定了如何创建和配置视图。
+      - `init(frame:)`: 当使用代码创建视图时调用，需要使用 `super.init(frame:)` 调用父类的初始化方法。
+      - `init?(coder:)`: 当从 Interface Builder 或 Storyboard 加载视图时调用，需要使用 `super.init(coder:)` 调用父类的初始化方法。
+      - `awakeFromNib()`: 当从 Interface Builder 或 Storyboard 加载视图后调用，可以在这里执行额外的初始化设置。
+    example: |
+      ```swift
+      import UIKit
+
+      class CustomView: UIView {
+          // ...
+
+          // 初始化方法
+          override init(frame: CGRect) {
+              super.init(frame: frame)
+              // 使用代码创建视图时的初始化
+          }
+
+          required init?(coder: NSCoder) {
+              super.init(coder: coder)
+              // 从 Interface Builder 或 Storyboard 加载视图时的初始化
+          }
+
+          override func awakeFromNib() {
+              super.awakeFromNib()
+              // 从 Interface Builder 或 Storyboard 加载视图后执行的初始化
+          }
+
+          // ...
+      }
+      ```
+  - title: 挂载阶段
+    description: |
+      当视图被添加到父视图或者窗口中时，会触发以下一系列方法。这个阶段可以用于做一些依赖父视图或窗口的操作。
+      - `willMove(toSuperview:)`：当视图即将被添加到一个父视图时调用。可以在此做一些前置操作，比如准备工作。
+      -	`didMoveToSuperview()`：当视图已经被添加到父视图时调用。此时视图已经在父视图层次中，可以做依赖父视图的操作。
+      -	`willMove(toWindow:)`：当视图即将被添加到某个 UIWindow 时调用，适合在视图显示到屏幕之前做一些准备。
+      - `didMoveToWindow()`：当视图已经添加到 UIWindow 时调用。此时视图已经准备好在屏幕上显示。
+  - title: 初始化渲染和布局阶段
+    description: |
+      自定义视图在布局或大小更新时，会调用一些生命周期回调方法，可以在这些方法中更新视图的布局或子视图的位置。
+      - `layoutSubviews()`: 当视图的大小或位置发生变化时调用，可以在这里布局子视图或者调整视图的布局。每次 frame 改变时都会触发该方法。
+      - `sizeThatFits(_:)`：当需要动态计算视图的大小时调用，返回视图最佳尺寸。
+      - `intrinsicContentSize`：这个方法返回视图的内在大小，适用于自动布局系统，它告诉系统视图最合适的尺寸。
+      - `updateConstraints()`: 当需要更新视图的约束时调用，可以在此方法中添加、删除或修改约束。
+      - `draw(_:)`：用于自定义绘制内容，当视图的内容需要被绘制或重新绘制时调用，可以使用 Core Graphics 进行自定义绘制。
+  - title: 更新位置或大小
+    description: |
+      视图的大小或位置发生变化时会触发以下方法，用于重新布局和更新约束。
+      - `layoutSubviews()`：当视图的 frame 改变时调用，用于重新布局子视图。
+      -	`setNeedsLayout()`：标记视图需要重新布局，系统会在下一次布局周期调用 layoutSubviews()。
+      -	`setNeedsDisplay()`：标记视图需要重新绘制，系统会在下一次重绘周期调用 draw(_:)。
+      -	`updateConstraints()`：当视图的约束需要更新时调用，通常与 Auto Layout 配合使用。
+  - title: 销毁阶段
+    description: |
+      当视图不再需要，或它被移除时，系统会调用以下方法进行清理工作。
+      - `removeFromSuperview()`：将视图从父视图中移除，系统会自动调用该方法。
+      - `deinit`：当视图被销毁时调用，通常用来释放资源和清理操作。
+references:
+  - title: Creating iOS Custom Views in UIKit
+    url: https://www.scalablepath.com/ios/ios-custom-views-uikit
+  - title: Custom UIView in Swift done right | by Yev Bless
+    url: https://medium.com/@tapkain/custom-uiview-in-swift-done-right-ddfe2c3080a
