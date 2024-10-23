@@ -334,6 +334,8 @@ usage:
 references:
   - title: UIGestureRecognizer | Apple Developer Documentation
     url: https://developer.apple.com/documentation/uikit/uigesturerecognizer
+  - title: "UIGestureRecognizer Tutorial in iOS 5: Pinches, Pans, and More!"
+    url: https://www.kodeco.com/2984-uigesturerecognizer-tutorial-in-ios-5-pinches-pans-and-more
   - title: Handling UIKit gestures | Apple Developer Documentation
     url: https://developer.apple.com/documentation/uikit/touches_presses_and_gestures/handling_uikit_gestures
   - title: A Brief Intro to UIGestureRecognizers in Swift | by TJ Carney

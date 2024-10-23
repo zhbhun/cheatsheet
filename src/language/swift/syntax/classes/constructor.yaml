@@ -1,4 +1,4 @@
-id: constructors
+id: constructor
 title: 构造函数
 description: Swift 支持多种构造函数，包括指定构造函数、便捷构造函数以及多个构造函数的定义。便捷构造函数是辅助的构造函数，可以简化常见的初始化过程，通常会调用指定构造函数来完成初始化。
 example: |
