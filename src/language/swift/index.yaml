@@ -88,6 +88,7 @@ outlines:
           - id: selector
             title: 选择器
       - id: statements
+        title: 语句
         children:
           - id: branch
             title: 条件语句
@@ -143,8 +144,6 @@ outlines:
             title: 静态属性
           - id: extension
             title: 扩展
-          - id: struct
-            title: Struct
           - id: sealed
             title: 密封类
           - id: nest
