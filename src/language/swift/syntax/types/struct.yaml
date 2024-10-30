@@ -1,6 +1,11 @@
 id: struct
 title: 结构
 description: 在 Swift 中，结构体（struct）是定义数据和行为的基本构造。与类不同，结构体是值类型，这意味着当它们被赋值给一个新变量或常量时，实际的数据会被拷贝一份而非引用同一个实例。结构体适用于表示简单的数据结构。它可以包含存储属性、计算属性、方法以及初始化器等。由于结构体是值类型，所以它们通常用于封装一些轻量级的数据。
+references:
+  - title: Swift Structures and Classes
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/classesandstructures/
+  - title: Memberwise Initializers for Structure Types
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/initialization/#Memberwise-Initializers-for-Structure-Types
 example: |
   // 定义一个表示点的结构体
   struct Point {
@@ -21,26 +26,20 @@ example: |
 
   // 使用默认的成员初始化器创建结构体实例
   var point = Point(x: 3.0, y: 4.0)
-  
+
   // 访问存储属性
   print(point.x) // 输出：3.0
-  
+
   // 访问计算属性
   print(point.distanceFromOrigin) // 输出：5.0
-  
+
   // 调用方法修改结构体实例
   point.moveBy(x: 2.0, y: 2.0)
   print(point.x) // 输出：5.0
   print(point.y) // 输出：6.0
-  
+
   // 值拷贝
   var anotherPoint = point
   anotherPoint.moveBy(x: 1.0, y: 1.0)
   print(anotherPoint.x) // 输出：6.0
   print(point.x) // 依旧输出：5.0
-
-references:
-  - title: Swift Structures and Classes
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/classesandstructures/
-  - title: Memberwise Initializers for Structure Types
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/initialization/#Memberwise-Initializers-for-Structure-Types

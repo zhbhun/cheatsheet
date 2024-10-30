@@ -53,7 +53,7 @@ async function searchByGoogle(
     //   (link) =>
     //     link.url.indexOf('juejin.cn') < 0 && link.url.indexOf('51cto.com') < 0
     // )
-    .slice(0, 3);
+    .slice(0, 2);
 
   await browser.close();
 
@@ -152,7 +152,7 @@ export async function loadReference(
             {
               text: `${
                 feature.query || feature.title
-              }\n\`\`\`json${JSON.stringify(references)}\`\`\``,
+              }\n\`\`\`json${JSON.stringify(references.slice(0, 2))}\`\`\``,
             },
           ],
         },
@@ -182,7 +182,7 @@ export async function loadReference(
       }
     ]
     \`\`\`
-  - Output：
+  - Output：只返回 JSON 代码，不要包含其他信息
     \`\`\`json
     {
       "https://xxx": 6,
@@ -192,10 +192,10 @@ export async function loadReference(
     \`\`\`
   `,
     });
-    const rates = JSON.parse(
-      (await result.response.text()).replace('```json', '').replace('```', '')
-    );
-    console.log('>', 'rates', rates);
+    const text = (await result.response.text())
+      .replace(/.*```json/, '')
+      .replace(/```.*/, '');
+    const rates = JSON.parse(text);
     return references
       .map((item) => ({
         ...item,

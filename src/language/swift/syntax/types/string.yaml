@@ -1,6 +1,9 @@
 id: string
 title: 字符串
 description: 字符串（`String`）是 Swift 中用于表示文本的一种数据类型。它是 Unicode 兼容的，能够高效地处理不同语言的文本。字符串可以通过字面量、字符串插值、以及多种内置方法进行操作，如拼接、分割、查找和替换等。Swift 的字符串还支持各种字符编码，特别是 UTF-8 编码，确保了其在处理多种语言文本时的可靠性和效率。
+references:
+  - title: Strings and Characters
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/stringsandcharacters/
 example: |
   // 创建一个字符串
   let greeting = "Hello, World!"
@@ -25,6 +28,3 @@ example: |
 
   // 转换为大写
   let uppercaseGreeting = greeting.uppercased()
-references:
-  - title: Strings and Characters
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/stringsandcharacters/

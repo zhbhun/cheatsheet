@@ -1,0 +1,127 @@
+id: branch
+title: 条件语句
+query: Swift Conditional Statements
+comment: |
+  - if
+  - if-else
+  - if-else-if-else
+  - if-let 解包，解多个包
+  - guard-let 解包，解多个包
+  - if-case 匹配枚举值
+  - if-case 匹配范围
+  - guard-case 匹配枚举值
+  - guard-case 匹配范围
+description: Swift 的条件语句用于根据不同的条件执行不同的代码块。主要包括 `if`、`else`、`else if`，以及结合可选值解包的 `if let`、`guard let`，以及用于模式匹配的 `if case` 和 `guard case`。
+usage:
+  - title: if 语句
+    description: 最简单的条件语句，用于判断一个条件是否为真，如果为真则执行对应的代码块。
+    example: |
+      ```swift
+      let age = 18
+      if age >= 18 {
+          print("成年人") // 输出 "成年人"
+      }
+      ```
+  - title: if-else 语句
+    description: 在 `if` 语句的基础上添加 `else` 分支，如果条件为假则执行 `else` 对应的代码块。
+    example: |
+      ```swift
+      let age = 16
+      if age >= 18 {
+          print("成年人")
+      } else {
+          print("未成年人") // 输出 "未成年人"
+      }
+      ```
+  - title: if-else-if-else 语句
+    description: 可以添加多个 `else if` 分支来判断多个条件。Swift 会依次判断每个条件，一旦找到满足条件的分支就会执行对应的代码块，并跳出整个条件语句。
+    example: |
+      ```swift
+      let score = 85
+      if score >= 90 {
+          print("优秀")
+      } else if score >= 80 {
+          print("良好") // 输出 "良好"
+      } else if score >= 60 {
+          print("及格")
+      } else {
+          print("不及格")
+      }
+      ```
+  - title: if let 解包
+    description: 用于安全地解包可选值。如果可选值不为 nil，则将解包后的值赋给一个常量，并执行 `if` 语句中的代码块。
+    example: |
+      ```swift
+      let optionalName: String? = "John"
+      if let name = optionalName {
+          print("Hello, \(name)!") // 输出 "Hello, John!"
+      }
+      ```
+  - title: guard let 解包
+    description: 与 `if let` 类似，也用于解包可选值。不同的是，`guard let` 用于确保条件成立才能继续执行函数或代码块。如果条件不成立，则需要在 `else` 中使用 `return`、`break`、`continue` 或 `throw` 退出当前作用域。
+    example: |
+      ```swift
+      func greet(name: String?) {
+          guard let unwrappedName = name else {
+              return
+          }
+          print("Hello, \(unwrappedName)!")
+      }
+
+      greet(name: "Jane") // 输出 "Hello, Jane!"
+      greet(name: nil) // 没有输出
+      ```
+  - title: if case 匹配
+    description: 用于匹配枚举值或范围。如果值与指定的模式匹配，则执行 `if` 语句中的代码块。
+    example: |
+      ```swift
+      enum Direction {
+          case north, south, east, west
+      }
+
+      let direction = Direction.north
+
+      if case .north = direction {
+          print("Going north!") // 输出 "Going north!"
+      }
+
+      let value = 5
+      if case 1...10 = value {
+          print("Value is within range") // 输出 "Value is within range"
+      }
+      ```
+  - title: guard case 匹配
+    description: 与 `if case` 类似，也用于匹配枚举值或范围。不同的是，`guard case` 用于确保条件成立才能继续执行函数或代码块。如果条件不成立，则需要在 `else` 中使用 `return`、`break`、`continue` 或 `throw` 退出当前作用域。
+    example: |
+      ```swift
+      enum Direction {
+          case north, south, east, west
+      }
+
+      func travel(direction: Direction) {
+          guard case .south = direction else {
+              return
+          }
+          print("Going south!")
+      }
+
+      travel(direction: .south) // 输出 "Going south!"
+      travel(direction: .north) // 没有输出
+
+
+      func checkValue(value: Int) {
+          guard case 1...10 = value else {
+              print("Value is outside range")
+              return
+          }
+          print("Value is within range")
+      }
+
+      checkValue(value: 5) // 输出 "Value is within range"
+      checkValue(value: 15) // 输出 "Value is outside range"
+      ```
+references:
+  - title: Conditional statements - a free Hacking with Swift tutorial
+    url: https://www.hackingwithswift.com/read/0/8/conditional-statements
+  - title: Swift Conditional Statements, Loops, and Switch Statements
+    url: https://vikramios.medium.com/swift-conditional-statements-loops-and-switch-statements-77f9b488925b

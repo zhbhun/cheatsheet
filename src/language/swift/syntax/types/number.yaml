@@ -2,6 +2,11 @@ id: number
 title: 数值
 description: |
   在 Swift 中，数值类型用于表示整数和浮点数。Swift 提供了多种数值类型，涵盖有符号和无符号的整数，以及单精度和双精度的浮点数。整数类型根据其大小分为 `Int8`, `Int16`, `Int32`, `Int64` 和对应的无符号版本 `UInt8`, `UInt16`, `UInt32`, `UInt64`。浮点数类型则包括 `Float`（32 位）和 `Double`（64 位），分别用于表示不同精度的小数。除了十进制表示外，Swift 还支持二进制、八进制和十六进制的数值表示，这些进制数值可以通过特定的前缀来指定，例如：二进制使用 `0b`，八进制使用 `0o`，十六进制使用 `0x`。
+references:
+  - title: Integers
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Integers
+  - title: Floating-Point Numbers
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Floating-Point-Numbers
 example: |
   // 有符号整数类型
   let intValue: Int = 100 // 根据平台的不同，Int 的长度可能是 32 位或 64 位。通常在 Swift 中使用 Int 来表示整数，因为它与当前平台的处理能力相匹配。
@@ -25,8 +30,3 @@ example: |
   let binaryValue = 0b101010  // 二进制
   let octalValue = 0o52       // 八进制
   let hexadecimalValue = 0x2A // 十六进制
-references:
-  - title: Integers
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Integers
-  - title: Floating-Point Numbers
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Floating-Point-Numbers

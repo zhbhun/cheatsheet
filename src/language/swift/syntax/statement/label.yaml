@@ -1,0 +1,87 @@
+id: label
+title: 标签
+query: Swift Labeled Statements
+description: Swift 中的标签语句用于控制循环或条件语句的流程，允许 `break` 或 `continue` 跳转到特定标签的位置，增强代码的可读性和灵活性，尤其在处理嵌套循环或复杂条件语句时。
+usage:
+  - title: 标记循环
+    description: 使用标签可以明确 `break` 或 `continue` 作用于哪个循环，避免歧义。在循环语句前添加标签名和冒号即可标记循环。
+    example: |
+      ```swift
+      outerLoop: for i in 1...3 {
+          for j in 1...3 {
+              if j == 2 {
+                  continue outerLoop // 跳到外层循环的下一轮迭代
+              }
+              print("i: \(i), j: \(j)")
+          }
+      }
+      // 输出：
+      // i: 1, j: 1
+      // i: 2, j: 1
+      // i: 3, j: 1
+      ```
+  - title: 提前退出循环
+    description: 在嵌套循环中，`break` 默认只退出当前循环。使用标签可以 `break` 到指定的外层循环，提前结束外层循环的执行。
+    example: |
+      ```swift
+      outerLoop: for i in 1...3 {
+          for j in 1...3 {
+              if j == 2 {
+                  break outerLoop // 退出外层循环
+              }
+              print("i: \(i), j: \(j)")
+          }
+      }
+      // 输出：
+      // i: 1, j: 1
+      ```
+  - title: 标记条件语句
+    description: 虽然条件语句本身不循环，但可以使用标签配合 `break` 退出当前代码块，实现类似 `goto` 的功能，但更清晰和结构化。需要注意的是，`continue` 不能用于条件语句。
+    example: |
+      ```swift
+      let options = ["a", "b", "c"]
+      let choice = "d"
+
+      optionCheck: if options.contains(choice) {
+          print("Valid choice: \(choice)")
+      } else {
+          break optionCheck // 退出 optionCheck 代码块
+          print("This line will not be printed.")
+      }
+
+      print("Continuing after option check...") 
+      // 输出：
+      // Continuing after option check...
+      ```
+  - title: 改进 Snakes and Ladders 游戏
+    description: 通过标签语句，可以实现更精细的控制流程，例如在 Snakes and Ladders 游戏中，要求玩家必须精确落在第 25 格才能获胜。
+    example: |
+      ```swift
+      let finalSquare = 25
+      var board = [Int](repeating: 0, count: finalSquare + 1)
+      board[03] = +08; board[06] = +11; board[09] = +09; board[10] = +02
+      board[14] = -10; board[19] = -11; board[22] = -02; board[24] = -08
+      var square = 0
+      var diceRoll = 0
+
+      gameLoop: while square != finalSquare {
+          diceRoll += 1
+          if diceRoll == 7 { diceRoll = 1 }
+          switch square + diceRoll {
+          case finalSquare:
+              // diceRoll 正好落在最后一格，游戏结束
+              break gameLoop
+          case let newSquare where newSquare > finalSquare:
+              // diceRoll 超出最后一格，重新掷骰子
+              continue gameLoop
+          default:
+              // 有效移动，计算新的位置
+              square += diceRoll
+              square += board[square]
+          }
+      }
+      print("Game over!")
+      ```
+references:
+  - title: Labeled Statements
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow#Labeled-Statements

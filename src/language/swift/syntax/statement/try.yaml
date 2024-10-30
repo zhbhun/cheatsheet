@@ -1,0 +1,84 @@
+id: try
+title: 错误处理
+description: Swift 提供了强大的错误处理机制，允许你捕获、处理和传播程序运行时可能出现的错误。这有助于提高代码的健壮性和可维护性。Swift 中的错误处理是基于 `Error` 协议、`throw` 关键字、`do-catch` 语句以及 `try`、`try?` 和 `try!` 关键字实现的。
+usage:
+  - title: 定义错误类型
+    description: 使用枚举来定义错误类型，枚举需要遵循 `Error` 协议。关联值可以提供更多关于错误的上下文信息。
+    example: |
+      ```swift
+      enum VendingMachineError: Error {
+          case invalidSelection
+          case insufficientFunds(coinsNeeded: Int)
+          case outOfStock
+      }
+      ```
+  - title: 抛出错误
+    description: 使用 `throw` 语句抛出错误。这会立即中断当前代码块的执行。
+    example: |
+      ```swift
+      throw VendingMachineError.insufficientFunds(coinsNeeded: 5)
+      ```
+  - title: 声明可抛出错误的函数
+    description: 在函数声明的参数列表后添加 `throws` 关键字，表示该函数可以抛出错误。
+    example: |
+      ```swift
+      func canThrowErrors() throws -> String {
+          // ...
+      }
+      ```
+  - title: 使用 do-catch 处理错误
+    description: 使用 `do-catch` 语句来捕获和处理可能抛出的错误。`catch` 块可以使用模式匹配来处理不同类型的错误。
+    example: |
+      ```swift
+      do {
+          try canThrowErrors()
+      } catch VendingMachineError.invalidSelection {
+          // 处理 invalidSelection 错误
+      } catch VendingMachineError.insufficientFunds(let coinsNeeded) {
+          // 处理 insufficientFunds 错误，coinsNeeded 为关联值
+      } catch {
+          // 处理其他类型的错误
+      }
+      ```
+  - title: 将错误转换为可选值
+    description: 使用 `try?` 来调用可能抛出错误的函数，并将结果转换为可选值。如果发生错误，则结果为 `nil`。
+    example: |
+      ```swift
+      let result = try? canThrowErrors()
+      if let result = result {
+          // 处理成功的结果
+      } else {
+          // 处理错误
+      }
+      ```
+  - title: 禁用错误传播
+    description: 使用 `try!` 来调用可能抛出错误的函数，并禁用错误传播。如果发生错误，则会产生运行时错误。
+    example: |
+      ```swift
+      let result = try! canThrowErrors() // 如果 canThrowErrors() 抛出错误，程序会崩溃
+      ```
+  - title: 指定错误类型
+    description: 在 `throws` 后面添加具体的错误类型，限制函数只能抛出特定类型的错误。这有助于提高代码的类型安全性和可读性。
+    example: |
+      ```swift
+      func summarize(_ ratings: [Int]) throws(StatisticsError) {
+          // ...
+      }
+      ```
+  - title: 清理操作
+    description: 使用 `defer` 语句来定义在当前代码块执行结束前需要执行的清理操作，例如关闭文件或释放资源。`defer` 语句会在代码块执行结束时自动执行，无论代码块是正常结束还是由于错误而终止。
+    example: |
+      ```swift
+      func processFile(filename: String) throws {
+          if exists(filename) {
+              let file = open(filename)
+              defer {
+                  close(file)
+              }
+              // ...
+          }
+      }
+      ```
+references:
+  - title: Error Handling
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/errorhandling

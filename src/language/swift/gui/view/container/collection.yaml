@@ -748,5 +748,19 @@ usage:
 references:
   - title: UICollectionView | Apple Developer Documentation
     url: https://developer.apple.com/documentation/uikit/uicollectionview
+  - title: Updating Collection Views Using Diffable Data Sources
+    url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/updating_collection_views_using_diffable_data_sources
+  - title: Implementing Modern Collection Views
+    url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/implementing_modern_collection_views
+  - title: Building High-Performance Lists and Collection Views
+    url: https://developer.apple.com/documentation/uikit/uiimage/building_high-performance_lists_and_collection_views
+  - title: Implementing Modern Collection Views
+    url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/implementing_modern_collection_views
+  - title: Changing the Appearance of Selected and Highlighted Cells
+    url: https://developer.apple.com/documentation/uikit/uicollectionviewdelegate/changing_the_appearance_of_selected_and_highlighted_cells
+  - title: Selecting multiple items with a two-finger pan gesture
+    url: https://developer.apple.com/documentation/uikit/uitableviewdelegate/selecting_multiple_items_with_a_two-finger_pan_gesture
+  - title: Supporting Drag and Drop in Collection Views
+    url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/supporting_drag_and_drop_in_collection_views
   - title: Get started with UICollectionView | by Irem Karaoglu - Medium
     url: https://iremkaraoglu.medium.com/get-started-with-uicollectionview-3e744b78ed7f

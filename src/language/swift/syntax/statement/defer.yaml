@@ -1,0 +1,94 @@
+id: defer
+title: Defer
+query: Swift Defer Actions
+comment: ｜ - 使用 Defer - 多个 Defer 的执行顺序
+description: Swift 的 `defer` 语句用于在当前代码块执行结束**之前**执行一段代码，无论代码块是正常结束、抛出错误还是通过 `return`、`break`、`continue` 等语句跳转。这对于资源管理（如关闭文件句柄、网络连接等）非常有用，可以确保清理代码始终执行，避免资源泄漏。
+usage:
+  - title: 使用 defer
+    description: |
+      `defer` 语句会在当前作用域结束之前执行。将需要清理的代码放在 `defer` 块中，确保无论作用域如何退出，清理操作都会被执行。
+
+      语法：
+      ```swift
+      defer {
+          // 需要延迟执行的代码
+      }
+      ```
+    example: |
+      ```swift
+      func readFile(path: String) {
+          let file = openFile(path) // 打开文件
+          defer {
+              closeFile(file) // 关闭文件，会在 readFile 函数结束前执行
+          }
+
+          // 处理文件内容...
+      }
+      ```
+  - title: 多个 defer 的执行顺序
+    description: |
+      当一个作用域内有多个 `defer` 语句时，它们会按照**后进先出（LIFO）**的顺序执行。也就是说，最后声明的 `defer` 块会最先执行。这在管理多个资源时非常重要，可以确保资源以正确的顺序释放。
+    example: |
+      ```swift
+      func manageResources() {
+          let resource1 = acquireResource1()
+          defer {
+              releaseResource1(resource1) // 最后执行
+          }
+
+          let resource2 = acquireResource2()
+          defer {
+              releaseResource2(resource2) // 先执行
+          }
+
+          // 使用 resource1 和 resource2 ...
+
+          // 离开作用域时，会先执行 releaseResource2，再执行 releaseResource1
+      }
+      ```
+  - title: defer 在循环中的行为
+    description: |
+      在循环中使用 `defer` 时，每个循环迭代都会创建一个新的 `defer` 块。这些 `defer` 块会在每次迭代结束时执行，而不是在整个循环结束后一次性执行。
+    example: |
+      ```swift
+      func processTasks(tasks: [() -> Void]) {
+          for task in tasks {
+              defer {
+                  print("Task finished") // 每次迭代结束后都会打印
+              }
+              task() // 执行任务
+          }
+      }
+      ```
+  - title: defer 和错误处理
+    description: |
+      即使函数抛出错误，`defer` 块中的代码仍然会执行。这使得 `defer` 非常适合清理资源，即使在发生错误的情况下也能确保资源得到释放。
+    example: |
+      ```swift
+      func performOperation(value: Int) throws {
+          let resource = acquireResource()
+          defer {
+              releaseResource(resource) // 即使抛出错误也会执行
+          }
+          if value < 0 {
+              throw OperationError.invalidValue
+          }
+          // 执行操作...
+      }
+      ```
+  - title: defer 和 return 语句
+    description: |
+      `defer` 块中的代码会在 `return` 语句执行**之前**执行。这可以用来在函数返回之前执行一些必要的清理或最终操作。
+    example: |
+      ```swift
+      func calculateValue() -> Int {
+          let value = 10
+          defer {
+              print("Returning value") // 在 return 之前打印
+          }
+          return value
+      }
+      ```
+references:
+  - title: 'Swift Defer Explained: A Comprehensive Guide for Developers'
+    url: https://www.dhiwise.com/post/swift-defer-explained-a-comprehensive-guide-for-developers

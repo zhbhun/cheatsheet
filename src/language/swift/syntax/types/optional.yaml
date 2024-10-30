@@ -1,6 +1,11 @@
 id: optional
 title: 可空
 description: 可空（Optional）是 Swift 中的一种类型，用于表示变量可能包含值，也可能为 `nil`。可空类型适用于需要明确表示“无值”情况的场景，例如解析用户输入、从 API 请求中获取数据或操作可能失败的函数结果。在 Swift 中，`Int?` 表示一个可空的整数类型，即这个变量可以是一个整数，也可以是 `nil`。
+references:
+  - title: Optionals in Swift
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Optionals
+  - title: Optional Chaining
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/optionalchaining
 example: |
   var possibleNumber: Int? = 123 // 声明一个可空的 Int 变量，初始值为 123
   possibleNumber = nil // 将其值设为 nil，表示没有值
@@ -9,8 +14,3 @@ example: |
   } else {
       print("No number available") // 如果可空变量为 nil，执行相应逻辑
   }
-references:
-  - title: Optionals in Swift
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics/#Optionals
-  - title: Optional Chaining
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/optionalchaining

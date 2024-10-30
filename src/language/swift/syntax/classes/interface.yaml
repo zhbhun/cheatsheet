@@ -1,5 +1,9 @@
 id: interface
 title: 协议
+query: swift protocol
+comment: |
+  - CaseIterable
+  - ...
 description: |
   在 Swift 中，协议（Protocol）定义了必须遵循的属性、方法或其他要求。协议可以被类、结构体和枚举实现，用于定义接口、实现多态性和代码复用。
 example: |

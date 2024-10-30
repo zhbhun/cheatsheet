@@ -1,0 +1,142 @@
+id: switch
+title: Switch
+description: Swift 的 `switch` 语句是一种强大的控制流机制，用于根据值的不同情况执行不同的代码块。它比许多 C 类语言中的 switch 语句更强大，可以匹配多种模式，包括区间匹配、元组和类型转换。匹配的值可以绑定到临时常量或变量，复杂的匹配条件可以使用 `where` 子句。
+usage:
+  - title: 基本用法
+    description: 最简单的 switch 语句将一个值与相同类型的一个或多个值进行比较。
+    example: |
+      ```swift
+      let someCharacter: Character = "z"
+      switch someCharacter {
+      case "a":
+          print("The first letter of the Latin alphabet")
+      case "z":
+          print("The last letter of the Latin alphabet")
+      default:
+          print("Some other character")
+      }
+      // Prints "The last letter of the Latin alphabet"
+      ```
+  - title: 复合匹配
+    description: 多个 case 可以匹配相同的值，用逗号分隔。这样可以避免重复代码。
+    example: |
+      ```swift
+      let anotherCharacter: Character = "a"
+      switch anotherCharacter {
+      case "a", "A":
+          print("The letter A")
+      default:
+          print("Not the letter A")
+      }
+      // Prints "The letter A"
+      ```
+  - title: 区间匹配
+    description: 可以使用区间来匹配一个范围内的值。闭区间使用 `...`，半开区间使用 `..<`。
+    example: |
+      ```swift
+      let approximateCount = 62
+      let countedThings = "moons orbiting Saturn"
+      let naturalCount: String
+      switch approximateCount {
+      case 0:
+          naturalCount = "no"
+      case 1..<5:
+          naturalCount = "a few"
+      case 5..<12:
+          naturalCount = "several"
+      case 12..<100:
+          naturalCount = "dozens of"
+      case 100..<1000:
+          naturalCount = "hundreds of"
+      default:
+          naturalCount = "many"
+      }
+      print("There are \(naturalCount) \(countedThings).")
+      // Prints "There are dozens of moons orbiting Saturn."
+      ```
+  - title: 元组匹配
+    description: 可以使用元组来同时匹配多个值。可以使用下划线 `_` 匹配任意值。
+    example: |
+      ```swift
+      let somePoint = (1, 1)
+      switch somePoint {
+      case (0, 0):
+          print("\(somePoint) is at the origin")
+      case (_, 0):
+          print("\(somePoint) is on the x-axis")
+      case (0, _):
+          print("\(somePoint) is on the y-axis")
+      case (-2...2, -2...2):
+          print("\(somePoint) is inside the box")
+      default:
+          print("\(somePoint) is outside of the box")
+      }
+      // Prints "(1, 1) is inside the box"
+      ```
+  - title: 值绑定
+    description: 可以使用 `let` 或 `var` 将匹配的值绑定到一个临时常量或变量。
+    example: |
+      ```swift
+      let anotherPoint = (2, 0)
+      switch anotherPoint {
+      case (let x, 0):
+          print("on the x-axis with an x value of \(x)")
+      case (0, let y):
+          print("on the y-axis with a y value of \(y)")
+      case let (x, y):
+          print("somewhere else at (\(x), \(y))")
+      }
+      // Prints "on the x-axis with an x value of 2"
+      ```
+  - title: Where 子句
+    description: 可以使用 `where` 子句添加额外的匹配条件。
+    example: |
+      ```swift
+      let yetAnotherPoint = (1, -1)
+      switch yetAnotherPoint {
+      case let (x, y) where x == y:
+          print("(\(x), \(y)) is on the line x == y")
+      case let (x, y) where x == -y:
+          print("(\(x), \(y)) is on the line x == -y")
+      case let (x, y):
+          print("(\(x), \(y)) is just some arbitrary point")
+      }
+      // Prints "(1, -1) is on the line x == -y"
+      ```
+  - title: Switch 表达式
+    description: Switch 也可以用作表达式，并返回值。
+    example: |
+      ```swift
+      let anotherCharacter: Character = "a"
+      let message = switch anotherCharacter {
+      case "a":
+          "The first letter of the Latin alphabet"
+      case "z":
+          "The last letter of the Latin alphabet"
+      default:
+          "Some other character"
+      }
+      print(message)
+      // Prints "The first letter of the Latin alphabet"
+      ```
+  - title: Fallthrough 关键字
+    description: Swift 中的 switch 语句默认情况下不会贯穿到下一个 case。如果需要 C 风格的贯穿行为，可以使用 `fallthrough` 关键字。
+    example: |
+      ```swift
+      let integerToDescribe = 5
+      var description = "The number \(integerToDescribe) is"
+      switch integerToDescribe {
+      case 2, 3, 5, 7, 11, 13, 17, 19:
+          description += " a prime number, and also"
+          fallthrough
+      default:
+          description += " an integer."
+      }
+      print(description)
+      // Prints "The number 5 is a prime number, and also an integer."
+      ```
+references:
+  - title: Switch
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/controlflow#Switch
+  - title: Switch Statement
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/statements#Switch-Statement

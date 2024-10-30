@@ -1,30 +1,166 @@
 id: enum
 title: 枚举
-description: 枚举（`enum`）是一种类型，它定义了一组相关的值，这些值可以是原始值（如整数或字符串），也可以是关联值。Swift 的枚举比 C 或 Objective-C 更强大，支持方法、计算属性以及遵循协议等特性。枚举常用于表示一组相关的状态或选项，便于代码的组织和管理。
-example: |
-  // 定义一个简单的枚举类型，表示指南针的四个方向
-  enum CompassPoint {
-      case north
-      case south
-      case east
-      case west
-  }
+query: Swift enum
+comment: |
+  - 创建并使用枚举类型
+  - 创建并使用带关联值的枚举类型
+  - 创建并使用带原始值的枚举类型
+  - 创建并使用可比较的枚举类型
+  - 创建并使用带自定义描述的枚举类型
+  - 创建并使用带 RawRepresentable 的枚举类型
+  - 创建并使用带可迭代关联值的枚举类型
+description: Swift 枚举是定义一组命名值的类型。枚举可以像类和结构体一样拥有方法、计算属性、遵循协议等。它们是组织具有相关性的值集合的强大工具。
+usage:
+  - title: 声明枚举
+    description: 使用 `enum` 关键字声明枚举，枚举成员使用 `case` 关键字。多个成员可以放在同一行，用逗号分隔。
+    example: |
+      ```swift
+      // 定义一个简单的枚举，表示交通灯的颜色
+      enum TrafficLight {
+          case red
+          case yellow
+          case green
+      }
 
-  // 使用枚举类型
-  var direction = CompassPoint.north // 变量 direction 的值为 north
-  direction = .east // 修改 direction 的值为 east
+      // 定义一个枚举，表示行星，所有成员在同一行
+      enum Planet {
+          case mercury, venus, earth, mars, jupiter, saturn, uranus, neptune
+      }
+      ```
+  - title: 使用枚举
+    description: 创建枚举类型的变量或常量，并使用点语法赋值。
+    example: |
+      ```swift
+      // 创建一个 TrafficLight 类型的变量
+      var currentLight = TrafficLight.red
 
-  // 关联值的枚举
-  enum Barcode {
-      case upc(Int, Int, Int, Int)
-      case qrCode(String)
-  }
+      // 将 currentLight 的值更改为绿色
+      currentLight = .green // 简化语法，因为类型已知
 
-  // 使用关联值的枚举
-  var productCode = Barcode.upc(8, 85909, 51226, 3) // 变量 productCode 的值为 UPC 条码
-  productCode = .qrCode("ABCDEFGHIJKLMNOP") // 修改为 QR 码
+      print(currentLight) // 输出: green
+      ```
+  - title: Switch 语句匹配枚举值
+    description: 使用 `switch` 语句可以方便地处理不同枚举成员的情况。`switch` 语句必须穷举所有情况，或者提供 `default` 分支。
+    example: |
+      ```swift
+      switch currentLight {
+      case .red:
+          print("Stop!")
+      case .yellow:
+          print("Slow down.")
+      case .green:
+          print("Go!")
+      } // 输出: Go!
+
+
+      // 使用 default 分支处理其他情况
+      let somePlanet = Planet.earth
+      switch somePlanet {
+      case .earth:
+          print("Mostly harmless")
+      default:
+          print("Not a safe place for humans")
+      } // 输出: Mostly harmless
+      ```
+  - title: 迭代枚举成员
+    description: 通过遵循 `CaseIterable` 协议，可以迭代枚举的所有成员。使用 `allCases` 属性访问所有成员的集合。
+    example: |
+      ```swift
+      enum Beverage: CaseIterable {
+          case coffee, tea, juice
+      }
+
+      for beverage in Beverage.allCases {
+          print(beverage)
+      }
+      // 输出:
+      // coffee
+      // tea
+      // juice
+      ```
+  - title: 关联值
+    description: 枚举成员可以存储不同类型的关联值。关联值在每次使用该成员时都可以不同。
+    example: |
+      ```swift
+      enum Barcode {
+          case upc(Int, Int, Int, Int)
+          case qrCode(String)
+      }
+
+      var productBarcode = Barcode.upc(8, 85909, 51226, 3)
+      productBarcode = .qrCode("ABCDEFGHIJKLMNOP")
+
+      switch productBarcode {
+      case .upc(let numberSystem, let manufacturer, let product, let check):
+          print("UPC: \(numberSystem), \(manufacturer), \(product), \(check)")
+      case .qrCode(let productCode):
+          print("QR code: \(productCode)")
+      } // 输出: QR code: ABCDEFGHIJKLMNOP
+      ```
+  - title: 原始值
+    description: 枚举成员可以预先填充相同类型的默认值，称为原始值。原始值必须在枚举声明中是唯一的。可以使用 `rawValue` 属性访问原始值。
+    example: |
+      ```swift
+      enum ASCIIControlCharacter: Character {
+          case tab = "\t"
+          case lineFeed = "\n"
+          case carriageReturn = "\r"
+      }
+
+      print(ASCIIControlCharacter.tab.rawValue) // 输出: \t
+
+      // 隐式原始值
+      enum Planet: Int {
+          case mercury = 1, venus, earth, mars, jupiter, saturn, uranus, neptune
+      }
+      print(Planet.earth.rawValue) // 输出: 3
+
+
+      enum CompassPoint: String {
+          case north, south, east, west
+      }
+      print(CompassPoint.south.rawValue) // 输出: south
+      ```
+  - title: 从原始值初始化
+    description: 如果定义了具有原始值的枚举，则枚举会自动接收一个初始化器，该初始化器接受原始值类型的参数 (`rawValue`)，并返回一个枚举成员或 `nil`。
+    example: |
+      ```swift
+      let possiblePlanet = Planet(rawValue: 7) // possiblePlanet 的类型为 Planet?，值为 Planet.uranus
+      print(possiblePlanet == Planet.uranus) // 输出: true
+
+      let somePlanet = Planet(rawValue: 11) // somePlanet 的类型为 Planet?，值为 nil
+      print(somePlanet == nil) // 输出: true
+      ```
+  - title: 递归枚举
+    description: 递归枚举是指一个或多个枚举成员的关联值为枚举自身的实例。使用 `indirect` 关键字指示递归成员或在枚举声明前使用 `indirect` 使所有成员都支持递归。
+    example: |
+      ```swift
+      indirect enum ArithmeticExpression {
+          case number(Int)
+          case addition(ArithmeticExpression, ArithmeticExpression)
+          case multiplication(ArithmeticExpression, ArithmeticExpression)
+      }
+
+      let five = ArithmeticExpression.number(5)
+      let four = ArithmeticExpression.number(4)
+      let sum = ArithmeticExpression.addition(five, four)
+      let product = ArithmeticExpression.multiplication(sum, ArithmeticExpression.number(2))
+
+      func evaluate(_ expression: ArithmeticExpression) -> Int {
+          switch expression {
+          case let .number(value):
+              return value
+          case let .addition(left, right):
+              return evaluate(left) + evaluate(right)
+          case let .multiplication(left, right):
+              return evaluate(left) * evaluate(right)
+          }
+      }
+
+      print(evaluate(product)) // 输出: 18
+      ```
 references:
-  - title: Enumerations in Swift
+  - title: Enumerations - Documentation - Swift.org
     url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/enumerations/
-  - title: Enumeration Declaration
-    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/#Enumeration-Declaration
+  - title: Swift enum (With Examples)
+    url: https://www.programiz.com/swift-programming/enum
