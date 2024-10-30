@@ -1,0 +1,162 @@
+id: custom
+title: 自定义元素
+query: Web Component
+comment: 如何创建自定义元素，如何定义自定义元素的属性和方法，如何使用自定义元素，以及如何处理自定义元素的事件。
+description: Web Components 是一套允许你创建可复用自定义元素的技术，其功能与代码的其余部分相隔离，你可以在 Web 应用程序中使用它们。
+usage:
+  - title: 创建自定义元素
+    description: |-
+      使用 `customElements.define()` 方法注册一个新的自定义元素，该方法接受三个参数：
+
+      - 要定义的元素名称，必须包含连字符，例如 `my-element`。
+      - 指定其功能的类或函数。
+      - 可选，指定它继承的元素。
+
+      自定义元素的类应该继承自 `HTMLElement`，并实现其构造函数和生命周期回调函数。
+    example: |
+      ```javascript
+      class MyElement extends HTMLElement {
+        constructor() {
+          super();
+          // 初始化元素
+        }
+      }
+      window.customElements.define('my-element', MyElement);
+      ```
+  - title: 添加 Shadow DOM
+    description: |-
+      Shadow DOM 用于封装自定义元素的内部结构和样式，可以使用 `Element.attachShadow()` 方法为自定义元素附加一个 Shadow DOM 树。
+
+      `attachShadow()` 方法接受一个配置对象作为参数，该对象包含一个 `mode` 属性，用于指定 Shadow DOM 的模式：
+
+      - `open`:  外部可以通过 Shadow Root 访问 Shadow DOM。
+      - `closed`: 外部无法访问 Shadow DOM。
+
+      可以使用常规的 DOM 方法将子元素、事件监听器等添加到 Shadow DOM 中。
+    example: |
+      ```javascript
+      class MyElement extends HTMLElement {
+        constructor() {
+          super();
+          const shadow = this.attachShadow({ mode: 'open' });
+          shadow.innerHTML = '<h1>Hello Shadow DOM</h1>';
+        }
+      }
+      ```
+  - title: 使用 `<template>` 和 `<slot>`
+    description: |-
+      可以使用 `<template>` 元素定义一个可复用的 HTML 结构，然后使用 `<slot>` 元素在自定义元素中创建占位符，并将 `<template>` 中的内容插入到占位符中。
+
+      `<template>` 元素中的内容不会立即渲染，可以使用 JavaScript 克隆并添加到 Shadow DOM 中。
+
+      `<slot>` 元素可以设置 `name` 属性，用于指定插入的内容。
+
+      可以使用 `Element.slot` 属性获取元素被分配到的插槽的名称。
+    example: |
+      ```html
+      <template id="my-element-template">
+        <style>
+          h1 {
+            color: blue;
+          }
+        </style>
+        <h1>
+          <slot name="title">默认标题</slot>
+        </h1>
+        <p>
+          <slot name="content">默认内容</slot>
+        </p>
+      </template>
+      <script>
+        class MyElement extends HTMLElement {
+          constructor() {
+            super();
+            const template = document.getElementById('my-element-template');
+            const shadow = this.attachShadow({ mode: 'open' });
+            shadow.appendChild(template.content.cloneNode(true));
+          }
+        }
+        window.customElements.define('my-element', MyElement);
+      </script>
+      ```
+      ```html
+      <my-element>
+        <span slot="title">自定义标题</span>
+        <p slot="content">自定义内容</p>
+      </my-element>
+      ```
+  - title: 生命周期回调函数
+    description: |-
+      自定义元素的生命周期回调函数允许你在元素生命周期的不同阶段执行代码：
+
+      - `connectedCallback()`: 当自定义元素首次连接到文档的 DOM 时调用。
+      - `disconnectedCallback()`: 当自定义元素从文档的 DOM 中断开连接时调用。
+      - `adoptedCallback()`: 当自定义元素移动到新文档时调用。
+      - `attributeChangedCallback(name, oldValue, newValue)`: 当自定义元素的一个属性被添加、删除或更改时调用。
+
+      可以通过添加 `static get observedAttributes()` 方法来指定要观察的属性列表。
+    example: |
+      ```javascript
+      class MyElement extends HTMLElement {
+        // ...
+        connectedCallback() {
+          console.log('元素已连接到 DOM');
+        }
+        disconnectedCallback() {
+          console.log('元素已从 DOM 中移除');
+        }
+        static get observedAttributes() {
+          return ['name'];
+        }
+        attributeChangedCallback(name, oldValue, newValue) {
+          console.log(`属性 ${name} 已更改，旧值：${oldValue}，新值：${newValue}`);
+        }
+      }
+      ```
+  - title: 自定义元素的属性和方法
+    description: |-
+      可以使用自定义元素的类定义属性和方法，就像使用常规的 JavaScript 类一样。
+
+      可以使用 `this` 关键字在自定义元素的构造函数和方法中访问元素的属性和方法。
+    example: |
+      ```javascript
+      class MyElement extends HTMLElement {
+        constructor() {
+          super();
+          this._name = '';
+        }
+        get name() {
+          return this._name;
+        }
+        set name(value) {
+          this._name = value;
+          this.setAttribute('name', value);
+        }
+      }
+      ```
+  - title: 处理自定义元素的事件
+    description: |-
+      可以使用 `addEventListener()` 方法为自定义元素添加事件监听器，就像使用常规的 DOM 元素一样。
+
+      可以使用 `dispatchEvent()` 方法从自定义元素触发自定义事件。
+    example: |
+      ```javascript
+      class MyElement extends HTMLElement {
+        // ...
+        connectedCallback() {
+          this.addEventListener('click', this.handleClick);
+        }
+        handleClick() {
+          this.dispatchEvent(new CustomEvent('my-event', { detail: { message: 'Hello from MyElement' } }));
+        }
+      }
+      const myElement = document.querySelector('my-element');
+      myElement.addEventListener('my-event', (event) => {
+        console.log(event.detail.message);
+      });
+      ```
+references:
+  - title: Web Components - Web APIs - MDN Web Docs - Mozilla
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Web_components
+  - title: Web Components 入门实例教程
+    url: https://www.ruanyifeng.com/blog/2019/08/web_components.html

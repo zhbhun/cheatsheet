@@ -1,0 +1,8 @@
+id: view
+title: 视图
+children:
+  - base
+  - layout
+  - container
+  - form
+  - custom

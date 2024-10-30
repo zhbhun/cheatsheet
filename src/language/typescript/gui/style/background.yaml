@@ -1,0 +1,120 @@
+id: background
+title: 背景
+query: CSS Background style
+comment: 介绍 CSS 中的背景属性、背景色、背景图片和简便背景、背景大小、背景位置、背景绘制区域等。
+description: CSS `background` 简写属性在一个声明中设置所有背景样式属性，例如颜色、图像、原点和大小或重复方法。未在此属性中设置的组件属性将被设置为其默认值。
+usage:
+  - title: 设置背景颜色
+    description: 使用 `background-color` 属性设置背景颜色。可以是命名颜色、十六进制颜色、RGB/RGBA 颜色、HSL/HSLA 颜色等。
+    example: |
+      ```css
+      /* 使用关键字 */
+      background-color: red;
+
+      /* 使用十六进制颜色 */
+      background-color: #ff0000;
+
+      /* 使用 RGB 颜色 */
+      background-color: rgb(255, 0, 0);
+
+      /* 使用 RGBA 颜色 */
+      background-color: rgba(255, 0, 0, 0.5); /* 带有 alpha 透明度 */
+      ```
+  - title: 设置背景图片
+    description: 使用 `background-image` 属性设置背景图片，值为 `url()`，括号内是图片的路径。 可以设置多张背景图片，用逗号分隔。
+    example: |
+      ```css
+      /* 单张背景图片 */
+      background-image: url("image.jpg");
+
+      /* 多张背景图片 */
+      background-image: url("image1.jpg"), url("image2.png"); 
+      ```
+  - title: 设置背景图片位置
+    description: 使用 `background-position` 属性设置背景图片位置。可以是关键字（`top`, `left`, `center`, `right`, `bottom`）或长度值或百分比。
+    example: |
+      ```css
+      /* 使用关键字 */
+      background-position: top left; 
+
+      /* 使用长度值 */
+      background-position: 10px 20px;
+
+      /* 使用百分比 */
+      background-position: 50% 50%; /* 图片中心与元素中心对齐 */
+      ```
+  - title: 设置背景图片大小
+    description: '`background-size` 属性设置背景图片大小。可以是关键字（`cover`, `contain`)、长度值、百分比或 `auto`。'
+    example: |
+      ```css
+      /* 使用关键字 */
+      background-size: cover; /* 覆盖整个元素 */
+      background-size: contain; /* 包含在元素内 */
+
+      /* 使用长度值 */
+      background-size: 200px 100px;
+
+      /* 使用百分比 */
+      background-size: 50% 100%;
+      ```
+  - title: 设置背景图片重复
+    description: '`background-repeat` 属性设置背景图片如何重复。可以是 `repeat`, `repeat-x`, `repeat-y`, `no-repeat`, `space`, `round`。'
+    example: |
+      ```css
+      /* repeat: 默认值，水平和垂直方向重复 */
+      background-repeat: repeat;
+
+      /* repeat-x: 只在水平方向重复 */
+      background-repeat: repeat-x;
+
+      /* no-repeat: 不重复 */
+      background-repeat: no-repeat;
+      ```
+  - title: 设置背景图片的附着方式
+    description: '`background-attachment` 属性设置背景图片是否固定或随页面滚动。可以是 `scroll` (默认), `fixed`, `local`。'
+    example: |
+      ```css
+      /* scroll: 默认值，背景图片随元素滚动 */
+      background-attachment: scroll;
+
+      /* fixed: 背景图片固定在视口中 */
+      background-attachment: fixed;
+      ```
+  - title: 设置背景原点
+    description: '`background-origin` 属性定义背景图片的定位区域。可以是 `padding-box`, `border-box`, `content-box`。'
+    example: |
+      ```css
+      /* padding-box: 从内边距边缘开始 */
+      background-origin: padding-box;
+
+      /* border-box: 从边框边缘开始 */
+      background-origin: border-box;
+      ```
+  - title: 设置背景剪切
+    description: '`background-clip` 属性定义背景的绘制区域。可以是 `border-box`, `padding-box`, `content-box`, `text`。'
+    example: |
+      ```css
+      /* border-box: 绘制到边框的外边缘 */
+      background-clip: border-box;
+
+      /* padding-box: 绘制到内边距的边缘 */
+      background-clip: padding-box;
+      ```
+  - title: 使用简写 background 属性
+    description: |
+      `background` 简写属性可以设置多个背景属性。属性值的顺序如下：
+      `background: background-color background-image background-position/background-size background-repeat background-origin background-clip background-attachment;`
+      可以省略部分属性值，未设置的属性将使用默认值。
+    example: |
+      ```css
+      /* 设置背景颜色、图片、位置和重复方式 */
+      background: #eee url("image.jpg") center top no-repeat;
+
+      /* 设置多个背景图片和颜色 */
+      background: url("image1.jpg") top left/50px 50px no-repeat, url("image2.png") bottom right/cover, lightblue;
+      ```
+references:
+  - title: 'background - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/background
+  - title: CSS background property
+    url: https://www.w3schools.com/cssref/css3_pr_background.php

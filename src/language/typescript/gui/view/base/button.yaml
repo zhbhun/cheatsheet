@@ -1,0 +1,102 @@
+id: text
+title: Button
+query: HTML button element
+comment: 介绍按钮标签、按钮样式设置、按钮交互事件绑定和代码手动创建使用按钮等
+description: |-
+  HTML 中的 `<button>` 标签用于创建可点击的按钮，可以包含文本、图像等内容。按钮通常用于提交表单、触发 JavaScript 事件等交互操作。  
+    
+  除了使用 `<button>` 标签创建按钮，还可以使用 `<input type='button'>` 创建按钮，但 `<button>` 标签提供了更丰富的样式和功能。
+usage:
+  - title: 创建按钮
+    description: 使用 `<button>` 标签创建一个按钮，标签内的文本将作为按钮的显示文本。默认情况下，按钮的类型为 `submit`，会提交表单数据。
+    example: |
+      ```html
+      <button>点击我</button>
+      ```
+  - title: 设置按钮类型
+    description: |
+      使用 `type` 属性可以设置按钮的类型，不同的类型决定了按钮的行为。  
+      - `button`: 默认值，表示按钮没有默认行为，通常用于触发 JavaScript 事件。  
+      - `submit`: 表示按钮用于提交表单数据。  
+      - `reset`: 表示按钮用于重置表单数据。
+    example: |
+      ```html
+      <button type="button">普通按钮</button>
+      <button type="submit">提交表单</button>
+      <button type="reset">重置表单</button>
+      ```
+  - title: 禁用按钮
+    description: 使用 `disabled` 属性可以禁用按钮，禁用后的按钮将无法点击或提交数据。
+    example: |
+      ```html
+      <button disabled>禁用按钮</button>
+      ```
+  - title: 设置按钮名称
+    description: 使用 `name` 属性可以设置按钮的名称，该名称会在提交表单时作为参数传递给服务器。
+    example: |
+      ```html
+      <button name="myButton">提交</button>
+      ```
+  - title: 设置按钮值
+    description: 使用 `value` 属性可以设置按钮的值，该值会在提交表单时作为参数传递给服务器。
+    example: |
+      ```html
+      <button value="buttonValue">提交</button>
+      ```
+  - title: 设置自动获取焦点
+    description: 使用 `autofocus` 属性可以设置按钮在页面加载时自动获取焦点。
+    example: |
+      ```html
+      <button autofocus>自动获取焦点</button>
+      ```
+  - title: 绑定按钮事件
+    description: |
+      使用 JavaScript 可以为按钮绑定事件，例如 `click`、`mousedown`、`mouseup` 等。
+        - `onclick`: 当用户点击按钮时触发。
+        - `onmousedown`: 当用户按下鼠标按钮时触发。
+        - `onmouseup`: 当用户松开鼠标按钮时触发。
+    example: |
+      ```html
+      <button onclick="alert('Hello!')">点击我</button>
+      ```
+  - title: 样式设置
+    description: 可以使用 CSS 为按钮设置样式，例如背景颜色、边框、字体等。
+    example: |
+      ```html
+      <style>
+        .my-button {
+          background-color: #4CAF50; /* 设置背景颜色 */
+          border: none; /* 去除边框 */
+          color: white; /* 设置文本颜色 */
+          padding: 15px 32px; /* 设置内边距 */
+          text-align: center; /* 设置文本居中 */
+          text-decoration: none; /* 去除下划线 */
+          display: inline-block; /* 设置为行内块元素 */
+          font-size: 16px; /* 设置字体大小 */
+          cursor: pointer; /* 设置鼠标指针样式 */
+        }
+      </style>
+      <button class="my-button">样式按钮</button>
+      ```
+  - title: 使用 JavaScript 创建按钮
+    description: 可以使用 JavaScript 动态创建按钮元素并添加到页面中。
+    example: |
+      ```javascript
+      // 创建一个按钮元素
+      const myButton = document.createElement("button");
+      // 设置按钮文本
+      myButton.textContent = "动态创建的按钮";
+      // 为按钮绑定点击事件
+      myButton.addEventListener("click", () => {
+        alert("你点击了按钮！");
+      });
+      // 将按钮添加到页面中
+      document.body.appendChild(myButton);
+      ```
+references:
+  - title: 'The Button element - HTML: HyperText Markup Language'
+    url: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button
+  - title: HTMLButtonElement - Web APIs - MDN Web Docs
+    url: https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement
+  - title: HTML button tag
+    url: https://www.w3schools.com/tags/tag_button.asp

@@ -1,0 +1,109 @@
+id: scroll
+title: 滚动
+query: DOM 滚动事件
+comment: 尽量详尽的演示不同属性和场景用法
+description: JavaScript 中的滚动事件用于响应用户滚动网页或元素的操作。了解如何监听滚动事件、获取滚动偏移量以及优化滚动性能对于创建交互式网页至关重要。
+usage:
+  - title: 监听窗口滚动事件
+    description: |
+      要监听整个网页的滚动，可以使用 `window.addEventListener()` 或 `window.onscroll`。
+
+      - `addEventListener()`: 标准的事件监听方法，可以绑定多个事件处理函数。
+      - `onscroll`:  `window` 对象的属性，可以直接赋值为事件处理函数。`window.onscroll` 和 `document.body.onscroll` 等效。
+    example: |
+      ```javascript
+      // 使用 addEventListener()
+      window.addEventListener('scroll', (event) => {
+        console.log('滚动...');
+      });
+
+      // 使用 onscroll
+      window.onscroll = function(event) {
+        console.log('滚动...');
+      };
+
+
+      // document.body.onscroll 等效于 window.onscroll
+      document.body.onscroll = () => {
+          console.log("body scroll")
+      }
+      ```
+  - title: 获取窗口滚动偏移量
+    description: |
+      - `scrollX`: 返回页面水平滚动的像素数。
+      - `scrollY`: 返回页面垂直滚动的像素数。
+      - `pageXOffset`: `scrollX` 的别名。
+      - `pageYOffset`: `scrollY` 的别名。
+
+      这些属性都是只读的，返回双精度浮点值。如果需要整数值，可以使用 `Math.round()` 进行四舍五入。
+    example: |
+      ```javascript
+      window.addEventListener('scroll', () => {
+        console.log("scrollX:", window.scrollX, "scrollY:", window.scrollY);
+        console.log("pageXOffset:", window.pageXOffset, "pageYOffset:", window.pageYOffset)
+      });
+      ```
+  - title: 监听元素滚动事件
+    description: |
+      与监听窗口滚动事件类似，可以使用 `addEventListener()` 或 `onscroll` 属性来监听特定元素的滚动事件。
+    example: |
+      ```javascript
+      const element = document.getElementById('myElement');
+
+      element.addEventListener('scroll', () => {
+        console.log('元素滚动...');
+      });
+
+      element.onscroll = () => {
+          console.log("element scroll")
+      }
+      ```
+  - title: 获取元素滚动偏移量
+    description: |
+      - `scrollLeft`: 获取或设置元素内容水平滚动的像素数。
+      - `scrollTop`: 获取或设置元素内容垂直滚动的像素数。
+    example: |
+      ```javascript
+      const element = document.getElementById('myElement');
+
+      element.addEventListener('scroll', () => {
+        console.log('scrollLeft:', element.scrollLeft, 'scrollTop:', element.scrollTop);
+      });
+
+       // 设置元素内容水平滚动 20 像素
+       element.scrollLeft = 20;
+
+       // 设置元素内容垂直滚动 20 像素
+       element.scrollTop = 20;
+      ```
+  - title: 优化滚动事件性能：事件节流
+    description: |
+      频繁触发的滚动事件可能会导致性能问题。使用事件节流可以减少事件处理程序的执行次数，从而提高性能。
+    example: |
+      ```javascript
+      let scrolling = false;
+
+      window.onscroll = () => {
+        scrolling = true;
+      };
+
+      setInterval(() => {
+        if (scrolling) {
+          scrolling = false;
+          // 处理滚动逻辑
+          console.log('滚动...');
+        }
+      }, 300); // 每 300ms 执行一次
+      ```
+  - title: 优化滚动事件性能：Passive Event Listeners
+    description: |
+      Passive Event Listeners 允许浏览器在执行事件处理程序之前进行滚动，从而提高滚动性能。通过在 `addEventListener()` 的第三个参数中添加 `{ passive: true }` 来启用 Passive Event Listeners。
+    example: |
+      ```javascript
+      window.addEventListener('scroll', (event) => {
+        // 处理滚动逻辑
+      }, { passive: true });
+      ```
+references:
+  - title: JS DOM编程笔记- 滚动事件（十八）
+    url: https://juejin.cn/post/7026337573135974431

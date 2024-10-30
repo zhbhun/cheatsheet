@@ -1,0 +1,72 @@
+id: radius
+title: 圆角
+query: CSS Border Radius style
+comment: 介绍 CSS 中的边框圆角属性
+description: CSS 中的 `border-radius` 属性可以为元素的外边框生成圆角。可以设置一个值生成圆角，或者两个值生成椭圆角。
+usage:
+  - title: 设置四个圆角
+    description: 使用 `border-radius` 属性并设置一个值，可以为元素的四个角生成相同的圆角效果。值越大，圆角越大。
+    example: |
+      ```css
+      .rounded-corners {
+        border-radius: 10px;
+        border: 2px solid #73AD21;
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+      ```
+  - title: 分别设置四个圆角
+    description: '使用 `border-radius` 属性并设置四个值，可以分别为元素的四个角设置不同的圆角效果。值的顺序为：左上，右上，右下，左下。  '
+    example: |
+      ```css
+      .rounded-corners {
+        border-radius: 15px 50px 30px 5px; 
+        border: 2px solid #73AD21;
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+      ```
+  - title: 设置椭圆角
+    description: '使用 `border-radius` 属性并设置两个值，可以用斜杠（/）分隔，分别定义水平方向和垂直方向的半径，从而创建椭圆角。  '
+    example: |
+      ```css
+      .oval-corners {
+        border-radius: 40px / 10px;
+        border: 2px solid #73AD21;
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+      ```
+  - title: 使用百分比
+    description: '`border-radius` 的值可以使用百分比。水平方向的百分比是相对于元素的宽度，垂直方向的百分比是相对于元素的高度。'
+    example: |
+      ```css
+      .percentage-radius {
+        border-radius: 50%; /* 生成一个圆形 */
+        border: 2px solid #73AD21;
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+      ```
+  - title: 与背景结合
+    description: '`border-radius` 会影响元素的背景，即使该元素没有边框。可以通过设置 `background-clip` 属性来控制背景的裁剪方式。'
+    example: |
+      ```css
+      .background-radius {
+        border-radius: 25px;
+        background-color: #73AD21;
+        background-clip: padding-box; /* 背景只在 padding 区域内显示 */
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+      ```
+references:
+  - title: 'border-radius - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius
+  - title: CSS border-radius property
+    url: https://www.w3schools.com/cssref/css3_pr_border-radius.php

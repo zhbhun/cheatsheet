@@ -1,0 +1,103 @@
+id: opacity
+title: 透明度
+query: CSS Opacity style
+comment: 介绍 CSS 中的透明属性
+description: CSS `opacity` 属性设置元素的透明度。透明度是指元素背后的内容被隐藏的程度，与透明度相反。它适用于整个元素，包括其内容，但值不会被子元素继承。因此，元素及其子元素相对于元素背景的透明度相同，即使它们彼此之间的透明度不同。要仅更改背景的不透明度，请使用带有允许 alpha 通道的颜色值的 `background` 属性。
+usage:
+  - title: 设置透明度
+    description: |
+      `opacity` 属性接受 0.0 到 1.0 之间的值，或者 0% 到 100% 之间的百分比值。
+      - 0 或 0% 表示完全透明（不可见）。
+      - 1 或 100% 表示完全不透明。
+      - 0 到 1 或 0% 到 100% 之间的值表示半透明。
+    example: |
+      ```css
+      .element {
+        opacity: 0.5; /* 元素半透明 */
+      }
+
+      .transparent {
+        opacity: 0; /* 元素完全透明 */
+      }
+
+      .opaque {
+        opacity: 1; /* 元素完全不透明 */
+      }
+      ```
+  - title: 仅设置背景透明度
+    description: |
+      要仅更改背景的不透明度而不影响元素的内容，请使用 `background` 属性和RGBA或HSLA颜色值。
+      - 语法：`background: rgba(red, green, blue, alpha)` 或 `background: hsla(hue, saturation, lightness, alpha)`
+      - alpha 值的范围是 0.0 到 1.0，其中 0.0 表示完全透明，1.0 表示完全不透明。
+    example: |
+      ```css
+      .element {
+        background: rgba(255, 0, 0, 0.5); /* 红色背景，半透明 */
+         background: hsla(0, 100%, 50%, 0.5); /* 红色背景，半透明 */
+      }
+      ```
+  - title: 悬停时设置透明度
+    description: 使用 `:hover` 伪类可以设置鼠标悬停在元素上时的透明度。
+    example: |
+      ```css
+      .element {
+        opacity: 1;
+      }
+
+      .element:hover {
+        opacity: 0.5; /* 鼠标悬停时半透明 */
+      }
+      ```
+  - title: 过渡透明度
+    description: |
+      使用 `transition` 属性可以创建平滑的透明度过渡效果。
+      配合`@starting-style` 和 `transition-behaviour: allow-discrete` 使用可以实现从`display: none`状态的过渡。
+    example: |
+      ```css
+      .element {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+
+      .element:hover {
+        opacity: 1; /* 鼠标悬停时逐渐变为不透明 */
+      }
+
+      .card {
+        transition:
+          opacity 5s,
+          display 5s;
+        background-color: orange;
+
+        transition-behavior: allow-discrete;
+        @starting-style {
+          opacity: 0;
+        }
+      }
+
+      .card.hidden {
+        display: none;
+        opacity: 0;
+      }
+
+      ```
+  - title: 根据用户首选项设置样式
+    description: |
+      要根据用户的操作系统透明度首选项设置元素样式，请使用 prefers-reduced-transparency 媒体查询。
+    example: |
+      ```css
+      .element {
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-transparency) {
+        .element {
+          opacity: 1;
+        }
+      }
+      ```
+references:
+  - title: 'opacity - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/opacity
+  - title: How to Set Opacity of Images, Text & More in CSS
+    url: https://blog.hubspot.com/website/opacity-css

@@ -1,0 +1,107 @@
+id: spacing
+title: 间距
+query: CSS Margin and Padding style
+comment: 介绍 CSS 中的外边距和内编剧属性，注意外边距的折叠现象以及如何消除。
+description: CSS 中的 `margin` 和 `padding` 属性用于控制元素之间的间距以及元素内容与其边框之间的间距。`margin` 控制元素外部的间距，而 `padding` 控制元素内部的间距。本文将介绍如何使用这两个属性以及需要注意的细节，例如外边距的折叠现象以及如何消除。
+usage:
+  - title: margin - 外边距
+    description: |
+      `margin` 属性用于设置元素外部的间距，即元素与其相邻元素之间的距离。
+
+      **语法：**
+
+      ```css
+      /* 所有边 */
+      margin: value;
+
+      /* 上下左右 */
+      margin: vertical-value horizontal-value;
+
+      /* 上右下左 */
+      margin: top-value right-value bottom-value left-value;
+      ```
+
+      **值：**
+
+      - `auto`:  浏览器自动计算外边距。
+      - `<length>`:  使用具体的长度值，例如 px、em、rem 等。
+      - `<percentage>`: 使用相对于父元素宽度的百分比值。
+
+      **特殊值：**
+
+      - `margin: 0 auto;`:  用于水平居中块级元素，使其左右外边距相等并自动分配可用空间。
+
+      **外边距折叠：**
+
+      当两个垂直方向上的外边距相遇时，它们会发生折叠，最终的外边距将取两者中较大的值。
+
+      **消除外边距折叠：**
+
+      - 使用 `padding` 代替 `margin`。
+      - 为元素添加边框。
+      - 使用 `overflow: hidden` 或 `overflow: auto`。
+      - 使用 `display: inline-block` 或 `display: flex`。
+    example: |
+      ```css
+      /* 设置所有边外边距为 10px */
+      .box1 {
+        margin: 10px;
+      }
+
+      /* 设置上下外边距为 20px，左右外边距为 10px */
+      .box2 {
+        margin: 20px 10px;
+      }
+
+      /* 设置上外边距为 10px，右外边距为 20px，下外边距为 30px，左外边距为 40px */
+      .box3 {
+        margin: 10px 20px 30px 40px;
+      }
+
+      /* 水平居中 */
+      .center {
+        width: 300px;
+        margin: 0 auto;
+      }
+      ```
+  - title: padding - 内边距
+    description: |
+      `padding` 属性用于设置元素内容与其边框之间的距离。
+
+      **语法：**
+
+      ```css
+      /* 所有边 */
+      padding: value;
+
+      /* 上下左右 */
+      padding: vertical-value horizontal-value;
+
+      /* 上右下左 */
+      padding: top-value right-value bottom-value left-value;
+      ```
+
+      **值：**
+
+      - `<length>`: 使用具体的长度值，例如 px、em、rem 等。
+      - `<percentage>`: 使用相对于父元素宽度的百分比值。
+    example: |
+      ```css
+      /* 设置所有边内边距为 10px */
+      .box1 {
+        padding: 10px;
+      }
+
+      /* 设置上下内边距为 20px，左右内边距为 10px */
+      .box2 {
+        padding: 20px 10px;
+      }
+
+      /* 设置上内边距为 10px，右内边距为 20px，下内边距为 30px，左内边距为 40px */
+      .box3 {
+        padding: 10px 20px 30px 40px;
+      }
+      ```
+references:
+  - title: 'CSS Margin vs. Padding: What''s the Difference? - HubSpot Blog'
+    url: https://blog.hubspot.com/website/css-margin-vs-padding

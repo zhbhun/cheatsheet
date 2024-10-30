@@ -1,0 +1,76 @@
+id: frame
+title: requestAnimationFrame
+query: JS requestAnimationFrame
+comment: 简单介绍下 requestAnimationFrame 的作用，如何基于它实现动画效果。
+description: '`requestAnimationFrame` 是一个用于创建流畅动画效果的 API。它告诉浏览器你想执行一个动画，并请求浏览器在下一次重绘之前调用指定的函数来更新动画。相比于 `setInterval` 或 `setTimeout`，`requestAnimationFrame` 能够更好地与浏览器同步，从而避免动画卡顿，并提高性能，尤其是在处理复杂的动画或在低功耗设备上运行时。它还能在页面处于非活动状态（例如，标签页未激活）时暂停动画，节省资源。'
+usage:
+  - title: 基本用法
+    description: 调用 `requestAnimationFrame(callback)`，传入一个回调函数 `callback`。浏览器会在下次重绘前执行 `callback`。`callback` 会接收一个参数，表示当前时间戳（`DOMHighResTimeStamp`）。如果需要创建连续的动画，则必须在 `callback` 内部再次调用 `requestAnimationFrame`，形成循环。
+    example: |
+      ```javascript
+      // 获取要移动的元素
+      const div = document.getElementById('mydiv');
+      let leftPos = 0;
+
+      // 定义动画函数
+      function moveDiv(timestamp) {
+        // 更新元素位置
+        leftPos += 5;
+        div.style.left = leftPos + 'px';
+
+        // 再次调用 requestAnimationFrame 以实现连续动画
+        requestAnimationFrame(moveDiv);
+      }
+
+      // 启动动画
+      requestAnimationFrame(moveDiv);
+      ```
+  - title: 控制动画停止
+    description: '`requestAnimationFrame` 返回一个 long 整数，作为请求 ID。可以使用 `cancelAnimationFrame(requestId)` 来取消回调函数的执行，从而停止动画。需要注意的是，`cancelAnimationFrame` 必须在 `requestAnimationFrame` 被调用之后，且在回调函数执行之前调用才会生效。'
+    example: |
+      ```javascript
+      const div = document.getElementById('mydiv');
+      let leftPos = 0;
+      let animationId;
+
+      function moveDiv(timestamp) {
+        leftPos += 5;
+        div.style.left = leftPos + 'px';
+
+        if (leftPos < 200) { // 设置动画停止条件
+          animationId = requestAnimationFrame(moveDiv);
+        }
+      }
+
+      animationId = requestAnimationFrame(moveDiv);
+
+      // 停止动画示例 (例如，在某个事件触发后)
+      document.getElementById('stopButton').addEventListener('click', () => {
+        cancelAnimationFrame(animationId);
+      });
+      ```
+  - title: 使用时间戳计算动画速度
+    description: 回调函数接收的时间戳参数 `DOMHighResTimeStamp` 可以用来精确控制动画速度。通过计算两次调用之间的时间差，可以根据时间流逝动态调整动画的更新幅度，使动画更加平滑，且不受帧率变化的影响。
+    example: |
+      ```javascript
+      const div = document.getElementById('mydiv');
+      let leftPos = 0;
+      let lastTimestamp = 0;
+
+      function moveDiv(timestamp) {
+        // 计算时间差
+        const deltaTime = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+
+        // 根据时间差更新位置，实现匀速运动
+        leftPos += 5 * (deltaTime / 16); // 假设目标帧率为 60fps (1000ms/60 ≈ 16ms)
+        div.style.left = leftPos + 'px';
+
+        requestAnimationFrame(moveDiv);
+      }
+
+      requestAnimationFrame(moveDiv);
+      ```
+references:
+  - title: Window requestAnimationFrame() Method
+    url: https://www.w3schools.com/jsref/met_win_requestanimationframe.asp

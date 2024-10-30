@@ -1,0 +1,101 @@
+id: position
+title: 位置
+query: CSS Position style
+comment: 介绍 CSS 中的定位属性，包括 static、relative、absolute 和 fixed
+description: '`position` 属性用于设置元素在文档中的定位方式。配合 `top`、`right`、`bottom` 和 `left` 属性，可以精确控制元素的位置。`position` 的值会影响布局，以及元素如何与其他元素交互。'
+usage:
+  - title: static 定位
+    description: 默认值。元素按照文档的正常流程布局，`top`、`right`、`bottom` 和 `left` 属性无效。
+    example: |
+      ```html
+      <div class="static">静态定位</div>
+      <div>另一个元素</div>
+      ```
+      ```css
+      .static {
+        position: static;
+        border: 3px solid #73AD21;
+      }
+      ```
+      <!-- 静态定位的元素会处于正常的文档流中，后续元素会排列在其下方。 -->
+  - title: relative 定位
+    description: 元素相对于其正常位置进行偏移。偏移后，元素仍然占据其原始空间，不会影响其他元素的布局。可以使用 `top`、`right`、`bottom` 和 `left` 属性设置偏移量。
+    example: |
+      ```html
+      <div class="relative">相对定位</div>
+      <div>另一个元素</div>
+      ```
+      ```css
+      .relative {
+        position: relative;
+        left: 30px;
+        top: 20px;
+        border: 3px solid #73AD21;
+      }
+      ```
+      <!-- 相对定位的元素会相对于其正常位置偏移，但仍然占据原来的空间，不会影响其他元素的布局。 -->
+  - title: fixed 定位
+    description: 元素相对于浏览器窗口进行定位，即使页面滚动，元素也保持在固定位置。常用于创建固定导航栏、页脚等。可以使用 `top`、`right`、`bottom` 和 `left` 属性设置元素位置。
+    example: |
+      ```html
+      <div class="fixed">固定定位</div>
+      <p>一些文本内容...</p> <!-- 添加一些内容使页面可以滚动 -->
+      ```
+      ```css
+      .fixed {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 300px;
+        border: 3px solid #73AD21;
+      }
+      ```
+      <!-- 固定定位的元素会相对于浏览器窗口固定，即使页面滚动，它也保持在固定位置。 -->
+  - title: absolute 定位
+    description: 元素相对于其最近的已定位祖先元素进行定位。如果没有已定位的祖先元素，则相对于文档的初始包含块定位。元素脱离文档流，不占据空间。可以使用 `top`、`right`、`bottom` 和 `left` 属性设置元素位置。
+    example: |
+      ```html
+      <div class="relative">
+        相对定位的父元素
+        <div class="absolute">绝对定位</div>
+      </div>
+      <div>另一个元素</div>
+      ```
+      ```css
+      .relative {
+        position: relative;
+        width: 400px;
+        height: 200px;
+        border: 3px solid #73AD21;
+      }
+      .absolute {
+        position: absolute;
+        top: 80px;
+        right: 0;
+        width: 200px;
+        height: 100px;
+        border: 3px solid #73AD21;
+      }
+      ```
+      <!-- 绝对定位的元素会相对于其最近的已定位祖先元素定位。如果祖先元素没有设置定位，则相对于文档的初始包含块定位。 -->
+  - title: sticky 定位
+    description: 元素根据滚动位置在 `relative` 和 `fixed` 之间切换。当元素在视口中的位置达到指定的阈值时，它将变为固定定位，直到滚动到相反方向的阈值为止。必须至少指定 `top`、`right`、`bottom` 或 `left` 属性之一才能使 `sticky` 定位生效。
+    example: |
+      ```html
+      <div class="sticky">粘性定位</div>
+      <p>一些文本内容...</p> <!-- 添加一些内容使页面可以滚动 -->
+      ```
+      ```css
+      .sticky {
+        position: sticky;
+        top: 0;
+        background-color: green;
+        border: 2px solid #4CAF50;
+      }
+      ```
+      <!-- 粘性定位的元素会根据滚动位置在相对定位和固定定位之间切换。 -->
+references:
+  - title: 'position - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/position
+  - title: CSS Layout - The position Property
+    url: https://www.w3schools.com/css/css_positioning.asp

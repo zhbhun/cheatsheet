@@ -1,0 +1,151 @@
+id: drag
+title: 拖拽
+query: DOM 拖拽事件
+comment: 尽量详尽的演示不同属性和场景用法
+description: HTML 拖放 API 使 Web 应用程序能够在浏览器中使用拖放功能。它允许用户通过抓取对象并将其拖动到另一个位置来传输数据。此特性通常用于在 Web 应用程序内或应用程序之间移动图像、文本和其他数据。
+usage:
+  - title: 使元素可拖拽
+    description: 要使元素可拖拽，需要将 `draggable` 属性设置为 `true`。
+    example: |
+      ```html
+      <p draggable="true">这段文字可以拖拽</p>
+      <img src="image.jpg" draggable="true">
+      ```
+      <!-- 设置 draggable="true" 使元素可拖拽 -->
+  - title: 处理 dragstart 事件
+    description: '`dragstart` 事件在开始拖动元素时触发。可以使用此事件设置要传输的数据。'
+    example: |
+      ```javascript
+      const element = document.querySelector('p');
+
+      element.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/plain', '被拖拽的文字'); // 设置拖拽数据
+        // 设置拖拽图片
+        let img = document.createElement('img');
+        img.src = 'drag-image.png';
+        event.dataTransfer.setDragImage(img, 0, 0) ;
+      });
+      ```
+      <!-- 在 dragstart 事件中设置拖拽数据 -->
+  - title: 处理 dragover 事件
+    description: '`dragover` 事件在拖动元素到放置目标上时反复触发。必须阻止此事件的默认行为才能使放置生效。'
+    example: |
+      ```javascript
+      const target = document.querySelector('#drop-target');
+
+      target.addEventListener('dragover', (event) => {
+        event.preventDefault(); // 阻止默认行为
+      });
+      ```
+      <!-- 必须阻止 dragover 事件的默认行为 -->
+  - title: 处理 dragenter 事件
+    description: dragenter 事件在被拖动元素进入放置目标时触发。此事件常用于提供放置目标的视觉反馈，例如高亮显示放置区域。
+    example: |
+      ```javascript
+      const target = document.querySelector('#drop-target');
+
+      target.addEventListener('dragenter', (event) => {
+        target.classList.add('highlight'); // 添加高亮样式
+      });
+
+      target.addEventListener('dragleave', (event) => {
+        target.classList.remove('highlight'); // 移除高亮样式
+      });
+      ```
+  - title: 处理 drop 事件
+    description: '`drop` 事件在拖动元素到放置目标上并释放鼠标按钮时触发。可以使用此事件访问传输的数据并执行相应的操作。'
+    example: |
+      ```javascript
+      target.addEventListener('drop', (event) => {
+        event.preventDefault(); // 阻止默认行为
+        const data = event.dataTransfer.getData('text/plain');
+        target.textContent = data; // 将数据插入到目标元素中
+      });
+      ```
+      <!-- 在 drop 事件中获取数据并执行操作 -->
+  - title: 处理 dragend 事件
+    description: '`dragend` 事件在拖动操作结束时触发，无论拖放是否成功。此事件可用于清理操作，例如移除拖动过程中设置的视觉反馈。'
+    example: |
+      ```javascript
+      const element = document.querySelector('p');
+
+      element.addEventListener('dragend', (event) => {
+        // 清理操作，例如移除视觉反馈
+        // 检查 dropEffect 属性确定放置操作的结果，例如'none', 'copy', 'move', 'link'
+        console.log("拖拽操作结束:", event.dataTransfer.dropEffect);
+
+        if (event.dataTransfer.dropEffect === 'move') {
+          // 从源头移除被拖拽元素
+          event.target.remove();
+        }
+      });
+
+      ```
+  - title: 设置拖拽数据类型
+    description: |
+      使用 `dataTransfer.setData()` 方法设置拖拽数据。第一个参数是数据类型 (MIME 类型)，第二个参数是数据值。
+      可以设置多种数据类型，例如：
+      - `text/plain`: 纯文本
+      - `text/html`: HTML 代码
+      - `text/uri-list`: URL 列表
+      - 自定义类型: `application/x-my-custom-type`
+    example: |
+      ```javascript
+      event.dataTransfer.setData('text/plain', '纯文本数据');
+      event.dataTransfer.setData('text/html', '<h1>HTML 数据</h1>');
+      event.dataTransfer.setData('text/uri-list', 'https://www.example.com');
+      event.dataTransfer.setData('application/x-my-custom-type', JSON.stringify({key: 'value'}));
+      ```
+      <!-- 设置不同类型的拖拽数据 -->
+  - title: 获取拖拽数据类型
+    description: |
+      使用 `dataTransfer.getData()` 方法获取拖拽数据。参数是数据类型。
+      可以使用 `dataTransfer.types` 属性获取可用数据类型的数组。
+    example: |
+      ```javascript
+      const data = event.dataTransfer.getData('text/plain');
+      const types = event.dataTransfer.types;
+
+      for (let type of types) {
+          console.log("Data Type:", type, "Value:", event.dataTransfer.getData(type));
+      }
+
+      ```
+      <!-- 获取拖拽数据和可用类型 -->
+  - title: 设置拖拽效果
+    description: |
+      使用 `dataTransfer.effectAllowed` 属性设置允许的拖拽效果。
+      - `copy`: 复制
+      - `move`: 移动
+      - `link`: 链接
+      - `copyMove`: 复制或移动
+      - `copyLink`: 复制或链接
+      - `linkMove`: 链接或移动
+      - `all`: 所有效果
+      - `none`: 无效果
+
+      使用 `dataTransfer.dropEffect` 属性设置实际的拖拽效果。
+      - `none`: 无效果
+      - `copy`: 复制
+      - `move`: 移动
+      - `link`: 链接
+    example: |
+      ```javascript
+      // 在 dragstart 事件中
+      event.dataTransfer.effectAllowed = 'copyMove';
+
+      // 在 dragover 事件中
+      event.dataTransfer.dropEffect = 'copy';
+      ```
+      <!-- 设置拖拽效果 -->
+  - title: 清除拖拽数据
+    description: 使用 `dataTransfer.clearData()` 方法清除拖拽数据。可以指定要清除的数据类型，或者不指定参数清除所有数据。
+    example: |
+      ```javascript
+      event.dataTransfer.clearData('text/plain'); // 清除特定类型的数据
+      event.dataTransfer.clearData(); // 清除所有数据
+      ```
+      <!-- 清除拖拽数据 -->
+references:
+  - title: 拖拽操作- Web API
+    url: https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations

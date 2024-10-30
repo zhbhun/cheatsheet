@@ -1,0 +1,104 @@
+id: transition
+title: 过渡
+query: CSS Transition style
+comment: 介绍 CSS 中的过渡动画样式
+description: CSS transitions allow you to change property values smoothly over a given duration, creating animation effects when elements change state (e.g., on hover, on click, or with JavaScript).
+usage:
+  - title: Basic Transition
+    description: |
+      To create a transition, specify the `transition-property`, `transition-duration`, and optionally, `transition-timing-function` and `transition-delay`.  The `transition` shorthand property can be used to set all these values at once.
+      - `transition-property`: The CSS property to animate (e.g., `width`, `background-color`, `transform`). Use `all` to animate all properties.
+      - `transition-duration`: The time it takes for the transition to complete (e.g., `2s`, `500ms`).
+      - `transition-timing-function`: Controls the speed curve of the transition (e.g., `ease`, `linear`, `ease-in-out`).  Default is `ease`.
+      - `transition-delay`: The time to wait before the transition starts (e.g., `1s`, `250ms`).
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        transition-property: width, background-color; /* Animate width and background color */
+        transition-duration: 1s, 2s;             /* Width changes over 1s, color over 2s */
+        transition-timing-function: ease-in-out; /* Smooth start and end */
+        transition-delay: 0.5s;                 /* Start transition after 0.5s delay */
+      }
+
+      .box:hover {
+        width: 200px;
+        background-color: blue;
+      }
+      ```
+  - title: Transition Shorthand
+    description: |
+      The `transition` shorthand property simplifies setting multiple transition values at once.  The order is: `transition-property`, `transition-duration`, `transition-timing-function`, `transition-delay`. You can omit values, but make sure to maintain the correct order if some are omitted.
+    example: |
+      ```css
+      .box {
+        /* Equivalent to the detailed example above */
+        transition: width 1s ease-in-out 0.5s, background-color 2s ease-in-out 0.5s;
+
+        /* Another example: transition for all properties, 1s duration, default timing function */
+        transition: all 1s;
+      }
+      ```
+  - title: Timing Functions
+    description: |
+      The `transition-timing-function` property provides several predefined timing functions and allows custom cubic-bezier curves. Predefined functions include:
+      - `ease`: Slow start, then fast, then end slowly (default).
+      - `linear`: Constant speed.
+      - `ease-in`: Slow start.
+      - `ease-out`: Slow end.
+      - `ease-in-out`: Slow start and end.
+      - `cubic-bezier(x1, y1, x2, y2)`: Define a custom curve.
+      - `steps(n, [start | end])`:  Creates stepped transitions with `n` steps.
+    example: |
+      ```css
+      .linear { transition: width 2s linear; }
+      .ease-in { transition: width 2s ease-in; }
+      .ease-out { transition: width 2s ease-out; }
+      .cubic-bezier { transition: width 2s cubic-bezier(0.1, 0.7, 1.0, 0.1); } /* Example custom curve */
+      .steps { transition: width 2s steps(5, end); } /* 5 steps, jump at end */
+      ```
+  - title: Transitions and Transforms
+    description: Transitions can be applied to CSS transforms (`transform`), allowing for smooth animations of translation, rotation, scaling, and skewing.
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        transition: transform 1s ease-in-out;
+      }
+
+      .box:hover {
+        transform: rotate(45deg) scale(1.5); /* Rotate and scale on hover */
+      }
+      ```
+  - title: Transition Events
+    description: |
+      JavaScript can interact with CSS transitions via events. The `transitionend` event is fired when a transition completes.
+    example: |
+      ```javascript
+      const box = document.querySelector('.box');
+
+      box.addEventListener('transitionend', function(event) {
+        console.log('Transition of ' + event.propertyName + ' finished');  // Log which property's transition finished
+      });
+      ```
+  - title: Controlling Transitions with JavaScript
+    description: |
+      You can dynamically control transitions with JavaScript by adding or removing classes, changing inline styles, or manipulating CSS variables.
+    example: |
+      ```javascript
+      // Toggle a class to trigger a transition
+      const box = document.querySelector('.box');
+      box.classList.toggle('active'); // Where '.active' class defines the transitioned state
+
+      // Change a style directly (ensure the property has a transition defined in CSS)
+      box.style.width = '200px';
+      ```
+references:
+  - title: 'transition - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+  - title: CSS Transitions
+    url: https://www.w3schools.com/css/css3_transitions.asp

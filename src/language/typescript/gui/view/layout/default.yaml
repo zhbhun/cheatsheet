@@ -1,0 +1,274 @@
+id: default
+title: Flow
+query: CSS Flow layout
+comment: 介绍 CSS 默认的流失布局、区分块级元素和行内元素、元素的位置设置等
+description: CSS 流式布局（Flow Layout）是网页布局的默认方式，它决定了块级元素和行内元素在页面上的排列方式。在流式布局中，块级元素默认独占一行，而行内元素则在一行内水平排列。
+usage:
+  - title: 块级元素和行内元素
+    description: |-
+      CSS 中的元素主要分为块级元素和行内元素，它们在流式布局中的行为方式不同。
+
+      - 块级元素：默认情况下，块级元素会独占一行，并且可以设置宽度、高度、边距等属性。常见的块级元素有 `<div>`、`<p>`、`<h1>`~`<h6>`、`<ul>`、`<ol>`、`<li>` 等。
+      - 行内元素：行内元素在一行内水平排列，并且不能设置宽度、高度、上下边距等属性。常见的行内元素有 `<span>`、`<strong>`、`<em>`、`<a>`、`<img>` 等。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>块级元素和行内元素</title>
+          <style>
+              .block-element {
+                  background-color: lightblue;
+                  width: 300px;
+                  height: 50px;
+                  margin: 20px;
+              }
+
+              .inline-element {
+                  background-color: lightgreen;
+                  padding: 5px;
+                  margin-right: 10px; /* 只能设置左右边距 */
+              }
+          </style>
+      </head>
+      <body>
+          <div class="block-element">这是一个块级元素</div>
+          <div class="block-element">这是另一个块级元素</div>
+
+          <span class="inline-element">这是一个行内元素</span>
+          <span class="inline-element">这是另一个行内元素</span>
+      </body>
+      </html>
+      ```
+  - title: 块级格式化上下文（BFC）
+    description: |-
+      块级格式化上下文（Block Formatting Context，BFC）是页面中的一块渲染区域，它决定了其内部元素如何布局，以及与其他元素之间的关系。
+
+      **创建 BFC 的方式：**
+
+      - 根元素 `<html>`
+      - 浮动元素（`float` 值不为 `none`）
+      - 绝对定位元素（`position` 值为 `absolute` 或 `fixed`）
+      - `display` 值为 `inline-block`、`table-cell`、`table-caption`、`flex`、`inline-flex`、`grid` 或 `inline-grid` 的元素
+      - `overflow` 值不为 `visible` 的块级元素
+
+      **BFC 的特性：**
+
+      - 内部的块级元素会在垂直方向上一个接一个地排列。
+      - 每个元素的左外边距与包含块的左边界相接触（对于从右到左的格式化，则为右外边距和右边界）。
+      - BFC 的区域不会与浮动元素重叠。
+      - BFC 会包含内部浮动的子元素。
+      - 计算 BFC 的高度时，浮动元素也会参与计算。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>块级格式化上下文</title>
+          <style>
+              .container {
+                  border: 1px solid black;
+                  padding: 10px;
+              }
+
+              .float-element {
+                  float: left;
+                  width: 100px;
+                  height: 100px;
+                  background-color: lightblue;
+              }
+
+              .bfc-element {
+                  overflow: hidden; /* 创建 BFC */
+                  background-color: lightgreen;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="float-element">浮动元素</div>
+              <div class="bfc-element">BFC 元素</div>
+          </div>
+      </body>
+      </html>
+      ```
+  - title: 行内格式化上下文（IFC）
+    description: |-
+      行内格式化上下文（Inline Formatting Context，IFC）是指只包含行内元素的容器盒子所形成的渲染区域。
+
+      **IFC 的特性：**
+
+      - 行内元素在一行内水平排列，直到该行被填满为止，然后换行。
+      - 行内元素的宽度和高度由其内容决定，无法通过设置 `width` 和 `height` 属性来改变。
+      - 行内元素的 `margin` 和 `padding` 属性只在水平方向有效，垂直方向无效。
+      - 行内元素的 `vertical-align` 属性可以控制其在行框中的垂直对齐方式。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>行内格式化上下文</title>
+          <style>
+              .container {
+                  border: 1px solid black;
+                  padding: 10px;
+              }
+
+              .inline-element {
+                  background-color: lightblue;
+                  margin-right: 10px;
+                  padding: 5px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <span class="inline-element">行内元素 1</span>
+              <span class="inline-element">行内元素 2</span>
+              <span class="inline-element">行内元素 3</span>
+          </div>
+      </body>
+      </html>
+      ```
+  - title: 定位（Positioning）
+    description: |-
+      CSS 定位属性允许您将元素放置在页面上的任何位置。
+
+      **定位类型：**
+
+      - `static`：默认值。元素按照正常的文档流进行定位。
+      - `relative`：元素相对于其正常位置进行定位。
+      - `absolute`：元素相对于其最近的非 `static` 定位祖先元素进行定位。
+      - `fixed`：元素相对于浏览器窗口进行定位。
+      - `sticky`：元素根据正常的文档流进行定位，直到它到达某个滚动点，然后它会固定在屏幕上的某个位置。
+
+      **定位属性：**
+
+      - `top`：元素的顶部边缘距离其包含块的顶部边缘的距离。
+      - `right`：元素的右侧边缘距离其包含块的右侧边缘的距离。
+      - `bottom`：元素的底部边缘距离其包含块的底部边缘的距离。
+      - `left`：元素的左侧边缘距离其包含块的左侧边缘的距离。
+      - `z-index`：元素的堆叠顺序。值越大，元素越靠近用户。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CSS 定位</title>
+          <style>
+              .container {
+                  position: relative;
+                  width: 300px;
+                  height: 200px;
+                  border: 1px solid black;
+                  margin: 50px;
+              }
+
+              .relative-element {
+                  position: relative;
+                  top: 20px;
+                  left: 20px;
+                  background-color: lightblue;
+              }
+
+              .absolute-element {
+                  position: absolute;
+                  top: 0;
+                  right: 0;
+                  background-color: lightgreen;
+              }
+
+              .fixed-element {
+                  position: fixed;
+                  bottom: 0;
+                  right: 0;
+                  background-color: lightyellow;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="relative-element">相对定位元素</div>
+              <div class="absolute-element">绝对定位元素</div>
+          </div>
+          <div class="fixed-element">固定定位元素</div>
+      </body>
+      </html>
+      ```
+  - title: 浮动（Float）
+    description: |-
+      `float` 属性指定元素应该浮动在哪个方向（左或右）。浮动元素会脱离正常的文档流，并尽可能地向左或向右移动，直到遇到其包含块的边缘或另一个浮动元素为止。
+
+      **浮动属性：**
+
+      - `left`：元素向左浮动。
+      - `right`：元素向右浮动。
+      - `none`：默认值。元素不浮动。
+
+      **清除浮动：**
+
+      当一个元素浮动后，它会脱离正常的文档流，这可能会导致其后面的元素环绕在它周围。为了避免这种情况，可以使用 `clear` 属性来清除浮动。
+
+      **清除浮动属性：**
+
+      - `left`：清除左浮动。
+      - `right`：清除右浮动。
+      - `both`：清除左右浮动。
+      - `none`：默认值。不清除浮动。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CSS 浮动</title>
+          <style>
+              .container {
+                  border: 1px solid black;
+                  padding: 10px;
+              }
+
+              .float-left {
+                  float: left;
+                  width: 100px;
+                  height: 100px;
+                  background-color: lightblue;
+              }
+
+              .float-right {
+                  float: right;
+                  width: 100px;
+                  height: 100px;
+                  background-color: lightgreen;
+              }
+
+              .clear-float {
+                  clear: both;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="float-left">左浮动</div>
+              <div class="float-right">右浮动</div>
+              <p>这是一段文本。</p>
+              <div class="clear-float"></div>
+              <p>这是另一段文本。</p>
+          </div>
+      </body>
+      </html>
+      ```
+references:
+  - title: CSS flow layout - MDN Web Docs - Mozilla
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flow_layout
+  - title: The Flow layout
+    url: https://cssdojo.dev/learn/basics/the-flow-layout

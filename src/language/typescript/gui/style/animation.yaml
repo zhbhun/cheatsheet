@@ -1,0 +1,91 @@
+id: animation
+title: 动画
+query: CSS Animation style
+comment: 介绍 CSS 中的动画样式
+description: CSS 动画允许元素从一种样式逐渐转变为另一种样式。您可以更改任意数量的 CSS 属性，以及更改的次数。借助 CSS 动画，您可以创建各种动画效果，例如淡入淡出、滑动、旋转和缩放。
+usage:
+  - title: 定义动画
+    description: 使用 `@keyframes` 规则定义动画序列。每个关键帧描述了动画元素在动画序列中给定时间的渲染方式。
+    example: |
+      ```css
+      @keyframes slide-in {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      ```
+  - title: 绑定动画到元素
+    description: 要将动画应用于元素，请使用 `animation` 属性或其子属性。这使您可以配置动画序列的计时、持续时间和其他详细信息。
+    example: |
+      ```css
+      .element {
+        animation-name: slide-in;
+        animation-duration: 1s;
+      }
+      ```
+  - title: 设置动画持续时间
+    description: 使用 `animation-duration` 属性指定动画完成一个周期所需的时间。
+    example: |
+      ```css
+      .element {
+        animation-duration: 2s; /* 动画持续时间为 2 秒 */
+      }
+      ```
+  - title: 设置动画延迟
+    description: 使用 `animation-delay` 属性指定元素加载和动画序列开始之间的延迟。
+    example: |
+      ```css
+      .element {
+        animation-delay: 1s; /* 动画延迟 1 秒开始 */
+      }
+      ```
+  - title: 设置动画迭代次数
+    description: 使用 `animation-iteration-count` 属性指定动画应重复的次数。
+    example: |
+      ```css
+      .element {
+        animation-iteration-count: infinite; /* 动画无限循环 */
+      }
+      ```
+  - title: 设置动画方向
+    description: 使用 `animation-direction` 属性指定动画是向前播放、向后播放还是在每个运行时交替方向。
+    example: |
+      ```css
+      .element {
+        animation-direction: alternate; /* 动画交替反向播放 */
+      }
+      ```
+  - title: 设置动画时间函数
+    description: 使用 `animation-timing-function` 属性通过建立加速曲线来指定动画如何通过关键帧进行转换。
+    example: |
+      ```css
+      .element {
+        animation-timing-function: ease-in-out; /* 动画使用 ease-in-out 时间函数 */
+      }
+      ```
+  - title: 设置动画填充模式
+    description: 使用 `animation-fill-mode` 属性指定动画在其运行之前和之后如何将其样式应用于其目标。
+    example: |
+      ```css
+      .element {
+        animation-fill-mode: forwards; /* 动画结束后保留最后一帧的样式 */
+      }
+      ```
+  - title: 使用动画简写属性
+    description: '`animation` 简写属性可用于同时设置多个动画属性。'
+    example: |
+      ```css
+      .element {
+        animation: slide-in 1s ease-in-out infinite alternate;
+      }
+      ```
+references:
+  - title: 'Using CSS animations - CSS: Cascading Style Sheets | MDN'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations
+  - title: CSS Animations
+    url: https://www.w3schools.com/css/css3_animations.asp

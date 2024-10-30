@@ -1,0 +1,102 @@
+id: select
+title: Select
+query: HTML Select element
+comment: 介绍 Select 标签、输入事件以及代码中的用法。
+description: '`<select>` 元素用于创建一个下拉列表，让用户从预定义的选项中选择一个或多个值。该元素通常用于表单中收集用户输入，并通过 `name` 属性在表单提交后引用数据。`<select>` 元素的内容由 `<option>` 元素定义，每个 `<option>` 代表一个可选值。'
+usage:
+  - title: 创建下拉列表
+    description: 使用 `<select>` 标签创建下拉列表，并在其中嵌套 `<option>` 标签定义每个选项。`name` 属性用于在表单提交后引用数据，`id` 属性用于将下拉列表与标签关联。每个 `<option>` 元素的 `value` 属性包含提交到服务器的数据值。如果没有 `value` 属性，则默认值为选项的文本内容。
+    example: |
+      ```html
+      <label for="cars">选择一辆车:</label>
+      <select name="cars" id="cars">
+        <option value="volvo">Volvo</option>
+        <option value="saab">Saab</option>
+        <option value="mercedes">Mercedes</option>
+        <option value="audi">Audi</option>
+      </select>
+      ```
+  - title: 设置默认选中项
+    description: 在 `<option>` 元素中添加 `selected` 属性可以将其设置为默认选中项。页面加载时，该选项将被预先选中。
+    example: |
+      ```html
+      <select name="choice">
+        <option value="first">First Value</option>
+        <option value="second" selected>Second Value</option>
+        <option value="third">Third Value</option>
+      </select>
+      ```
+  - title: 创建分组选项
+    description: 使用 `<optgroup>` 元素可以将选项分组，并使用 `label` 属性为每个组添加标签。这有助于用户更容易理解下拉列表的内容。同时，可以使用 `<hr>` 元素在选项之间添加分隔线，提高可读性。需要注意的是，`<hr>` 元素在 `<select>` 中的应用在某些浏览器中的支持可能不一致，并且 `<hr>` 元素在可访问性树中不可见。
+    example: |
+      ```html
+      <select name="foods" id="foods">
+        <option value="">选择食物</option>
+        <hr />
+        <optgroup label="水果">
+          <option value="apple">苹果</option>
+          <option value="banana">香蕉</option>
+        </optgroup>
+        <hr />
+        <optgroup label="蔬菜">
+          <option value="carrot">胡萝卜</option>
+          <option value="broccoli">西兰花</option>
+        </optgroup>
+      </select>
+      ```
+  - title: 多选
+    description: 通过添加 `multiple` 属性，可以让用户一次选择多个选项。大多数浏览器会将下拉列表显示为可滚动的列表框，而不是单行下拉菜单。用户可以通过按住 Ctrl、Command 或 Shift 键并单击多个选项来选择/取消选择它们。
+    example: |
+      ```html
+      <select name="pets" multiple>
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="fish">Fish</option>
+      </select>
+      ```
+  - title: 控制显示的行数
+    description: 使用 `size` 属性可以指定下拉列表中一次可见的选项数量。如果下拉列表显示为可滚动的列表框（例如，当指定了 `multiple` 属性时），此属性表示列表中一次应可见的行数。浏览器不强制要求将 select 元素显示为滚动列表框。默认值为 0。
+    example: |
+      ```html
+      <select name="pets" multiple size="4">
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="fish">Fish</option>
+        <option value="bird">Bird</option>
+        <option value="hamster">Hamster</option>
+      </select>
+      ```
+  - title: 禁用选项
+    description: 在 `<option>` 元素中添加 `disabled` 属性可以禁用该选项，使其无法被选中。
+    example: |
+      ```html
+      <select name="pets">
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="hamster" disabled>Hamster</option>
+      </select>
+      ```
+  - title: 必填项
+    description: 使用 `required` 属性可以将下拉列表设置为必填项。用户必须选择一个非空字符串值的选项才能提交表单。
+    example: |
+      ```html
+      <select name="country" required>
+        <option value="">请选择国家</option>
+        <option value="us">美国</option>
+        <option value="ca">加拿大</option>
+      </select>
+      ```
+  - title: 自动获取焦点
+    description: 使用 `autofocus` 属性可以使下拉列表在页面加载时自动获得焦点。一个文档中只有一个表单元素可以具有 `autofocus` 属性。
+    example: |
+      ```html
+      <select name="cars" autofocus>
+        <option value="volvo">Volvo</option>
+        <option value="saab">Saab</option>
+      </select>
+      ```
+references:
+  - title: 'The HTML Select element - HTML: HyperText Markup Language'
+    url: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+  - title: HTML select tag
+    url: https://www.w3schools.com/tags/tag_select.asp

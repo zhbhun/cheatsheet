@@ -1,0 +1,125 @@
+id: click
+title: 点击
+query: DOM 点击事件
+comment: 介绍电机事件，然后演示如何在 HTML 中绑定点击事件，以及如何在代码中绑定和取消点击事件。
+description: HTML DOM 事件允许 JavaScript 对 HTML 事件作出反应，例如鼠标点击、页面加载、鼠标悬停等。通过事件处理程序，可以执行相应的 JavaScript 代码。
+usage:
+  - title: 直接在 HTML 中绑定事件
+    description: 可以直接在 HTML 元素的事件属性中添加 JavaScript 代码。当事件触发时，代码会立即执行。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+
+      <h1 onclick="this.innerHTML = 'Hello!'">点击此文本！</h1>
+
+      </body>
+      </html>
+      ```
+  - title: 从事件处理程序调用函数
+    description: 可以将 JavaScript 函数分配给 HTML 元素的事件属性。当事件触发时，指定的函数将被调用。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+
+      <h1 onclick="changeText(this)">点击此文本！</h1>
+
+      <script>
+      function changeText(id) { 
+          id.innerHTML = "Hello:)";
+      }
+      </script>
+
+      </body>
+      </html>
+      ```
+  - title: 使用 HTML DOM 分配事件
+    description: 可以使用 JavaScript 的 HTML DOM API 来为 HTML 元素分配事件处理程序。这使得可以在 JavaScript 代码中动态地添加、修改和删除事件处理程序。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+      <button id="myBtn">试一试</button>
+
+      <script>
+      function displayDate() {
+        document.getElementById("myBtn").innerHTML = Date();
+      }
+      document.getElementById("myBtn").onclick = displayDate;
+      </script>
+
+      </body>
+      </html>
+      ```
+  - title: onload 和 onunload 事件
+    description: |
+      `onload` 事件在页面加载完成后触发，`onunload` 事件在用户离开页面时触发。这些事件通常用于初始化操作、清理资源或处理 cookie。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body onload="alert('页面已加载！')">
+
+      </body>
+      </html>
+      ```
+  - title: onchange 事件
+    description: '`onchange` 事件在表单元素的值发生改变且失去焦点时触发，通常用于表单验证或数据更新。'
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+
+      <input type="text" id="fname" onchange="upperCase()">
+
+      <script>
+      function upperCase() {
+        var x = document.getElementById("fname");
+        x.value = x.value.toUpperCase();
+      }
+      </script>
+
+      </body>
+      </html>
+      ```
+  - title: onmouseover 和 onmouseout 事件
+    description: '`onmouseover` 事件在鼠标指针移入 HTML 元素上时触发，`onmouseout` 事件在鼠标指针移出 HTML 元素时触发。'
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+
+      <div onmouseover="this.style.backgroundColor='red'" onmouseout="this.style.backgroundColor='white'">
+      鼠标移上来！
+      </div>
+
+      </body>
+      </html>
+      ```
+  - title: onmousedown, onmouseup 和 onclick 事件
+    description: |
+      `onmousedown` 事件在鼠标按钮被按下时触发，`onmouseup` 事件在鼠标按钮被释放时触发，`onclick` 事件在鼠标点击完成后触发。这三个事件构成了完整的鼠标点击交互流程。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <body>
+      <div 
+        onmousedown="this.style.backgroundColor='red'" 
+        onmouseup="this.style.backgroundColor='green'" 
+        onclick="this.style.backgroundColor='blue'">
+        点击我
+      </div>
+
+      </body>
+      </html>
+      ```
+references:
+  - title: JavaScript HTML DOM 事件
+    url: https://www.w3school.com.cn/js/js_htmldom_events.asp

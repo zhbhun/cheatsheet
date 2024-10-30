@@ -1,0 +1,55 @@
+id: overflow
+title: Overflow
+query: CSS Overflow style
+comment: 介绍 CSS 中的 overlfow 属性
+description: CSS 中的 `overflow` 属性用于控制当内容超出元素的边界框时应该如何处理。它允许你裁剪内容、添加滚动条，或者让内容溢出到元素边界框之外。
+usage:
+  - title: 隐藏溢出内容
+    description: 将 `overflow` 设置为 `hidden` 可以将超出元素边界框的内容裁剪掉，使其不可见。
+    example: |
+      ```css
+      .container {
+        width: 200px;
+        height: 100px;
+        overflow: hidden;
+      }
+      ```
+      在这个例子中，`.container` 元素中的任何超出 200px 宽和 100px 高的内容都将被隐藏。
+  - title: 显示滚动条
+    description: 将 `overflow` 设置为 `scroll` 会在元素边界框内添加水平和垂直滚动条，即使内容没有溢出。如果只想添加一个方向的滚动条，可以使用 `overflow-x` 和 `overflow-y`。
+    example: |
+      ```css
+      .container {
+        width: 200px;
+        height: 100px;
+        overflow: scroll; 
+      }
+      ```
+      在这个例子中，`.container` 元素将始终显示水平和垂直滚动条。
+  - title: 根据需要显示滚动条
+    description: 将 `overflow` 设置为 `auto` 会根据需要添加水平或垂直滚动条。如果内容没有溢出，则不会显示滚动条。
+    example: |
+      ```css
+      .container {
+        width: 200px;
+        height: 100px;
+        overflow: auto;
+      }
+      ```
+      在这个例子中，只有当 `.container` 元素中的内容超出 200px 宽或 100px 高时，才会显示滚动条。
+  - title: 显示溢出内容
+    description: 将 `overflow` 设置为 `visible` 会使内容溢出元素边界框，这是默认行为。
+    example: |
+      ```css
+      .container {
+        width: 200px;
+        height: 100px;
+        overflow: visible; 
+      }
+      ```
+      在这个例子中，`.container` 元素中的内容可以溢出元素边界框。
+references:
+  - title: 'overflow - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/overflow
+  - title: CSS Overflow
+    url: https://www.w3schools.com/css/css_overflow.asp

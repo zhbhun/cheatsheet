@@ -1,0 +1,141 @@
+id: text
+title: 文本
+query: CSS Text style
+comment: 介绍 CSS 中的文本样式属性，包括：字体、字重、样式、装饰线、大小、行高、对齐、间距、换行等
+description: CSS 提供了丰富的属性来设置文本样式，包括字体、字重、样式、装饰线、大小、行高、对齐、间距、换行等。这些属性可以帮助开发者控制文本的外观和排版，从而提升用户体验。
+usage:
+  - title: 设置字体
+    description: 使用 `font-family` 属性可以指定文本的字体。建议提供多个字体名称作为后备方案，以确保在不同浏览器和操作系统上的兼容性。字体名称应该用逗号分隔，最后可以指定一个通用字体系列（serif, sans-serif, monospace, cursive, fantasy）。
+    example: |
+      ```css
+      /* 设置字体为 Arial，如果 Arial 不可用则使用 Helvetica，如果 Helvetica 也不可用则使用 sans-serif 字体 */
+      p {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      ```
+  - title: 设置字重
+    description: 使用 `font-weight` 属性可以设置文本的字重（粗细）。可以指定具体的数值（100-900，其中 400 为正常，700 为粗体）或使用关键字（normal, bold, bolder, lighter）。
+    example: |
+      ```css
+      /* 设置文本为粗体 */
+      strong {
+        font-weight: bold; 
+      }
+
+      /* 设置文本字重为 900 */
+      h1 {
+        font-weight: 900;
+      }
+      ```
+  - title: 设置字体样式
+    description: 使用 `font-style` 属性可以设置文本的样式，例如：normal, italic, oblique。
+    example: |
+      ```css
+      /* 设置文本为斜体 */
+      em {
+        font-style: italic;
+      }
+      ```
+  - title: 设置文本装饰线
+    description: 使用 `text-decoration` 属性可以设置文本的装饰线，例如：none, underline, overline, line-through。
+    example: |
+      ```css
+      /* 设置链接文本无下划线 */
+      a {
+        text-decoration: none;
+      }
+      /* 设置删除线 */
+      del {
+        text-decoration: line-through;
+      }
+      ```
+  - title: 设置字体大小
+    description: 使用 `font-size` 属性可以设置文本的大小。可以使用多种单位，例如：px, em, rem, pt, %。
+    example: |
+      ```css
+      /* 设置字体大小为 16 像素 */
+      body {
+        font-size: 16px;
+      }
+      ```
+  - title: 设置行高
+    description: 使用 `line-height` 属性可以设置文本的行高。可以使用数值、百分比或关键字（normal）。
+    example: |
+      ```css
+      /* 设置行高为 1.5 倍字体大小 */
+      p {
+        line-height: 1.5;
+      }
+      ```
+  - title: 设置文本对齐方式
+    description: 使用 `text-align` 属性可以设置文本的对齐方式，例如：left, right, center, justify。
+    example: |
+      ```css
+      /* 设置文本居中对齐 */
+      h1 {
+        text-align: center;
+      }
+      ```
+  - title: 设置文本间距
+    description: |
+      可以使用以下属性设置文本间距：
+      - `letter-spacing`: 设置字符间距。
+      - `word-spacing`: 设置单词间距。
+      - `text-indent`: 设置首行缩进。
+    example: |
+      ```css
+      /* 设置字符间距为 2px */
+      p {
+        letter-spacing: 2px;
+      }
+      ```
+  - title: 设置文本换行
+    description: |
+      可以使用以下属性设置文本换行：
+      - `white-space`: 设置如何处理空格和换行符。
+      - `word-break`: 设置如何断开单词。
+      - `overflow-wrap`: 设置是否允许单词断行。
+    example: |
+      ```css
+      /* 设置文本不换行 */
+      pre {
+        white-space: pre; /* 保留所有空格和换行符 */
+        overflow-wrap: normal; /* 不允许单词断行 */
+      }
+      /* 允许长单词换行 */
+      div {
+        overflow-wrap: break-word;
+      }
+      ```
+  - title: 设置文本颜色
+    description: 使用 `color` 属性可以设置文本的颜色。可以使用颜色名称、十六进制值、RGB 值、HSL 值等。
+    example: |
+      ```css
+      /* 设置文本颜色为蓝色 */
+      p {
+        color: blue;
+      }
+      ```
+  - title: 设置文本转换
+    description: 使用 `text-transform` 属性可以设置文本的大小写转换，例如：none, uppercase, lowercase, capitalize。
+    example: |
+      ```css
+      /* 将文本转换为大写 */
+      h1 {
+        text-transform: uppercase;
+      }
+      ```
+  - title: 设置文本阴影
+    description: 使用 `text-shadow` 属性可以设置文本的阴影效果。
+    example: |
+      ```css
+      /* 设置文本阴影 */
+      h1 {
+        text-shadow: 2px 2px 4px #000000;
+      }
+      ```
+references:
+  - title: CSS Text
+    url: https://www.w3schools.com/css/css_text.asp
+  - title: CSS Fonts
+    url: https://www.w3schools.com/css/css_font.asp

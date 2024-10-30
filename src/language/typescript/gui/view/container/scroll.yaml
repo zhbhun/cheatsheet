@@ -1,0 +1,85 @@
+id: scroll
+title: Scroll
+query: CSS Scroll style
+comment: 介绍 CSS 滚动条样式的设置。
+description: CSS scrollbars styling 模块定义了用于滚动条视觉样式的属性。可以使用这些属性来自定义滚动条的宽度、滚动条轨道（滚动条的背景）的颜色，以及滚动条滑块（滚动条的可拖动手柄）的颜色。
+usage:
+  - title: 自定义滚动条颜色
+    description: 可以使用 `scrollbar-color` 属性来自定义滚动条轨道和滑块的颜色。默认情况下，滚动条的颜色由浏览器决定。
+    example: |
+      ```css
+      /* 将滚动条滑块设置为蓝色，轨道设置为橙色 */
+      .container {
+        overflow: auto;
+        scrollbar-color: blue orange;
+      }
+      ```
+  - title: 自定义滚动条宽度
+    description: 可以使用 `scrollbar-width` 属性来自定义滚动条的宽度。默认情况下，滚动条的宽度由浏览器决定。
+    example: |
+      ```css
+      /* 将滚动条设置为细滚动条 */
+      .container {
+        overflow: auto;
+        scrollbar-width: thin;
+      }
+
+      /* 将滚动条完全隐藏 */
+      .container {
+        overflow: auto;
+        scrollbar-width: none;
+      }
+      ```
+  - title: WebKit 浏览器自定义滚动条样式
+    description: 可以使用 `::-webkit-scrollbar` 伪元素来自定义 WebKit 浏览器（如 Chrome、Safari 和 Edge）中滚动条的样式。 需要注意的是，这个规范已经被 W3C 正式放弃，未来可能会被弃用。
+    example: |
+      ```css
+      .container::-webkit-scrollbar {
+        /* 自定义滚动条宽度 */
+        width: 12px;
+      }
+
+      .container::-webkit-scrollbar-track {
+        /* 自定义滚动条轨道的背景颜色 */
+        background: orange;
+      }
+
+      .container::-webkit-scrollbar-thumb {
+        /* 自定义滚动条滑块的背景颜色 */
+        background-color: blue;
+        /* 自定义滚动条滑块的圆角 */
+        border-radius: 20px;
+        /* 自定义滚动条滑块的边框 */
+        border: 3px solid orange;
+      }
+      ```
+  - title: 兼容多种浏览器
+    description: 为了兼容多种浏览器，可以结合使用 `scrollbar-color`、`scrollbar-width` 和 `::-webkit-scrollbar`。
+    example: |
+      ```css
+      /* 适用于 Firefox */
+      .container {
+        scrollbar-width: thin;
+        scrollbar-color: blue orange;
+      }
+
+      /* 适用于 Chrome、Edge 和 Safari */
+      .container::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      .container::-webkit-scrollbar-track {
+        background: orange;
+      }
+
+      .container::-webkit-scrollbar-thumb {
+        background-color: blue;
+        border-radius: 20px;
+        border: 3px solid orange;
+      }
+      ```
+references:
+  - title: 'CSS scrollbars styling - CSS: Cascading Style Sheets | MDN'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scrollbars_styling
+  - title: How To Style Scrollbars with CSS
+    url: https://www.digitalocean.com/community/tutorials/css-scrollbars

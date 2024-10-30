@@ -1,0 +1,106 @@
+id: default
+title: Flexbox
+query: CSS Flexbox layout
+comment: 详细介绍下 Flexbox 布局的用法。
+description: Flexbox 是 CSS3 提供的一种强大的布局模块，用于创建灵活且响应式的网页布局。它使得元素的排列、对齐和分配空间变得更加容易，尤其在构建复杂的响应式页面时非常有用。Flexbox 通过定义容器和项目来实现布局，容器控制项目的排列方向和顺序，而项目则根据容器的设置进行自适应调整。
+usage:
+  - title: 创建 Flex 容器
+    description: 要使用 Flexbox，首先需要将一个元素定义为 Flex 容器。这可以通过设置 `display` 属性为 `flex` 或 `inline-flex` 来实现。
+    example: |
+      ```css
+      .flex-container {
+        display: flex; /* 定义块级 flex 容器 */
+      }
+
+      .inline-flex-container {
+        display: inline-flex; /* 定义行内 flex 容器 */
+      }
+      ```
+  - title: 主轴方向
+    description: Flex 容器的主轴方向默认为水平方向，可以使用 `flex-direction` 属性来更改主轴方向。
+    example: |
+      ```css
+      .flex-container {
+        display: flex;
+        flex-direction: row;     /* 默认值，水平方向，从左到右 */
+        flex-direction: row-reverse; /* 水平方向，从右到左 */
+        flex-direction: column;    /* 垂直方向，从上到下 */
+        flex-direction: column-reverse; /* 垂直方向，从下到上 */
+      }
+      ```
+  - title: 换行
+    description: 默认情况下，Flex 项目会在一行中排列。如果项目总宽度超过容器宽度，可以使用 `flex-wrap` 属性来控制换行行为。
+    example: |
+      ```css
+      .flex-container {
+        display: flex;
+        flex-wrap: nowrap;  /* 默认值，不换行 */
+        flex-wrap: wrap;    /* 换行，第一行在上方 */
+        flex-wrap: wrap-reverse; /* 换行，第一行在下方 */
+      }
+      ```
+  - title: 主轴对齐
+    description: 使用 `justify-content` 属性来控制 Flex 项目在主轴上的对齐方式。
+    example: |
+      ```css
+      .flex-container {
+        display: flex;
+        justify-content: flex-start; /* 默认值，左对齐 */
+        justify-content: flex-end;   /* 右对齐 */
+        justify-content: center;     /* 居中对齐 */
+        justify-content: space-between; /* 两端对齐，项目之间间隔相等 */
+        justify-content: space-around;  /* 项目周围间隔相等 */
+        justify-content: space-evenly;  /* 项目之间以及项目与容器边缘的间隔相等 */
+      }
+      ```
+  - title: 交叉轴对齐
+    description: 使用 `align-items` 属性来控制 Flex 项目在交叉轴上的对齐方式。
+    example: |
+      ```css
+      .flex-container {
+        display: flex;
+        align-items: flex-start; /* 顶部对齐 */
+        align-items: flex-end;   /* 底部对齐 */
+        align-items: center;     /* 垂直居中 */
+        align-items: baseline;   /* 基线对齐 */
+        align-items: stretch;   /* 默认值，拉伸填充容器 */
+      }
+      ```
+  - title: 多行交叉轴对齐
+    description: 当 Flex 容器有多行时，可以使用 `align-content` 属性来控制多行在交叉轴上的对齐方式。
+    example: |
+      ```css
+      .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start; /* 顶部对齐 */
+        align-content: flex-end;   /* 底部对齐 */
+        align-content: center;     /* 垂直居中 */
+        align-content: space-between; /* 两端对齐，行之间间隔相等 */
+        align-content: space-around;  /* 行周围间隔相等 */
+        align-content: stretch;   /* 默认值，拉伸填充容器 */
+      }
+      ```
+  - title: Flex 项目属性
+    description: |
+      Flex 项目具有一些属性可以控制其在容器中的行为：
+      - `flex-grow`: 定义项目的放大比例。
+      - `flex-shrink`: 定义项目的缩小比例。
+      - `flex-basis`: 定义项目的基本大小。
+      - `flex`: `flex-grow`, `flex-shrink` 和 `flex-basis` 的简写形式。
+      - `order`: 定义项目的排列顺序。
+      - `align-self`: 控制单个项目在交叉轴上的对齐方式，覆盖容器的 `align-items` 属性。
+    example: |
+      ```css
+      .flex-item {
+        flex-grow: 1;     /* 放大比例为 1 */
+        flex-shrink: 0;   /* 缩小比例为 0 */
+        flex-basis: 100px; /* 基本大小为 100px */
+        flex: 1 0 100px;    /* 简写形式 */
+        order: 2;        /* 排列顺序为 2 */
+        align-self: center; /* 垂直居中 */
+      }
+      ```
+references:
+  - title: CSS Flexbox (Flexible Box)
+    url: https://www.w3schools.com/css/css3_flexbox.asp

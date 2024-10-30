@@ -1,0 +1,5 @@
+id: resource
+title: 资源
+children:
+  - image
+  - font

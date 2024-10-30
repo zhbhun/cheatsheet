@@ -1,0 +1,50 @@
+id: border
+title: 边框
+query: CSS Border style
+comment: 介绍 CSS 中的边框属性
+description: CSS `border-style` 属性用于设置元素所有四个边框的线条样式。
+usage:
+  - title: 设置单一边框样式
+    description: 可以使用 `border-style` 属性为元素的所有边框设置相同的样式。可选值包括：`none`、`hidden`、`dotted`、`dashed`、`solid`、`double`、`groove`、`ridge`、`inset` 和 `outset`。
+    example: |
+      ```css
+      p {
+        border-style: dotted; /* 所有边框都设置为点状 */
+      }
+      ```
+  - title: 设置不同边框样式
+    description: 可以为元素的不同边框设置不同的样式，最多可以使用四个值，分别对应上、右、下、左四个边框。
+    example: |
+      ```css
+      p {
+        border-style: dotted solid double dashed; /* 上边框点状，右边框实线，下边框双线，左边框虚线 */
+      }
+      ```
+  - title: 简写属性
+    description: '`border-style` 是一个简写属性，可以与其他边框属性一起使用，例如 `border-width` 和 `border-color`。'
+    example: |
+      ```css
+      p {
+        border-width: 5px;
+        border-color: blue;
+        border-style: dashed; /* 所有边框都设置为蓝色虚线，宽度为 5px */
+      }
+      ```
+  - title: none 和 hidden 的区别
+    description: '`none` 和 `hidden` 都可以用来隐藏边框，但它们在边框折叠时的行为不同。`hidden` 的优先级更高，即使设置了其他边框样式，`hidden` 也会覆盖它们。`none` 的优先级较低，如果设置了其他边框样式，则会显示其他样式。'
+    example: |
+      ```css
+      .container {
+        border: 1px solid red;
+      }
+
+      .element {
+        border: 1px solid blue;
+        border-style: hidden; /* 隐藏元素的边框，即使容器有边框 */
+      }
+      ```
+references:
+  - title: 'border-style - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/border-style
+  - title: CSS Borders
+    url: https://www.w3schools.com/css/css_border.asp

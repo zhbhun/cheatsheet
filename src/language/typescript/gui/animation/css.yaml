@@ -1,0 +1,103 @@
+id: css
+title: CSS 动画
+query: CSS 动画
+comment: 简单介绍下 CSS Transition 和 Animation 动画，着重演示如何在代码中控制这些动画的开始、结束、暂停、继续等操作。
+description: CSS3 动画允许元素从一种样式逐渐改变为另一种样式，通过 @keyframes 规则定义动画序列，并使用 animation 属性将动画绑定到元素。可以控制动画的持续时间、速度曲线、延迟、重复次数、方向和播放状态等。
+usage:
+  - title: 定义动画序列
+    description: |
+      使用 `@keyframes` 规则定义动画序列，为动画的不同阶段指定样式。
+      - 语法：`@keyframes animation-name { keyframe-selector { css-styles; } }`
+      - `animation-name`: 动画的名称，用于在 `animation` 属性中引用。
+      - `keyframe-selector`: 定义动画进行到哪个时间点，可以使用百分比或 `from` (0%) 和 `to` (100%) 关键字。
+      - `css-styles`: 在指定时间点应用的 CSS 样式。
+    example: |
+      ```css
+      @keyframes color_change {
+        from { background-color: red; }
+        50% { background-color: green; }
+        to { background-color: blue; }
+      }
+
+      /* 兼容旧版浏览器 */
+      @-webkit-keyframes color_change {
+        from { background-color: red; }
+        50% { background-color: green; }
+        to { background-color: blue; }
+      }
+      ```
+  - title: 绑定动画到元素
+    description: |
+      使用 `animation` 属性或其各个子属性将定义好的动画序列绑定到元素。
+      - `animation`: 简写属性，可以同时设置多个动画属性。
+      - `animation-name`: 动画名称。
+      - `animation-duration`: 动画持续时间。
+      - `animation-timing-function`: 动画速度曲线。
+      - `animation-delay`: 动画延迟时间。
+      - `animation-iteration-count`: 动画重复次数。
+      - `animation-direction`: 动画播放方向。
+      - `animation-fill-mode`: 动画填充模式。
+      - `animation-play-state`: 动画播放状态。
+    example: |
+      ```css
+      div {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        animation: color_change 5s linear infinite alternate; /* 应用动画 */
+        -webkit-animation: color_change 5s linear infinite alternate; /* 兼容 Safari 和 Chrome */
+      }
+      ```
+  - title: 控制动画播放状态
+    description: |
+      使用 `animation-play-state` 属性控制动画的播放状态。
+      - `running`: 动画正在运行。
+      - `paused`: 动画暂停。
+      可以通过 JavaScript 动态修改该属性来实现动画的开始、暂停和继续。
+    example: |
+      ```html
+      <div id="myDiv"></div>
+      <button onclick="pauseAnimation()">暂停</button>
+      <button onclick="resumeAnimation()">继续</button>
+
+      <script>
+        function pauseAnimation() {
+          document.getElementById('myDiv').style.animationPlayState = 'paused';
+          document.getElementById('myDiv').style.WebkitAnimationPlayState = 'paused'; // 兼容 Safari 和 Chrome
+        }
+
+        function resumeAnimation() {
+          document.getElementById('myDiv').style.animationPlayState = 'running';
+          document.getElementById('myDiv').style.WebkitAnimationPlayState = 'running'; // 兼容 Safari 和 Chrome
+        }
+      </script>
+
+      <style>
+        #myDiv {
+          width: 100px;
+          height: 100px;
+          background-color: red;
+          animation: color_change 5s linear infinite alternate;
+          -webkit-animation: color_change 5s linear infinite alternate; /* 兼容 Safari 和 Chrome */
+        }
+        @keyframes color_change { /* ... (同上) */ }
+        @-webkit-keyframes color_change { /* ... (同上) */ }
+      </style>
+      ```
+  - title: animation 简写属性
+    description: |
+      `animation` 属性可以简写所有动画相关的子属性。
+      - 语法：`animation: name duration timing-function delay iteration-count direction fill-mode play-state;`
+      - 属性顺序大部分情况下可以互换，但 `animation-duration` 必须在 `animation-delay` 之前。
+      注意：`animation-play-state` 在 `animation` 简写属性中可以正常使用，但在 `-webkit-animation` 中必须单独设置。
+    example: |
+      ```css
+      div {
+        animation: myfirst 5s linear 2s infinite alternate;
+        -webkit-animation: myfirst 5s linear 2s infinite alternate;
+        -webkit-animation-play-state: paused; /* 对于 Webkit 内核浏览器，需要单独设置 play-state */
+      }
+      ```
+references:
+  - title: CSS3 动画
+    url: http://www.runoob.com/css3/css3-animations.html

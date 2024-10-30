@@ -1,0 +1,143 @@
+id: input
+title: Input
+query: HTML input element
+comment: 介绍 input 标签、不同的输入类型、输入事件以及代码中的用法。
+description: <input> HTML 元素用于创建网页表单的交互式控件，以便接受用户的数据。根据设备和用户代理，可以使用各种输入数据类型和控件小部件。由于输入类型和属性的组合数量众多，<input> 元素是所有 HTML 中最强大和最复杂的元素之一。
+usage:
+  - title: 创建文本输入框
+    description: |
+      用于创建单行文本输入框。这是默认的输入类型。
+      - **语法：** `<input type="text" ... >`
+    example: |
+      ```html
+      <label for="username">用户名:</label>
+      <input type="text" id="username" name="username">
+      ```
+  - title: 创建密码输入框
+    description: |
+      用于创建单行密码输入框，输入的字符会被遮挡。
+      - **语法：** `<input type="password" ... >`
+    example: |
+      ```html
+      <label for="password">密码:</label>
+      <input type="password" id="password" name="password">
+      ```
+  - title: 创建单选按钮
+    description: |
+      用于创建一组单选按钮，允许用户从多个选项中选择一个。同一组单选按钮应具有相同的 `name` 属性值。
+      - **语法：** `<input type="radio" ... >`
+      - **属性：** 
+        - `checked`:  如果存在此属性，则表示该单选按钮默认被选中。
+    example: |
+      ```html
+      <label for="male">男:</label>
+      <input type="radio" id="male" name="gender" value="male">
+      <label for="female">女:</label>
+      <input type="radio" id="female" name="gender" value="female" checked>
+      ```
+  - title: 创建复选框
+    description: |
+      用于创建复选框，允许用户选择或取消选择一个或多个选项。
+      - **语法：** `<input type="checkbox" ... >`
+      - **属性：**
+        - `checked`: 如果存在此属性，则表示该复选框默认被选中。
+    example: |
+      ```html
+      <label for="newsletter">订阅新闻邮件:</label>
+      <input type="checkbox" id="newsletter" name="newsletter" checked>
+      ```
+  - title: 创建数字输入框
+    description: |
+      用于创建数字输入框，并提供默认验证。在某些设备上会显示数字键盘。
+      - **语法：** `<input type="number" ... >`
+      - **属性：**
+        - `min`:  设置允许的最小值。
+        - `max`:  设置允许的最大值。
+        - `step`: 设置值的增量步长。
+    example: |
+      ```html
+      <label for="quantity">数量:</label>
+      <input type="number" id="quantity" name="quantity" min="1" max="10" step="2">
+      ```
+  - title: 创建日期选择器
+    description: |
+      用于创建一个日期选择器，允许用户选择日期（年、月、日，不包含时间）。在支持的浏览器中，激活时会打开日期选择器或用于年、月、日的数字滚轮。
+      - **语法：** `<input type="date" ... >`
+    example: |
+      ```html
+      <label for="birthdate">出生日期:</label>
+      <input type="date" id="birthdate" name="birthdate">
+      ```
+  - title: 创建文件选择器
+    description: |
+      用于创建一个文件选择器，允许用户选择一个或多个文件。使用 `accept` 属性定义控件可以选择的文件类型。
+      - **语法：** `<input type="file" ... >`
+      - **属性：**
+        - `accept`: 指定允许选择的文件类型。
+        - `multiple`: 如果存在此属性，则允许用户选择多个文件。
+    example: |
+      ```html
+      <label for="upload">上传文件:</label>
+      <input type="file" id="upload" name="upload" accept=".jpg, .png" multiple>
+      ```
+  - title: 创建提交按钮
+    description: |
+      用于创建一个提交按钮，用于提交表单数据。
+      - **语法：** `<input type="submit" ... >`
+      - **属性：**
+        - `value`: 指定按钮上显示的文本。
+    example: |
+      ```html
+      <input type="submit" value="提交">
+      ```
+  - title: 创建重置按钮
+    description: |
+      用于创建一个重置按钮，用于将表单内容重置为默认值。不推荐使用。
+      - **语法：** `<input type="reset" ... >`
+      - **属性：**
+        - `value`: 指定按钮上显示的文本。
+    example: |
+      ```html
+      <input type="reset" value="重置">
+      ```
+  - title: 创建隐藏字段
+    description: |
+      用于创建一个隐藏字段，该字段的值会提交到服务器，但不会显示给用户。
+      - **语法：** `<input type="hidden" ... >`
+      - **属性：**
+        - `value`: 指定隐藏字段的值。
+    example: |
+      ```html
+      <input type="hidden" id="userId" name="userId" value="12345">
+      ```
+  - title: 创建图像按钮
+    description: |
+      用于创建一个图像按钮，该按钮会提交表单数据。`src` 属性指定图像的 URL。如果图像 `src` 丢失，则会显示 `alt` 属性。
+      - **语法：** `<input type="image" ... >`
+      - **属性：**
+        - `src`: 指定图像的 URL。
+        - `alt`: 指定图像的替代文本。
+    example: |
+      ```html
+      <input type="image" src="/images/submit.png" alt="提交">
+      ```
+  - title: 处理输入事件
+    description: |
+      可以使用 JavaScript 监听输入事件，例如 `input`、`change` 和 `focus` 事件，以便在用户与输入框交互时执行相应的操作。
+      - `input` 事件: 当输入框的值发生变化时触发。
+      - `change` 事件: 当输入框失去焦点且值发生变化时触发。
+      - `focus` 事件: 当输入框获得焦点时触发。
+    example: |
+      ```html
+      <label for="message">留言:</label>
+      <input type="text" id="message" name="message">
+      <script>
+        const messageInput = document.getElementById("message");
+        messageInput.addEventListener("input", (event) => {
+          console.log("输入框值已更改:", event.target.value);
+        });
+      </script>
+      ```
+references:
+  - title: 'The HTML Input element - HTML: HyperText Markup Language'
+    url: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input

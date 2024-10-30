@@ -1,0 +1,111 @@
+id: animation
+title: WAAPI
+query: Web Animations API
+comment: 详细介绍下 Web Animations API 的用法
+description: Web Animations API 允许开发者使用 JavaScript 构建和控制动画的播放。它提供了一种高性能的 Web 动画方式，允许浏览器进行内部优化，而无需 hacks、强制或 `requestAnimationFrame()`。
+usage:
+  - title: 使用 Keyframe 对象表示关键帧
+    description: |
+      Keyframe 对象对应于 CSS 中的 `@keyframes` 块。它是一个包含多个对象的数组，每个对象代表一个关键帧。
+      - offset 属性：可选，用于指定关键帧在动画序列中的偏移量。默认情况下，关键帧等距分布。
+      - 其他属性：用于设置动画的属性，例如 transform、color 等。
+    example: |
+      ```javascript
+      const aliceTumbling = [
+        { transform: "rotate(0) translate3D(-50%, -50%, 0)", color: "#000" },
+        { color: "#431236", offset: 0.3 },
+        { transform: "rotate(360deg) translate3D(-50%, -50%, 0)", color: "#000" },
+      ];
+      ```
+  - title: 使用 timing 对象表示时间属性
+    description: |
+      timing 对象用于设置动画的时间属性。
+      - duration：动画的持续时间，以毫秒为单位。
+      - iterations：动画的迭代次数，Infinity 表示无限循环。
+      - easing：动画的缓动函数，默认为 linear。
+    example: |
+      ```javascript
+      const aliceTiming = {
+        duration: 3000,
+        iterations: Infinity,
+      };
+      ```
+  - title: 使用 Element.animate() 方法创建动画
+    description: |
+      `Element.animate()` 方法用于在 DOM 元素上创建动画。它可以接受 Keyframe 对象和 timing 对象作为参数，也可以直接传入关键帧和时间属性的值。
+    example: |
+      ```javascript
+      document.getElementById("alice").animate(aliceTumbling, aliceTiming);
+
+      // or
+
+      document.getElementById("alice").animate(
+        [
+          { transform: "rotate(0)", color: "#000" },
+          { color: "#431236", offset: 0.3 },
+          { transform: "rotate(360deg)", color: "#000" },
+        ],
+        3000 // duration only
+      );
+      ```
+  - title: 控制动画播放：play()、pause()、reverse()、updatePlaybackRate()
+    description: |
+      Web Animations API 提供了以下方法来控制动画播放：
+      - play()：开始或恢复动画播放。
+      - pause()：暂停动画播放。
+      - reverse()：反转动画播放方向。
+      - updatePlaybackRate()：更新动画的播放速率。
+      - finish(): 跳到动画结束。
+      - cancel(): 取消动画并移除效果。
+    example: |
+      ```javascript
+      const animation = element.animate([], {});
+      animation.pause();
+      animation.play();
+      animation.reverse();
+      animation.updatePlaybackRate(2); // 2x speed
+      animation.finish();
+      animation.cancel();
+      ```
+  - title: 持久化动画样式：commitStyles()
+    description: |
+      `commitStyles()` 方法将动画的当前样式写入到目标元素的 `style` 属性中，以便在动画结束后保持最终状态.
+    example: |
+      ```javascript
+      const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], 1000);
+      animation.finished.then(() => animation.commitStyles());
+      ```
+  - title: 自动移除填充动画：persist()
+    description: |
+      浏览器会自动移除填充动画（fill mode 为 forwards, backwards 或 both），以防止内存泄漏。可以使用 `persist()` 方法阻止浏览器自动移除动画。
+      replaceState 属性可以查看动画是否被移除 (removed), 持久化(persisted) 或 活动中(active).
+    example: |
+      ```javascript
+      const animation = element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1000, fill: 'forwards' });
+      animation.persist();
+      ```
+  - title: 获取动画信息：getAnimations()、effect、currentTime
+    description: |
+      - getAnimations()：获取页面上的所有动画。
+      - effect：返回一个包含动画效果 details 的对象，例如 `KeyframeEffect` 对象。可以通过 `getComputedTiming()` 获取动画的时间属性。
+      - currentTime：获取动画的当前时间。
+    example: |
+      ```javascript
+      const animations = document.getAnimations();
+      const timing = animation.effect.getComputedTiming();
+      const currentTime = animation.currentTime;
+      ```
+  - title: 使用回调函数和 Promise：onfinish、oncancel、finished
+    description: |
+      - onfinish：动画完成时的回调函数。
+      - oncancel：动画取消时的回调函数。
+      - finished:  返回一个 Promise，在动画完成时 resolve，在动画取消时 reject。
+    example: |
+      ```javascript
+      animation.onfinish = () => console.log("Animation finished");
+      animation.oncancel = () => console.log("Animation canceled");
+      animation.finished.then(() => console.log('Animation finished with a Promise'));
+      ```
+references:
+  - title: Using the Web Animations API - MDN Web Docs
+    url: https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API

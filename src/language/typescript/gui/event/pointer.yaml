@@ -1,0 +1,85 @@
+id: pointer
+title: 指针
+query: DOM Pointer 事件
+comment: 尽量详 Pointer 事件的用法和 touch 的区别
+description: Pointer Events 是一套用于处理用户输入的事件规范，旨在统一鼠标、触摸屏和触控笔等不同输入设备的事件模型。它提供了一组通用的事件类型，例如 pointerdown、pointermove 和 pointerup，可以用于响应各种指针输入。Pointer Events 简化了跨平台事件处理，并提供了更精细的控制，例如压力感应和倾斜角度。
+usage:
+  - title: 理解 Pointer Events
+    description: |-
+      Pointer Events 提供了一种统一的方式来处理来自不同输入设备（鼠标、触摸屏、触控笔）的输入事件。它使用一套通用的事件类型，例如 pointerdown、pointermove 和 pointerup，来替代传统的 mouse 和 touch 事件。
+      一些重要的属性包括：`pointerId` 用于区分不同的指针，`pointerType` 指示指针的类型（鼠标、触摸、笔），`isPrimary` 指示是否是主指针（例如，多点触控中的第一个手指）。
+    example: |
+      ```javascript
+      // 监听 pointerdown 事件
+      element.addEventListener('pointerdown', (event) => {
+        console.log('Pointer down:', event.pointerId, event.pointerType);
+      });
+      ```
+  - title: 指针事件类型
+    description: |
+      Pointer Events 定义了一系列事件类型，涵盖了指针交互的各个阶段：
+      - pointerdown: 指针按下时触发。
+      - pointermove: 指针移动时触发。
+      - pointerup: 指针抬起时触发。
+      - pointercancel: 指针交互被取消时触发，例如用户切换应用程序。
+      - pointerover: 指针进入元素区域时触发。
+      - pointerenter: 指针进入元素区域时触发，不冒泡。
+      - pointerout: 指针离开元素区域时触发。
+      - pointerleave: 指针离开元素区域时触发，不冒泡。
+      - gotpointercapture: 元素捕获指针时触发。
+      - lostpointercapture: 元素失去指针捕获时触发。
+    example: |
+      ```javascript
+      // 监听各种指针事件
+      element.addEventListener('pointerdown', (event) => { /* ... */ });
+      element.addEventListener('pointermove', (event) => { /* ... */ });
+      element.addEventListener('pointerup', (event) => { /* ... */ });
+      // ... 其他指针事件
+      ```
+  - title: setPointerCapture() 方法
+    description: setPointerCapture() 方法允许一个元素捕获所有指针事件，即使指针已经移出该元素的边界。这对于实现拖放等功能非常有用。
+    example: |
+      ```javascript
+      // 在 pointerdown 事件中捕获指针
+      element.addEventListener('pointerdown', (event) => {
+        element.setPointerCapture(event.pointerId);
+      });
+
+      // 在 pointerup 事件中释放指针
+      element.addEventListener('pointerup', (event) => {
+        element.releasePointerCapture(event.pointerId);
+      });
+
+      // 即使指针移出元素边界，pointermove 事件仍然会触发
+      element.addEventListener('pointermove', (event) => { /* ... */ });
+      ```
+  - title: releasePointerCapture() 方法
+    description: releasePointerCapture() 方法用于释放由 setPointerCapture() 捕获的指针。
+    example: |
+      ```javascript
+      // 在 pointerup 事件中释放指针
+      element.addEventListener('pointerup', (event) => {
+        element.releasePointerCapture(event.pointerId);
+      });
+      ```
+  - title: Pointer Events 与 Touch Events 的区别
+    description: |
+      Pointer Events 旨在统一不同输入设备的事件模型，而 Touch Events 专用于触摸屏。
+      - 统一性：Pointer Events 提供了统一的事件模型，无需针对不同输入设备编写单独的代码。Touch Events 则需要与 Mouse Events 配合使用才能处理所有输入设备。
+      - 功能：Pointer Events 提供了更丰富的功能，例如压力感应和倾斜角度，而 Touch Events 不支持这些特性。
+      - 兼容性：Pointer Events 的浏览器兼容性不如 Touch Events，但随着时间的推移，Pointer Events 的支持度正在不断提高。
+    example: |
+      ```javascript
+      // 使用 Pointer Events 处理触摸输入
+      element.addEventListener('pointerdown', (event) => {
+        console.log('Pointer down:', event.pressure, event.tiltX, event.tiltY); // 压力和倾斜角度
+      });
+
+      // 使用 Touch Events 处理触摸输入
+      element.addEventListener('touchstart', (event) => {
+        // Touch Events 没有压力和倾斜角度信息
+      });
+      ```
+references:
+  - title: DOM 笔记> DOM > 交互> 指针事件Pointer Events - BlackGlory
+    url: https://blackglory.me/notes/dom/DOM/%E4%BA%A4%E4%BA%92/%E6%8C%87%E9%92%88%E4%BA%8B%E4%BB%B6_Pointer_Events

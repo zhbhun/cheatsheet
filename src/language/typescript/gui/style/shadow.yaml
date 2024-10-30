@@ -1,0 +1,91 @@
+id: shadow
+title: 阴影
+query: CSS Shadow style
+comment: 介绍 CSS 中的阴影属性
+description: CSS `box-shadow` 属性为元素的框架添加阴影效果。可以设置多个以逗号分隔的效果。阴影由相对于元素的 X 和 Y 偏移量、模糊半径、扩散半径和颜色描述。`text-shadow` 属性则可以为文本添加阴影。
+usage:
+  - title: 单层阴影 - 外阴影
+    description: |
+      设置基本的外部阴影，需要指定水平偏移量、垂直偏移量、以及可选的模糊半径、扩散半径和颜色。
+
+      - `<length>`:  指定阴影的偏移量和半径。水平偏移量为正值，阴影在元素右侧；垂直偏移量为正值，阴影在元素下方。
+      - `<color>`:  指定阴影的颜色。
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        box-shadow: 5px 5px 10px gray; /* 水平偏移 5px，垂直偏移 5px，模糊半径 10px，灰色阴影 */
+      }
+      ```
+  - title: 单层阴影 - 内阴影
+    description: |
+      设置内部阴影，使用 `inset` 关键字。其他参数与外部阴影相同。
+
+      - `inset`: 关键字，指定阴影为内阴影。
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        box-shadow: inset 5px 5px 10px gray; /* 内阴影 */
+      }
+      ```
+  - title: 多层阴影
+    description: 通过逗号分隔多个阴影值，可以创建多层阴影效果。阴影的顺序决定了它们的叠加方式，先写的阴影在上面。
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        box-shadow: 5px 5px 10px gray, /* 外阴影 */
+                    inset -5px -5px 10px darkgray; /* 内阴影 */
+      }
+      ```
+  - title: 阴影颜色
+    description: 可以使用任何有效的 CSS 颜色值，包括颜色名称、RGB 值、HEX 值、HSL 值等。
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); /* 半透明黑色阴影 */
+      }
+      ```
+  - title: 阴影扩散半径
+    description: |
+      通过设置第四个长度值来控制阴影的扩散半径。
+
+      - 正值：阴影扩大。
+      - 负值：阴影缩小。
+      - 0：阴影与元素大小相同。
+    example: |
+      ```css
+      .box {
+        width: 100px;
+        height: 100px;
+        background-color: lightblue;
+        box-shadow: 5px 5px 10px 5px gray; /* 扩散半径为 5px */
+      }
+      ```
+  - title: 文本阴影
+    description: |
+      `text-shadow` 属性可以为文本添加阴影。与 `box-shadow` 类似，它也接受水平偏移量、垂直偏移量、模糊半径和颜色值。
+
+      - `<length>`:  指定阴影的偏移量和半径。
+      - `<color>`:  指定阴影的颜色。
+    example: |
+      ```css
+      h1 {
+        text-shadow: 2px 2px 5px red; /* 水平偏移 2px，垂直偏移 2px，模糊半径 5px，红色阴影 */
+      }
+      ```
+references:
+  - title: 'box-shadow - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow
+  - title: CSS Shadow Effects
+    url: https://www.w3schools.com/css/css3_shadows.asp

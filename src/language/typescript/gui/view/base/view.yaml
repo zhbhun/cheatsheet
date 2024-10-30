@@ -1,0 +1,197 @@
+id: view
+title: Block
+query: HTML Block element
+comment: |
+  1. 介绍什么是块级元素，以及块级元素的特点和用法。
+  2. 介绍有哪些通用的块级元素，以及它们的含义和用法。
+  3. 通过示例演示块级元素的常见用法，包括设置宽高、内外边距、背景色、边框、圆角、阴影等。
+  5. 如何给块级元素绑定交互事件。
+  6. 如何在 JS 代码中查找获取 HTML 中的元素实例。
+  7. 如何在 JS 代码里手动创建使用块级元素。
+description: 块级元素是 HTML 中的一种重要元素类型，它独占一行，可以设置宽高、内外边距、背景色、边框等样式属性，常用于网页布局和内容组织。
+usage:
+  - title: 什么是块级元素
+    description: |-
+      块级元素的特点是：
+
+      - **独占一行**：每个块级元素都会从新的一行开始显示，后面的内容会另起一行。
+      - **支持所有样式设置**：可以设置宽度、高度、内外边距、背景色、边框、圆角、阴影等样式属性。
+      - **常用于网页布局**：块级元素通常用于创建页面上的结构和区域，例如页眉、页脚、导航栏、侧边栏、内容区域等。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>块级元素示例</title>
+      </head>
+      <body>
+        <h1>这是一个标题</h1>
+        <p>这是一个段落。</p>
+        <div>这是一个块级元素，它包含一个标题和一个段落。</div>
+      </body>
+      </html>
+      ```
+  - title: 常见的块级元素
+    description: |-
+      HTML 中有很多块级元素，以下列举一些常用的块级元素：
+
+      - `<h1>` - `<h6>`：标题元素，用于定义不同级别的标题。
+      - `<p>`：段落元素，用于定义一段文本内容。
+      - `<div>`：通用块级元素，没有任何语义，常用于作为容器包裹其他元素。
+      - `<ul>`、`<ol>`、`<li>`：列表元素，用于定义无序列表、有序列表和列表项。
+      - `<header>`、`<nav>`、`<main>`、`<footer>`：语义化块级元素，用于定义页眉、导航栏、主要内容和页脚。
+      - `<table>`、`<tr>`、`<td>`：表格元素，用于定义表格、行和单元格。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>常见块级元素示例</title>
+      </head>
+      <body>
+        <header>
+          <h1>网站标题</h1>
+          <nav>
+            <ul>
+              <li><a href="#">首页</a></li>
+              <li><a href="#">关于我们</a></li>
+              <li><a href="#">联系我们</a></li>
+            </ul>
+          </nav>
+        </header>
+        <main>
+          <article>
+            <h2>文章标题</h2>
+            <p>文章内容...</p>
+          </article>
+        </main>
+        <footer>
+          <p>版权所有 © 2023</p>
+        </footer>
+      </body>
+      </html>
+      ```
+  - title: 设置块级元素的样式
+    description: |-
+      可以使用 CSS 为块级元素设置各种样式，例如：
+
+      - **宽度和高度**: `width` 和 `height` 属性
+      - **内外边距**: `margin` 和 `padding` 属性
+      - **背景色**: `background-color` 属性
+      - **边框**: `border` 属性
+      - **圆角**: `border-radius` 属性
+      - **阴影**: `box-shadow` 属性
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>块级元素样式示例</title>
+        <style>
+          div {
+            width: 300px;
+            height: 200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: lightblue;
+            border: 2px solid black;
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px gray;
+          }
+        </style>
+      </head>
+      <body>
+        <div>
+          这是一个设置了样式的块级元素。
+        </div>
+      </body>
+      </html>
+      ```
+  - title: 给块级元素绑定交互事件
+    description: |
+      可以使用 JavaScript 为块级元素绑定交互事件，例如：
+
+      - **点击事件**: `onclick`
+      - **鼠标悬停事件**: `onmouseover` 和 `onmouseout`
+      - **鼠标按下和松开事件**: `onmousedown` 和 `onmouseup`
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>块级元素交互事件示例</title>
+      </head>
+      <body>
+        <div id="myDiv">点击我</div>
+        <script>
+          const myDiv = document.getElementById("myDiv");
+          myDiv.onclick = function() {
+            alert("你点击了我！");
+          };
+        </script>
+      </body>
+      </html>
+      ```
+  - title: 在 JS 代码中查找获取 HTML 中的元素实例
+    description: |
+      可以使用 JavaScript 中的以下方法查找获取 HTML 中的元素实例：
+
+      - **根据 ID 获取**: `document.getElementById(id)`
+      - **根据类名获取**: `document.getElementsByClassName(className)`
+      - **根据标签名获取**: `document.getElementsByTagName(tagName)`
+      - **根据选择器获取**: `document.querySelector(selector)` 和 `document.querySelectorAll(selector)`
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>查找 HTML 元素示例</title>
+      </head>
+      <body>
+        <div id="myDiv">这是一个 div 元素。</div>
+        <script>
+          const divById = document.getElementById("myDiv");
+          console.log(divById);
+        </script>
+      </body>
+      </html>
+      ```
+  - title: 在 JS 代码里手动创建使用块级元素
+    description: |
+      可以使用 JavaScript 中的以下方法手动创建使用块级元素：
+
+      - **创建元素**: `document.createElement(tagName)`
+      - **设置属性**: `element.setAttribute(name, value)`
+      - **添加子元素**: `element.appendChild(childElement)`
+      - **将元素添加到页面**: `parent.appendChild(element)`
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>创建块级元素示例</title>
+      </head>
+      <body>
+        <script>
+          const newDiv = document.createElement("div");
+          newDiv.setAttribute("id", "myNewDiv");
+          newDiv.style.width = "200px";
+          newDiv.style.height = "100px";
+          newDiv.style.backgroundColor = "lightgreen";
+
+          const newParagraph = document.createElement("p");
+          newParagraph.textContent = "这是一个动态创建的段落。";
+          newDiv.appendChild(newParagraph);
+
+          document.body.appendChild(newDiv);
+        </script>
+      </body>
+      </html>
+      ```
+references:
+  - title: HTML Block and Inline Elements
+    url: https://www.w3schools.com/html/html_blocks.asp
+  - title: The Differences Between Block-Level and Inline Elements - ThoughtCo
+    url: https://www.thoughtco.com/block-level-vs-inline-elements-3468615
+  - title: Block and Inline Elements
+    url: http://web.simmons.edu/~grovesd/comm244/notes/week4/block-inline

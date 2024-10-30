@@ -1,0 +1,156 @@
+id: text
+title: Inline
+query: HTML Inline element
+comment: |
+  1. 介绍什么是行内元素，以及行内元素的特点和用法。
+  2. 介绍有哪些通用的行内元素，以及它们的含义和用法。
+  3. 通过示例演示行内元素的常见用法，包括设置字体、颜色、背景色、边框、圆角、阴影等。
+  5. 如何给行内元素绑定交互事件。
+  6. 如何在 JS 代码里手动创建使用行内元素。
+description: |
+  HTML 中的元素大体分为块级元素和行内元素。行内元素的特点是：
+  - 多个行内元素会排列在一行，不会换行；
+  - 行内元素的高度、宽度及顶部和底部边距不可设置；
+  - 行内元素只占据它对应标签的边框所包含的空间。
+usage:
+  - title: 常用的行内元素
+    description: |
+      HTML 中有许多常用的行内元素，它们用于在网页上显示各种内容，例如文本、链接、图像、强调文本等等。
+
+      下面列举一些常用的行内元素：
+
+      | 元素 | 描述 | 示例 |
+      |---|---|---|
+      | `<a>` | 创建超链接。|  `<a href="https://www.example.com">这是一个链接</a>`|
+      | `<img>` |  插入图像。 | `<img src="image.jpg" alt="图像描述">`|
+      | `<span>` |  用于对文档中的行内元素进行分组。 | `<span style="color: blue;">这是一段蓝色的文字。</span>` |
+      | `<strong>` |  定义粗体文本。|  `<strong>这是一个粗体文本</strong>` |
+      | `<em>` |  定义着重文字。 | `<em>这是一个着重文字</em>` |
+      | `<br>` |  插入单个换行符。 |  `<p>第一行<br>第二行</p>`  |
+    example: |-
+      ```html
+      <!-- 使用 <a> 元素创建超链接 -->
+      <a href="https://www.example.com">这是一个链接</a>
+
+      <!-- 使用 <img> 元素插入图像 -->
+      <img src="image.jpg" alt="图像描述">
+
+      <!-- 使用 <span> 元素对文档中的行内元素进行分组 -->
+      <span style="color: blue;">这是一段蓝色的文字。</span>
+
+      <!-- 使用 <strong> 元素定义粗体文本 -->
+      <strong>这是一个粗体文本</strong>
+
+      <!-- 使用 <em> 元素定义着重文字 -->
+      <em>这是一个着重文字</em>
+
+      <!-- 使用 <br> 元素插入单个换行符 -->
+      <p>第一行<br>第二行</p>
+      ```
+  - title: 设置行内元素的样式
+    description: |
+      可以使用 CSS 来设置行内元素的样式，例如字体、颜色、背景色、边框、圆角、阴影等。
+
+      下面是一些常见的 CSS 属性：
+
+      | 属性 | 描述 | 示例 |
+      |---|---|---|
+      | `color` | 设置文本颜色 | `color: blue;` |
+      | `background-color` |  设置背景颜色 | `background-color: yellow;`|
+      | `font-size` |  设置字体大小 |  `font-size: 16px;` |
+      | `font-weight` | 设置字体粗细 | `font-weight: bold;` |
+      | `text-decoration` | 设置文本装饰 | `text-decoration: underline;` |
+      | `border` | 设置边框 |  `border: 1px solid black;` |
+      | `border-radius` | 设置圆角 | `border-radius: 5px;` |
+      | `box-shadow` |  设置阴影 | `box-shadow: 2px 2px 5px #888888;` |
+    example: |-
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+      <style>
+      .highlight {
+        color: white;
+        background-color: red;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: underline;
+        border: 2px solid black;
+        border-radius: 10px;
+        box-shadow: 3px 3px 8px #888888;
+      }
+      </style>
+      </head>
+      <body>
+
+      <p>This is a paragraph of text. <span class="highlight">This is a highlighted text.</span></p>
+
+      </body>
+      </html>
+      ```
+  - title: 给行内元素绑定交互事件
+    description: |
+      可以使用 JavaScript 给行内元素绑定交互事件，例如点击事件、鼠标悬停事件等等。
+
+      例如，下面的代码演示了如何给一个 `<span>` 元素绑定点击事件：
+    example: |-
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+      <script>
+      function handleClick() {
+        alert('你点击了这段文字！');
+      }
+      </script>
+      </head>
+      <body>
+
+      <p>This is a paragraph of text. <span onclick="handleClick()">Click me!</span></p>
+
+      </body>
+      </html>
+      ```
+  - title: 在 JS 代码里手动创建使用行内元素
+    description: |-
+      可以使用 JavaScript 在网页上动态创建行内元素，并设置它们的属性和样式。
+
+      例如，下面的代码演示了如何创建一个 `<span>` 元素，并将其添加到一个 `<p>` 元素中：
+    example: |-
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+      <script>
+      function createSpan() {
+        // 创建一个 <span> 元素
+        var span = document.createElement('span');
+
+        // 设置 <span> 元素的文本内容
+        span.innerHTML = '这是一个动态创建的文字。';
+
+        // 设置 <span> 元素的样式
+        span.style.color = 'red';
+
+        // 获取 <p> 元素
+        var paragraph = document.getElementById('myParagraph');
+
+        // 将 <span> 元素添加到 <p> 元素中
+        paragraph.appendChild(span);
+      }
+      </script>
+      </head>
+      <body>
+
+      <p id="myParagraph">This is a paragraph of text.</p>
+
+      <button onclick="createSpan()">创建一个 span 元素</button>
+
+      </body>
+      </html>
+      ```
+references:
+  - title: HTML Block and Inline Elements
+    url: https://www.w3schools.com/html/html_blocks.asp
+  - title: Block and Inline Elements
+    url: http://web.simmons.edu/~grovesd/comm244/notes/week4/block-inline

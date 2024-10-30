@@ -1,0 +1,117 @@
+id: touch
+title: 触摸
+query: DOM 触摸事件
+comment: 尽量详触摸事件的用法，包括：如何绑定事件、触摸事件信息、事件传播链路、父视图拦截事件、子视图标记事件已处理等
+description: 触摸事件允许 Web 应用程序直接处理基于触摸的输入，增强用户在触摸屏设备上的交互体验。触摸事件支持多点触控，并提供 `Touch`, `TouchEvent` 和 `TouchList` 接口以及 `touchstart`, `touchmove`, `touchend` 和 `touchcancel` 事件类型。
+usage:
+  - title: 绑定触摸事件
+    description: 使用 `addEventListener` 方法将触摸事件处理器绑定到目标元素。可以为 `touchstart`, `touchmove`, `touchend` 和 `touchcancel` 事件分别注册处理器。
+    example: |
+      ```javascript
+      // 获取目标元素
+      const targetElement = document.getElementById('myElement');
+
+      // 注册触摸事件处理器
+      targetElement.addEventListener('touchstart', handleTouchStart, false);
+      targetElement.addEventListener('touchmove', handleTouchMove, false);
+      targetElement.addEventListener('touchend', handleTouchEnd, false);
+      targetElement.addEventListener('touchcancel', handleTouchCancel, false);
+
+      function handleTouchStart(event) {
+        // 处理 touchstart 事件
+        console.log('Touch Start', event);
+      }
+
+      function handleTouchMove(event) {
+        // 处理 touchmove 事件
+        console.log('Touch Move', event);
+      }
+
+      function handleTouchEnd(event) {
+        // 处理 touchend 事件
+        console.log('Touch End', event);
+      }
+
+      function handleTouchCancel(event) {
+        // 处理 touchcancel 事件
+        console.log('Touch Cancel', event);
+      }
+      ```
+  - title: 访问触摸事件信息
+    description: |
+      `TouchEvent` 对象包含有关触摸事件的详细信息，包括：
+      - `touches`: 当前屏幕上所有触摸点的列表 (TouchList)。
+      - `targetTouches`: 目标 DOM 元素上的触摸点列表 (TouchList)。
+      - `changedTouches`:  自上次事件以来状态改变的触摸点列表 (TouchList),  在 `touchstart` 中是新添加的触摸点, 在 `touchmove` 中是移动的触摸点, 在 `touchend` 中是移除的触摸点。
+      每个 `Touch` 对象包含：
+      - `identifier`: 触摸点的唯一标识符。
+      - `target`: 触摸事件的目标元素。
+      - `clientX`, `clientY`: 触摸点相对于视口的坐标。
+      - `pageX`, `pageY`: 触摸点相对于文档的坐标。
+      - `screenX`, `screenY`: 触摸点相对于屏幕的坐标。
+      - `radiusX`, `radiusY`, `rotationAngle`:  触摸区域的椭圆信息 (较新的特性)。
+      - `force`: 触摸的力度。
+    example: |
+      ```javascript
+      function handleTouchStart(event) {
+        for (let i = 0; i < event.touches.length; i++) {
+          const touch = event.touches[i];
+          console.log(`Touch ${touch.identifier}: x=${touch.clientX}, y=${touch.clientY}`);
+        }
+      }
+      ```
+  - title: 事件传播
+    description: 触摸事件与其他 DOM 事件一样，会沿着 DOM 树进行传播，包括捕获阶段和冒泡阶段。可以使用 `stopPropagation()` 方法停止事件传播。
+    example: |
+      ```javascript
+      parent.addEventListener("touchstart", function(e) {
+          console.log("parent touchstart");
+      }, true); // 捕获阶段
+
+      child.addEventListener("touchstart", function(e) {
+          console.log("child touchstart");
+          e.stopPropagation()
+      }, false); // 冒泡阶段
+
+      parent.addEventListener("touchstart", function(e) {
+          console.log("parent touchstart bubbling");
+      }, false); // 冒泡阶段
+      ```
+  - title: 父视图拦截事件
+    description: 在捕获阶段，父视图可以通过调用 `preventDefault()` 方法阻止事件传递到子视图。
+    example: |
+      ```javascript
+      parent.addEventListener('touchstart', function(event) {
+        event.preventDefault(); // 阻止事件传递到子元素
+        console.log('Parent prevented touchstart');
+      }, true); // 捕获阶段监听
+
+      child.addEventListener('touchstart', function(event) {
+        console.log('Child received touchstart'); // 这行代码不会执行
+      }, false);
+      ```
+  - title: 子视图标记事件已处理
+    description: 子视图可以在冒泡阶段调用 `stopPropagation()` 方法阻止事件继续传播到父视图, 或通过在事件处理函数中返回 `true` 来表示已经处理了事件。
+    example: |
+      ```javascript
+      parent.addEventListener('touchstart', function(event) {
+          console.log("parent touchstart")
+      });
+
+      child.addEventListener('touchstart', function(event) {
+          event.stopPropagation(); // 阻止冒泡
+          console.log('Child handled touchstart');
+      });
+      ```
+  - title: 阻止模拟鼠标事件
+    description: 当只有一个触摸点时，浏览器通常会分派模拟的鼠标事件。为了防止这种情况，可以在触摸事件处理程序中调用 `preventDefault()` 方法。
+    example: |
+      ```javascript
+      element.addEventListener('touchstart', function(event) {
+          event.preventDefault(); // 阻止模拟鼠标事件
+          console.log('Touchstart event occurred');
+      });
+      ```
+references:
+  - title: 使用触摸事件- Web API
+    url: https://developer.mozilla.org/zh-CN/docs/Web/API/Touch_events/Using_Touch_Events

@@ -1,0 +1,67 @@
+id: font
+title: 字体
+query: CSS Font
+comment: 如何在 H5 中添加字体，以及如何使用字体
+description: CSS `font` 简写属性用于一次性设置所有字体属性，或者将元素的字体设置为系统字体。未指定的单个值将被设置为其相应的初始值（可能会覆盖先前使用非简写属性设置的值）。虽然不能直接通过 `font` 设置，但 `font-size-adjust` 和 `font-kerning` 也将重置为其初始值。
+usage:
+  - title: 设置字体大小和字体族
+    description: 最基本的用法是设置字体大小和字体族。`font-size` 值可以是各种单位，例如像素 (px)、em 或百分比 (%)。`font-family` 值应该是字体名称或通用字体族。
+    example: |
+      ```css
+      /* 设置字体大小为 16px，字体族为 Arial */
+      p {
+        font: 16px Arial;
+      }
+
+      /* 设置字体大小为 1.2em，字体族为 "Fira Sans"，回退到 sans-serif */
+      h1 {
+        font: 1.2em "Fira Sans", sans-serif;
+      }
+      ```
+  - title: 设置字体大小、行高和字体族
+    description: 可以使用斜杠 (/) 在字体大小之后指定行高。行高值可以是数字、长度或百分比。
+    example: |
+      ```css
+      /* 设置字体大小为 16px，行高为 1.5，字体族为 sans-serif */
+      body {
+        font: 16px/1.5 sans-serif;
+      }
+
+      /* 设置字体大小为 1.2em，行高为 2em，字体族为 Georgia，回退到 serif */
+      p {
+        font: 1.2em/2em Georgia, serif;
+      }
+      ```
+  - title: 设置字体样式、粗细、大小、行高和字体族
+    description: |
+      可以设置其他字体属性，例如 `font-style`、`font-variant`、`font-weight` 和 `font-stretch`。这些属性必须按照特定顺序出现：`font-style`、`font-variant`、`font-weight`、`font-stretch`，然后是 `font-size`，最后是 `/line-height` 和 `font-family`。
+    example: |
+      ```css
+      /* 设置字体样式为斜体，粗细为粗体，大小为 1.2em，字体族为 Verdana，回退到 sans-serif */
+      strong {
+        font: italic bold 1.2em Verdana, sans-serif;
+      }
+
+      /* 设置字体变体为小型大写字母，大小为 1em，行高为 1.5，字体族为 "Times New Roman", Times, serif */
+      .small-caps {
+        font: small-caps 1em/1.5 "Times New Roman", Times, serif;
+      }
+      ```
+  - title: 使用系统字体
+    description: |
+      `font` 属性可以设置为系统字体关键字，例如 `caption`、`icon`、`menu`、`message-box`、`small-caption` 或 `status-bar`。这将使用用户操作系统的默认字体进行渲染。
+    example: |
+      ```css
+      /* 使用标题系统字体 */
+      .caption {
+        font: caption;
+      }
+
+      /* 使用菜单系统字体 */
+      nav {
+        font: menu;
+      }
+      ```
+references:
+  - title: 'font - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/font

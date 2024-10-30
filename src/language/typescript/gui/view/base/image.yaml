@@ -1,0 +1,140 @@
+id: text
+title: Image
+query: HTML 图片元素
+comment: 介绍图片标签、图片样式设置、图片相关事件绑定和代码手动创建使用按钮等
+description: <img> 标签用于在 HTML 页面中嵌入图像，充当图像的占位符，实际图像通过 src 属性指定的 URL 加载。
+usage:
+  - title: 嵌入图像
+    description: 使用 `src` 属性指定图像的 URL，使用 `alt` 属性指定图像无法加载时显示的替代文本。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 嵌入图像 -->
+        <img src="https://www.runoob.com/images/logo.png" alt="菜鸟教程">
+      </body>
+      </html>
+      ```
+  - title: 设置图像大小
+    description: 使用 `width` 和 `height` 属性可以设置图像的宽度和高度，单位为像素。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 嵌入图像并设置大小 -->
+        <img src="https://www.runoob.com/images/logo.png" alt="菜鸟教程" width="200" height="100">
+      </body>
+      </html>
+      ```
+  - title: 图像标题
+    description: 使用 `title` 属性可以为图像添加标题，当鼠标悬停在图像上时，标题会以工具提示的形式显示出来。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 嵌入图像并添加标题 -->
+        <img src="https://www.runoob.com/images/logo.png" alt="菜鸟教程" title="点击访问菜鸟教程">
+      </body>
+      </html>
+      ```
+  - title: 图像链接
+    description: 将 <img> 标签嵌套在 <a> 标签中，可以将图像转换为链接。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 将图像转换为链接 -->
+        <a href="https://www.runoob.com/">
+          <img src="https://www.runoob.com/images/logo.png" alt="菜鸟教程">
+        </a>
+      </body>
+      </html>
+      ```
+  - title: 图像地图
+    description: |
+      图像地图允许在图像上定义不同的区域，每个区域可以链接到不同的 URL。
+      - 使用 `<map>` 标签定义图像地图，并使用 `name` 属性为其命名。
+      - 使用 `<area>` 标签定义图像地图中的区域，并使用 `shape`、`coords` 和 `href` 属性指定区域的形状、坐标和链接地址。
+      - 在 `<img>` 标签中使用 `usemap` 属性将图像与地图关联起来。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 定义图像地图 -->
+        <map name="myMap">
+          <area shape="rect" coords="0,0,100,100" href="https://www.runoob.com/" alt="菜鸟教程">
+          <area shape="circle" coords="150,150,50" href="https://www.baidu.com/" alt="百度">
+        </map>
+        <!-- 使用图像地图 -->
+        <img src="image.jpg" alt="图像地图" usemap="#myMap">
+      </body>
+      </html>
+      ```
+  - title: 响应式图像
+    description: |
+      响应式图像可以根据不同的屏幕尺寸和分辨率自动调整大小，以提供最佳的浏览体验。
+      - 使用 `srcset` 属性指定不同分辨率的图像源，并使用 `sizes` 属性指定不同屏幕尺寸下图像的显示宽度。
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 响应式图像 -->
+        <img src="image.jpg" alt="响应式图像"
+             srcset="image-small.jpg 320w, image-medium.jpg 640w, image-large.jpg 1280w"
+             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw">
+      </body>
+      </html>
+      ```
+  - title: 延迟加载图像
+    description: |
+      延迟加载图像可以提高页面加载速度，特别是当页面中包含大量图像时。
+      - 使用 `loading` 属性指定图像的加载方式，可以设置为 `lazy` 或 `eager`。
+      - `lazy`：图像会在需要时才加载，例如当图像出现在视口中时。
+      - `eager`：图像会立即加载， regardless of whether it is in the viewport or not.
+    example: |
+      ```html
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>HTML <img> 标签</title>
+      </head>
+      <body>
+        <h1>HTML <img> 标签</h1>
+        <!-- 延迟加载图像 -->
+        <img src="image.jpg" alt="延迟加载图像" loading="lazy">
+      </body>
+      </html>
+      ```
+references:
+  - title: HTML <img> 标签| 菜鸟教程
+    url: https://www.runoob.com/tags/tag-img.html

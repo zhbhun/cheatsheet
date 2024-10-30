@@ -1,0 +1,72 @@
+id: transform
+title: 变换
+query: CSS Transform style
+comment: 介绍 CSS 中的变换属性
+description: '`transform-style` CSS 属性设置元素的子元素是在 3D 空间中定位还是扁平化在元素的平面上。扁平化后，元素的子元素将不会单独存在于 3D 空间中。由于此属性不会被继承，因此必须为元素的所有非叶子后代设置它。`transform-style` 通常与其他 3D 变换属性（如 `transform`、`perspective` 和 `backface-visibility`）结合使用，以创建复杂的 3D 效果。'
+usage:
+  - title: 扁平化子元素
+    description: |
+      将 `transform-style` 设置为 `flat` 会使子元素扁平化到父元素的平面上，使其无法在 3D 空间中进行操作。这是默认值。
+
+      语法：
+      ```css
+      transform-style: flat;
+      ```
+    example: |
+      ```html
+      <div class="parent">
+        <div class="child">Child</div>
+      </div>
+      ```
+      ```css
+      .parent {
+        width: 200px;
+        height: 200px;
+        background-color: lightblue;
+        transform: rotateY(45deg); /* 父元素旋转 */
+        transform-style: flat; /* 子元素扁平化 */
+      }
+      .child {
+        width: 100px;
+        height: 100px;
+        background-color: lightcoral;
+        transform: rotateX(45deg); /* 子元素旋转 */
+      }
+      ```
+      效果：父元素会绕 Y 轴旋转 45 度，但子元素会被扁平化，看起来像是在父元素的平面上旋转，而不是在 3D 空间中旋转。
+  - title: 保留 3D 结构
+    description: |
+      将 `transform-style` 设置为 `preserve-3d` 会使子元素保留其 3D 位置，允许创建更复杂的 3D 场景。
+
+      语法：
+      ```css
+      transform-style: preserve-3d;
+      ```
+    example: |
+      ```html
+      <div class="parent">
+        <div class="child">Child</div>
+      </div>
+      ```
+      ```css
+      .parent {
+        width: 200px;
+        height: 200px;
+        perspective: 800px; /* 添加透视效果 */
+        background-color: lightblue;
+        transform: rotateY(45deg);
+        transform-style: preserve-3d; /* 保留 3D 结构 */
+      }
+      .child {
+        width: 100px;
+        height: 100px;
+        background-color: lightcoral;
+        transform: rotateX(45deg);
+      }
+      ```
+      效果：父元素会绕 Y 轴旋转 45 度，子元素会绕 X 轴旋转 45 度，并且子元素的 3D 位置会被保留，从而创建出真实的 3D 旋转效果。
+references:
+  - title: 'transform-style - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/transform-style
+  - title: CSS transform-style property
+    url: https://www.w3schools.com/cssref/css3_pr_transform-style.php

@@ -1,0 +1,89 @@
+id: size
+title: 大小
+query: CSS Size style
+comment: 介绍 CSS 中的大小属性、固定大小设置、百分比大小设置以及注意区分块级元素、行内元素和行内可替换元素。
+description: CSS 的 `width` 和 `height` 属性用于设置元素的尺寸。`max-width` 和 `max-height` 用于设置元素的最大尺寸，而 `min-width` 和 `min-height` 用于设置元素的最小尺寸。这些属性对于控制元素在不同屏幕尺寸下的布局至关重要。理解块级元素、行内元素和行内可替换元素在尺寸设置上的区别也很重要。
+usage:
+  - title: 设置宽度和高度
+    description: |
+      `width` 和 `height` 属性分别设置元素的内容宽度和内容高度。它们不包含 padding、border 和 margin。
+
+      - **语法:**
+        ```css
+        width: <length> | <percentage> | auto | initial | inherit;
+        height: <length> | <percentage> | auto | initial | inherit;
+        ```
+        - `<length>`:  可以使用 px、cm、mm、in、pt、pc、em、rem、vw、vh 等单位的长度值。
+        - `<percentage>`:  相对于包含块的百分比。
+        - `auto`:  浏览器根据元素内容和布局自动计算尺寸。对于块级元素，`width` 的默认值为 `auto`，会填满包含块的宽度（除非设置了浮动或绝对定位）。对于行内元素和行内可替换元素，`width` 默认根据内容宽度决定。`height` 的默认值通常也是 `auto`，根据内容高度决定。
+        - `initial`:  设置属性为其默认值。
+        - `inherit`:  从父元素继承属性值。
+    example: |
+      ```html
+      <div style="width: 200px; height: 100px; background-color: lightblue;">
+        这是一个 200px 宽，100px 高的 div。
+      </div>
+      ```
+  - title: 设置最大宽度和高度
+    description: |
+      `max-width` 和 `max-height` 属性用于限制元素的最大尺寸。当元素内容超过最大尺寸时，可能会出现滚动条或内容被裁剪。
+
+      - **语法:**
+        ```css
+        max-width: <length> | <percentage> | none | initial | inherit;
+        max-height: <length> | <percentage> | none | initial | inherit;
+        ```
+        - `none`:  不限制最大尺寸。
+    example: |
+      ```html
+      <div style="max-width: 300px; height: auto; background-color: lightcoral;">
+        这是一个最大宽度为 300px 的 div。如果内容超过 300px，宽度将保持在 300px。
+      </div>
+      ```
+  - title: 设置最小宽度和高度
+    description: |
+      `min-width` 和 `min-height` 属性用于设置元素的最小尺寸。即使元素内容很少，也会保持最小尺寸。
+      - **语法:**
+        ```css
+        min-width: <length> | <percentage> | initial | inherit;
+        min-height: <length> | <percentage> | initial | inherit;
+        ```
+    example: |
+      ```html
+      <div style="min-width: 150px; height: auto; background-color: lightgreen;">
+        这是一个最小宽度为 150px 的 div。即使内容很少，宽度也会保持在 150px。
+      </div>
+      ```
+  - title: 行内元素、块级元素和行内可替换元素的区别
+    description: |
+      - **块级元素 (block-level elements):**  例如 `div`, `p`, `h1` 等。默认情况下会占据一整行，`width` 默认值为 `auto`，会填满包含块。可以通过设置 `width` 和 `height` 来控制尺寸。
+      - **行内元素 (inline elements):** 例如 `span`, `a`, `strong` 等。只占据内容所需的宽度，不会换行。`width` 和 `height` 属性对行内元素无效，需要先将元素转换为块级元素或行内块级元素 (`display: block;` 或 `display: inline-block;`) 才能设置 `width` 和 `height`。
+      - **行内可替换元素 (inline-replaceable elements):** 例如 `img`, `input`, `iframe` 等。类似行内元素，不会自动换行，但其尺寸由元素本身的内容或属性决定，例如图片的宽度和高度。可以通过设置 `width` 和 `height` 来改变其显示尺寸，但会缩放元素内容。
+    example: |
+      ```html
+      <div style="background-color: lightgray;">
+        <span>这是一个行内元素。</span> <span style="display: inline-block; width: 100px; height: 50px; background-color: lightblue;">这是一个行内块级元素。</span>
+        <img src="placeholder.jpg" alt="图片" width="150" height="100">
+      </div>
+      ```
+  - title: '@page size 属性 (打印页面)'
+    description: |
+      `@page` 规则的 `size` 属性用于设置打印页面的大小和方向。
+      - **语法:**
+        ```css
+        @page {
+          size: <length>{1,2} | auto | <page-size> | [portrait|landscape];
+        }
+        ```
+        - `<page-size>`: 预定义的页面大小，例如 A4、B5、letter 等。
+    example: |
+      ```css
+      @page {
+        size: A4 landscape; /* 设置页面大小为 A4 横向 */
+      }
+      ```
+references:
+  - title: 'size - CSS: Cascading Style Sheets - MDN Web Docs'
+    url: https://developer.mozilla.org/en-US/docs/Web/CSS/@page/size
+  - title: CSS Height, Width and Max-width
+    url: https://www.w3schools.com/css/css_dimension.asp
