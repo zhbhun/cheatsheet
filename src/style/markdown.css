@@ -11,6 +11,11 @@
   padding-left: 20px;
   list-style-type: disc;
 }
+.markdown ol {
+  margin-bottom: 10px;
+  padding-left: 20px;
+  list-style-type: decimal;
+}
 
 
 .markdown .hljs {

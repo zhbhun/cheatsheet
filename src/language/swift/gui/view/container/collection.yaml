@@ -8,7 +8,7 @@ comment: |
   - 如何自定义 UICollectionView 的布局，实现瀑布流、分组、分区等复杂布局
 description: UICollectionView 是 UIKit 框架中用于以网格形式展示和管理有序数据集合的对象，它使用灵活的布局方式来呈现数据，支持垂直、水平滚动，以及自定义布局等。
 usage:
-  - title: 创建 UICollectionView
+  - title: UICollectionView
     description: |-
       在代码中创建 UICollectionView 通常需要指定一个布局（如 `UICollectionViewFlowLayout`），并通过设置数据源和委托来管理内容和交互。该示例展示如何在 `UIViewController` 中创建 UICollectionView。
     example: |
@@ -16,7 +16,7 @@ usage:
       import UIKit
       import SnapKit
 
-      class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+      class UICollectionViewDataSourcePlayground: UIViewController, UICollectionViewDataSource {
 
         enum Section: Int, CaseIterable {
           case first
@@ -65,9 +65,8 @@ usage:
           collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
           collectionView.backgroundColor = .systemBackground
           collectionView.dataSource = self
-          collectionView.delegate = self
-          collectionView.register(FirstCell.self, forCellWithReuseIdentifier: "FirstCell")
-          collectionView.register(SecondCell.self, forCellWithReuseIdentifier: "SecondCell")
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "FirstCell")
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "SecondCell")
           collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
 
           view.addSubview(collectionView)
@@ -103,10 +102,15 @@ usage:
           updateButton.setTitle("Update", for: .normal)
           updateButton.addTarget(self, action: #selector(updateItem), for: .touchUpInside)
 
+          let batchUpdateButton = UIButton(type: .system)
+          batchUpdateButton.setTitle("Batch", for: .normal)
+          batchUpdateButton.addTarget(self, action: #selector(batchUpdateItem), for: .touchUpInside)
+
           buttonStack.addArrangedSubview(insertButton)
           buttonStack.addArrangedSubview(deleteButton)
           buttonStack.addArrangedSubview(moveButton)
           buttonStack.addArrangedSubview(updateButton)
+          buttonStack.addArrangedSubview(batchUpdateButton)
 
           let container = UIView()
           container.backgroundColor = .white
@@ -131,7 +135,9 @@ usage:
         @objc private func insertItem() {
           let newItem = Item(id: UUID(), title: "New Item")
           itemsFirstSection.insert(newItem, at: 0)
-          collectionView.insertItems(at: [IndexPath(item: 0, section: Section.first.rawValue)])
+          UIView.performWithoutAnimation {
+            collectionView.insertItems(at: [IndexPath(item: 0, section: Section.first.rawValue)])
+          }
         }
 
         // 删除项
@@ -145,8 +151,8 @@ usage:
         @objc private func moveItem() {
           guard itemsFirstSection.count > 1 else { return }
           let itemToMove = itemsFirstSection.removeFirst()
-          itemsFirstSection.append(itemToMove)
-          collectionView.moveItem(at: IndexPath(item: 0, section: Section.first.rawValue), to: IndexPath(item: itemsFirstSection.count - 1, section: Section.first.rawValue))
+          itemsFirstSection.insert(contentsOf: [itemToMove], at: 1)
+          collectionView.moveItem(at: IndexPath(item: 0, section: Section.first.rawValue), to: IndexPath(item: 1, section: Section.first.rawValue))
         }
 
         // 更新项
@@ -156,12 +162,26 @@ usage:
           collectionView.reloadItems(at: [IndexPath(item: 0, section: Section.first.rawValue)])
         }
 
+        // 批量更新
+        @objc private func batchUpdateItem() {
+          guard !itemsFirstSection.isEmpty else { return }
+          collectionView.performBatchUpdates {
+            let itemToMove = itemsFirstSection.removeFirst()
+            itemsFirstSection.insert(contentsOf: [itemToMove], at: 1)
+            collectionView.moveItem(at: IndexPath(item: 0, section: Section.first.rawValue), to: IndexPath(item: 1, section: Section.first.rawValue))
+            itemsFirstSection.remove(at: 2) // 如果删除的是第一项，会出错（attempt to perform a delete and a move from the same index path ）
+            collectionView.deleteItems(at: [IndexPath(item: 2, section: Section.first.rawValue)])
+          }
+        }
+
         // MARK: - UICollectionViewDataSource
 
+        // 有多少个 Section
         func numberOfSections(in collectionView: UICollectionView) -> Int {
           return Section.allCases.count
         }
 
+        // 每个 Section 有多少 Item
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
           let sectionType = Section(rawValue: section)
           switch sectionType {
@@ -174,49 +194,224 @@ usage:
           }
         }
 
+        // Item 构造
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
           let sectionType = Section(rawValue: indexPath.section)
           switch sectionType {
           case .first:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as! FirstCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
             cell.label.text = itemsFirstSection[indexPath.item].title
+            cell.contentView.backgroundColor = .blue
             return cell
           case .second:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as! SecondCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
             cell.label.text = itemsSecondSection[indexPath.item].title
+            cell.contentView.backgroundColor = .red
             return cell
           default:
             return UICollectionViewCell()
           }
         }
 
+        // Section 头/尾构造
         func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
           guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
-          let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! CustomHeader
+          let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? CustomHeader
+          guard let header = header else {
+            return UICollectionReusableView()
+          }
           header.label.text = Section.allCases[indexPath.section].title
           return header
-        }
-
-        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-          let sectionType = Section(rawValue: indexPath.section)
-          let selectedItem: Item
-          switch sectionType {
-          case .first:
-            selectedItem = itemsFirstSection[indexPath.item]
-          case .second:
-            selectedItem = itemsSecondSection[indexPath.item]
-          default:
-            return
-          }
-
-          // 打印点击的项信息
-          print("Selected item in \(sectionType?.title ?? "Unknown Section"): \(selectedItem.title), ID: \(selectedItem.id)")
         }
       }
 
 
-      // 自定义第一种单元格
-      fileprivate class FirstCell: UICollectionViewCell {
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .white
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(15)
+            make.right.equalToSuperview().offset(-15)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+
+      // 自定义头部视图
+      fileprivate class CustomHeader: UICollectionReusableView {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      ```
+  - title: UICollectionViewController
+    description: |-
+      可以使用 UICollectionViewController 来简化 UICollectionView 的创建和配置，它自带一个 UICollectionView，并实现了 UICollectionViewDataSource 和 UICollectionViewDelegate 协议。
+      - 可以通过重写 `viewDidLoad()` 方法来配置 UICollectionView。
+      - 可以通过重写 `collectionView(_:cellForItemAt:)` 方法来配置单元格。
+    example: |
+      ```swift
+      import SnapKit
+      import UIKit
+
+      class UICollectionViewControllerPlayground: UICollectionViewController {
+        enum Section: Int, CaseIterable {
+          case first
+          case second
+
+          var title: String {
+            switch self {
+            case .first:
+              return "First Section"
+            case .second:
+              return "Second Section"
+            }
+          }
+        }
+
+        class Item {
+          let id: UUID
+          var title: String
+
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
+          }
+        }
+
+        var itemsFirstSection: [Item] = []
+        var itemsSecondSection: [Item] = []
+
+        init() {
+          let layout = UICollectionViewFlowLayout()
+          layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 30, height: 100)
+          layout.headerReferenceSize = CGSize(width: UIScreen.main.bounds.width, height: 50)
+
+          super.init(collectionViewLayout: layout)
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("init(coder:) has not been implemented")
+        }
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewController"
+
+          configureCollectionView()
+          applyInitialData()
+        }
+
+        // 配置 CollectionView
+        private func configureCollectionView() {
+          collectionView.backgroundColor = .systemBackground
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "FirstCell")
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "SecondCell")
+          collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
+        }
+
+        // 配置初始数据
+        private func applyInitialData() {
+          itemsFirstSection = (1...10).map { Item(id: UUID(), title: "First Section Item \($0)") }
+          itemsSecondSection = (1...10).map { Item(id: UUID(), title: "Second Section Item \($0)") }
+          collectionView.reloadData()
+        }
+
+        // 有多少个 Section
+        override func numberOfSections(in collectionView: UICollectionView) -> Int {
+          return Section.allCases.count
+        }
+
+        // 每个 Section 有多少 Item
+        override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return itemsFirstSection.count
+          case .second:
+            return itemsSecondSection.count
+          default:
+            return 0
+          }
+        }
+
+        // Item 构造
+        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+          let sectionType = Section(rawValue: indexPath.section)
+          switch sectionType {
+          case .first:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
+            cell.label.text = itemsFirstSection[indexPath.item].title
+            cell.contentView.backgroundColor = .blue
+            return cell
+          case .second:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
+            cell.label.text = itemsSecondSection[indexPath.item].title
+            cell.contentView.backgroundColor = .red
+            return cell
+          default:
+            return UICollectionViewCell()
+          }
+        }
+
+        // Section 头/尾构造
+        override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+          guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
+          let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? CustomHeader
+          guard let header = header else {
+            return UICollectionReusableView()
+          }
+          header.label.text = Section.allCases[indexPath.section].title
+          return header
+        }
+      }
+
+      // Custom cell
+      fileprivate class CustomCell: UICollectionViewCell {
         let label: UILabel = {
           let label = UILabel()
           label.textAlignment = .center
@@ -240,8 +435,258 @@ usage:
         }
       }
 
-      // 自定义第二种单元格
-      fileprivate class SecondCell: UICollectionViewCell {
+      // Custom header view
+      fileprivate class CustomHeader: UICollectionReusableView {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+      ```
+  - title: UICollectionViewDiffableDataSource
+    description: |-
+      UICollectionViewDiffableDataSource 是 iOS 13 推出的新 API，用于更轻松地管理数据源。它使用数据快照（snapshot）来描述数据源的状态。当数据源发生变化时，只需要创建新的快照并应用到 UICollectionViewDiffableDataSource 上，它会自动计算出需要更新的单元格，并进行动画更新。
+    example: |-
+      ```swift
+      class UICollectionViewDiffableDataSourcePlayground: UIViewController {
+        enum Section: Int, CaseIterable {
+          case first
+          case second
+
+          var title: String {
+            switch self {
+            case .first:
+              return "First Section"
+            case .second:
+              return "Second Section"
+            }
+          }
+        }
+
+        class Item: Hashable {
+          let id: UUID
+          var title: String
+
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var diffableDataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewDiffableDataSource"
+
+          // 设置 CollectionView
+          configureCollectionView()
+          // 配置数据源
+          configureDataSource()
+          // 应用初始数据
+          applyInitialSnapshot()
+          // 添加操作按钮
+          setupActionButtons()
+        }
+
+        // 配置 CollectionView
+        private func configureCollectionView() {
+          let layout = UICollectionViewFlowLayout()
+          layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 30, height: 100)
+          layout.headerReferenceSize = CGSize(width: UIScreen.main.bounds.width, height: 50)
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "FirstCell")
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "SecondCell")
+          collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
+
+          view.addSubview(collectionView)
+        }
+
+        // 配置数据源
+        private func configureDataSource() {
+          diffableDataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
+            (collectionView, indexPath, item) -> UICollectionViewCell? in
+
+            let section = Section.allCases[indexPath.section]
+
+            switch section {
+            case .first:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as? CustomCell
+              guard let cell = cell else { return UICollectionViewCell() }
+              cell.label.text = item.title
+              cell.contentView.backgroundColor = .red
+              return cell
+
+            case .second:
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as? CustomCell
+              guard let cell = cell else { return UICollectionViewCell() }
+              cell.label.text = item.title
+              cell.contentView.backgroundColor = .blue
+              return cell
+            }
+          }
+
+          // 配置 section 头部视图
+          diffableDataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) in
+            guard kind == UICollectionView.elementKindSectionHeader else { return nil }
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? CustomHeader
+            header?.label.text = Section.allCases[indexPath.section].title
+            return header
+          }
+        }
+
+        // 应用初始快照
+        private func applyInitialSnapshot() {
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.first, .second])
+
+          // 创建并添加初始数据
+          let firstItems = (1...10).map { Item(id: UUID(), title: "First Section Item \($0)") }
+          let secondItems = (1...10).map { Item(id: UUID(), title: "Second Section Item \($0)") }
+
+          snapshot.appendItems(firstItems, toSection: .first)
+          snapshot.appendItems(secondItems, toSection: .second)
+
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
+        }
+
+        // 设置操作按钮
+        private func setupActionButtons() {
+          let buttonStack = UIStackView()
+          buttonStack.axis = .horizontal
+          buttonStack.spacing = 10
+          buttonStack.distribution = .fillEqually
+
+          let insertButton = UIButton(type: .system)
+          insertButton.setTitle("Insert", for: .normal)
+          insertButton.addTarget(self, action: #selector(insertItem), for: .touchUpInside)
+
+          let deleteButton = UIButton(type: .system)
+          deleteButton.setTitle("Delete", for: .normal)
+          deleteButton.addTarget(self, action: #selector(deleteItem), for: .touchUpInside)
+
+          let moveButton = UIButton(type: .system)
+          moveButton.setTitle("Move", for: .normal)
+          moveButton.addTarget(self, action: #selector(moveItem), for: .touchUpInside)
+
+          let updateButton = UIButton(type: .system)
+          updateButton.setTitle("Update", for: .normal)
+          updateButton.addTarget(self, action: #selector(updateItem), for: .touchUpInside)
+
+          let batchUpdateButton = UIButton(type: .system)
+          batchUpdateButton.setTitle("Batch", for: .normal)
+          batchUpdateButton.addTarget(self, action: #selector(batchUpdateItem), for: .touchUpInside)
+
+          buttonStack.addArrangedSubview(insertButton)
+          buttonStack.addArrangedSubview(deleteButton)
+          buttonStack.addArrangedSubview(moveButton)
+          buttonStack.addArrangedSubview(updateButton)
+          buttonStack.addArrangedSubview(batchUpdateButton)
+
+          let container = UIView()
+          container.backgroundColor = .white
+          container.addSubview(buttonStack)
+          view.addSubview(container)
+
+          container.snp.makeConstraints{ make in
+            make.bottom.equalToSuperview()
+            make.leading.equalToSuperview()
+            make.trailing.equalToSuperview()
+          }
+
+          buttonStack.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview().offset(-34)
+            make.leading.equalToSuperview().offset(15)
+            make.trailing.equalToSuperview().offset(-15)
+          }
+        }
+
+        // 插入新项
+        @objc private func insertItem() {
+          var snapshot = diffableDataSource.snapshot()
+          let newItem = Item(id: UUID(), title: "New Item")
+          snapshot.appendItems([newItem], toSection: .first)
+          diffableDataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 删除项
+        @objc private func deleteItem() {
+          var snapshot = diffableDataSource.snapshot()
+          guard let firstItem = snapshot.itemIdentifiers(inSection: .first).first else { return }
+          snapshot.deleteItems([firstItem])
+          diffableDataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 移动项
+        @objc private func moveItem() {
+          var snapshot = diffableDataSource.snapshot()
+          let firstItems = snapshot.itemIdentifiers(inSection: .first)
+          guard firstItems.count > 1 else { return }
+          let firstItem = firstItems[0]
+          let secondItem = firstItems[1]
+          snapshot.moveItem(firstItem, afterItem: secondItem)
+          diffableDataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 更新项
+        @objc private func updateItem() {
+          var snapshot = diffableDataSource.snapshot()
+          guard let firstItem = snapshot.itemIdentifiers(inSection: .first).first else { return }
+          firstItem.title = "1"
+          snapshot.reloadItems([firstItem])
+          diffableDataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 批量更新
+        @objc private func batchUpdateItem() {
+          var snapshot = diffableDataSource.snapshot()
+          let firstItems = snapshot.itemIdentifiers(inSection: .first)
+
+          // 移动
+          guard firstItems.count > 1 else { return }
+          let firstItem = firstItems[0]
+          let secondItem = firstItems[1]
+          snapshot.moveItem(firstItem, afterItem: secondItem)
+
+          // 删除
+          guard firstItems.count > 2 else { return }
+          let thirdItem = firstItems[2]
+          snapshot.deleteItems([thirdItem])
+
+          diffableDataSource.apply(snapshot, animatingDifferences: true)
+        }
+      }
+
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
         let label: UILabel = {
           let label = UILabel()
           label.textAlignment = .center
@@ -252,7 +697,7 @@ usage:
         override init(frame: CGRect) {
           super.init(frame: frame)
           contentView.addSubview(label)
-          contentView.backgroundColor = .red
+          contentView.backgroundColor = .blue
           label.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.left.equalToSuperview().offset(15)
@@ -287,18 +732,14 @@ usage:
           super.init(coder: coder)
         }
       }
+
       ```
-  - title: 使用 UICollectionViewDiffableDataSource 管理数据源
+  - title: UICollectionViewDelegateFlowLayout
     description: |-
-      UICollectionViewDiffableDataSource 是 iOS 13 推出的新 API，用于更轻松地管理数据源。
-      - 它使用数据快照（snapshot）来描述数据源的状态。
-      - 当数据源发生变化时，只需要创建新的快照并应用到 UICollectionViewDiffableDataSource 上，它会自动计算出需要更新的单元格，并进行动画更新。
+      UICollectionViewDelegateFlowLayout 协议用于配置 UICollectionView 的布局，包括单元格大小、间距、头部视图和尾部视图等。
     example: |
       ```swift
-      import SnapKit
-      import UIKit
-
-      class ViewController: UIViewController, UICollectionViewDelegate {
+      class UICollectionViewDelegateFlowLayoutPlayground: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate {
 
         enum Section: Int, CaseIterable {
           case first
@@ -314,13 +755,258 @@ usage:
           }
         }
 
-        class Item: NSObject {
+        class Item {
+          let id: UUID
+          var title: String
+          var height: Int
+
+          init(id: UUID, title: String, height: Int) {
+            self.id = id
+            self.title = title
+            self.height = height
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var itemsFirstSection: [Item] = []
+        var itemsSecondSection: [Item] = []
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewDelegateFlowLayout"
+
+          configureCollectionView()
+          applyInitialData()
+        }
+
+        // 配置 CollectionView
+        private func configureCollectionView() {
+          let layout = UICollectionViewFlowLayout()
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          collectionView.dataSource = self
+          collectionView.delegate = self
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "FirstCell")
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "SecondCell")
+          collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
+
+          view.addSubview(collectionView)
+        }
+
+        // 配置初始数据
+        private func applyInitialData() {
+          itemsFirstSection = (1...10).map { Item(id: UUID(), title: "\($0)", height: Int.random(in: 50...100)) }
+          itemsSecondSection = (1...10).map { Item(id: UUID(), title: "\($0)", height: Int.random(in: 50...100)) }
+          collectionView.reloadData()
+        }
+
+        // MARK: - UICollectionViewDataSource
+
+        func numberOfSections(in collectionView: UICollectionView) -> Int {
+          return Section.allCases.count
+        }
+
+        // 头大小
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return CGSize(width: UIScreen.main.bounds.width, height: 60) // Adjust height for the first section header
+          case .second:
+            return CGSize(width: UIScreen.main.bounds.width, height: 40) // Adjust height for the second section header
+          default:
+            return CGSize(width: UIScreen.main.bounds.width, height: 50)
+          }
+        }
+
+        // Section 内边距
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+          case .second:
+            return UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+          default:
+            return UIEdgeInsets.zero
+          }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return itemsFirstSection.count
+          case .second:
+            return itemsSecondSection.count
+          default:
+            return 0
+          }
+        }
+
+        // 行大小
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+          let sectionType = Section(rawValue: indexPath.section)
+          switch sectionType {
+          case .first:
+            return CGSize(width: (UIScreen.main.bounds.width - 20 - 10) / 2, height: 100)
+          case .second:
+            return CGSize(width: (UIScreen.main.bounds.width - 20 * 2 - 20 * 2) / 3, height: 200)
+          default:
+            return CGSize(width: UIScreen.main.bounds.width, height: 0)
+          }
+        }
+
+        // 行间距
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return 10
+          case .second:
+            return 20
+          default:
+            return 0
+          }
+        }
+
+        // 列间距
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .first:
+            return 10
+          case .second:
+            return 20
+          default:
+            return 0
+          }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+          let sectionType = Section(rawValue: indexPath.section)
+          switch sectionType {
+          case .first:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
+            cell.label.text = itemsFirstSection[indexPath.item].title
+            cell.contentView.backgroundColor = .blue
+            return cell
+          case .second:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as? CustomCell
+            guard let cell = cell else {
+              return UICollectionViewCell()
+            }
+            cell.label.text = itemsSecondSection[indexPath.item].title
+            cell.contentView.backgroundColor = .red
+            return cell
+          default:
+            return UICollectionViewCell()
+          }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+          guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
+          let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? CustomHeader
+          guard let header = header else {
+            return UICollectionReusableView()
+          }
+          header.label.text = Section.allCases[indexPath.section].title
+          return header
+        }
+
+        func collectionView(_ collectionView: UICollectionView, performPrimaryActionForItemAt indexPath: IndexPath) {
+          print(">> performPrimaryActionForItemAt: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+        }
+      }
+
+      // 自定义头部视图
+      fileprivate class CustomHeader: UICollectionReusableView {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .white
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(15)
+            make.right.equalToSuperview().offset(-15)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      ```
+  - title: UICollectionView.CellRegistration
+    description: |-
+      UICollectionView.CellRegistration 是 iOS 14 推出的新 API，用于注册和配置 UICollectionViewCell。它提供了更简洁的方式来注册和配置 UICollectionViewCell，支持自定义单元格的创建和配置。
+    example: |
+      ```swift
+      class UICollectionViewCellRegistrationPlayground: UIViewController {
+        enum Section: Int, CaseIterable {
+          case first
+          case second
+
+          var title: String {
+            switch self {
+            case .first:
+              return "First Section"
+            case .second:
+              return "Second Section"
+            }
+          }
+        }
+
+        class Item: Hashable {
           let id: UUID
           var title: String
 
           init(id: UUID, title: String) {
             self.id = id
             self.title = title
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
           }
         }
 
@@ -330,20 +1016,13 @@ usage:
         override func viewDidLoad() {
           super.viewDidLoad()
 
-          title = "UICollectionViewDiffableDataSource"
+          title = "CellRegistration"
 
-          // 设置 CollectionView
           configureCollectionView()
-          // 配置数据源
           configureDataSource()
-          // 应用初始数据
           applyInitialSnapshot()
-
-          // 添加操作按钮
-          setupActionButtons()
         }
 
-        // 配置 CollectionView
         private func configureCollectionView() {
           let layout = UICollectionViewFlowLayout()
           layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 30, height: 100)
@@ -351,17 +1030,22 @@ usage:
 
           collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
           collectionView.backgroundColor = .systemBackground
-          collectionView.register(FirstCell.self, forCellWithReuseIdentifier: "FirstCell")
-          collectionView.register(SecondCell.self, forCellWithReuseIdentifier: "SecondCell")
           collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-
-          collectionView.delegate = self
-
           view.addSubview(collectionView)
         }
 
-        // 配置数据源
         private func configureDataSource() {
+          // 使用 CellRegistration 配置单元格
+          let firstCellRegistration = UICollectionView.CellRegistration<CustomCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+            cell.contentView.backgroundColor = .red
+          }
+
+          let secondCellRegistration = UICollectionView.CellRegistration<CustomCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+            cell.contentView.backgroundColor = .blue
+          }
+
           diffableDataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
             (collectionView, indexPath, item) -> UICollectionViewCell? in
 
@@ -369,14 +1053,9 @@ usage:
 
             switch section {
             case .first:
-              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as? FirstCell
-              cell?.label.text = item.title
-              return cell ?? UICollectionViewCell()
-
+              return collectionView.dequeueConfiguredReusableCell(using: firstCellRegistration, for: indexPath, item: item)
             case .second:
-              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SecondCell", for: indexPath) as? SecondCell
-              cell?.label.text = item.title
-              return cell ?? UICollectionViewCell()
+              return collectionView.dequeueConfiguredReusableCell(using: secondCellRegistration, for: indexPath, item: item)
             }
           }
 
@@ -395,13 +1074,846 @@ usage:
           snapshot.appendSections([.first, .second])
 
           // 创建并添加初始数据
-          let itemsFirstSection = (1...10).map { Item(id: UUID(), title: "First Section Item \($0)") }
-          let itemsSecondSection = (1...10).map { Item(id: UUID(), title: "Second Section Item \($0)") }
+          let firstItems = (1...10).map { Item(id: UUID(), title: "First Section Item \($0)") }
+          let secondItems = (1...10).map { Item(id: UUID(), title: "Second Section Item \($0)") }
 
-          snapshot.appendItems(itemsFirstSection, toSection: .first)
-          snapshot.appendItems(itemsSecondSection, toSection: .second)
+          snapshot.appendItems(firstItems, toSection: .first)
+          snapshot.appendItems(secondItems, toSection: .second)
 
-          diffableDataSource.apply(snapshot, animatingDifferences: true)
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
+        }
+      }
+      ```
+  - title: UICollectionView.SupplementaryRegistration
+    description: |
+      UICollectionView.SupplementaryRegistration 是 iOS 14 推出的新 API，用于注册和配置 UICollectionView 的补充视图，如头部视图和尾部视图。它提供了更简洁的方式来注册和配置补充视图，支持自定义补充视图的创建和配置。
+    example: |
+      ```swift
+      class UICollectionViewSupplementaryRegistrationPlayground: UIViewController {
+        enum Section: Int, CaseIterable {
+          case first
+          case second
+
+          var title: String {
+            switch self {
+            case .first:
+              return "First Section"
+            case .second:
+              return "Second Section"
+            }
+          }
+        }
+
+        class Item: Hashable {
+          let id: UUID
+          var title: String
+
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var diffableDataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "SupplementaryRegistration"
+
+          configureCollectionView()
+          configureDataSource()
+          applyInitialSnapshot()
+        }
+
+        private func configureCollectionView() {
+          let layout = UICollectionViewFlowLayout()
+          layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 30, height: 100)
+          layout.headerReferenceSize = CGSize(width: UIScreen.main.bounds.width, height: 50)
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          collectionView.register(CustomHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
+          view.addSubview(collectionView)
+        }
+
+        private func configureDataSource() {
+          // 使用 CellRegistration 配置单元格
+          let firstCellRegistration = UICollectionView.CellRegistration<CustomCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+            cell.contentView.backgroundColor = .red
+          }
+
+          let secondCellRegistration = UICollectionView.CellRegistration<CustomCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+            cell.contentView.backgroundColor = .blue
+          }
+
+          diffableDataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
+            (collectionView, indexPath, item) -> UICollectionViewCell? in
+
+            let section = Section.allCases[indexPath.section]
+
+            switch section {
+            case .first:
+              return collectionView.dequeueConfiguredReusableCell(using: firstCellRegistration, for: indexPath, item: item)
+            case .second:
+              return collectionView.dequeueConfiguredReusableCell(using: secondCellRegistration, for: indexPath, item: item)
+            }
+          }
+
+          // 配置头部视图
+          let headerRegistration = UICollectionView.SupplementaryRegistration<CustomHeader>(
+            elementKind: UICollectionView.elementKindSectionHeader
+          ) { (headerView, elementKind, indexPath) in
+            headerView.label.text = "Section \(indexPath.section)"
+          }
+
+          // 配置 section 头部视图
+          diffableDataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) in
+            return collectionView.dequeueConfiguredReusableSupplementary(
+              using: headerRegistration,
+              for: indexPath
+            )
+          }
+        }
+
+        // 应用初始快照
+        private func applyInitialSnapshot() {
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.first, .second])
+
+          // 创建并添加初始数据
+          let firstItems = (1...10).map { Item(id: UUID(), title: "First Section Item \($0)") }
+          let secondItems = (1...10).map { Item(id: UUID(), title: "Second Section Item \($0)") }
+
+          snapshot.appendItems(firstItems, toSection: .first)
+          snapshot.appendItems(secondItems, toSection: .second)
+
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
+        }
+      }
+
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .white
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          contentView.backgroundColor = .blue
+          label.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(15)
+            make.right.equalToSuperview().offset(-15)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      // 自定义头部视图
+      fileprivate class CustomHeader: UICollectionReusableView {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      ```
+  - title: UICollectionViewCell
+    description: |
+      UICollectionViewCell 是 UICollectionView 中的单元格，用于展示数据。可以通过继承 UICollectionViewCell 来自定义单元格，实现自定义的布局和样式。
+      - backgroundView: 单元格的背景视图。
+      - selectedBackgroundView: 选中时的背景视图。
+      - isSelected: 是否选中。
+      - isHighlighted: 是否高亮。
+    example: |
+      ```swift
+      class UICollectionViewCellPlayground: UIViewController {
+        enum Section: Int, CaseIterable {
+          case main
+        }
+
+        class Item: Hashable {
+          let id: UUID
+          var title: String
+
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var diffableDataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewCell"
+
+          configureCollectionView()
+          configureDataSource()
+          applyInitialSnapshot()
+        }
+
+
+      }
+
+      extension UICollectionViewCellPlayground {
+        private func configureCollectionView() {
+          let layout = UICollectionViewFlowLayout()
+          layout.minimumLineSpacing = 10
+          layout.minimumLineSpacing = 10
+          layout.sectionInset = .init(top: 10, left: 15, bottom: 10, right: 15)
+          layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 15 * 2 - 10 * 2) / 3, height: 100)
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          view.addSubview(collectionView)
+        }
+
+        private func configureDataSource() {
+          // 使用 CellRegistration 配置单元格
+          let cellRegistration = UICollectionView.CellRegistration<CustomCollectionViewCell, Item> { (cell, indexPath, item) in
+            // cell.label.text = item.title
+            // cell.contentView.backgroundColor = .red
+          }
+
+          diffableDataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
+            (collectionView, indexPath, item) -> UICollectionViewCell? in
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+          }
+        }
+
+        // 应用初始快照
+        private func applyInitialSnapshot() {
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.main])
+
+          // 创建并添加初始数据
+          snapshot.appendItems((1...10).map { Item(id: UUID(), title: "\($0)") }, toSection: .main)
+
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
+        }
+      }
+
+      fileprivate class CustomCollectionViewCell: UICollectionViewCell {
+        var icon: UIImageView!
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          let bv = UIView()
+          bv.backgroundColor = .red
+          backgroundView = bv
+
+          let sbv = UIView()
+          sbv.backgroundColor = .blue
+          selectedBackgroundView = sbv
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      ```
+  - title: UICollectionViewDelegate
+    description: |
+      UICollectionViewDelegate 是 UICollectionView 的代理协议，用于处理 UICollectionView 的事件和交互。通过实现 UICollectionViewDelegate 协议，可以处理单元格的选中、高亮、滚动等事件。
+    example: |
+      ```swift
+      class UICollectionViewDelegatePlayground: UIViewController {
+        enum Section: Int, CaseIterable {
+          case main
+        }
+
+        class Item: Hashable {
+          let id: UUID
+          var title: String
+
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var diffableDataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewDelegate"
+
+          configureCollectionView()
+          configureDataSource()
+          applyInitialSnapshot()
+          setupNavigation()
+        }
+
+        func setupNavigation() {
+          let action = UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.collectionView.allowsMultipleSelection.toggle()
+            self.navigationItem.rightBarButtonItem?.title = self.collectionView.allowsMultipleSelection ? "单选" : "多选"
+            self.deselectAllItems()
+          }
+          let button = UIBarButtonItem(title: "多选", image: nil, primaryAction: action, menu: nil)
+          navigationItem.rightBarButtonItem = button
+        }
+
+        func deselectAllItems() {
+          guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems else { return }
+          for indexPath in selectedIndexPaths {
+            collectionView.deselectItem(at: indexPath, animated: true)
+
+            if let cell = collectionView.cellForItem(at: indexPath) as? CustomCollectionViewCell {
+              cell.hideIcon()
+            }
+          }
+        }
+      }
+
+      extension UICollectionViewDelegatePlayground {
+        private func configureCollectionView() {
+          let layout = UICollectionViewFlowLayout()
+          layout.minimumLineSpacing = 10
+          layout.minimumLineSpacing = 10
+          layout.sectionInset = .init(top: 10, left: 15, bottom: 10, right: 15)
+          layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 15 * 2, height: 300)
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          collectionView.delegate = self
+          view.addSubview(collectionView)
+        }
+
+        private func configureDataSource() {
+          // 使用 CellRegistration 配置单元格
+          let cellRegistration = UICollectionView.CellRegistration<CustomCollectionViewCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+          }
+
+          diffableDataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
+            (collectionView, indexPath, item) -> UICollectionViewCell? in
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+          }
+        }
+
+        // 应用初始快照
+        private func applyInitialSnapshot() {
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.main])
+
+          // 创建并添加初始数据
+          snapshot.appendItems((1...10).map { Item(id: UUID(), title: "\($0)") }, toSection: .main)
+
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
+        }
+      }
+
+      extension UICollectionViewDelegatePlayground: UICollectionViewDelegate {
+
+        /// - Tag: highlight
+        func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
+          return true
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+          if let cell = collectionView.cellForItem(at: indexPath) {
+            cell.contentView.backgroundColor = .blue
+          }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+          if let cell = collectionView.cellForItem(at: indexPath) {
+            cell.contentView.backgroundColor = .red
+          }
+        }
+
+        /// - Tag: selection
+        func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+          return true
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+          print(">> didSelectItemAt: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+          if let cell = collectionView.cellForItem(at: indexPath) as? CustomCollectionViewCell {
+            cell.showIcon()
+          }
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+          print(">> didDeselectItemAt: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+          if let cell = collectionView.cellForItem(at: indexPath) as? CustomCollectionViewCell {
+            cell.hideIcon()
+          }
+        }
+
+        /// - Tag: display
+        func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+          print(">> willDisplay: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+        }
+
+        func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
+          print(">> willDisplaySupplementaryView: forElementKind=\(elementKind),  section=\(indexPath.section)")
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+          print(">> didEndDisplaying: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didEndDisplayingSupplementaryView view: UICollectionReusableView, forElementOfKind elementKind: String, at indexPath: IndexPath) {
+          print(">> didEndDisplayingSupplementaryView: forElementOfKind=\(elementKind), section=\(indexPath.section + 1)")
+        }
+
+        // - Tag: primary action
+        func collectionView(_ collectionView: UICollectionView, canPerformPrimaryActionForItemAt indexPath: IndexPath) -> Bool {
+          print(">> canPerformPrimaryActionForItemAt: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+          return true
+        }
+
+        func collectionView(_ collectionView: UICollectionView, performPrimaryActionForItemAt indexPath: IndexPath) {
+          print(">> performPrimaryActionForItemAt: section=\(indexPath.section + 1), item=\(indexPath.item + 1)")
+        }
+
+        // - Tag: menu
+        func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+          return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions in
+            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { action in
+              print("Delete \(indexPath.item)")
+            }
+
+            let detailAction = UIAction(title: "Details", image: UIImage(systemName: "info.circle")) { action in
+              print("Show details for \(indexPath.item)")
+            }
+
+            return UIMenu(title: "", children: [detailAction, deleteAction])
+          }
+        }
+      }
+
+
+      fileprivate class CustomCollectionViewCell: UICollectionViewCell {
+        var icon: UIImageView!
+        var label: UILabel!
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          icon = UIImageView(image: UIImage(systemName: "play"))
+          icon.alpha = 0.0
+          contentView.addSubview(icon)
+          icon.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.height.equalTo(24)
+          }
+          label = UILabel()
+          label.textColor = .white
+          contentView.addSubview(label)
+          label.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.leading.equalToSuperview().offset(10)
+          }
+          contentView.backgroundColor = .red
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+
+        func showIcon() {
+          icon.alpha = 1.0
+        }
+
+        func hideIcon() {
+          icon.alpha = 0.0
+        }
+      }
+
+      ```
+  - title: Drag and Drop
+    description: |
+      Drag and Drop 是 iOS 11 推出的新功能，用于实现视图之间的拖拽和放置。可以通过实现 UICollectionViewDragDelegate 和 UICollectionViewDropDelegate 协议来处理拖拽和放置操作。
+    example: |
+      ```swift
+      class UICollectionViewDragPlayground: UIViewController, UICollectionViewDelegate {
+
+        var collectionView: UICollectionView!
+        var dataSource: [String] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "Drag"
+
+          let layout = UICollectionViewFlowLayout()
+          layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 15 * 2 - 20 * 2) / 3, height: 100)
+          collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
+          collectionView.contentInset = UIEdgeInsets(top: 10, left: 15, bottom: 10, right: 15)
+          collectionView.backgroundColor = .white
+          collectionView.delegate = self
+          collectionView.dataSource = self
+          collectionView.dragDelegate = self
+          collectionView.dropDelegate = self
+          collectionView.reorderingCadence = .immediate // 控制拖拽的响应速度
+          collectionView.dragInteractionEnabled = true  // 启用拖拽交互
+          collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
+
+          self.view.addSubview(collectionView)
+        }
+      }
+
+      // MARK: - UICollectionViewDataSource
+
+      extension UICollectionViewDragPlayground: UICollectionViewDataSource {
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+          return dataSource.count
+        }
+
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+          let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
+          cell.backgroundColor = .lightGray
+
+          // Configure cell to show data
+          let label = UILabel(frame: cell.contentView.bounds)
+          label.text = dataSource[indexPath.item]
+          label.textAlignment = .center
+          label.tag = 100 // To identify and remove later
+          cell.contentView.viewWithTag(100)?.removeFromSuperview() // Remove old label
+          cell.contentView.addSubview(label)
+
+          return cell
+        }
+      }
+
+      // MARK: - UICollectionViewDragDelegate
+
+      extension UICollectionViewDragPlayground: UICollectionViewDragDelegate {
+        func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+          let item = dataSource[indexPath.item] as NSString
+          let itemProvider = NSItemProvider(object: item)
+          let dragItem = UIDragItem(itemProvider: itemProvider)
+          dragItem.localObject = item
+          return [dragItem]
+        }
+      }
+
+      // MARK: - UICollectionViewDropDelegate
+
+      extension UICollectionViewDragPlayground: UICollectionViewDropDelegate {
+        func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+          guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
+
+          for item in coordinator.items {
+            if let sourceIndexPath = item.sourceIndexPath {
+              collectionView.performBatchUpdates({
+                // Update data source
+                let draggedItem = dataSource.remove(at: sourceIndexPath.item)
+                dataSource.insert(draggedItem, at: destinationIndexPath.item)
+
+                // Update collectionView
+                collectionView.deleteItems(at: [sourceIndexPath])
+                collectionView.insertItems(at: [destinationIndexPath])
+              })
+              coordinator.drop(item.dragItem, toItemAt: destinationIndexPath)
+            } else {
+              // Handle items dragged from outside
+              let placeholder = coordinator.drop(
+                item.dragItem,
+                to: UICollectionViewDropPlaceholder(
+                  insertionIndexPath: destinationIndexPath,
+                  reuseIdentifier: "PlaceholderCell"
+                )
+              )
+              item.dragItem.itemProvider.loadObject(ofClass: NSString.self) { (object, error) in
+                DispatchQueue.main.async {
+                  if let draggedObject = object as? String {
+                    placeholder.commitInsertion { insertionIndexPath in
+                      self.dataSource.insert(draggedObject, at: insertionIndexPath.item)
+                    }
+                  } else {
+                    placeholder.deletePlaceholder()
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // 提供有关拖放行为的提案
+        func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+          return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
+        }
+      }
+      ```
+  - title: UICollectionViewDataSourcePrefetching
+    description: |
+      UICollectionViewDataSourcePrefetching 是 UICollectionView 的预取数据源代理协议，用于预取数据以提高性能。通过实现 UICollectionViewDataSourcePrefetching 协议，可以预取数据以提高 UICollectionView 的性能。
+    example: |
+      ```swift
+      import UIKit
+      import SnapKit
+
+      class UICollectionViewDataSourcePrefetchingPlayground: UICollectionViewController {
+
+        var items: [Int] = []
+
+        init() {
+
+          let layout = UICollectionViewFlowLayout()
+          layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 30, height: 100)
+          super.init(collectionViewLayout: layout)
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("init(coder:) has not been implemented")
+        }
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewDataSourcePrefetching"
+
+          configureCollectionView()
+          applyInitialData()
+        }
+
+        private func configureCollectionView() {
+          collectionView.dataSource = self
+          collectionView.prefetchDataSource = self
+          collectionView.backgroundColor = .systemBackground
+          collectionView.register(CustomCell.self, forCellWithReuseIdentifier: "Cell")
+        }
+
+        private func applyInitialData() {
+          items = (1...100).map { $0 }
+          collectionView.reloadData()
+        }
+
+        // 有多少个 Section
+        override func numberOfSections(in collectionView: UICollectionView) -> Int {
+          return 1
+        }
+
+        // 每个 Section 有多少 Item
+        override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+          return items.count
+        }
+
+        // Item 构造
+        override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+          let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? CustomCell
+          guard let cell = cell else {
+            return UICollectionViewCell()
+          }
+          cell.label.text = "\(indexPath.item)"
+          cell.contentView.backgroundColor = .blue
+          return cell
+        }
+      }
+
+      extension UICollectionViewDataSourcePrefetchingPlayground: UICollectionViewDataSourcePrefetching {
+        // MARK: - UICollectionViewDataSourcePrefetching
+
+        // 预加载数据
+        func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+          print(">> prefetchItemsAt: \(indexPaths.map { $0.item })")
+        }
+
+        // 取消不再需要的预加载任务
+        func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+          print(">> cancelPrefetchingForItemsAt: \(indexPaths.map { $0.item })")
+        }
+      }
+
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .white
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(15)
+            make.right.equalToSuperview().offset(-15)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      ```
+  - title: 自定义 UICollectionViewFlowLayout
+    description: |
+      UICollectionViewFlowLayout 是 UICollectionView 的布局类，用于配置 UICollectionView 的布局。可以通过继承 UICollectionViewFlowLayout 来自定义 UICollectionView 的布局，实现自定义的布局效果。工作流：
+      - 初始化
+        1. invalidateLayout(with:) - context: <UICollectionViewFlowLayoutInvalidationContext>
+        2. invalidateLayout()
+        3. prepare()
+        4. collectionViewContentSize - Size: (393.0, 21877.0)
+        5. layoutAttributesForElements(in:) - Rect: (0.0, -852.0, 393.0, 1704.0)
+        6. collectionViewContentSize - Size: (393.0, 21877.0)
+      - 滑动：高频调用 shouldInvalidateLayout(forBoundsChange:) 来判断是否要刷新布局（返回 true 的会会重新执行 prepare）
+        - false: 不刷新布局
+          1. layoutAttributesForElements(in:) - Rect: (0.0, 0.0, 393.0, 1704.0) - 不一定调用，collectionView 会在需要时会调用。如果 shouldInvalidateLayout 返回 true 的话，重新布局后一定会调用。
+          2. collectionViewContentSize - Size: (393.0, 21877.0) - layoutAttributesForElements 调用后会再次调用该方法
+          3. targetContentOffset(forProposedContentOffset:withScrollingVelocity:) - ProposedContentOffset: (0.0, -73.), Velocity: (0.0, 0.0), TargetOffset: (0.0, -73) - 返回最终停靠位置（滚动结束的位置）
+        - true: 刷新布局
+          1. invalidationContext(forBoundsChange:)
+          2. invalidateLayout(with:) - context: <UICollectionViewFlowLayoutInvalidationContext>
+          3. invalidateLayout()
+          4. prepare()
+          5. collectionViewContentSize
+          6. layoutAttributesForElements(in:)
+          7. collectionViewContentSize
+      - 数据：插入、删除、移动和更新
+        1. invalidateLayout(with:) - context: <UICollectionViewFlowLayoutInvalidationContext>
+        2. invalidateLayout()
+        3. prepare()
+        4. collectionViewContentSize - Size: (393.0, 21570.0)
+        5. prepare(forCollectionViewUpdates:) - UpdateItems: [INS(0-100)]
+        6. layoutAttributesForElements(in:) - Rect: (0.0, -852.0, 393.0, 1704.0)
+        7. collectionViewContentSize - Size: (393.0, 21570.0)
+        8. finalizeCollectionViewUpdates()
+    example: |
+      ```swift
+      class UICollectionViewFlowLayoutPlayground: UIViewController, UICollectionViewDelegate {
+        class Item: Hashable {
+          let id: UUID
+          var title: String
+          var height: Int
+
+          init(id: UUID, title: String, height: Int) {
+            self.id = id
+            self.title = title
+            self.height = height
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+        }
+
+        var collectionView: UICollectionView! = nil
+        var diffableDataSource: UICollectionViewDiffableDataSource<Int, Item>! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+
+          title = "UICollectionViewFlowLayout"
+
+          configureCollectionView()
+          configureDataSource()
+          applyInitialData()
+          setupActionButtons()
+        }
+
+        // 配置 CollectionView
+        private func configureCollectionView() {
+          let layout = LoggingCollectionViewFlowLayout()
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .systemBackground
+          collectionView.delegate = self
+
+          view.addSubview(collectionView)
+        }
+
+        // 配置数据源
+        private func configureDataSource() {
+          let cellRegistration = UICollectionView.CellRegistration<CustomCell, Item> { (cell, indexPath, item) in
+            cell.label.text = item.title
+            cell.contentView.backgroundColor = .red
+          }
+          diffableDataSource = UICollectionViewDiffableDataSource<Int, Item>(collectionView: collectionView) {
+            (collectionView, indexPath, item) -> UICollectionViewCell? in
+
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+          }
+
+          let headerRegistration = UICollectionView.SupplementaryRegistration<CustomHeader>(
+            elementKind: UICollectionView.elementKindSectionHeader
+          ) { (headerView, elementKind, indexPath) in
+            headerView.label.text = "Header"
+          }
+
+          // 配置 section 头部视图
+          diffableDataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) in
+            return collectionView.dequeueConfiguredReusableSupplementary(
+              using: headerRegistration,
+              for: indexPath
+            )
+          }
+        }
+
+        // 配置初始数据
+        private func applyInitialData() {
+          var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
+          snapshot.appendSections([0])
+          let items = (1...1000).map { Item(id: UUID(), title: "\($0)", height: Int.random(in: 100...300)) }
+          snapshot.appendItems(items, toSection: 0)
+          diffableDataSource.applySnapshotUsingReloadData(snapshot)
         }
 
         // 设置操作按钮
@@ -454,96 +1966,64 @@ usage:
         // 插入新项
         @objc private func insertItem() {
           var snapshot = diffableDataSource.snapshot()
-          let newItem = Item(id: UUID(), title: "New Item")
-          snapshot.appendItems([newItem], toSection: .first)
-          diffableDataSource.apply(snapshot, animatingDifferences: true)
+          guard let firstItem = snapshot.itemIdentifiers(inSection: 0).first else { return }
+          let height = Int.random(in: 100...300)
+          let newItem = Item(id: UUID(), title: "\(height)", height: height)
+          snapshot.insertItems([newItem], beforeItem: firstItem)
+          diffableDataSource.apply(snapshot, animatingDifferences: false)
         }
 
         // 删除项
         @objc private func deleteItem() {
           var snapshot = diffableDataSource.snapshot()
-          let firstItems = snapshot.itemIdentifiers(inSection: Section.first)
-          snapshot.deleteItems([firstItems[0]])
-          diffableDataSource.apply(snapshot, animatingDifferences: true)
+          guard let firstItem = snapshot.itemIdentifiers(inSection: 0).first else { return }
+          snapshot.deleteItems([firstItem])
+          diffableDataSource.apply(snapshot, animatingDifferences: false)
         }
 
         // 移动项
         @objc private func moveItem() {
           var snapshot = diffableDataSource.snapshot()
-          let firstItems = snapshot.itemIdentifiers(inSection: Section.first)
+          let firstItems = snapshot.itemIdentifiers(inSection: 0)
+          guard firstItems.count > 1 else { return }
           let firstItem = firstItems[0]
-          let sencondItem = firstItems[1]
-          snapshot.moveItem(firstItem, afterItem: sencondItem)
-          diffableDataSource.apply(snapshot, animatingDifferences: true)
+          let secondItem = firstItems[1]
+          snapshot.moveItem(firstItem, afterItem: secondItem)
+          diffableDataSource.apply(snapshot, animatingDifferences: false)
         }
 
         // 更新项
         @objc private func updateItem() {
           var snapshot = diffableDataSource.snapshot()
-          let firstItems = snapshot.itemIdentifiers(inSection: Section.first)
-          let firstItem = firstItems[0]
-          firstItem.title = "1"
+          guard let firstItem = snapshot.itemIdentifiers(inSection: 0).first else { return }
+          let height = Int.random(in: 100...300)
+          firstItem.title = "\(height)"
+          firstItem.height = height
           snapshot.reloadItems([firstItem])
-          diffableDataSource.apply(snapshot, animatingDifferences: true)
-        }
-
-        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-          let section = Section.allCases[indexPath.section]
-          let selectedItem = diffableDataSource.itemIdentifier(for: indexPath)
-
-          if let item = selectedItem {
-            print("Selected item in \(section.title): \(item.title), ID: \(item.id)")
-          }
+          diffableDataSource.apply(snapshot, animatingDifferences: false)
         }
       }
 
-      // 自定义第一种单元格
-      fileprivate class FirstCell: UICollectionViewCell {
-        let label: UILabel = {
-          let label = UILabel()
-          label.textAlignment = .center
-          label.textColor = .white
-          return label
-        }()
-
-        override init(frame: CGRect) {
-          super.init(frame: frame)
-          contentView.addSubview(label)
-          contentView.backgroundColor = .blue
-          label.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(15)
-            make.right.equalToSuperview().offset(-15)
-          }
+      extension UICollectionViewFlowLayoutPlayground: UICollectionViewDelegateFlowLayout {
+        // 头大小
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+          return CGSize(width: UIScreen.main.bounds.width, height: 50)
         }
 
-        required init?(coder: NSCoder) {
-          super.init(coder: coder)
-        }
-      }
-
-      // 自定义第二种单元格
-      fileprivate class SecondCell: UICollectionViewCell {
-        let label: UILabel = {
-          let label = UILabel()
-          label.textAlignment = .center
-          label.textColor = .white
-          return label
-        }()
-
-        override init(frame: CGRect) {
-          super.init(frame: frame)
-          contentView.addSubview(label)
-          contentView.backgroundColor = .red
-          label.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(15)
-            make.right.equalToSuperview().offset(-15)
-          }
+        // 内边距
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+          return UIEdgeInsets(top: 10, left: 15, bottom: 10, right: 15)
         }
 
-        required init?(coder: NSCoder) {
-          super.init(coder: coder)
+        // 行大小
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+          let item = diffableDataSource.itemIdentifier(for: indexPath)
+          return CGSize(width: view.bounds.width - 30, height: CGFloat(item?.height ?? 100))
+        }
+
+        // 行间距
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+          return 10
         }
       }
 
@@ -569,179 +2049,1943 @@ usage:
           super.init(coder: coder)
         }
       }
+
+      // 自定义单元格
+      fileprivate class CustomCell: UICollectionViewCell {
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .white
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(15)
+            make.right.equalToSuperview().offset(-15)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+      fileprivate class LoggingCollectionViewFlowLayout: UICollectionViewFlowLayout {
+
+        /// 准备布局，通常在布局即将开始计算前调用。
+        override func prepare() {
+          super.prepare()
+          print(">> prepare()")
+        }
+
+        /// 返回整个 collection view 的内容尺寸，用于确定滚动范围。
+        override var collectionViewContentSize: CGSize {
+          let size = super.collectionViewContentSize
+          print(">> collectionViewContentSize - Size: \(size)")
+          return size
+        }
+
+        /// 返回指定区域内所有元素的布局属性，用于决定在该区域内哪些元素应该显示。
+        override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+          let attributes = super.layoutAttributesForElements(in: rect)
+          print(">> layoutAttributesForElements(in:) - Rect: \(rect)")
+          return attributes
+        }
+
+        /// 返回特定位置的单个单元格的布局属性，用于计算该单元格的显示位置和大小。
+        override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+          let attributes = super.layoutAttributesForItem(at: indexPath)
+          print(">> layoutAttributesForItem(at:) - IndexPath: \(indexPath)")
+          return attributes
+        }
+
+        /// 返回指定类型和位置的补充视图（如页眉、页脚）的布局属性。
+        override func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+          let attributes = super.layoutAttributesForSupplementaryView(ofKind: elementKind, at: indexPath)
+          print(">> layoutAttributesForSupplementaryView(ofKind:at:) - ElementKind: \(elementKind), IndexPath: \(indexPath)")
+          return attributes
+        }
+
+        /// 返回指定类型和位置的装饰视图的布局属性。装饰视图通常用于非交互的背景或装饰效果。
+        override func layoutAttributesForDecorationView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+          let attributes = super.layoutAttributesForDecorationView(ofKind: elementKind, at: indexPath)
+          print(">> layoutAttributesForDecorationView(ofKind:at:) - ElementKind: \(elementKind), IndexPath: \(indexPath)")
+          return attributes
+        }
+
+        /// 当 collection view 的 bounds 发生改变时调用，确定是否需要重新布局。
+        override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+          let shouldInvalidate = super.shouldInvalidateLayout(forBoundsChange: newBounds)
+          print(">> shouldInvalidateLayout(forBoundsChange:) - NewBounds: \(newBounds), ShouldInvalidate: \(shouldInvalidate)")
+          return shouldInvalidate || true
+        }
+
+        /// 返回无效化上下文，用于指定在 bounds 发生变化时哪些部分需要更新。
+        override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+          let context = super.invalidationContext(forBoundsChange: newBounds)
+          print(">> invalidationContext(forBoundsChange:) - NewBounds: \(newBounds)")
+          return context
+        }
+
+        override func invalidateLayout() {
+          super.invalidateLayout();
+          print(">> invalidateLayout()")
+        }
+
+        override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+          super.invalidateLayout(with: context)
+          print(">> invalidateLayout(with:) - context: \(context)")
+        }
+
+        /// 在进行插入、删除、移动等更新操作之前调用，提供更新所需的布局准备工作。
+        override func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+          super.prepare(forCollectionViewUpdates: updateItems)
+          print(">> prepare(forCollectionViewUpdates:) - UpdateItems: \(updateItems)")
+        }
+
+        /// 在所有更新操作完成后调用，用于清理临时数据或完成更新。
+        override func finalizeCollectionViewUpdates() {
+          super.finalizeCollectionViewUpdates()
+          print(">> finalizeCollectionViewUpdates()")
+        }
+
+        /// 返回最终停靠位置（滚动结束的位置），用于实现分页或对齐效果。
+        override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint, withScrollingVelocity velocity: CGPoint) -> CGPoint {
+          let targetOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset, withScrollingVelocity: velocity)
+          print(">> targetContentOffset(forProposedContentOffset:withScrollingVelocity:) - ProposedContentOffset: \(proposedContentOffset), Velocity: \(velocity), TargetOffset: \(targetOffset)")
+          return targetOffset
+        }
+
+        /// 确定布局属性更新是否应导致布局无效化，以响应首选的布局属性变化。
+        override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+          let shouldInvalidate = super.shouldInvalidateLayout(forPreferredLayoutAttributes: preferredAttributes, withOriginalAttributes: originalAttributes)
+          print(">> shouldInvalidateLayout(forPreferredLayoutAttributes:withOriginalAttributes:) - PreferredAttributes: \(preferredAttributes), OriginalAttributes: \(originalAttributes), ShouldInvalidate: \(shouldInvalidate)")
+          return shouldInvalidate
+        }
+      }
+
       ```
-  - title: 自定义 UICollectionView 的布局
-    description: |-
-      可以通过继承 UICollectionViewLayout 类来实现自定义布局。
-      - 需要重写以下方法：
-          - `prepare()`: 准备布局信息。
-          - `collectionViewContentSize`: 返回 CollectionView 的内容大小。
-          - `layoutAttributesForElements(in: CGRect)`: 返回指定区域内所有单元格和装饰视图的布局属性。
-      - 可以使用 UICollectionViewLayoutAttributes 类来创建和设置布局属性，例如位置、大小、透明度、变换等。
+  - title: 自定义瀑布流布局
+    description: |
+      UICollectionViewLayout 是 UICollectionView 的布局类，用于配置 UICollectionView 的布局。可以通过继承 UICollectionViewLayout 来自定义 UICollectionView 的布局，实现自定义的布局效果。
     example: |
       ```swift
       import UIKit
 
-      class CustomCollectionViewLayout: UICollectionViewLayout {
-          // ... 自定义布局属性 ...
+      class UICollectionViewWaterfallLayoutPlayground: UIViewController {
 
-          override func prepare() {
-              super.prepare()
-              // ... 计算布局信息 ...
+        private var collectionView: UICollectionView!
+        private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+
+        enum Section: Int, CaseIterable {
+          case one
+          case two
+
+          var title: String {
+            switch self {
+            case .one:
+              return "One column"
+            case .two:
+              return "Two column"
+            }
+          }
+        }
+
+        // 内部类定义数据结构
+        class Item: Hashable {
+          let id = UUID()  // 唯一标识符
+          let index: Int
+          var color: UIColor
+          var ratio: CGFloat
+
+          init(index: Int, color: UIColor, ratio: CGFloat) {
+            self.index = index
+            self.color = color
+            self.ratio = ratio
           }
 
-          override var collectionViewContentSize: CGSize {
-              // ... 返回内容大小 ...
+          // 遵循 Hashable 协议
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
           }
 
-          override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-              var layoutAttributes = [UICollectionViewLayoutAttributes]()
-              // ... 计算指定区域内所有元素的布局属性 ...
-              return layoutAttributes
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
           }
+
+          static func generate(offset: Int, count: Int, ratio: CGFloat?) -> [Item] {
+            var items: [Item] = []
+            for i in 0..<count {
+              let index = offset + i
+              let ratio = ratio ?? CGFloat.random(in: 0.5...1.5)
+              let color = UIColor(
+                red: CGFloat.random(in: 0...1),
+                green: CGFloat.random(in: 0...1),
+                blue: CGFloat.random(in: 0...1),
+                alpha: 1.0
+              )
+              items.append(Item(index: index, color: color, ratio: ratio))
+            }
+            return items
+          }
+        }
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+          setupCollectionView()
+          setupDataSource()
+          setupActionButtons()
+        }
+
+        private func setupCollectionView() {
+          let layout = UICollectionViewWaterfallLayout()
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .white
+          collectionView.delegate = self
+          collectionView.register(WaterfallCell.self, forCellWithReuseIdentifier: WaterfallCell.identifier)
+          collectionView.register(WaterfallHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: WaterfallHeader.identifier)
+          view.addSubview(collectionView)
+        }
+
+        private func setupDataSource() {
+          let cellRegistration = UICollectionView.CellRegistration<WaterfallCell, Item> { (cell, indexPath, item) in
+            cell.configure(with: item.index, color: item.color, ratio: item.ratio)
+          }
+
+          dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { collectionView, indexPath, item in
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+          }
+
+          dataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) in
+            guard kind == UICollectionView.elementKindSectionHeader else { return nil }
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: WaterfallHeader.identifier, for: indexPath) as? WaterfallHeader
+            header?.label.text = Section.allCases[indexPath.section].title
+            return header
+          }
+
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([Section.one])
+          snapshot.appendItems(Item.generate(offset: 0, count: 10, ratio: 1.5), toSection: Section.one)
+          snapshot.appendSections([Section.two])
+          snapshot.appendItems(Item.generate(offset: 10, count: 30, ratio: nil), toSection: Section.two)
+          dataSource.applySnapshotUsingReloadData(snapshot)
+        }
       }
-      ```
-  - title: 实现瀑布流布局
-    description: |-
-      瀑布流布局是一种常见的自定义布局，它的特点是单元格的高度不固定，根据内容自适应高度，并按照列的方式排列。
-      - 需要计算每个单元格的高度，并根据高度将单元格分配到不同的列中。
-      - 可以使用 CHTCollectionViewWaterfallLayout 等第三方库来简化瀑布流布局的实现。
-    example: |
-      ```swift
-      // 使用 CHTCollectionViewWaterfallLayout 实现瀑布流布局
-      import CHTCollectionViewWaterfallLayout
 
-      class ViewController: UIViewController, UICollectionViewDelegate, CHTCollectionViewDelegateWaterfallLayout {
+      extension UICollectionViewWaterfallLayoutPlayground: UICollectionViewWaterfallDelegate {
+        // MARK: - UICollectionViewWaterfallDelegate
 
-          var collectionView: UICollectionView!
-          // ... 其他属性和方法 ...
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, ratioForItemAt indexPath: IndexPath) -> CGFloat {
+          guard let item = dataSource.itemIdentifier(for: indexPath) else { return 1 }
+          return CGFloat(item.ratio)
+        }
 
-          override func viewDidLoad() {
-              super.viewDidLoad()
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, heightForHeaderIn section: Int) -> CGFloat {
+          return 50
+        }
 
-              // ... 创建 Collection View ...
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, heightForFooterIn section: Int) -> CGFloat {
+          return 0
+        }
 
-              // 设置瀑布流布局
-              let layout = CHTCollectionViewWaterfallLayout()
-              layout.columnCount = 2 // 设置列数
-              layout.minimumColumnSpacing = 10 // 设置列间距
-              layout.minimumInteritemSpacing = 10 // 设置行间距
-              collectionView.collectionViewLayout = layout
-              collectionView.delegate = self
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetsFor section: Int) -> UIEdgeInsets {
+          return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        }
+
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+          return 10
+        }
+
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+          return 10
+        }
+
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, columnCountFor section: Int) -> Int {
+          let sectionType = Section(rawValue: section)
+          switch sectionType {
+          case .one:
+            return 1
+          case .two:
+            return 2
+          default:
+            return 1
           }
+        }
 
-          // MARK: - CHTCollectionViewDelegateWaterfallLayout
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+          let offsetY = scrollView.contentOffset.y
+          let contentHeight = scrollView.contentSize.height
+          let frameHeight = scrollView.frame.size.height
 
-          func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-              // ... 计算单元格大小 ...
+          if offsetY > contentHeight - frameHeight - 300 {
+            loadMoreItems()
           }
+        }
+
+        func loadMoreItems() {
+          var snapshot = dataSource.snapshot()
+          let items = snapshot.itemIdentifiers(inSection: .two)
+          guard let lastItem = items.last else { return }
+          let moreItems = Item.generate(offset: lastItem.index + 1, count: 30, ratio: nil)
+          snapshot.appendItems(moreItems, toSection: .two)
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
       }
+
+      extension UICollectionViewWaterfallLayoutPlayground {
+        // 设置操作按钮
+        private func setupActionButtons() {
+          let buttonStack = UIStackView()
+          buttonStack.axis = .horizontal
+          buttonStack.spacing = 10
+          buttonStack.distribution = .fillEqually
+
+          let insertButton = UIButton(type: .system)
+          insertButton.setTitle("Insert", for: .normal)
+          insertButton.addTarget(self, action: #selector(insertItem), for: .touchUpInside)
+
+          let deleteButton = UIButton(type: .system)
+          deleteButton.setTitle("Delete", for: .normal)
+          deleteButton.addTarget(self, action: #selector(deleteItem), for: .touchUpInside)
+
+          let moveButton = UIButton(type: .system)
+          moveButton.setTitle("Move", for: .normal)
+          moveButton.addTarget(self, action: #selector(moveItem), for: .touchUpInside)
+
+          let updateButton = UIButton(type: .system)
+          updateButton.setTitle("Update", for: .normal)
+          updateButton.addTarget(self, action: #selector(updateItem), for: .touchUpInside)
+
+          buttonStack.addArrangedSubview(insertButton)
+          buttonStack.addArrangedSubview(deleteButton)
+          buttonStack.addArrangedSubview(moveButton)
+          buttonStack.addArrangedSubview(updateButton)
+
+          let container = UIView()
+          container.backgroundColor = .white
+          container.addSubview(buttonStack)
+          view.addSubview(container)
+
+          container.snp.makeConstraints{ make in
+            make.bottom.equalToSuperview()
+            make.leading.equalToSuperview()
+            make.trailing.equalToSuperview()
+          }
+
+          buttonStack.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview().offset(-34)
+            make.leading.equalToSuperview().offset(15)
+            make.trailing.equalToSuperview().offset(-15)
+          }
+        }
+
+        // 插入新项
+        @objc private func insertItem() {
+          var snapshot = dataSource.snapshot()
+          guard let firstItem = snapshot.itemIdentifiers(inSection: .one).first else { return }
+          let newItem = Item(index: Int.random(in: 1000...1000000), color: UIColor(
+            red: CGFloat.random(in: 0...1),
+            green: CGFloat.random(in: 0...1),
+            blue: CGFloat.random(in: 0...1),
+            alpha: 1.0
+          ), ratio: CGFloat.random(in: 0.5...1.5))
+          snapshot.insertItems([newItem], beforeItem: firstItem)
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 删除项
+        @objc private func deleteItem() {
+          var snapshot = dataSource.snapshot()
+          guard let firstItem = snapshot.itemIdentifiers(inSection: .one).first else { return }
+          snapshot.deleteItems([firstItem])
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 移动项
+        @objc private func moveItem() {
+          var snapshot = dataSource.snapshot()
+          let firstItems = snapshot.itemIdentifiers(inSection: .one)
+          guard firstItems.count > 1 else { return }
+          let firstItem = firstItems[0]
+          let secondItem = firstItems[1]
+          snapshot.moveItem(firstItem, afterItem: secondItem)
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
+
+        // 更新项
+        @objc private func updateItem() {
+          var snapshot = dataSource.snapshot()
+          guard let firstItem = snapshot.itemIdentifiers(inSection: .one).first else { return }
+          firstItem.color = UIColor(
+            red: CGFloat.random(in: 0...1),
+            green: CGFloat.random(in: 0...1),
+            blue: CGFloat.random(in: 0...1),
+            alpha: 1.0
+          )
+          firstItem.ratio = CGFloat.random(in: 0.5...1.5)
+          snapshot.reloadItems([firstItem])
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
+      }
+
+      fileprivate class WaterfallHeader: UICollectionReusableView {
+        static let identifier = "WaterfallHeader"
+
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+
+      // MARK: - Custom WaterfallCell
+      fileprivate class WaterfallCell: UICollectionViewCell {
+        static let identifier = "WaterfallCell"
+
+        private let label = UILabel()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.translatesAutoresizingMaskIntoConstraints = false
+          label.textAlignment = .center
+          label.textColor = .white
+          label.font = UIFont.boldSystemFont(ofSize: 16)
+
+          NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+          ])
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("init(coder:) has not been implemented")
+        }
+
+        func configure(with index: Int, color: UIColor, ratio: CGFloat) {
+          contentView.backgroundColor = color
+          label.text = "Item \(index)\nRatio: \(String(format: "%.2f", ratio))"
+        }
+      }
+
+      fileprivate protocol UICollectionViewWaterfallDelegate: UICollectionViewDelegate {
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  ratioForItemAt indexPath: IndexPath) -> CGFloat
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  heightForHeaderIn section: Int) -> CGFloat
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  heightForFooterIn section: Int) -> CGFloat
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  insetsFor section: Int) -> UIEdgeInsets
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  minimumLineSpacingForSectionAt section: Int) -> CGFloat
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  minimumInteritemSpacingForSectionAt section: Int) -> CGFloat
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  columnCountFor section: Int) -> Int
+      }
+
+      extension UICollectionViewWaterfallDelegate {
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  ratioForItemAt indexPath: IndexPath) -> CGFloat {
+          return 1 // 默认 1:1
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  heightForHeaderIn section: Int) -> CGFloat {
+          return 0  // 默认无头部高度
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  heightForFooterIn section: Int) -> CGFloat {
+          return 0  // 默认无尾部高度
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  insetsFor section: Int) -> UIEdgeInsets {
+          return .zero  // 默认无边距
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+          return 10  // 默认行间距
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+          return 10  // 默认列间距
+        }
+
+        func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  columnCountFor section: Int) -> Int {
+          return 2  // 默认两列
+        }
+      }
+
+      fileprivate class UICollectionViewWaterfallLayout: UICollectionViewLayout {
+        public var columnCount: Int = 2 {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public var minimumLineSpacingForSectionAt: CGFloat = 10 {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public var minimumInteritemSpacingForSectionAt: CGFloat = 10 {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public var headerHeight: CGFloat = 0 {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public var footerHeight: CGFloat = 0 {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public var sectionInset: UIEdgeInsets = .zero {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public enum ItemRenderDirection: Int {
+          case shortestFirst
+          case leftToRight
+          case rightToLeft
+        }
+
+        public var itemRenderDirection: ItemRenderDirection = .shortestFirst {
+          didSet {
+            invalidateLayout()
+          }
+        }
+
+        public weak var delegate: UICollectionViewWaterfallDelegate? {
+          return collectionView?.delegate as? UICollectionViewWaterfallDelegate
+        }
+
+        private var columnHeights: [[CGFloat]] = []
+        private var sectionItemAttributes: [[UICollectionViewLayoutAttributes]] = []
+        private var allItemAttributes: [UICollectionViewLayoutAttributes] = []
+        private var headersAttributes: [Int: UICollectionViewLayoutAttributes] = [:]
+        private var footersAttributes: [Int: UICollectionViewLayoutAttributes] = [:]
+        private var unionRects: [CGRect] = []
+        private let unionSize = 20
+
+        private func columnCount(forSection section: Int) -> Int {
+          return delegate?.collectionView(collectionView!, layout: self, columnCountFor: section) ?? columnCount
+        }
+
+        private func minimumLineSpacingForSection(forSection section: Int) -> CGFloat {
+          return delegate?.collectionView(collectionView!, layout: self, minimumLineSpacingForSectionAt: section) ?? minimumLineSpacingForSectionAt
+        }
+
+        private func minimumInteritemSpacingForSection(forSection section: Int) -> CGFloat {
+          return delegate?.collectionView(collectionView!, layout: self, minimumInteritemSpacingForSectionAt: section) ?? minimumInteritemSpacingForSectionAt
+        }
+
+        private var collectionViewContentWidth: CGFloat {
+          let insets = collectionView!.contentInset
+          return collectionView!.bounds.size.width - insets.left - insets.right
+        }
+
+        private func collectionViewContentWidth(ofSection section: Int) -> CGFloat {
+          let insets = delegate?.collectionView(collectionView!, layout: self, insetsFor: section) ?? sectionInset
+          return collectionViewContentWidth - insets.left - insets.right
+        }
+
+        public func itemWidth(inSection section: Int) -> CGFloat {
+          let columnCount = self.columnCount(forSection: section)
+          let spaceColumCount = CGFloat(columnCount - 1)
+          let width = collectionViewContentWidth(ofSection: section)
+          let minimumColumnSpacing = minimumInteritemSpacingForSection(forSection: section)
+          return floor((width - (spaceColumCount * minimumColumnSpacing)) / CGFloat(columnCount))
+        }
+
+        /**
+        * prepare() 是布局的初始化方法，在每次布局更新前调用。
+        * - 时机：每次布局无效化时都会调用 prepare()，例如在屏幕旋转、数据源更新或手动调用 invalidateLayout() 时。
+        * - 用法：：在 prepare() 中计算全局的布局信息，比如每个单元格的位置、大小，分区的边界等。通常会将这些数据缓存起来，以提高 layoutAttributesForItem(at:) 和其他方法的访问效率。
+        */
+        override public func prepare() {
+          super.prepare()
+
+          guard let collectionView = collectionView else { return }
+          let numberOfSections = collectionView.numberOfSections
+          if numberOfSections == 0 { return }
+
+          headersAttributes = [:]
+          footersAttributes = [:]
+          unionRects = []
+          allItemAttributes = []
+          sectionItemAttributes = []
+          columnHeights = (0 ..< numberOfSections).map { section in
+            let columnCount = self.columnCount(forSection: section)
+            return Array(repeating: 0, count: columnCount)
+          }
+
+          var top: CGFloat = 0.0
+
+          for section in 0 ..< numberOfSections {
+            let sectionInsets = delegate?.collectionView(collectionView, layout: self, insetsFor: section) ?? self.sectionInset
+            let columnCount = self.columnCount(forSection: section)
+            let itemWidth = self.itemWidth(inSection: section)
+            let minimumLineSpacingForSection = self.minimumLineSpacingForSection(forSection: section)
+
+            let heightHeader = delegate?.collectionView(collectionView, layout: self, heightForHeaderIn: section) ?? self.headerHeight
+            if heightHeader > 0 {
+              let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, with: IndexPath(row: 0, section: section))
+              attributes.frame = CGRect(x: 0, y: top, width: collectionView.bounds.width, height: heightHeader)
+              headersAttributes[section] = attributes
+              allItemAttributes.append(attributes)
+              top = attributes.frame.maxY
+            }
+            top += sectionInsets.top
+            columnHeights[section] = Array(repeating: top, count: columnCount)
+
+            let itemCount = collectionView.numberOfItems(inSection: section)
+            var itemAttributes: [UICollectionViewLayoutAttributes] = []
+
+            for idx in 0 ..< itemCount {
+              let indexPath = IndexPath(item: idx, section: section)
+              let columnIndex = nextColumnIndexForItem(idx, inSection: section)
+              let minimumColumnSpacing = minimumInteritemSpacingForSection(forSection: section)
+              let xOffset = sectionInsets.left + (itemWidth + minimumColumnSpacing) * CGFloat(columnIndex)
+              let yOffset = columnHeights[section][columnIndex]
+
+              let itemRatio = delegate?.collectionView(collectionView, layout: self, ratioForItemAt: indexPath) ?? 1
+              let itemHeight = floor(itemWidth / itemRatio)
+              let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
+              attributes.frame = CGRect(x: xOffset, y: yOffset, width: itemWidth, height: itemHeight)
+              itemAttributes.append(attributes)
+              allItemAttributes.append(attributes)
+              columnHeights[section][columnIndex] = attributes.frame.maxY + minimumLineSpacingForSection
+            }
+            sectionItemAttributes.append(itemAttributes)
+
+            let columnIndex  = longestColumnIndex(inSection: section)
+            top = columnHeights[section][columnIndex] - minimumLineSpacingForSection + sectionInsets.bottom
+            let footerHeight = delegate?.collectionView(collectionView, layout: self, heightForFooterIn: section) ?? self.footerHeight
+
+            if footerHeight > 0 {
+              let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, with: IndexPath(item: 0, section: section))
+              attributes.frame = CGRect(x: 0, y: top, width: collectionView.bounds.width, height: footerHeight)
+              footersAttributes[section] = attributes
+              allItemAttributes.append(attributes)
+              top = attributes.frame.maxY
+            }
+
+            columnHeights[section] = Array(repeating: top, count: columnCount)
+          }
+
+          var idx = 0
+          let itemCounts = allItemAttributes.count
+          while idx < itemCounts {
+            let rect1 = allItemAttributes[idx].frame
+            idx = min(idx + unionSize, itemCounts) - 1
+            let rect2 = allItemAttributes[idx].frame
+            unionRects.append(rect1.union(rect2))
+            idx += 1
+          }
+        }
+
+        override public var collectionViewContentSize: CGSize {
+          guard collectionView!.numberOfSections > 0 else { return .zero }
+          var contentSize = collectionView!.bounds.size
+          contentSize.width = collectionViewContentWidth
+          if let height = columnHeights.last?.first {
+            contentSize.height = height
+            return contentSize
+          }
+          return .zero
+        }
+
+        /**
+        * layoutAttributesForItem(at:) 返回指定 IndexPath 的单个单元格的布局属性。
+        * - 时机：通常由 layoutAttributesForElements(in:) 调用，来获取某个单元格的布局信息，也可能直接被 UICollectionView 用于获取特定单元格的布局。
+        * - 用法：返回单个单元格的位置、大小等布局信息。通常从 prepare() 预计算的数据中读取属性，构造并返回一个 UICollectionViewLayoutAttributes 对象。
+        */
+        override public func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+          return sectionItemAttributes[indexPath.section][indexPath.item]
+        }
+
+        /**
+        * 返回指定类型（如页眉或页脚）和 IndexPath 的补充视图的布局属性。
+        * - 时机：在 layoutAttributesForElements(in:) 中被调用，或者在 UICollectionView 需要某个补充视图的布局属性时调用。
+        * - 用法：返回一个 UICollectionViewLayoutAttributes 对象，定义补充视图的布局。补充视图通常是页眉、页脚，或者其他自定义的辅助视图。
+        */
+        override public func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+          if elementKind == UICollectionView.elementKindSectionHeader {
+            return headersAttributes[indexPath.section]
+          } else if elementKind == UICollectionView.elementKindSectionFooter {
+            return footersAttributes[indexPath.section]
+          }
+          return nil
+        }
+
+        /**
+        * layoutAttributesForElements(in:) 返回指定矩形区域内的所有布局属性。
+        * - 时机：当 UICollectionView 需要展示新的内容区域时会调用此方法，例如在滚动时。
+        * - 用法：从缓存中获取所有在 rect 区域内的布局属性，打包成一个数组并返回。这是一个批量方法，UICollectionView 可以利用它快速获取可见区域的所有元素布局。
+        */
+        override public func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+          return allItemAttributes.filter { rect.intersects($0.frame) }
+        }
+
+        /**
+        * 当 UICollectionView 的边界发生改变时调用，返回 true 时会重新布局。例如，在屏幕旋转或视图大小改变时，此方法可用于动态适应新边界。
+        */
+        override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+          return newBounds.width != collectionView?.bounds.width
+        }
+
+        private func shortestColumnIndex(inSection section: Int) -> Int {
+          return columnHeights[section].enumerated().min { $0.element < $1.element }?.offset ?? 0
+        }
+
+        private func longestColumnIndex(inSection section: Int) -> Int {
+          return columnHeights[section].enumerated().max { $0.element < $1.element }?.offset ?? 0
+        }
+
+        private func nextColumnIndexForItem(_ item: Int, inSection section: Int) -> Int {
+          let columnCount = self.columnCount(forSection: section)
+          switch itemRenderDirection {
+          case .shortestFirst: return shortestColumnIndex(inSection: section)
+          case .leftToRight: return item % columnCount
+          case .rightToLeft: return (columnCount - 1) - (item % columnCount)
+          }
+        }
+      }
+
       ```
-  - title: 实现分组和分区
-    description: |-
-      UICollectionView 支持分组和分区，可以将单元格分组到不同的 section 中，每个 section 可以有自己的 header 和 footer。
-      - 需要在数据源方法中返回 section 的数量、每个 section 中的单元格数量，以及 header 和 footer 的信息。
-      - 可以使用 UICollectionView.elementKindSectionHeader 和 UICollectionView.elementKindSectionFooter 来注册 header 和 footer 的视图类。
+  - title: UICollectionViewCompositionalLayout
+    description: |
+      UICollectionViewCompositionalLayout 是 iOS 13 引入的新布局类，用于配置 UICollectionView 的布局。它通过组合多个 UICollectionViewLayoutItem、UICollectionViewLayoutGroup 和 UICollectionViewLayoutSection 来构建复杂的布局结构。
     example: |
       ```swift
       import UIKit
 
-      class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+      class UICollectionViewCompositionalLayoutPlayground: UIViewController {
+        enum Section: Int {
+          case layoutItemSize
+          case layoutItemContentInsets
+          case layoutItemEdgeSpacingWithFixed
+          case layoutItemEdgeSpacingWithFlexible
+          case layoutItemSupplementaryItems
+          case layoutGroupSubitems
+          case layoutGroupRepeatingSubitem
+          case layoutGroupInterItemSpacing
+          case layoutGroupContentInsets
+          case layoutGroupNesting
+          case layoutSectionBoundarySupplementaryItems
+          case layoutSectionDecorationItems
+          case layoutSectionOrthogonalScrollingBehavior
+          case layoutSectionVisibleItemsInvalidationHandler
 
-          // ... 其他属性和方法 ...
+          var title: String {
+            switch self {
+            case .layoutItemSize:
+              return "NSCollectionLayoutItem#itemSize"
+            case .layoutItemContentInsets:
+              return "NSCollectionLayoutItem#contentInsets"
+            case .layoutItemEdgeSpacingWithFixed:
+              return "NSCollectionLayoutItem#edgeSpacing=fixed"
+            case .layoutItemEdgeSpacingWithFlexible:
+              return "NSCollectionLayoutItem#edgeSpacing=flexible"
+            case .layoutItemSupplementaryItems:
+              return "NSCollectionLayoutItem#supplementaryItems"
+            case .layoutGroupSubitems:
+              return "NSCollectionLayoutGroup#subitems"
+            case .layoutGroupRepeatingSubitem:
+              return "NSCollectionLayoutGroup#repeatingSubitem"
+            case .layoutGroupInterItemSpacing:
+              return "NSCollectionLayoutGroup#interItemSpacing"
+            case .layoutGroupContentInsets:
+              return "NSCollectionLayoutGroup#contentInsets"
+            case .layoutGroupNesting:
+              return "NSCollectionLayoutGroup#nesting"
+            case .layoutSectionBoundarySupplementaryItems:
+              return "NSCollectionLayoutSection#boundarySupplementaryItems"
+            case .layoutSectionDecorationItems:
+              return "NSCollectionLayoutSection#decorationItems"
+            case .layoutSectionOrthogonalScrollingBehavior:
+              return "NSCollectionLayoutSection#orthogonalScrollingBehavior"
+            case .layoutSectionVisibleItemsInvalidationHandler:
+              return "NSCollectionLayoutSection#visibleItemsInvalidationHandler"
+            }
+          }
+        }
 
-          // MARK: - UICollectionViewDataSource
+        class Item: Hashable {
+          let id: UUID
+          var title: String
 
-          func numberOfSections(in collectionView: UICollectionView) -> Int {
-              return 2 // 返回 section 数量
+          init(id: UUID, title: String) {
+            self.id = id
+            self.title = title
           }
 
-          func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-              // ... 返回每个 section 中的单元格数量 ...
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
           }
 
-          func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-              // ... 配置和返回单元格 ...
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
           }
+        }
 
-          func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-              if kind == UICollectionView.elementKindSectionHeader {
-                  // ... 配置和返回 header 视图 ...
-              } else if kind == UICollectionView.elementKindSectionFooter {
-                  // ... 配置和返回 footer 视图 ...
+        var dataSource: UICollectionViewDiffableDataSource<Section, Item>! = nil
+        var collectionView: UICollectionView! = nil
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+          title = "UICollectionViewCompositionalLayout"
+          configureHierarchy()
+          configureDataSource()
+        }
+      }
+
+      extension UICollectionViewCompositionalLayoutPlayground {
+        func createLayout() -> UICollectionViewLayout {
+          let layout = UICollectionViewCompositionalLayout {
+            [weak self] (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+            guard let self = self else { return nil}
+            let section = Section(rawValue: sectionIndex)
+            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
+              layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .estimated(50)
+              ),
+              elementKind: UICollectionView.elementKindSectionHeader,
+              alignment: .top
+            )
+            switch section {
+            case .layoutItemSize:
+              /*
+              +------+----+---+
+              |   1  |  2 | 3 |
+              +------+----+---+
+              |  11  | 12 | 13|
+              +------+----+---+
+              |  101 | 102|
+              +------+----+---+
+              |  103 | 104|
+              +------+----+
+              */
+              let item1Width = CGFloat(0.5)
+              let item3Width = CGFloat(40)
+              let item2Width = self.view.bounds.width * item1Width - item3Width
+
+              let item1 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  // 等于 Group 宽度的二分之一
+                  widthDimension: .fractionalWidth(item1Width),
+                  // 等于 Group 的高度值，如果 Group 是预估高度值，则会按预估高度值显示（不会按实际高度显示）
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let item2 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  // 固定显示一行的剩余宽度
+                  widthDimension: .absolute(item2Width),
+                  // 固定高度 40pt
+                  heightDimension: .absolute(40)
+                )
+              )
+              let item3 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  // 预估宽度 40pt，显示是会按内容缩放显示，超出一行时会换行显示
+                  widthDimension: .estimated(item3Width),
+                  // 预估高度 40pt，内容可以撑开高度
+                  heightDimension: .estimated(40)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  // 屏幕宽度
+                  widthDimension: .fractionalWidth(1.0),
+                  // 预估高度 40，item 可以撑开 Group 高度
+                  heightDimension: .estimated(40)
+                ),
+                subitems: [item1, item2, item3]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutItemContentInsets:
+              /*
+              +-----+-----+-----+-----+
+              |  1  |  2  |  3  |  4  |
+              +-----+-----+-----+-----+
+              */
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.25),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              /*
+              * contentInsets 设置 item 的内边距
+              * - 不会影响 item 的大小
+              * - 不同 item 之间的边距会叠加（所以两边的留白会比中间的小）
+              */
+              item.contentInsets = NSDirectionalEdgeInsets(
+                top: 10,
+                leading: 15,
+                bottom: 10,
+                trailing: 15
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.25)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutItemEdgeSpacingWithFixed:
+              /*
+              +-----+-----+-----+-----+
+              |  1  |  2  |  3  |  4  |
+              +-----+-----+-----+-----+
+              */
+              let horizontalSpacing = CGFloat(15)
+              let columnCount = CGFloat(4)
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .absolute((self.view.bounds.width - horizontalSpacing * columnCount * 2) / columnCount),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              /**
+              * 对比 contentInsets，edgeSpacing 是个外边距，不算在 layoutSize 里，并且会影响 fractionalWidth/fractionalHeight 的计算
+              *
+              * - NSCollectionLayoutSpacing.fixed 固定大小显示
+              * - NSCollectionLayoutSpacing.flexible 可以根据 Group 剩余空间自动缩放
+              */
+              item.edgeSpacing = NSCollectionLayoutEdgeSpacing(
+                leading: .fixed(horizontalSpacing),
+                top: .fixed(10),
+                trailing: .fixed(horizontalSpacing),
+                bottom: .fixed(10)
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.25)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutItemEdgeSpacingWithFlexible:
+              /*
+              +-----+-----+-----+
+              |  1  |  2  |  3  |
+              +-----+-----+-----+
+              */
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.3),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              item.edgeSpacing = NSCollectionLayoutEdgeSpacing(
+                leading: .flexible(1),
+                top: .fixed(0),
+                trailing: .flexible(1),
+                bottom: .fixed(0)
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.25)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutItemSupplementaryItems:
+              /*
+              +-----0-----1-----2-----4
+              |  1  |  2  |  3  |  4  |
+              +-----+-----+-----+-----+
+              */
+              let badge = NSCollectionLayoutSupplementaryItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .absolute(20),
+                  heightDimension: .absolute(20)
+                ),
+                elementKind: BadgeSupplementaryView.elementKind,
+                containerAnchor: NSCollectionLayoutAnchor(
+                  edges: [.top, .trailing],
+                  fractionalOffset: CGPoint(x: 0.3, y: -0.3)
+                )
+              )
+
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.25),
+                  heightDimension: .fractionalHeight(1.0)
+                ),
+                supplementaryItems: [badge]
+              )
+              item.contentInsets = NSDirectionalEdgeInsets(
+                top: 5,
+                leading: 5,
+                bottom: 5,
+                trailing: 5
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.2)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutGroupSubitems:
+              /*
+              +---+-—----+---------+---+------+
+              | 1 |   2  |    3    | 4 |   5  |
+              +---+------+---------+---+------+
+              | 6 |   7  |    8    | 9 |
+              +---+------+---------+---+
+              */
+              let item1 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.1),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let item2 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.2),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let item3 = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.4),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.2)
+                ),
+                /**
+                * Group 代表每一行或每一列
+                *
+                * - 每一行或一列会按 subitems 里 item 顺序设置对应大小
+                * - 一行或或一列有剩余空间时，会按 subitems 里 item 顺序重新开始排列，直到一行放不下为止
+                * - 如果当前 subitems 还没有排完，但是一行或一列不够放了，会换行从头开始按 subitems 里的 item 顺序设置对应大小
+                */
+                subitems: [item1, item2, item3]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutGroupRepeatingSubitem:
+              /*
+              +-----+-----+--+---
+              |  1  |  2  |  |3
+              +-----+-----+--+---
+              |  4  |
+              +-----+
+              */
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.4),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.2)
+                ),
+                // iOS 16+，每一行严格按 subitem 的数量排列显示，超出一行则溢出屏幕显示（可以配置滚动显示）
+                repeatingSubitem: item,
+                count: 3
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutGroupInterItemSpacing:
+              /*
+              +-----+-+-----+
+              |  1  | |  2  |
+              +-----+-+-----+
+              |  3  |
+              +-----+
+              */
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.5),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.2)
+                ),
+                subitems: [item]
+              )
+              // group 内的 item 之间的而间距，item fractional 大小按照扣除间距后计算
+              group.interItemSpacing = .fixed(10)
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutGroupContentInsets:
+              /*
+              ｜---------------｜
+              ｜ +-----+-----+ ｜
+              ｜ |  1  |  2  | ｜
+              ｜ +-----+-----+ ｜
+              ｜---------------｜
+              */
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.5),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.2)
+                ),
+                subitems: [item]
+              )
+              group.contentInsets = NSDirectionalEdgeInsets(
+                top: 10,
+                leading: 15,
+                bottom: 10,
+                trailing: 15
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutGroupNesting:
+              /*
+              +-------+-------+
+              |       |   2   |
+              |   1   +-------+
+              |       |   3   |
+              +-------+-------+
+              */
+              let leadingItem = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.5),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              leadingItem.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+
+              let trailingItem = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalHeight(0.5)
+                )
+              )
+              trailingItem.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+              let trailingGroup = NSCollectionLayoutGroup.vertical(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.5),
+                  heightDimension: .fractionalHeight(1.0)
+                ),
+                repeatingSubitem: trailingItem,
+                count: 2
+              )
+              let nestedGroup = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(1)
+                ),
+                subitems: [leadingItem, trailingGroup]
+              )
+              let section = NSCollectionLayoutSection(group: nestedGroup)
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutSectionBoundarySupplementaryItems:
+              let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .fractionalHeight(1.0)
+              ))
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .absolute(300)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              // goup 间距
+              section.interGroupSpacing = 20
+              // 内边距
+              section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 15, bottom: 0, trailing: 15)
+              let headerFooterSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                // 预估高度可能被实际内容撑开
+                heightDimension: .estimated(44)
+              )
+              let sectionFooter = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerFooterSize,
+                elementKind: UICollectionView.elementKindSectionFooter,
+                alignment: .bottom
+              )
+              sectionHeader.pinToVisibleBounds = true
+              sectionHeader.zIndex = 2
+              sectionFooter.pinToVisibleBounds = true
+              sectionFooter.zIndex = 2
+              section.boundarySupplementaryItems = [sectionHeader, sectionFooter]
+              return section
+            case .layoutSectionDecorationItems:
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .absolute(44)
+                ),
+                subitems: [item]
+              )
+              let section = NSCollectionLayoutSection(group: group)
+              section.interGroupSpacing = 5
+              section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+              let sectionBackgroundDecoration = NSCollectionLayoutDecorationItem.background(
+                elementKind: UICVCLSectionDecorationItemsPlayground.sectionBackgroundDecorationElementKind
+              )
+              sectionBackgroundDecoration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+              section.decorationItems = [sectionBackgroundDecoration]
+              return section
+            case .layoutSectionOrthogonalScrollingBehavior:
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.8),
+                  heightDimension: .fractionalHeight(0.4)
+                ),
+                subitems: [item]
+              )
+
+              let section = NSCollectionLayoutSection(group: group)
+              section.orthogonalScrollingBehavior = .continuous
+              section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            case .layoutSectionVisibleItemsInvalidationHandler:
+              let item = NSCollectionLayoutItem(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(0.5),
+                  heightDimension: .fractionalHeight(1.0)
+                )
+              )
+              let group = NSCollectionLayoutGroup.horizontal(
+                layoutSize: NSCollectionLayoutSize(
+                  widthDimension: .fractionalWidth(1.0),
+                  heightDimension: .fractionalWidth(0.5)
+                ),
+                subitems: [item, item]
+              )
+              group.interItemSpacing = .fixed(20)
+              group.contentInsets = .init(top: 10, leading: 15, bottom: 10, trailing: 15)
+              let section = NSCollectionLayoutSection(group: group)
+              section.orthogonalScrollingBehavior = .continuous
+              section.visibleItemsInvalidationHandler = { [weak self] (visibleItems, offset, environment) in
+                guard let self = self else { return }
+                visibleItems.forEach { item in
+                  if item.representedElementCategory == .cell {
+                    let distanceFromCenter = abs((item.frame.midX - offset.x) - environment.container.contentSize.width / 2.0)
+                    let minScale: CGFloat = 0.7
+                    let maxScale: CGFloat = 1.1
+                    let scale = CGFloat.maximum(maxScale - (distanceFromCenter / environment.container.contentSize.width), minScale)
+                    item.transform = CGAffineTransform(scaleX: scale, y: scale)
+                    let minAlpha: CGFloat = 0.5
+                    let maxAlpha: CGFloat = 1
+                    let alpha = CGFloat.maximum(maxAlpha - (distanceFromCenter / environment.container.contentSize.width), minAlpha)
+                    item.alpha = alpha
+                    // print(">> \(item.indexPath.item) \(distanceFromCenter) \(scale) \(alpha)")
+                    if let cell = self.collectionView.cellForItem(at: item.indexPath) as? TextCell {
+                      cell.label.textColor = UIColor(
+                        red: CGFloat.minimum(distanceFromCenter / (environment.container.contentSize.width / 2), 1),
+                        green: 0,
+                        blue: 0,
+                        alpha: 1
+                      )
+                    }
+                  }
+                }
               }
-              return UICollectionReusableView()
+              // 不能加 Header，加了后会有计算问题
+              // section.boundarySupplementaryItems = [sectionHeader]
+              return section
+            default:
+              return nil
+            }
           }
+          layout.register(
+            SectionBackgroundDecorationView.self,
+            forDecorationViewOfKind: UICVCLSectionDecorationItemsPlayground.sectionBackgroundDecorationElementKind
+          )
+          return layout
+        }
+      }
+
+      extension UICollectionViewCompositionalLayoutPlayground {
+        private func configureHierarchy() {
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+          collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+          collectionView.backgroundColor = .white
+          view.addSubview(collectionView)
+        }
+
+        private func configureDataSource() {
+          let cellRegistration = UICollectionView.CellRegistration<TextCell, Item> { (cell, indexPath, identifier) in
+            // Populate the cell with our item description.
+            cell.label.text = "\(identifier.title)"
+          }
+
+          dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {
+            (collectionView: UICollectionView, indexPath: IndexPath, identifier: Item) -> UICollectionViewCell? in
+            // Return the cell.
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: identifier)
+          }
+
+          let headerRegistration = UICollectionView.SupplementaryRegistration
+          <HeaderView>(elementKind: UICollectionView.elementKindSectionHeader) {
+            (supplementaryView, string, indexPath) in
+            let section = Section(rawValue: indexPath.section)
+            supplementaryView.label.text = section?.title
+          }
+
+          let footerRegistration = UICollectionView.SupplementaryRegistration
+          <HeaderView>(elementKind: UICollectionView.elementKindSectionFooter) {
+            (supplementaryView, string, indexPath) in
+            let section = Section(rawValue: indexPath.section)
+            supplementaryView.label.text = "\(section?.title ?? "") Footer"
+          }
+
+          let badgeRegistration = UICollectionView.SupplementaryRegistration
+          <BadgeSupplementaryView>(elementKind: BadgeSupplementaryView.elementKind) {
+            (supplementaryView, string, indexPath) in
+            supplementaryView.label.text = "\(indexPath.item)"
+          }
+
+          dataSource.supplementaryViewProvider = { [weak self] (view, kind, index) in
+            guard let self = self else { return nil }
+            switch kind {
+            case UICollectionView.elementKindSectionHeader:
+              return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: headerRegistration,
+                for: index
+              )
+            case UICollectionView.elementKindSectionFooter:
+              return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: footerRegistration,
+                for: index
+              )
+            case BadgeSupplementaryView.elementKind:
+              return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: badgeRegistration,
+                for: index
+              )
+            default:
+              return nil
+            }
+          }
+
+          // initial data
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.layoutItemSize])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "11"),
+            Item(id: UUID(), title: "12"),
+            Item(id: UUID(), title: "13"),
+            Item(id: UUID(), title: "101"),
+            Item(id: UUID(), title: "102"),
+            Item(id: UUID(), title: "103"),
+            Item(id: UUID(), title: "104"),
+          ])
+          snapshot.appendSections([.layoutItemContentInsets])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+          ])
+          snapshot.appendSections([.layoutItemEdgeSpacingWithFixed])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+          ])
+          snapshot.appendSections([.layoutItemEdgeSpacingWithFlexible])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+          ])
+          snapshot.appendSections([.layoutItemSupplementaryItems])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+          ])
+          snapshot.appendSections([.layoutGroupSubitems])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+            Item(id: UUID(), title: "5"),
+            Item(id: UUID(), title: "6"),
+            Item(id: UUID(), title: "7"),
+            Item(id: UUID(), title: "8"),
+            Item(id: UUID(), title: "9"),
+          ])
+          snapshot.appendSections([.layoutGroupRepeatingSubitem])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+          ])
+          snapshot.appendSections([.layoutGroupInterItemSpacing])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3")
+          ])
+          snapshot.appendSections([.layoutGroupContentInsets])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2")
+          ])
+          snapshot.appendSections([.layoutGroupNesting])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3")
+          ])
+          snapshot.appendSections([.layoutSectionBoundarySupplementaryItems])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3")
+          ])
+          snapshot.appendSections([.layoutSectionDecorationItems])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3")
+          ])
+          snapshot.appendSections([.layoutSectionOrthogonalScrollingBehavior])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+            Item(id: UUID(), title: "5"),
+            Item(id: UUID(), title: "6")
+          ])
+          snapshot.appendSections([.layoutSectionVisibleItemsInvalidationHandler])
+          snapshot.appendItems([
+            Item(id: UUID(), title: "1"),
+            Item(id: UUID(), title: "2"),
+            Item(id: UUID(), title: "3"),
+            Item(id: UUID(), title: "4"),
+            Item(id: UUID(), title: "5"),
+            Item(id: UUID(), title: "6")
+          ])
+          dataSource.applySnapshotUsingReloadData(snapshot)
+        }
+      }
+
+      fileprivate class HeaderView: UICollectionReusableView {
+        let label = UILabel()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          configure()
+        }
+        required init?(coder: NSCoder) {
+          fatalError()
+        }
+      }
+
+      extension HeaderView {
+        func configure() {
+          backgroundColor = .lightGray
+          addSubview(label)
+          label.numberOfLines = 0
+          label.translatesAutoresizingMaskIntoConstraints = false
+          label.adjustsFontForContentSizeCategory = true
+          let inset = CGFloat(10)
+          NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: inset),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -inset),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: inset),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -inset)
+          ])
+          label.font = UIFont.preferredFont(forTextStyle: .title3)
+        }
+      }
+
+
+      fileprivate class TextCell: UICollectionViewCell {
+        let label = UILabel()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          configure()
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("not implemnted")
+        }
+      }
+
+      extension TextCell {
+        func configure() {
+          backgroundColor = .systemBlue
+          layer.borderColor = UIColor.black.cgColor
+          layer.borderWidth = 1
+          label.textAlignment = .center
+          label.translatesAutoresizingMaskIntoConstraints = false
+          label.adjustsFontForContentSizeCategory = true
+          label.numberOfLines = 0
+          contentView.addSubview(label)
+          let inset = CGFloat(10)
+          NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: inset),
+            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -inset),
+            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: inset),
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -inset)
+          ])
+        }
+      }
+
+      fileprivate class BadgeSupplementaryView: UICollectionReusableView {
+        static let elementKind = "badge"
+
+        let label = UILabel()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          configure()
+        }
+
+        override var frame: CGRect {
+          didSet {
+            configureBorder()
+          }
+        }
+
+        override var bounds: CGRect {
+          didSet {
+            configureBorder()
+          }
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("Not implemented")
+        }
+      }
+
+      extension BadgeSupplementaryView {
+        func configure() {
+          label.translatesAutoresizingMaskIntoConstraints = false
+          label.adjustsFontForContentSizeCategory = true
+          addSubview(label)
+          NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor)
+            ])
+          label.font = UIFont.preferredFont(forTextStyle: .body)
+          label.textAlignment = .center
+          label.textColor = .black
+          backgroundColor = .green
+          configureBorder()
+        }
+
+        func configureBorder() {
+          let radius = bounds.width / 2.0
+          layer.cornerRadius = radius
+          layer.borderColor = UIColor.black.cgColor
+          layer.borderWidth = 1.0
+        }
+      }
+
+
+      fileprivate class SectionBackgroundDecorationView: UICollectionReusableView {
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          configure()
+        }
+        required init?(coder: NSCoder) {
+          fatalError("not implemented")
+        }
+      }
+
+      extension SectionBackgroundDecorationView {
+        func configure() {
+          backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
+          layer.borderColor = UIColor.black.cgColor
+          layer.borderWidth = 1
+          layer.cornerRadius = 12
+        }
       }
       ```
-  - title: 处理单元格的选择
-    description: |-
-      可以通过代理方法 `collectionView(_:didSelectItemAt:)` 来处理单元格的选中事件。
-      - 可以通过 `collectionView.indexPathsForSelectedItems` 属性获取所有选中单元格的 indexPath。
-      - 可以通过 `collectionView.allowsMultipleSelection` 属性设置是否允许多选。
-      - 可以通过 `collectionView.selectItem(at:animated:scrollPosition:)` 方法选中指定单元格，并可以选择是否滚动到可见区域。
+  - title: 基于 UICollectionViewCompositionalLayout 的瀑布流实现
     example: |
       ```swift
       import UIKit
 
-      class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+      class UICollectionViewCompositionalLayoutWaterfallPlayground: UIViewController {
+        private var collectionView: UICollectionView!
+        private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
-          // ... 其他属性和方法 ...
+        enum Section: Hashable {
+          case one
+          case two(page: Int)
 
-          // MARK: - UICollectionViewDelegate
-
-          func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-              // ... 处理单元格选中事件 ...
+          var title: String {
+            switch self {
+            case .one:
+              return "一列布局"
+            case .two:
+              return "两列布局"
+            }
           }
+        }
+
+        class Item: Hashable {
+          let id = UUID()
+          let index: Int
+          let color: UIColor
+          let ratio: CGFloat
+
+          init(index: Int, color: UIColor, ratio: CGFloat) {
+            self.index = index
+            self.color = color
+            self.ratio = ratio
+          }
+
+          func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+          }
+
+          static func == (lhs: Item, rhs: Item) -> Bool {
+            return lhs.id == rhs.id
+          }
+
+          static func generate(offset: Int, count: Int, ratio: CGFloat?) -> [Item] {
+            var items: [Item] = []
+            for i in 0..<count {
+              let index = offset + i
+              let ratio = ratio ?? CGFloat.random(in: 0.5...1.5)
+              let color = UIColor(
+                red: CGFloat.random(in: 0...1),
+                green: CGFloat.random(in: 0...1),
+                blue: CGFloat.random(in: 0...1),
+                alpha: 1.0
+              )
+              items.append(Item(index: index, color: color, ratio: ratio))
+            }
+            return items
+          }
+        }
+
+        override func viewDidLoad() {
+          super.viewDidLoad()
+          title = "Waterfall by UICollectionViewCompositionalLayout"
+          setupCollectionView()
+          setupDataSource()
+        }
+
+        private func setupCollectionView() {
+          let layout = createWaterfallCompositionalLayout()
+
+          collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+          collectionView.backgroundColor = .white
+          collectionView.delegate = self
+          view.addSubview(collectionView)
+        }
+
+        private func setupDataSource() {
+          let cellRegistration = UICollectionView.CellRegistration<WaterfallCell, Item> { (cell, indexPath, item) in
+            cell.configure(with: item.index, color: item.color, ratio: item.ratio)
+          }
+
+          dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) { collectionView, indexPath, item in
+            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+          }
+
+          let headerRegistration = UICollectionView.SupplementaryRegistration<WaterfallHeader>(elementKind: UICollectionView.elementKindSectionHeader) {(header, string, indexPath) in
+            let section = self.dataSource.snapshot().sectionIdentifiers[indexPath.section]
+            if case let .two(page) = section {
+              header.label.text = "\(section.title)(\(page))"
+            } else {
+              header.label.text = section.title
+            }
+          }
+
+          dataSource.supplementaryViewProvider = { (collectionView, kind, index) in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: index)
+          }
+
+          var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+          snapshot.appendSections([.one, .two(page: 1)])
+          snapshot.appendItems(Item.generate(offset: 0, count: 30, ratio: 1.5), toSection: .one)
+          snapshot.appendItems(Item.generate(offset: 30, count: 30, ratio: nil), toSection: .two(page: 1))
+          dataSource.applySnapshotUsingReloadData(snapshot)
+        }
+
+        private var layoutCache: [Int: NSCollectionLayoutSection] = [:]
+
+        private func createWaterfallCompositionalLayout() -> UICollectionViewLayout {
+          return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, layoutEnvironment) -> NSCollectionLayoutSection? in
+            guard let self = self else { return nil }
+
+            if let cachedSection = self.layoutCache[sectionIndex] {
+              return cachedSection
+            }
+
+            print(">> \(sectionIndex)")
+
+            let section = self.dataSource.snapshot().sectionIdentifiers[sectionIndex]
+
+            switch section {
+            case .one:
+              let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(50))
+              let item = NSCollectionLayoutItem(layoutSize: itemSize)
+              let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50))
+              let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+              let section = NSCollectionLayoutSection(group: group)
+              section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 15, bottom: 10, trailing: 15)
+              section.interGroupSpacing = 15
+              let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50))
+              let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+              section.boundarySupplementaryItems = [header]
+              self.layoutCache[sectionIndex] = section
+              return section
+            case .two:
+              let section = NSCollectionLayoutSection.waterfall(
+                contentInsets: NSDirectionalEdgeInsets(top: 10, leading: 15, bottom: 10, trailing: 15),
+                numberOfItems: collectionView.numberOfItems(inSection: sectionIndex),
+                columnCount: 2,
+                itemRatioProvider: { [weak self] index in
+                  guard let self = self else { return CGFloat(1) }
+                  let item = self.dataSource.itemIdentifier(for: IndexPath(item: index, section: sectionIndex))
+                  guard let item = item else { return CGFloat(1) }
+                  return CGFloat(item.ratio)
+                },
+                interItemSpacing: CGFloat(10),
+                lineSpacing: CGFloat(10)
+              )
+              let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50))
+              let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+              section.boundarySupplementaryItems = [header]
+              self.layoutCache[sectionIndex] = section
+              return section
+            }
+          }
+        }
       }
-      ```
-  - title: 处理单元格的删除和移动
-    description: |-
-      可以通过代理方法 `collectionView(_:canMoveItemAt:)` 和 `collectionView(_:moveItemAt:to:)` 来处理单元格的移动事件。
-      - 可以通过 `collectionView.beginInteractiveMovementForItem(at:)`、`collectionView.updateInteractiveMovementTargetPosition(_:)` 和 `collectionView.endInteractiveMovement()` 方法来实现单元格的交互式移动。
-      - 可以通过数据源方法 `collectionView(_:canEditItemAt:)`、`collectionView(_:commit:forItemAt:)` 和 `collectionView(_:moveItemAt:to:)` 来处理单元格的删除和移动事件。
-    example: |
-      ```swift
-      import UIKit
 
-      class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+      extension UICollectionViewCompositionalLayoutWaterfallPlayground: UICollectionViewDelegate {
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+          let offsetY = scrollView.contentOffset.y
+          let contentHeight = scrollView.contentSize.height
+          let frameHeight = scrollView.frame.size.height
 
-          // ... 其他属性和方法 ...
+          if offsetY > contentHeight - frameHeight - 300 {
+            loadNextPage()
+          }
+        }
 
-          // MARK: - UICollectionViewDataSource
-
-          func collectionView(_ collectionView: UICollectionView, canMoveItemAt indexPath: IndexPath) -> Bool {
-              // ... 返回是否可以移动单元格 ...
+        private func loadNextPage() {
+          // Check the current pages in the snapshot to determine the next page
+          let currentPages = dataSource.snapshot().sectionIdentifiers.compactMap { section -> Int? in
+            if case let .two(page) = section { return page }
+            return nil
           }
 
-          func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-              // ... 更新数据源 ...
-          }
+          guard let maxPage = currentPages.max() else { return }
+
+          let nextPage = maxPage + 1
+          var snapshot = dataSource.snapshot()
+
+          // Append the new section for the next page
+          let newItems = Item.generate(offset: nextPage * 30, count: 30, ratio: nil)
+          snapshot.appendSections([.two(page: nextPage)])
+          snapshot.appendItems(newItems, toSection: .two(page: nextPage))
+
+          dataSource.apply(snapshot, animatingDifferences: true)
+        }
       }
-      ```
-  - title: 添加自定义动画
-    description: |-
-      可以通过 `collectionView.performBatchUpdates(_:completion:)` 方法来执行多个更新操作，并添加自定义动画。
-      - 在 `performBatchUpdates(_:completion:)` 方法的闭包中，可以执行插入、删除、移动单元格等操作。
-      - 可以使用 `UIView.animate(withDuration:animations:)` 方法来添加自定义动画。
-    example: |
-      ```swift
-      import UIKit
 
-      class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+      fileprivate class WaterfallHeader: UICollectionReusableView {
+        static let identifier = "WaterfallHeader"
 
-          // ... 其他属性和方法 ...
+        let label: UILabel = {
+          let label = UILabel()
+          label.textAlignment = .center
+          label.textColor = .black
+          label.font = UIFont.boldSystemFont(ofSize: 20)
+          return label
+        }()
 
-          @IBAction func deleteItems() {
-              // ... 删除数据源中的数据 ...
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          addSubview(label)
+          label.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+          }
+        }
 
-              // 执行批量更新，并添加动画
-              collectionView.performBatchUpdates({
-                  // 删除单元格
-                  collectionView.deleteItems(at: [indexPath1, indexPath2])
-              }, completion: { finished in
-                  // 动画完成后执行的操作
-              })
+        required init?(coder: NSCoder) {
+          super.init(coder: coder)
+        }
+      }
+
+
+      // MARK: - Custom WaterfallCell
+      fileprivate class WaterfallCell: UICollectionViewCell {
+        static let identifier = "WaterfallCell"
+
+        private let label = UILabel()
+
+        override init(frame: CGRect) {
+          super.init(frame: frame)
+          contentView.addSubview(label)
+          label.translatesAutoresizingMaskIntoConstraints = false
+          label.textAlignment = .center
+          label.textColor = .white
+          label.font = UIFont.boldSystemFont(ofSize: 16)
+
+          NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+          ])
+        }
+
+        required init?(coder: NSCoder) {
+          fatalError("init(coder:) has not been implemented")
+        }
+
+        func configure(with index: Int, color: UIColor, ratio: CGFloat) {
+          contentView.backgroundColor = color
+          label.text = "Item \(index)\nRatio: \(String(format: "%.2f", ratio))"
+        }
+      }
+
+      extension NSCollectionLayoutSection {
+        static func waterfall(
+          contentInsets: NSDirectionalEdgeInsets,
+          numberOfItems: Int,
+          columnCount: Int,
+          itemRatioProvider: @escaping (Int) -> CGFloat,
+          interItemSpacing: CGFloat,
+          lineSpacing: CGFloat) -> NSCollectionLayoutSection {
+            let group = NSCollectionLayoutGroup.custom(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(300))) { environment in
+              let contentWidth = environment.container.contentSize.width - contentInsets.leading - contentInsets.trailing
+              let itemWidth = (contentWidth - CGFloat(columnCount - 1) * interItemSpacing) / CGFloat(columnCount)
+              var layoutAttributes: [NSCollectionLayoutGroupCustomItem] = []
+              var columnHeights = Array(repeating: CGFloat(0), count: columnCount)
+              for i in 0..<Int(numberOfItems) {
+                let columnIndex = columnHeights.enumerated().min(by: { $0.element < $1.element })?.offset ?? 0
+                let xOffset = CGFloat(columnIndex) * (itemWidth + interItemSpacing)
+                let itemHeight = itemWidth / itemRatioProvider(i)
+                let yOffset = columnHeights[columnIndex]
+
+                let frame = CGRect(x: xOffset, y: yOffset, width: itemWidth, height: itemHeight)
+                layoutAttributes.append(NSCollectionLayoutGroupCustomItem(frame: frame))
+
+                columnHeights[columnIndex] += itemHeight + lineSpacing
+              }
+              return layoutAttributes
+            }
+            let section = NSCollectionLayoutSection(group: group)
+            section.contentInsets = contentInsets
+            return section
           }
       }
       ```
