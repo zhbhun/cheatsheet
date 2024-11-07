@@ -17,6 +17,9 @@
   list-style-type: decimal;
 }
 
+.markdown hr {
+  margin: 20px 0;
+}
 
 .markdown .hljs {
   max-width: 100%;
