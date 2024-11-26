@@ -267,7 +267,7 @@ outlines:
             title: 边框
           - id: shadow
             title: 阴影
-          - id: border-radius
+          - id: radius
             title: 圆角
           - id: text
             title: 文本

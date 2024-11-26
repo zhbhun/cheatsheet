@@ -4040,3 +4040,11 @@ references:
     url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/supporting_drag_and_drop_in_collection_views
   - title: Get started with UICollectionView | by Irem Karaoglu - Medium
     url: https://iremkaraoglu.medium.com/get-started-with-uicollectionview-3e744b78ed7f
+  - title: Customizing Collection View Layouts
+    url: https://developer.apple.com/documentation/uikit/views_and_controls/collection_views/layouts/customizing_collection_view_layouts
+  - title: Custom Collection View Layouts
+    url: https://www.objc.io/issues/3-views/collection-view-layouts/
+  - title: Using the Flow Layout
+    url: https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/CollectionViewPGforIOS/UsingtheFlowLayout/UsingtheFlowLayout.html#//apple_ref/doc/uid/TP40012334-CH3-SW4
+  - title: Building custom layouts with UICollectionViewLayout
+    url: https://ioscoachfrank.com/collectionviewlayout/
