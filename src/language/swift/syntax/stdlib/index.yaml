@@ -10,3 +10,4 @@ children:
   - binary
   - url
   - serialization
+  - combine

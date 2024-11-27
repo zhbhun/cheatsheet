@@ -1,0 +1,115 @@
+id: subscriber
+title: Subscriber
+query: Swift Combine Subscriber
+comment: |
+  Subscriber 都有哪些属性、方法和实现，要怎么使用，请把所有情况列举出来
+
+  1. Subscribers.Sink
+  2. Subscribers.Assign
+  3. 自定义 Subscriber
+  4. Subscribers.Demand
+  5. Subscribers.Completion
+  6. Publisher.sink
+  7. Publisher.assign
+  8. 取消监听
+description: Subscriber 是一种协议，声明了一种可以从 Publisher 接收输入的类型。Subscriber 实例从 Publisher 接收元素流，以及描述它们关系变化的生命周期事件。给定 Subscriber 的 Input 和 Failure 关联类型必须与其对应 Publisher 的 Output 和 Failure 匹配。通过调用 Publisher 的 subscribe(_:) 方法将 Subscriber 连接到 Publisher。
+usage:
+  - title: Subscribers.Sink
+    description: '`sink(receiveCompletion:receiveValue:)` 在接收到完成信号和每次接收到新元素时执行任意闭包。它提供了两种接收值的方式：`receive(completion:)` 和 `receive(value:)`，分别用于处理完成事件和接收值。'
+    example: |
+      ```swift
+      let publisher = ["Hello", "World"].publisher
+      let subscription = publisher.sink(receiveCompletion: { completion in
+          print("Received completion:", completion)
+      }, receiveValue: { value in
+          print("Received value:", value)
+      })
+      // Output:
+      // Received value: Hello
+      // Received value: World
+      // Received completion: finished
+      ```
+  - title: Subscribers.Assign
+    description: '`assign(to:on:)` 将每个新接收的值写入由给定实例上的键路径标识的属性。`assign(to:)` 用于将值重新发布到另一个用 `@Published` 属性包装器标记的属性。这两种方法都用于将接收到的值赋值给属性，但前者用于 KVO 兼容的属性，后者用于 `@Published` 属性。'
+    example: |
+      ```swift
+      class SomeObject {
+          var value: String = "" {
+              didSet {
+                  print(value)
+              }
+          }
+      }
+      let object = SomeObject()
+      let publisher = ["Hello", "world!"].publisher
+      _ = publisher.assign(to: \.value, on: object)
+      // Output:
+      // Hello
+      // world!
+
+
+      class AnotherObject {
+          @Published var value = 0
+      }
+      let anotherObject = AnotherObject()
+      _ = anotherObject.$value.sink { print($0) }
+      (0..<10).publisher.assign(to: &anotherObject.$value)
+      // Output: 0 1 2 3 4 5 6 7 8 9
+      ```
+  - title: 自定义 Subscriber
+    description: 可以通过实现 `Subscriber` 协议来创建自定义 Subscriber。需要定义 `Input` 和 `Failure` 关联类型，并实现 `receive(subscription:)`、`receive(_:)` 和 `receive(completion:)` 方法。`receive(subscription:)` 用于请求值，`receive(_:)` 用于接收值并返回需求，`receive(completion:)` 用于处理完成事件。
+    example: |
+      ```swift
+      final class IntSubscriber: Subscriber {
+          typealias Input = Int
+          typealias Failure = Never
+
+          func receive(subscription: Subscription) {
+              subscription.request(.max(3))
+          }
+
+          func receive(_ input: Int) -> Subscribers.Demand {
+              print("Received value", input)
+              return .none
+          }
+
+          func receive(completion: Subscribers.Completion<Never>) {
+              print("Received completion", completion)
+          }
+      }
+      let publisher = (1...6).publisher
+      let subscriber = IntSubscriber()
+      publisher.subscribe(subscriber)
+      // Output:
+      // Received value 1
+      // Received value 2
+      // Received value 3
+      ```
+  - title: Subscribers.Demand
+    description: '`Demand` 用于控制 Publisher 发送值的速率。`.unlimited` 表示 Subscriber 可以接收无限数量的值，`.max(n)` 表示 Subscriber 最多可以接收 n 个值，`.none` 表示 Subscriber 不需要任何值。'
+    example: 见 "自定义 Subscriber" 示例
+  - title: Subscribers.Completion
+    description: '`Completion` 表示 Publisher 已完成发布，可以是正常完成 (`.finished`) 或错误 (`.failure`)。Subscriber 的 `receive(completion:)` 方法用于处理完成事件。'
+    example: 见 "自定义 Subscriber" 示例
+  - title: Publisher.sink
+    description: 用于创建对 Publisher 的订阅，并提供闭包来处理接收到的值和完成事件。 `sink` 返回一个 `AnyCancellable` 对象，可用于取消订阅。
+    example: 见 "Subscribers.Sink" 示例
+  - title: Publisher.assign
+    description: 用于将 Publisher 发出的值分配给对象的属性，该属性必须是 KVO 兼容的或用 `@Published` 标记。`assign(to:on:)` 用于 KVO 兼容的属性，`assign(to:)` 用于 `@Published` 属性。
+    example: 见 "Subscribers.Assign" 示例
+  - title: 取消监听
+    description: 可以通过调用 `AnyCancellable` 的 `cancel()` 方法来取消订阅，或者将订阅存储在 `Set<AnyCancellable>` 中，以便在 Set 析构时自动取消订阅。
+    example: |
+      ```swift
+      var subscriptions = Set<AnyCancellable>()
+      let publisher = (1...6).publisher
+      let subscription = publisher.sink { _ in }
+      subscription.store(in: &subscriptions)
+      // 或者直接在 sink 中存储订阅
+      publisher.sink { _ in }.store(in: &subscriptions)
+      ```
+references:
+  - title: Subscriber | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/combine/subscriber
+  - title: 2. Publishers & Subscribers Written by Scott Gardner
+    url: https://www.kodeco.com/books/combine-asynchronous-programming-with-swift/v2.0/chapters/2-publishers-subscribers

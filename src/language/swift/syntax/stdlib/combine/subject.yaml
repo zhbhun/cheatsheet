@@ -1,0 +1,173 @@
+id: subject
+title: Subject
+query: Swift Combine Subject
+comment: |
+  Subject 都有哪些属性、方法和实现，要怎么使用，请把所有情况列举出来
+
+  1. PassthroughSubject
+  2. CurrentValueSubject
+  3. Subject 与其他 Publisher 组合：可以接收来自上游的值，同时作为下游的数据源
+  4. CurrentValueSubject 用于状态管理，与视图绑定
+  5. 用户输入绑定
+  6. 数据流的桥接
+  7. 状态同步
+  8. 。。。
+description: Subject 是一种特殊的 Publisher，它允许外部调用者通过 `send(_:)` 方法向数据流注入值。Subject 既是 Publisher 也是 Subscriber，它在初始化后仍然可以发送新值，因此可以被认为是可变的 Publisher。Subject 主要用于将现有的命令式代码适配到 Combine 模型，以及在 Combine 数据流中插入自定义事件。
+usage:
+  - title: 使用 PassthroughSubject 创建 Subject
+    description: |
+      `PassthroughSubject` 将元素广播给下游订阅者，它不持有初始值，适用于需要手动发送值的场景。
+
+      - 语法：`PassthroughSubject<Output, Failure: Error>()`
+        - `Output`: 发送值的类型
+        - `Failure`: 错误类型
+      - 方法：`send(_ value: Output)` 发送一个值
+      - 方法：`send(completion: Subscribers.Completion<Failure>)` 发送完成事件，例如 `.finished` 或 `.failure(error)`
+    example: |
+      ```swift
+      import Combine
+
+      let subject = PassthroughSubject<Int, Never>()
+      let subscription = subject
+          .sink { completion in
+              print("Received completion: \(completion)")
+          } receiveValue: { value in
+              print("Received value: \(value)")
+          }
+
+      subject.send(1)
+      subject.send(2)
+      subject.send(3)
+      subject.send(completion: .finished) // 完成事件之后，后续的 send 将被忽略
+      subject.send(4) // 此值不会被接收到
+      ```
+      // 输出：
+      // Received value: 1
+      // Received value: 2
+      // Received value: 3
+      // Received completion: finished
+  - title: 使用 CurrentValueSubject 创建 Subject
+    description: |
+      `CurrentValueSubject` 包装单个值，并在值更改时发布新元素。它始终使用初始值进行初始化，新订阅者将在订阅之前收到此初始值，适用于需要维护和响应状态变化的场景。
+
+      - 语法：`CurrentValueSubject<Output, Failure: Error>(value: Output)`
+        - `Output`: 发送值的类型
+        - `Failure`: 错误类型
+        - `value`: 初始值
+      - 属性：`value` 获取当前值
+      - 方法：`send(_ value: Output)` 发送一个新值，并更新 `value` 属性
+      - 方法：`send(completion: Subscribers.Completion<Failure>)` 发送完成事件
+    example: |
+      ```swift
+      import Combine
+
+      let subject = CurrentValueSubject<Int, Never>(0)
+      let subscription = subject
+          .sink { completion in
+              print("Received completion: \(completion)")
+          } receiveValue: { value in
+              print("Received value: \(value)")
+          }
+
+      print("Current value:", subject.value) // 打印初始值
+      subject.send(1)
+      subject.send(2)
+      subject.send(completion: .finished)
+      // subject.send(3) // 完成事件后不会被接收到
+      ```
+      // 输出:
+      // Received value: 0
+      // Current value: 0
+      // Received value: 1
+      // Received value: 2
+      // Received completion: finished
+  - title: Subject 与其他 Publisher 的组合使用
+    description: Subject 可以像其他 Publisher 一样使用操作符进行组合，例如 `map`、`filter`、`zip` 等，构建更复杂的数据流处理逻辑。
+    example: |
+      ```swift
+      import Combine
+
+      let subject = PassthroughSubject<Int, Never>()
+      let subscription = subject
+          .map { $0 * 2 } // 将接收到的值乘以 2
+          .sink { value in
+              print("Received value: \(value)")
+          }
+
+      subject.send(1)
+      subject.send(2)
+      ```
+      // 输出：
+      // Received value: 2
+      // Received value: 4
+  - title: 使用 CurrentValueSubject 进行状态管理
+    description: CurrentValueSubject 非常适合用于状态管理，可以将视图与状态绑定，实现响应式 UI 更新。
+    example: |
+      ```swift
+      import SwiftUI
+      import Combine
+
+      class ViewModel: ObservableObject {
+          @Published var count = 0 // 使用 @Published 创建 CurrentValueSubject
+          private var cancellables = Set<AnyCancellable>()
+
+          init() {
+              // 例如，每秒钟增加 count 的值
+              Timer.publish(every: 1, on: .main, in: .common)
+                  .autoconnect()
+                  .sink { _ in
+                      self.count += 1
+                  }
+                  .store(in: &cancellables)
+          }
+      }
+
+      struct ContentView: View {
+          @ObservedObject var viewModel = ViewModel()
+
+          var body: some View {
+              Text("Count: \(viewModel.count)")
+          }
+      }
+      ```
+  - title: 用户输入绑定
+    description: 可以使用 Subject 接收用户输入，并将其传递给下游处理。
+    example: |
+      ```swift
+      import SwiftUI
+      import Combine
+
+      class ViewModel: ObservableObject {
+          let inputSubject = PassthroughSubject<String, Never>()
+          @Published var outputText = ""
+          private var cancellables = Set<AnyCancellable>()
+
+          init() {
+              inputSubject
+                  .sink { self.outputText = $0 } // 更新 outputText
+                  .store(in: &cancellables)
+          }
+      }
+
+      struct ContentView: View {
+          @ObservedObject var viewModel = ViewModel()
+          @State private var inputText = ""
+
+          var body: some View {
+              VStack {
+                  TextField("Enter text", text: $inputText)
+                      .onSubmit { // 用户提交输入时发送给 Subject
+                          viewModel.inputSubject.send(inputText)
+                      }
+                  Text(viewModel.outputText) // 显示处理后的文本
+              }
+              .padding()
+          }
+      }
+
+      ```
+references:
+  - title: Subject | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/combine/subject
+  - title: Subject in swift combine framework | by Chandresh Kanetiya
+    url: https://medium.com/@chandresh.kanetiya/subject-in-swift-combine-framework-38ba41446482

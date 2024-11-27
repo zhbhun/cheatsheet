@@ -74,14 +74,14 @@ async function scrapePage(url: string) {
 
   // 等待 #radix-\:r3\:-content-markdown > div:first-child 元素出现
   await page.waitForSelector(
-    '#radix-\\:r3\\:-content-markdown > div:first-child',
-    { timeout: 60_000 }
+    'main [role="tabpanel"]:nth-child(2)',
+    { timeout: 120_000 }
   );
 
   // 获取该元素的 innerText
   const innerText = await page.evaluate(() => {
     const element = document.querySelector(
-      '#radix-\\:r3\\:-content-markdown > div:first-child'
+      'main [role="tabpanel"]:nth-child(2)'
     );
     return element ? (element as HTMLElement).innerText : '';
   });

@@ -1,0 +1,240 @@
+id: publisher
+title: Publisher
+query: Swift Combine Publisher
+comment: |
+  Publisher 都有哪些属性、方法和实现，要怎么使用，请把所有情况列举出来
+
+  1. 基本概念
+  2. 创建 Publisher：Just、Empty、Fail、Deferred、Future、Timer.publish
+  3. 订阅：sink、assign、assign(to:on:)
+  4. 转换值：map、compactMap、flatMap
+  5. 过滤纸：filter、removeDuplicates、replaceNil
+  6. 组合：merge、combineLatest、zip
+  7. 时间操作：debounce、throttle、delay
+  8. 错误处理：retry、catch
+  9. 切换线程：receive(on:), subscribe(on:)
+description: '`Publisher` 是 Combine 框架的核心概念，它声明了一种类型可以随时间推移发送一系列值。这些值可以是任何类型，包括自定义类型。`Publisher` 遵循一个特定的协议，该协议定义了如何将值发送给一个或多个 `Subscriber`。'
+usage:
+  - title: 创建 Publisher
+    description: |
+      创建 Publisher 的方式有很多种，以下是几种常用的方式：
+      - Just: 创建一个只发送单个值的 Publisher。
+      - Empty: 创建一个不发送任何值的 Publisher，并立即完成。
+      - Fail: 创建一个以特定错误完成的 Publisher。
+      - Deferred: 创建一个延迟创建其上游 Publisher 的 Publisher，直到收到订阅请求。
+      - Future: 创建一个异步操作的 Publisher，它要么成功并产生单个值，要么失败并产生错误。
+      - Timer.publish: 创建一个定期发布当前日期的 Publisher。
+      - 自定义 Publisher：通过实现 `Publisher` 协议，可以创建自定义的 Publisher，用于封装特定的数据源或事件序列。
+    example: |
+      ```swift
+      // Just
+      let justPublisher = Just(10)
+
+      // Empty
+      let emptyPublisher = Empty<Int, Never>()
+
+      // Fail
+      let failPublisher = Fail<Int, Error>(error: NSError(domain: "MyErrorDomain", code: 1, userInfo: nil))
+
+      // Deferred
+      let deferredPublisher = Deferred {
+          Future<Int, Error> { promise in
+              DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                  promise(.success(20))
+              }
+          }
+      }
+
+      // Future
+      let futurePublisher = Future<String, Error> { promise in
+          DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+              promise(.success("Hello"))
+          }
+      }
+
+      // Timer.publish
+      let timerPublisher = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+
+      // 自定义 Publisher 示例 (简化版)
+      struct CustomPublisher: Publisher {
+          typealias Output = Int
+          typealias Failure = Never
+
+          func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
+              let subscription = CustomSubscription(subscriber: subscriber)
+              subscriber.receive(subscription: subscription)
+          }
+      }
+
+      class CustomSubscription<S: Subscriber>: Subscription where S.Input == Int, S.Failure == Never {
+        private let subscriber: S?
+        
+        init(subscriber: S) {
+            self.subscriber = subscriber
+        }
+
+          func request(_ demand: Subscribers.Demand) {
+              subscriber?.receive(1)
+              subscriber?.receive(2)
+              subscriber?.receive(completion: .finished)
+          }
+
+          func cancel() {
+              // 可选：执行清理操作
+          }
+      }
+      ```
+  - title: 订阅 Publisher
+    description: |
+      可以使用以下方法订阅 Publisher：
+      - sink: 订阅 Publisher 并接收值和完成事件。
+      - assign: 将 Publisher 的值分配给对象的属性。
+      - assign(to:on:): 将 Publisher 的值分配给特定调度器上的对象的属性。
+    example: |
+      ```swift
+      let publisher = Just(10)
+
+      // sink
+      let cancellableSink = publisher.sink { completion in
+          print("Completion: \(completion)")
+      } receiveValue: { value in
+          print("Value: \(value)")
+      }
+
+      class MyObject {
+          @Published var myValue: Int = 0
+      }
+
+      let object = MyObject()
+      let publisher2 = Just(20)
+
+      // assign(to:) 需要 @Published 属性包装器
+      let cancellableAssign = publisher2.assign(to: &$object.myValue)
+
+
+      // assign(to:on:) - 需要一个符合 Scheduler 协议的对象作为第二个参数
+      let cancellableAssignOn = publisher.assign(to: \.myValue, on: object)
+      ```
+  - title: 转换值
+    description: |
+      可以使用以下运算符转换 Publisher 发送的值：
+      - map: 将每个值转换为新值。
+      - compactMap: 将每个值转换为可选值，并过滤掉 nil 值。
+      - flatMap: 将每个值转换为新的 Publisher，并将这些 Publisher 的输出合并成一个流。
+    example: |
+      ```swift
+      let publisher = Just("10")
+
+      // map
+      let intPublisher = publisher.map { Int($0) ?? 0 }
+
+      let publisher2 = Just("Hello")
+
+      // compactMap
+      let optionalIntPublisher = publisher2.compactMap { Int($0) }
+
+      // flatMap
+      let flatMappedPublisher = publisher.flatMap { value in
+          Just(Int(value) ?? 0)
+      }
+      ```
+  - title: 过滤值
+    description: |
+      可以使用以下运算符过滤 Publisher 发送的值：
+      - filter: 仅 republish 满足指定条件的值。
+      - removeDuplicates: 移除重复的值。
+      - replaceNil: 将 nil 值替换为非 nil 值。
+    example: |
+      ```swift
+      let publisher = [1, 2, 3, 4, 5].publisher
+
+      // filter
+      let filteredPublisher = publisher.filter { $0 % 2 == 0 }
+
+      let publisher2 = [1, 1, 2, 2, 3, 3].publisher
+
+      // removeDuplicates
+      let uniquePublisher = publisher2.removeDuplicates()
+
+      let publisher3 = [1, nil, 3, nil, 5].publisher
+
+      // replaceNil
+      let nonNilPublisher = publisher3.replaceNil(with: 0) // 假设 Output 类型是 Int?
+      ```
+  - title: 组合 Publisher
+    description: |
+      可以使用以下运算符组合多个 Publisher：
+      - merge: 将多个 Publisher 的输出合并成一个流，并按接收顺序发送值。
+      - combineLatest: 订阅多个 Publisher，并在任何一个 Publisher 发送值时，将所有 Publisher 的最新值组合在一起发送。
+      - zip: 订阅多个 Publisher，并将每个 Publisher 的对应索引的值组合在一起发送。
+    example: |
+      ```swift
+      let publisher1 = [1, 2, 3].publisher
+      let publisher2 = [4, 5, 6].publisher
+
+      // merge
+      let mergedPublisher = publisher1.merge(with: publisher2)
+
+      // combineLatest
+      let combinedPublisher = publisher1.combineLatest(publisher2)
+
+      // zip
+      let zippedPublisher = publisher1.zip(publisher2)
+      ```
+  - title: 时间操作
+    description: |
+      可以使用以下运算符控制 Publisher 发送值的时间：
+      - debounce: 仅在指定时间间隔内没有收到新值时才发送最新值。
+      - throttle: 在指定时间间隔内只发送第一个或最后一个值。
+      - delay: 延迟发送值。
+    example: |
+      ```swift
+      let publisher = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+
+      // debounce
+      let debouncedPublisher = publisher.debounce(for: 1, scheduler: DispatchQueue.main)
+
+      // throttle
+      let throttledPublisher = publisher.throttle(for: 1, scheduler: DispatchQueue.main, latest: true)
+
+      // delay
+      let delayedPublisher = publisher.delay(for: 1, scheduler: DispatchQueue.main)
+      ```
+  - title: 错误处理
+    description: |
+      可以使用以下运算符处理 Publisher 发送的错误：
+      - retry: 在出现错误时重试订阅指定次数。
+      - catch: 捕获错误并使用另一个 Publisher 替换当前 Publisher。
+    example: |
+      ```swift
+      let publisher = Fail<Int, Error>(error: NSError(domain: "MyErrorDomain", code: 1, userInfo: nil))
+
+      // retry
+      let retriedPublisher = publisher.retry(3)
+
+      // catch
+      let caughtPublisher = publisher.catch { _ in
+          Just(10)
+      }
+      ```
+  - title: 切换线程
+    description: |
+      可以使用以下运算符切换 Publisher 运行的线程：
+      - receive(on:options:): 指定接收值的调度器。
+      - subscribe(on:options:): 指定订阅操作的调度器。
+    example: |
+      ```swift
+      let publisher = Just(10)
+
+      // receive(on:)
+      let receivedOnMainPublisher = publisher.receive(on: DispatchQueue.main)
+
+      // subscribe(on:)
+      let subscribedOnBackgroundPublisher = publisher.subscribe(on: DispatchQueue.global())
+      ```
+references:
+  - title: Publisher | Apple Developer Documentation
+    url: https://developer.apple.com/documentation/combine/publisher
+  - title: Building custom Combine publishers in Swift
+    url: https://www.swiftbysundell.com/articles/building-custom-combine-publishers-in-swift
