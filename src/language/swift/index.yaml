@@ -150,6 +150,8 @@ outlines:
             title: 嵌套类
           - id: generic
             title: 泛型
+      - id: attributes
+        title: 注解
       - id: modules
         title: 模块
         children:
