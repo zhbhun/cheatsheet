@@ -338,5 +338,8 @@ outlines:
     children:
       - id: async
         title: 异步
+        children:
+          id: promise-kit
+          title: Promise Kit
 todos:
   - NotificationCenter
