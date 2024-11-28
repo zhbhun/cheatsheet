@@ -189,6 +189,13 @@ outlines:
             title: 序列化
           - id: combine
             title: Combine
+            children:
+              - id: publisher
+                title: Publisher
+              - id: subscriber
+                title: Subscriber
+              - id: subject
+                title: Subject
       - id: asynchronous
         title: 异步
         children:
