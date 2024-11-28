@@ -1,0 +1,490 @@
+id: Attributes
+title: 注解
+query: Swift Declaration attributes
+comment: 罗列演示所有注解的用法，一个注解对应一个用法
+description: Swift 注解为声明和类型添加额外信息，例如生命周期、行为或与其他语言的交互。声明注解应用于声明，类型注解应用于类型，switch case 注解应用于 switch 语句中的 case。
+usage:
+  - title: attached
+    description: |
+      应用于宏声明，指示宏的角色（peer、member、memberAttribute、accessor 或 extension），以及宏生成符号的名称。
+
+      - 参数：
+        - `peer`, `member`, `memberAttribute`, `accessor`, `extension`：宏的角色。
+        - `names:`：宏生成的符号名称列表，可以使用 `named`, `overloaded`, `prefixed`, `suffixed` 或 `arbitrary`。
+        - `conformances:`：仅用于 `extension` 宏，指定添加的协议一致性。
+    example: |
+      ```swift
+      @attached(peer, names: named("newMethod"))
+      @attached(member, names: prefixed("ext_"))
+      @attached(extension, names: arbitrary, conformances: MyProtocol)
+      ```
+  - title: available
+    description: |
+      指示声明相对于特定 Swift 语言版本或特定平台和操作系统版本的生命周期。
+
+      - 参数：
+        - `*`, `iOS`, `macOS`, `watchOS`, `tvOS`, `swift` 等：平台或语言名称。
+        - `introduced:`：引入的版本。
+        - `deprecated:`：弃用的版本（可选）。
+        - `obsoleted:`：废弃的版本。
+        - `message:`：弃用或废弃消息。
+        - `renamed:`：新名称。
+      - 简写：`@available(iOS 10.0, macOS 10.12, *)`
+      - Swift 版本可用性不能与平台可用性结合使用。
+    example: |
+      ```swift
+      @available(iOS 10.0, macOS 10.12, *)
+      @available(swift 3.0.2)
+      @available(*, deprecated, message: "Use newMethod instead")
+      @available(iOS, unavailable)
+      ```
+  - title: backDeployed
+    description: |
+      应用于函数、方法、下标或计算属性，以便在调用或访问符号的程序中包含符号实现的副本，从而实现向后部署。
+
+      - 参数：
+        - `before:`：提供此符号的第一个平台版本。
+      - 适用的声明必须是 `public` 或 `@usableFromInline`，并且满足内联函数的要求。
+    example: |
+      ```swift
+      @available(iOS 16, *)
+      @backDeployed(before: iOS 17)
+      func someFunction() { /* ... */ }
+      ```
+  - title: discardableResult
+    description: |
+      应用于函数或方法声明，以禁止在调用返回 value 的函数或方法而不使用其结果时发出编译器警告。
+    example: |
+      ```swift
+      @discardableResult
+      func someFunction() -> Int { return 42 }
+      ```
+  - title: dynamicCallable
+    description: |
+      @dynamicCallable 特性允许将类型的实例用作函数调用。这种特性通常用于构建 DSL（领域特定语言）或动态代理。使用该特性需要实现以下方法之一：
+
+      1. dynamicallyCall(withArguments:)：支持以数组形式传递参数的调用。
+      2. dynamicallyCall(withKeywordArguments:)：支持以键值对形式传递参数的调用。
+    example: |
+      ```swift
+      @dynamicCallable
+      struct Callable {
+          // 实现无关键字参数的调用
+          func dynamicallyCall(withArguments args: [Int]) -> Int {
+              return args.reduce(0, +) // 将参数求和
+          }
+
+          // 实现带关键字参数的调用
+          func dynamicallyCall(withKeywordArguments args: KeyValuePairs<String, Int>) -> String {
+              return args.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+          }
+      }
+
+      // 创建实例
+      let callable = Callable()
+
+      // 使用无关键字参数调用
+      let sum = callable(1, 2, 3, 4, 5)
+      print(sum) // 输出: 15
+
+      // 使用带关键字参数调用
+      let result = callable(name: 10, age: 20)
+      print(result) // 输出: "name: 10, age: 20"
+      ```
+  - title: dynamicMemberLookup
+    description: |
+      @dynamicMemberLookup 特性允许通过动态成员访问语法（点语法）访问类型中未显式声明的属性。要使用该特性，必须实现 subscript(dynamicMember:) 下标方法，该方法可以基于动态传入的成员名执行特定逻辑。
+
+      使用场景：
+
+      1. 动态数据模型：处理 JSON 或字典等动态数据结构。
+      2. 自定义 DSL（领域特定语言）：如在 SwiftUI 或其他框架中构建动态视图模型。
+      3. 动态代理：实现基于名称的成员映射。
+    example: |
+      ```swift
+      @dynamicMemberLookup
+      struct AnyLookup {
+          // 内部存储任意类型的值
+          private var storage: [String: Any]
+
+          init(storage: [String: Any]) {
+              self.storage = storage
+          }
+
+          // 实现动态成员访问下标（返回 Optional，支持任意类型）
+          subscript<T>(dynamicMember member: String) -> T? {
+              storage[member] as? T
+          }
+      }
+
+      // 使用示例
+      let anyDynamic = AnyLookup(storage: [
+          "name": "Alice",
+          "age": 30,
+          "isStudent": true
+      ])
+
+      // 根据类型获取不同属性
+      print(anyDynamic.name ?? "Unknown")       // 输出: Alice
+      print(anyDynamic.age ?? 0)                // 输出: 30
+      print(anyDynamic.isStudent ?? false)      // 输出: true
+      print(anyDynamic.height ?? "Not found")   // 输出: Not found (属性不存在)
+      ```
+  - title: freestanding
+    description: 应用于独立宏的声明。
+    example: |
+      ```swift
+      @freestanding(expression) macro myMacro() -> String { /* ... */ }
+      ```
+  - title: frozen
+    description: |
+      应用于结构体或枚举声明，以限制对类型的更改。仅在库演化模式下允许。
+    example: |
+      ```swift
+      @frozen enum FrozenEnum { case a, b }
+      ```
+  - title: GKInspectable
+    description: 将自定义 GameplayKit 组件属性公开给 SpriteKit 编辑器 UI，并隐含 `objc` 属性。
+    example: |
+      ```swift
+      @GKInspectable var inspectableProperty: Int
+      ```
+  - title: inlinable
+    description: |
+      @inlinable 特性使函数或方法的实现公开成为模块公共接口的一部分，从而允许编译器在调用点将该符号的实现内联（直接插入代码）。这可以提高性能，但会增加模块的二进制大小。
+
+      - 作用范围：只能用于 public 或 internal 的声明，不能用于 private。
+      - 编译器优化：在性能敏感的代码中，可以避免函数调用开销。
+      - 模块 ABI 影响：标记为 @inlinable 的函数会将实现暴露给使用该模块的其他代码，因此实现的更改会影响 ABI。
+    example: |
+      ```swift
+      public struct MathUtility {
+          // 将实现公开为模块的一部分，允许内联优化
+          @inlinable
+          public static func add(_ a: Int, _ b: Int) -> Int {
+              return a + b
+          }
+
+          @inlinable
+          public static func multiply(_ a: Int, _ b: Int) -> Int {
+              return a * b
+          }
+
+          @inlinable
+          @inline(__always) // 强制内联，即使编译器不认为有益
+          public static func square(_ value: Int) -> Int {
+              return value * value
+          }
+      }
+
+      // 在其他模块中调用
+      let result = MathUtility.add(3, 5) // 内联优化，直接替换为实现
+      print(result) // 输出: 8
+      ```
+  - title: main
+    description: 指示包含程序流顶级入口点的结构体、类或枚举声明。该类型必须提供不带参数且返回 `Void` 的 `main` 类型函数。
+    example: |
+      ```swift
+      @main struct MainStruct {
+          static func main() { /* ... */ }
+      }
+      ```
+  - title: nonobjc
+    description: 禁止隐式 `objc` 属性，使声明在 Objective-C 代码中不可用。
+    example: |
+      ```swift
+      @nonobjc func nonObjcFunction() { /* ... */ }
+      ```
+  - title: NSApplicationMain
+    description: 指示该类是应用程序委托。等效于调用 `NSApplicationMain(_:_:)` 函数。
+    example: |
+      ```swift
+      @NSApplicationMain class AppDelegate: NSObject, NSApplicationDelegate { /* ... */ }
+      ```
+  - title: NSCopying
+    description: 使属性的 setter 使用属性值的副本（由 `copyWithZone(_:)` 方法返回）而不是属性值本身来合成。属性类型必须符合 `NSCopying` 协议。
+    example: |
+      ```swift
+      @NSCopying var copiedProperty: NSString
+      ```
+  - title: NSManaged
+    description: 指示 Core Data 在运行时动态提供其实现。也隐含 `objc` 属性。
+    example: |
+      ```swift
+      @NSManaged var managedProperty: String
+      ```
+  - title: objc
+    description: |
+      使声明可用于 Objective-C 代码。可以接受一个参数来指定 Objective-C 名称。
+    example: |
+      ```swift
+      @objc class ObjCClass {}
+      @objc(myMethod) func myFunction() {}
+      ```
+  - title: objcMembers
+    description: 将 `objc` 属性隐式应用于类的所有 Objective-C 兼容成员。
+    example: |
+      ```swift
+      @objcMembers class ObjCMembersClass {}
+      ```
+  - title: preconcurrency
+    description: 禁止严格并发检查，以帮助将代码迁移到严格并发检查。
+    example: |
+      ```swift
+      @preconcurrency import MyModule
+      @preconcurrency func preconcurrencyFunction() { /* ... */ }
+      ```
+  - title: propertyWrapper
+    description: |
+      属性包装器通常用于类或结构体属性，包装器必须定义一个 `wrappedValue` 实例属性。可以定义一个 `projectedValue` 实例属性以公开附加功能。
+    example: |
+      ```swift
+      @propertyWrapper
+      struct Clamped {
+          private var value: Int
+          private let range: ClosedRange<Int>
+
+          var wrappedValue: Int {
+              get { value }
+              set { value = min(max(range.lowerBound, newValue), range.upperBound) }
+          }
+
+          init(wrappedValue: Int, range: ClosedRange<Int>) {
+              self.value = min(max(range.lowerBound, wrappedValue), range.upperBound)
+              self.range = range
+          }
+      }
+
+      func exampleFunction() {
+          struct LocalScope {
+              @Clamped(range: 0...100) var value: Int = 50
+          }
+
+          var local = LocalScope()
+          local.value = 150
+          print(local.value)  // 输出 100
+      }
+      ```
+  - title: resultBuilder
+    description: |
+      @resultBuilder（以前称为 @functionBuilder）是一种 Swift 特性，允许你通过声明特定的规则简化代码块中的语法，把多行内容自动组合成一个结果数据结构。典型的应用场景包括 SwiftUI 的 ViewBuilder，它用来构造视图层次结构。
+    example: |
+      ```swift
+      @resultBuilder
+      struct ArrayBuilder {
+          static func buildBlock(_ components: Int...) -> [Int] {
+              components
+          }
+      }
+
+      func buildArray(@ArrayBuilder _ content: () -> [Int]) -> [Int] {
+          content()
+      }
+
+      let array = buildArray {
+          1
+          2
+          3
+      }
+      print(array)  // 输出 [1, 2, 3]
+      ```
+  - title: requires_stored_property_inits
+    description: 要求类中的所有存储属性在其定义中提供默认值。
+    example: |
+      ```swift
+      @requires_stored_property_inits class MyClass {}
+      ```
+  - title: testable
+    description: 以更改其访问控制的方式导入模块，从而简化模块代码的测试。
+    example: |
+      ```swift
+      @testable import MyModule
+      ```
+  - title: UIApplicationMain
+    description: 指示该类是应用程序委托。等效于调用 `UIApplicationMain` 函数。
+    example: |
+      ```swift
+      @UIApplicationMain class AppDelegate: UIResponder, UIApplicationDelegate { /* ... */ }
+      ```
+  - title: unchecked
+    description: 关闭对协议要求的强制执行。仅支持 `Sendable` 协议。
+    example: |
+      ```swift
+      func someFunction<T: unchecked Sendable>(value: T) { /* ... */ }
+      ```
+  - title: usableFromInline
+    description: 允许在同一模块中定义的可内联代码中使用该符号。声明必须具有 `internal` 访问级别修饰符。
+    example: |
+      ```swift
+      @usableFromInline internal func usableFromInlineFunction() { /* ... */ }
+      ```
+  - title: warn_unqualified_access
+    description: 在不带限定符（例如模块名称、类型名称或实例变量或常量）的情况下使用函数或方法时触发警告。
+    example: |
+      ```swift
+      @warn_unqualified_access func min(_: Int, _: Int) -> Int { /* ... */ }
+      ```
+  - title: autoclosure
+    description: |
+      @autoclosure 用于将表达式自动包装成不带参数的闭包（() -> T），从而实现延迟求值。这种特性通常用于优化代码的可读性，让调用方可以直接传递表达式，而无需显式创建闭包。
+
+      - 应用范围：函数或方法的参数类型。
+      - 应用场景：延迟计算传入的参数，参数在需要时才会被求值。
+    example: |
+      - 简单用法
+
+        ```swift
+        func logIfTrue(_ predicate: @autoclosure () -> Bool = true) {
+            if predicate() {
+                print("Condition is true")
+            }
+        }
+
+        // 调用时直接传递表达式
+        logIfTrue() // 输出: Condition is true
+        logIfTrue(3 > 2) // 输出: Condition is true
+        logIfTrue(1 > 2) // 不输出内容
+        ```
+
+      - 验证函数调用
+
+        ```swift
+        func logIfTrueWithoutAutoclosure(_ predicate: () -> Bool) {
+            print("Checking condition...")
+            if predicate() {
+                print("Condition is true")
+            }
+        }
+
+        // 调用示例
+        logIfTrueWithoutAutoclosure {
+            isConditionTrue() // 显式传递闭包
+        }
+
+        // 输出结果
+        Checking condition...
+        Function isConditionTrue called!
+        Condition is true
+        ```
+
+      - 配合 @propertyWrapper
+
+        ```swift
+        @propertyWrapper
+        struct AutoClosureWrapper<T> {
+            private var closure: () -> T
+
+            // 初始化时接受一个表达式，并存储为闭包
+            init(wrappedValue: @autoclosure @escaping () -> T) {
+                self.closure = wrappedValue
+            }
+
+            // 获取闭包的值
+            var wrappedValue: T {
+                closure()
+            }
+
+            // 修改闭包
+            var projectedValue: (T) -> Void {
+                get { { newValue in self.closure = { newValue } } }
+                set { closure = { newValue(wrappedValue) } }
+            }
+        }
+
+        struct Example {
+            @AutoClosureWrapper var value: Bool
+
+            init(value: @autoclosure @escaping () -> Bool) {
+                self._value = AutoClosureWrapper(wrappedValue: value)
+            }
+        }
+
+        var example = Example(value: true) // 使用表达式初始化
+        print("Initial value: \(example.value)") // 输出：Initial value: true
+
+        // 延迟赋值一个表达式
+        example.value = 3 > 2
+        print("Value after assignment: \(example.value)") // 输出：Value after assignment: true
+
+        // 赋值新的表达式
+        example.value = 5 < 2
+        print("Value after second assignment: \(example.value)") // 输出：Value after second assignment: false
+
+        // 使用函数调用赋值
+        func isConditionTrue() -> Bool {
+            print("isConditionTrue called!")
+            return true
+        }
+        var example = Example(value: isConditionTrue())
+        // 赋值时不调用 `isConditionTrue`
+        print("Before accessing value")
+        // 访问时才调用 `isConditionTrue`
+        print("Value: \(example.value)")
+        // 输出：
+        // Before accessing value
+        // isConditionTrue called!
+        // Value: true
+        ```
+  - title: convention
+    description: |
+      @convention 特性用于指示函数的调用约定（Calling Convention），即函数调用的底层机制和规则。它决定了参数如何传递、返回值如何处理，以及调用栈的行为。Swift 支持以下几种调用约定：
+
+      1. swift：默认的 Swift 函数调用约定。
+      2. block：与 Objective-C 的 Block 类型兼容。
+      3. c：与 C 函数指针兼容。
+
+      ps：@convention 只能用在闭包类型声明中，用于标记函数或闭包的调用方式。
+    example: |
+      ```swift
+      import Foundation
+
+      // 定义一个 C 函数调用约定的函数
+      func callWithCConvention(closure: @convention(c) () -> Void) {
+          closure()
+      }
+
+      // 定义一个 Objective-C Block 调用约定的函数
+      func callWithObjCBlock(block: @convention(block) () -> Void) {
+          block()
+      }
+
+      // 创建符合不同调用约定的闭包
+      let cCompatibleClosure: @convention(c) () -> Void = {
+          print("Called with C convention!")
+      }
+
+      let objcCompatibleBlock: @convention(block) () -> Void = {
+          print("Called with Objective-C Block convention!")
+      }
+
+      // 调用
+      callWithCConvention(closure: cCompatibleClosure) // 输出: Called with C convention!
+      callWithObjCBlock(block: objcCompatibleBlock)   // 输出: Called with Objective-C Block convention!
+      ```
+  - title: escaping
+    description: 指示参数的值可以存储以供以后执行，允许值的生命周期超过调用的生命周期。需要显式使用 `self.` 来访问属性或方法。
+    example: |
+      ```swift
+      func someFunction(closure: @escaping () -> Void) { /* ... */ }
+      ```
+  - title: Sendable
+    description: 指示函数或闭包是可发送的。等效于使非函数类型符合 `Sendable` 协议。如果函数或闭包用在需要可发送值的上下文中，并且满足可发送的要求，则会推断此属性。
+    example: |
+      ```swift
+      func sendableFunction() @Sendable -> Int { return 42 }
+      ```
+  - title: unknown
+    description: 指示在编译代码时预计不会与枚举的任何已知 case 匹配。应用于 switch case。
+    example: |
+      ```swift
+      enum MyEnum { case a, b }
+      let value: MyEnum = .a
+      switch value {
+      case .a: break
+      case .b: break
+      @unknown default: break // 处理未来可能添加的 case
+      }
+      ```
+references:
+  - title: Attributes
+    url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/attributes/
