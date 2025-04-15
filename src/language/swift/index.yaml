@@ -36,7 +36,7 @@ outlines:
           - id: optional
             title: 可空
           - id: alias
-            title: 别名
+            title: 类型别名
           - id: void
             title: 无返回值
           - id: any
@@ -52,41 +52,41 @@ outlines:
         title: 表达式
         children:
           - id: arithmetic
-            title: 算术
+            title: 算术表达式
           - id: assignment
-            title: 赋值
+            title: 赋值表达式
           - id: comparison
-            title: 比较
+            title: 比较表达式
           - id: logic
-            title: 逻辑
+            title: 逻辑表达式
           - id: ternary
-            title: 三元
+            title: 三元表达式
           - id: spread
             title: 展开操作符
           - id: range
-            title: 范围
+            title: 范围表达式
           - id: infix
-            title: 中缀
+            title: 中缀操作符
           - id: in
-            title: 包含
+            title: 包含表达式
           - id: is
             title: 类型检查
           - id: try
-            title: Try
+            title: Try 操作符
           - id: non-null-assertion
-            title: 非空断言
+            title: 非空断言表达式
           - id: nullish-coalescing
-            title: 空值合并
+            title: 空值合并表达式
           - id: optional-chaining
-            title: 可选链
+            title: 可选链表达式
           - id: keypath
-            title: 访问路径
+            title: KeyPath
           - id: function
-            title: 函数
+            title: 函数表达式
           - id: implicit-member
-            title: 隐式成员
+            title: 隐式成员表达式
           - id: selector
-            title: 选择器
+            title: 选择器表达式
       - id: statements
         title: 语句
         children:
@@ -126,7 +126,7 @@ outlines:
         children:
           - id: definition
             title: 类定义
-          - id: constructors
+          - id: constructor
             title: 构造函数
           - id: property
             title: 属性
@@ -144,14 +144,14 @@ outlines:
             title: 静态属性
           - id: extension
             title: 扩展
+          - id: struct
+            title: Struct
           - id: sealed
             title: 密封类
           - id: nest
             title: 嵌套类
           - id: generic
             title: 泛型
-      - id: attributes
-        title: 注解
       - id: modules
         title: 模块
         children:
@@ -165,7 +165,7 @@ outlines:
         title: 标准库
         children:
           - id: print
-            title: 日志
+            title: 打印日志
           - id: collections
             title: 集合
             children:
@@ -335,13 +335,5 @@ outlines:
             title: Animated Image
           - id: physics-based-animations
             title: 物理动画库
-  - id: library
-    title: 库
-    children:
-      - id: async
-        title: 异步
-        children:
-          - id: promise-kit
-            title: Promise Kit
 todos:
   - NotificationCenter

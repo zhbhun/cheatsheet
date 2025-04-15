@@ -1,4 +1,4 @@
-id: variable
+id: variables
 title: 变量
 query: Swift 变量
 comment: 变量和常量、变量赋值、解构赋值、类型推断、显式指定类型、打印变量、变量命名规则、驼峰命名法
