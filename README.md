@@ -36,6 +36,7 @@ Cheatsheet 是给有一定编程基础的开发人员提供的较好解决方案
 - [2768 Programming Cheat Sheets](https://cheatography.com/programming/)
 - [Quick Reference](https://quickref.me/index.html)
 - [Geeksforgeeks Cheatsheets – All Coding Cheat Sheets Collections](https://www.geeksforgeeks.org/geeksforgeeks-cheatsheets-all-coding-cheat-sheets/)
+- https://learnxinyminutes.com/
 
 ## 设计实现
 
