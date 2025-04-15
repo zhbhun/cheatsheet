@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 import crypto from 'crypto';
 import { Feature, LanguageData, Reference } from './types.ts';
 import { context, isFileExit } from './utils.ts';
-import { getGeminiFlash } from './gemini.ts';
+import { getGenai } from './gemini.ts';
 
 async function searchByGoogle(
   query: string,
@@ -73,10 +73,9 @@ async function scrapePage(url: string) {
   );
 
   // 等待 #radix-\:r3\:-content-markdown > div:first-child 元素出现
-  await page.waitForSelector(
-    'main [role="tabpanel"]:nth-child(2)',
-    { timeout: 120_000 }
-  );
+  await page.waitForSelector('main [role="tabpanel"]:nth-child(2)', {
+    timeout: 120_000,
+  });
 
   // 获取该元素的 innerText
   const innerText = await page.evaluate(() => {
@@ -144,7 +143,8 @@ export async function loadReference(
     references.push(reference);
   }
   if ((feature.references?.length ?? 0) === 0) {
-    const result = await getGeminiFlash().generateContent({
+    const result = await getGenai().models.generateContent({
+      model: 'models/gemini-2.0-flash',
       contents: [
         {
           role: 'user',
@@ -157,7 +157,8 @@ export async function loadReference(
           ],
         },
       ],
-      systemInstruction: `
+      config: {
+        systemInstruction: `
   你是一名精通多种编程语言的专家，根据用户提供的语言特性和文档列表，分析计算每个文档作为入门教程或参考文献的评分，评分区间为 0 到 10，数值越大参考文档的评分越高。返回的结果是一个 JSON 对象，key 是文档 URL， value 是个数值，对应文档的评分。
 
   - Input：
@@ -191,8 +192,9 @@ export async function loadReference(
     }
     \`\`\`
   `,
+      },
     });
-    const text = (await result.response.text())
+    const text = (result.text ?? '')
       .replace(/.*```json/, '')
       .replace(/```.*/, '');
     const rates = JSON.parse(text);

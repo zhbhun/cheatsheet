@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 import { LanguageData, Reference, Feature } from './types.ts';
 import { context, getLanguageData, loadFeature } from './utils.ts';
 import { loadReference } from './reference.ts';
-import { getGeminiPro } from './gemini.ts';
+import { getGenai } from './gemini.ts';
 
 dotenv.config({
   path: path.resolve(context, '.env.local'),
@@ -221,7 +221,8 @@ const instruction = `
 `;
 
 async function complete(query: string, references: Reference[]) {
-  const result = await getGeminiPro().generateContent({
+  const response = await getGenai().models.generateContent({
+    model: 'gemini-2.5-pro-exp-03-25',
     contents: [
       {
         role: 'user',
@@ -235,10 +236,11 @@ async function complete(query: string, references: Reference[]) {
         ],
       },
     ],
-    systemInstruction: instruction,
+    config: {
+      systemInstruction: instruction,
+    },
   });
-  const text = await result.response.text();
-  return text;
+  return response.text ?? '';
 }
 
 async function generateContent(

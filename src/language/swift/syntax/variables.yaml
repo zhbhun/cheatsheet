@@ -2,94 +2,187 @@ id: variable
 title: 变量
 query: Swift 变量
 comment: 变量和常量、变量赋值、解构赋值、类型推断、显式指定类型、打印变量、变量命名规则、驼峰命名法
-description: Swift 中的变量是用来存储数据的占位符，其值可以被修改。在使用变量之前，需要先声明并为其指定数据类型。
+description: 在 Swift 中，变量（Variable）和常量（Constant）用于存储值。变量使用 `var` 关键字声明，其存储的值可以在之后被修改。常量使用 `let` 关键字声明，一旦被赋值，其值就不能再更改。这有助于编写更安全、更可预测的代码。Swift 具有强大的类型推断能力，但也允许显式指定类型。
 usage:
-  - title: 声明变量
+  - title: 创建常量
     description: |
-      使用 `var` 关键字声明一个变量，并可以使用类型标注来指定变量的数据类型。
-
-      - `var 变量名 = 初始值`
-      - `var 变量名: 数据类型 = 初始值`
-
-      使用 `let` 关键字声明一个常量，其值一旦设定就不能再更改。
-
-      - `let 常量名 = 初始值`
-      - `let 常量名: 数据类型 = 初始值`
-
+      使用 `let` 关键字声明一个常量。常量的值在首次赋值后不能被修改。这使得代码更安全，因为你可以确保某些值不会意外改变。
     example: |
       ```swift
-      // 声明一个名为 age 的变量，并赋值为 25
-      var age = 25
+      // 使用 let 声明一个名为 language 的常量，并赋值 "Swift"
+      let language: String = "Swift"
 
-      // 声明一个名为 name 的变量，并指定数据类型为 String，赋值为 "John"
-      var name: String = "John"
+      // 尝试修改常量的值会导致编译错误
+      // language = "Objective-C" // 这行会报错: cannot assign to value: 'language' is a 'let' constant
 
-      let birthYear = 1995 // 声明一个名为 birthYear 的常量，并赋值为 1995
-      // birthYear = 2000  // 编译错误：常量不能被修改
+      print(language) // 输出: Swift
       ```
-  - title: 变量赋值
-    description: 使用等号 `=` 将值赋给变量。Swift 中的变量赋值是类型安全的，这意味着不能将错误类型的值赋给变量。
+  - title: 创建变量
+    description: |
+      使用 `var` 关键字声明一个变量。变量的值可以在声明后被修改。当你需要存储一个可能在程序执行过程中发生变化的值时，应使用变量。
     example: |
       ```swift
-      var age = 25 // 将 25 赋给 age 变量
-      age = 30    // 修改 age 变量的值为 30
+      // 使用 var 声明一个名为 version 的变量，并初始化为 5.0
+      var version: Double = 5.0
+      print("初始版本: \(version)") // 输出: 初始版本: 5.0
 
-      var name: String = "John" // 将 "John" 赋给 name 变量
-      name = "Peter"           // 修改 name 变量的值为 "Peter"
-      ```
-  - title: 解构赋值
-    description: 解构是一种可以将元组（Tuple）拆解为多个变量的语法。通过一次赋值操作，可以从函数返回的元组中提取多个值，并分别赋给多个变量。
-    example: |
-      ```swift
-      // 简单的元组解构
-      let (firstName, lastName) = ("Taylor", "Swift")
-      print(firstName)  // 输出: Taylor
-      print(lastName)   // 输出: Swift
-
-      // 在函数返回值中使用解构
-      func getUserInfo() -> (name: String, age: Int) {
-          return ("Alice", 30)
-      }
-      let (name, age) = getUserInfo()
-      print("\(name) is \(age) years old")  // 输出: Alice is 30 years old
-
-      // 在循环中使用解构
-      let items = [("Apple", 2.99), ("Banana", 1.99)]
-      for (item, price) in items {
-          print("\(item) costs \(price)")
-      }
-      // 输出:
-      // Apple costs 2.99
-      // Banana costs 1.99
+      // 修改变量 version 的值
+      version = 5.9
+      print("更新后版本: \(version)") // 输出: 更新后版本: 5.9
       ```
   - title: 类型推断
-    description: 如果没有显式指定变量的数据类型，Swift 会根据赋给变量的初始值自动推断其类型。
-    example: |
-      ```swift
-      var age = 25       // Swift 推断 age 的数据类型为 Int
-      var name = "John"  // Swift 推断 name 的数据类型为 String
-      ```
-  - title: 打印变量
-    description: 使用 `print()` 函数打印变量的值。
-    example: |
-      ```swift
-      var name = "John"
-      print(name) // 输出：John
-
-      print("My name is \(name)") // 输出：My name is John
-      ```
-  - title: 变量命名规则
     description: |
-      - 变量名可以使用字母、数字、下划线和 Unicode 字符。
-      - 变量名必须以字母或下划线开头。
-      - 变量名区分大小写。
-      - 建议使用驼峰命名法，例如 `userName`、`productPrice`。
+      Swift 编译器具有强大的类型推断能力。如果你在声明变量或常量时提供了初始值，编译器通常可以自动推断出其类型，无需显式指定。
     example: |
       ```swift
-      var userName = "John"   // 正确
-      var user_age = 25      // 可以，但不建议
-      var 1user = "Peter"   // 错误：变量名不能以数字开头
-      var user-name = "Jane"  // 错误：变量名不能包含 "-"
+      // 编译器自动推断 `appName` 的类型为 String
+      let appName = "MyApp"
+
+      // 编译器自动推断 `releaseYear` 的类型为 Int
+      var releaseYear = 2024
+
+      // 编译器自动推断 `price` 的类型为 Double (因为包含小数点)
+      let price = 19.99
+
+      print("App 名称: \(appName)")        // 输出: App 名称: MyApp
+      print("发布年份: \(releaseYear)")    // 输出: 发布年份: 2024
+      print("价格: \(price)")          // 输出: 价格: 19.99
+
+      // 你可以使用 type(of:) 函数检查推断出的类型
+      print(type(of: appName))       // 输出: String
+      print(type(of: releaseYear))   // 输出: Int
+      print(type(of: price))         // 输出: Double
+      ```
+  - title: 显式指定类型
+    description: |
+      虽然类型推断很方便，但有时你需要显式指定变量或常量的类型。这可以通过在名称后面加上冒号 `:` 和类型名称来实现。当初始值可能被解释为多种类型（例如，整数 `10` 可以是 `Int`, `Double`, `Float` 等），或者你想在声明时暂时不赋值（但必须在使用前赋值），显式类型声明非常有用。
+    example: |
+      ```swift
+      // 显式指定 `score` 的类型为 Int
+      let score: Int = 100
+
+      // 显式指定 `temperature` 的类型为 Float
+      var temperature: Float = 25.5
+
+      // 声明一个 String 类型的变量，但不立即赋值
+      let message: String
+      // 在后续代码中必须赋值一次 (对于 let)
+      message = "初始化消息"
+
+      // 声明一个 Double 类型的变量，但不立即赋值
+      var currentLatitude: Double
+      // 在后续代码中可以赋值 (对于 var)，但必须在使用前赋值
+      currentLatitude = 34.0522
+
+      print("分数: \(score)")           // 输出: 分数: 100
+      print("温度: \(temperature)")     // 输出: 温度: 25.5
+      print("消息: \(message)")         // 输出: 消息: 初始化消息
+      print("纬度: \(currentLatitude)") // 输出: 纬度: 34.0522
+      ```
+  - title: 变量赋值与重新赋值
+    description: |
+      变量使用 `=` 运算符进行赋值。对于使用 `var` 声明的变量，可以多次使用 `=` 运算符赋予新值。常量（`let`）只能在声明时或声明后（如果声明时未赋值）赋值一次。
+    example: |
+      ```swift
+      // 声明并初始化一个变量
+      var counter: Int = 0
+      print("初始计数: \(counter)") // 输出: 初始计数: 0
+
+      // 重新赋值变量
+      counter = 10
+      print("更新后计数: \(counter)") // 输出: 更新后计数: 10
+
+      // 再次重新赋值
+      counter = counter + 5
+      print("最终计数: \(counter)") // 输出: 最终计数: 15
+
+      // 声明一个常量并赋值
+      let initialValue: Int = 1
+      // 尝试重新赋值常量会导致错误
+      // initialValue = 2 // 错误: cannot assign to value: 'initialValue' is a 'let' constant
+      print("初始值: \(initialValue)") // 输出: 初始值: 1
+      ```
+  - title: 元组分解赋值
+    description: |
+      Swift 允许你使用元组 (Tuple) 将多个值组合在一起。你可以将一个元组的值分解（Decompose）到多个单独的常量或变量中。这类似于其他语言中的解构赋值。
+    example: |
+      ```swift
+      // 创建一个包含状态码和消息的元组
+      let httpResponse = (statusCode: 200, message: "OK")
+
+      // 将元组的值分解到单独的常量中
+      let (code, msg) = httpResponse
+      print("状态码: \(code)")    // 输出: 状态码: 200
+      print("消息: \(msg)")     // 输出: 消息: OK
+
+      // 你也可以在分解时使用 var 来创建变量
+      var (mutableCode, mutableMsg) = httpResponse
+      mutableCode = 404
+      mutableMsg = "Not Found"
+      print("修改后状态码: \(mutableCode)") // 输出: 修改后状态码: 404
+      print("修改后消息: \(mutableMsg)")   // 输出: 修改后消息: Not Found
+
+      // 如果只需要元组中的部分值，可以用下划线 `_` 忽略不需要的值
+      let (statusCodeOnly, _) = httpResponse
+      print("仅状态码: \(statusCodeOnly)") // 输出: 仅状态码: 200
+      ```
+  - title: 打印变量和常量
+    description: |
+      使用 `print()` 函数可以将变量或常量的值输出到控制台。你可以直接打印值，也可以使用字符串插值（String Interpolation）将值嵌入到字符串中。字符串插值使用反斜杠 `\` 后跟括号 `()` 包裹变量或常量名 `\()`。
+    example: |
+      ```swift
+      let city: String = "San Francisco"
+      var population: Int = 883_305 // 使用下划线提高可读性
+
+      // 直接打印变量/常量
+      print(city)       // 输出: San Francisco
+      print(population) // 输出: 883305
+
+      // 使用字符串插值打印
+      print("城市: \(city)")                 // 输出: 城市: San Francisco
+      print("人口: \(population)")           // 输出: 人口: 883305
+      print("\(city) 的人口大约是 \(population)。") // 输出: San Francisco 的人口大约是 883305。
+      ```
+  - title: 命名规则与约定
+    description: |
+      为变量和常量选择有意义的名称非常重要。Swift 的命名规则如下：
+      - 可以包含 Unicode 字符（字母、数字、表情符号等），但不推荐滥用。
+      - 不能包含空格、数学符号、箭头、私用 Unicode 标量或连线与制表符。
+      - 不能以数字开头，但可以在名称中包含数字。
+      - 区分大小写 (`myVariable` 和 `myvariable` 是不同的)。
+      - 不能使用 Swift 的关键字（如 `let`, `var`, `func`, `class` 等）作为名称，除非用反引号 `` `` 包裹（例如 `let \`let\` = "keyword"`），但不推荐这样做。
+
+      **命名约定 (推荐):**
+      - **驼峰命名法 (Camel Case):** 常量、变量、函数、方法、属性等的名称以小写字母开头，后续每个单词的首字母大写（例如 `userName`, `numberOfLoginAttempts`）。
+      - **大驼峰命名法 (Upper Camel Case):** 类、结构体、枚举、协议等类型的名称以大写字母开头，后续每个单词的首字母也大写（例如 `String`, `Int`, `UIViewController`）。
+    example: |
+      ```swift
+      // --- 合法且推荐的命名 (驼峰命名法) ---
+      let firstName = "John"
+      var userAge = 30
+      let numberOfItems = 10
+
+      // --- 合法但不太常见的命名 (包含 Unicode) ---
+      let π = 3.14159
+      let 🐶 = "Dog" // 可以，但不推荐在实际项目中使用表情符号作为变量名
+      print(π)     // 输出: 3.14159
+      print(🐶)    // 输出: Dog
+
+      // --- 不合法的命名 ---
+      // let 1stName = "John"     // 错误：不能以数字开头
+      // let user name = "Jane"    // 错误：不能包含空格
+      // var class = "Math"        // 错误：不能使用关键字 (除非用反引号)
+      // let max-value = 100       // 错误：不能包含连字符
+
+      // 使用反引号包裹关键字 (合法但不推荐)
+      let `let` = "This is a constant named 'let'"
+      print(`let`) // 输出: This is a constant named 'let'
+
+      // --- 大驼峰命名法 (用于类型) ---
+      struct UserProfile { // 类型名称使用大驼峰
+          var username: String // 属性使用小驼峰
+          let userID: Int      // 属性使用小驼峰
+      }
       ```
 references:
   - title: Swift 变量
