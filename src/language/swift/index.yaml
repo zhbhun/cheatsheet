@@ -10,10 +10,13 @@ outlines:
   - id: syntax
     title: 语法
     children:
-      - id: variables
-        title: 变量
-      - id: comment
-        title: 注释
+      - id: basics
+        title: 基础
+        children:
+          - id: variables
+            title: 变量
+          - id: comment
+            title: 注释
       - id: types
         title: 数据类型
         children:
@@ -105,7 +108,7 @@ outlines:
       - id: functions
         title: 函数
         children:
-          - id: defining
+          - id: definition
             title: 函数定义
           - id: parameter
             title: 函数参数
@@ -198,7 +201,7 @@ outlines:
                 title: Subscriber
               - id: subject
                 title: Subject
-      - id: asynchronous
+      - id: concurrency
         title: 异步
         children:
           - id: thread
@@ -335,5 +338,12 @@ outlines:
             title: Animated Image
           - id: physics-based-animations
             title: 物理动画库
+  - engineering:
+    - id: build
+      title: 构建
+    - id: test
+      title: 测试
+    - id: deploy
+      title: 部署
 todos:
   - NotificationCenter

@@ -13,10 +13,13 @@ outlines:
   - id: syntax
     title: 语法
     children:
-      - id: variables
-        title: 变量
-      - id: comment
-        title: 注释
+      - id: basics
+        title: 基础
+        children:
+          - id: variables
+            title: 变量
+          - id: comment
+            title: 注释
       - id: types
         title: 类型
         children:
@@ -98,7 +101,7 @@ outlines:
       - id: functions
         title: 函数
         children:
-          - id: defining
+          - id: definition
             title: 函数定义
           - id: parameter
             title: 函数参数
@@ -186,8 +189,8 @@ outlines:
             title: URL
           - id: serialization
             title: 序列化
-      - id: asynchronous
-        title: 异步
+      - id: concurrency
+        title: 并发
         children:
           - id: thread
             title: 线程

@@ -1,8 +1,7 @@
 id: syntax
 title: 语法
 children:
-  - variables
-  - comment
+  - basics
   - types
   - converts
   - expressions
@@ -11,5 +10,5 @@ children:
   - classes
   - modules
   - stdlib
-  - asynchronous
+  - concurrency
   - gc
