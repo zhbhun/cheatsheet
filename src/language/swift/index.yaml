@@ -208,8 +208,8 @@ outlines:
             title: 线程
           - id: async
             title: Async & Await
-      - id: gc
-        title: 垃圾回收
+      - id: memory
+        title: 内存管理
   - id: gui
     title: 图形用户界面
     children:

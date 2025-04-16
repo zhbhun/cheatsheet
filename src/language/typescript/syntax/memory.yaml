@@ -1,5 +1,5 @@
-id: gc
-title: 垃圾回收
+id: memory
+title: 内存管理
 query: TypeScript garbage collection
 comment: 介绍 TypeScript 中垃圾回收的机制，如何利用 JavaScript 的垃圾回收机制避免内存泄漏，并给出最佳实践。
 description: >

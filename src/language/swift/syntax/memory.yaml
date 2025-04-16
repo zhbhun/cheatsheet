@@ -1,5 +1,5 @@
-id: gc
-title: 垃圾回收
+id: memory
+title: 内存管理
 query: Swift garbage collection automatic reference counting
 comment: 介绍 Swift 中内存管理机制，详细解释 ARC (Automatic Reference Counting) 的原理与使用，以及常见应用场景中的弱引用用法
 description: |

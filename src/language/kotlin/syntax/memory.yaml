@@ -1,5 +1,5 @@
-id: gc
-title: 垃圾回收
+id: memory
+title: 内存管理
 query: Kotlin 垃圾回收 标记清除 循环引用
 comment: Kotlin 的垃圾回收使用标记清除算法，不会存在循环引用问题。
 description: |

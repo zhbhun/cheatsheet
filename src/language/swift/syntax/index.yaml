@@ -11,4 +11,4 @@ children:
   - modules
   - stdlib
   - concurrency
-  - gc
+  - memory
