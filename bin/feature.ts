@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import yaml from 'js-yaml';
 import { LanguageData, Reference, Feature } from './types.ts';
 import { context, getLanguageData, loadFeature } from './utils.ts';
-import { loadReference } from './reference.ts';
+// import { loadReference } from './reference.ts';
 import { getGenai } from './gemini.ts';
 
 dotenv.config({
@@ -296,13 +296,13 @@ async function generateFeatureByRecursion(
     return;
   }
   console.log('#', feature.id, '-', feature.title, '-', feature.query);
-  const references = await loadReference(language, feature);
-  feature.references = references.map((ref) => ({
-    title: ref.title,
-    url: ref.url,
-  }));
+  // const references = await loadReference(language, feature);
+  // feature.references = references.map((ref) => ({
+  //   title: ref.title,
+  //   url: ref.url,
+  // }));
   if (!feature.description) {
-    const newFeature = await generateContent(language, feature, references);
+    const newFeature = await generateContent(language, feature, []);
     Object.assign(feature, newFeature);
   }
   await fs.promises.writeFile(
