@@ -1,0 +1,264 @@
+id: message
+title: 消息发送表达式
+description: Objective-C 消息发送是其核心特性，用于在运行时向对象请求执行某个操作（调用方法）。它基于动态分发，意味着具体执行哪个方法是在运行时才确定的，而不是编译时。这使得 Objective-C 非常灵活，支持多态和动态行为。消息发送使用方括号 `[]` 语法实现。
+usage:
+  - title: 发送无参数消息
+    description: |
+      最基础的消息发送形式，向一个对象（接收者 `receiver`）发送一个不带任何参数的消息（选择器 `selector`）。
+      - **语法**: `[receiver selector]`
+      - **接收者**: 将要接收消息的对象实例或类。
+      - **选择器**: 要调用的方法的名称。
+      - **返回值**: 方法执行后的返回值。如果方法没有返回值（`void`），则表达式本身没有值。
+    example: |
+      ```objectivec
+      // 假设有一个 NSArray 实例 myArray
+      NSArray *myArray = @[@"Apple", @"Banana", @"Cherry"];
+
+      // 向 myArray 发送 count 消息，获取数组中的元素数量
+      NSUInteger numberOfItems = [myArray count];
+
+      // numberOfItems 的值将是 3
+      NSLog(@"数组中有 %lu 个元素", (unsigned long)numberOfItems);
+
+      // 假设有一个 NSString 实例 myString
+      NSString *myString = @"Hello, World!";
+
+      // 向 myString 发送 uppercaseString 消息，获取其大写版本
+      NSString *upperCaseString = [myString uppercaseString];
+
+      // upperCaseString 的值将是 "HELLO, WORLD!"
+      NSLog(@"大写字符串: %@", upperCaseString);
+      ```
+  - title: 发送带单个参数的消息
+    description: |
+      向接收者发送包含一个参数的消息。选择器名称后面会紧跟一个冒号 `:`，表示它需要一个参数。
+      - **语法**: `[receiver selector:argument]`
+      - **选择器**: 方法名后面必须带冒号，例如 `addObject:`。
+      - **参数**: 传递给方法的值。
+    example: |
+      ```objectivec
+      // 创建一个可变数组
+      NSMutableArray *myMutableArray = [NSMutableArray array];
+
+      // 创建一个要添加的对象
+      NSString *newItem = @"Orange";
+
+      // 向 myMutableArray 发送 addObject: 消息，并将 newItem 作为参数传入
+      [myMutableArray addObject:newItem];
+
+      // myMutableArray 现在包含 "Orange"
+      NSLog(@"数组内容: %@", myMutableArray);
+
+      // 假设有一个自定义的 Calculator 类，它有一个 setValue: 方法
+      // Calculator *calculator = [[Calculator alloc] init];
+      // NSNumber *value = @(42);
+      // [calculator setValue:value]; // 向 calculator 发送 setValue: 消息，参数为 value
+      ```
+  - title: 发送带多个参数的消息
+    description: |
+      向接收者发送包含多个参数的消息。这种消息的选择器由多个部分组成，每个部分后面跟一个冒号 `:` 和对应的参数。
+      - **语法**: `[receiver keyword1:argument1 keyword2:argument2 ...]`
+      - **选择器**: 完整的选择器是所有关键字和冒号的组合，例如 `insertObject:atIndex:` 或 `replaceCharactersInRange:withString:`。
+      - **关键字**: 选择器的组成部分，用于描述其后的参数。
+      - **参数**: 按顺序传递给方法的值。
+    example: |
+      ```objectivec
+      // 创建一个可变数组，并添加一些元素
+      NSMutableArray *myMutableArray = [NSMutableArray arrayWithObjects:@"Apple", @"Cherry", nil];
+
+      // 创建要插入的对象
+      NSString *newItem = @"Banana";
+
+      // 向 myMutableArray 发送 insertObject:atIndex: 消息
+      // 将 newItem 插入到索引 1 的位置
+      [myMutableArray insertObject:newItem atIndex:1];
+
+      // myMutableArray 现在是 @[@"Apple", @"Banana", @"Cherry"]
+      NSLog(@"插入后数组内容: %@", myMutableArray);
+
+      // 创建一个可变字符串
+      NSMutableString *myMutableString = [NSMutableString stringWithString:@"Hello World"];
+      NSRange range = NSMakeRange(6, 5); // "World" 的范围
+
+      // 向 myMutableString 发送 replaceCharactersInRange:withString: 消息
+      // 将范围内的 "World" 替换为 "Objective-C"
+      [myMutableString replaceCharactersInRange:range withString:@"Objective-C"];
+
+      // myMutableString 现在是 "Hello Objective-C"
+      NSLog(@"替换后字符串: %@", myMutableString);
+      ```
+  - title: 嵌套消息发送
+    description: |
+      一个消息发送表达式的结果可以直接用作另一个消息发送的接收者或参数。这允许将多个操作链接在一起，使代码更紧凑。
+      - **语法**: `[ [receiver selector1] selector2 ]` 或 `[receiver selector1:[anotherReceiver anotherSelector]]`
+      - 内层消息发送的结果被外层消息发送使用。
+    example: |
+      ```objectivec
+      // 示例 1: 将内层消息的结果作为外层消息的接收者
+      // 创建一个包含字符串的数组
+      NSArray *stringArray = @[@"one", @"two", @"three"];
+
+      // 首先向 stringArray 发送 objectAtIndex: 消息获取第一个元素 ("one")
+      // 然后向获取到的字符串 "one" 发送 uppercaseString 消息
+      NSString *firstItemUppercase = [[stringArray objectAtIndex:0] uppercaseString];
+
+      // firstItemUppercase 的值是 "ONE"
+      NSLog(@"第一个元素大写: %@", firstItemUppercase);
+
+
+      // 示例 2: 将内层消息的结果作为外层消息的参数
+      // 创建一个可变数组
+      NSMutableArray *items = [NSMutableArray array];
+      int value = 10;
+
+      // 首先使用 stringWithFormat: 类方法创建一个格式化字符串 "Item: 10"
+      // 然后将这个新创建的字符串作为 addObject: 消息的参数添加到 items 数组中
+      [items addObject:[NSString stringWithFormat:@"Item: %d", value]];
+
+      // items 现在包含 "Item: 10"
+      NSLog(@"数组内容: %@", items);
+
+      // 示例 3: 更复杂的嵌套
+      // 获取应用的主 Bundle，然后获取 Bundle 中名为 "config" 类型为 "plist" 的文件的路径
+      // NSString *configPath = [[NSBundle mainBundle] pathForResource:@"config" ofType:@"plist"];
+      ```
+  - title: 向 `super` 发送消息
+    description: |
+      在子类的方法实现中，可以使用 `super` 关键字向父类发送消息。这通常用于覆盖父类方法时，需要在子类的实现中调用父类的原始实现。
+      - **语法**: `[super selector]` 或 `[super selector:argument ...]`
+      - **`super`**: 不是一个对象，而是一个特殊的关键字，告诉编译器查找方法实现时从当前类的父类开始。接收者仍然是 `self`。
+    example: |
+      ```objectivec
+      // 假设有一个 MyViewController 继承自 UIViewController
+      /*
+      @interface MyViewController : UIViewController
+      @end
+
+      @implementation MyViewController
+
+      - (void)viewDidLoad {
+          // 调用父类 UIViewController 的 viewDidLoad 实现，这是非常常见的做法
+          [super viewDidLoad];
+
+          // 在父类实现之后，添加子类自己的初始化代码
+          NSLog(@"MyViewController viewDidLoad executed.");
+          self.view.backgroundColor = [UIColor yellowColor];
+      }
+
+      - (instancetype)init {
+          // 在自定义初始化方法中，调用父类的初始化方法
+          self = [super init]; // 向父类发送 init 消息
+          if (self) {
+              // 子类自己的初始化逻辑
+              NSLog(@"MyViewController initialized.");
+          }
+          return self;
+      }
+
+      @end
+      */
+      ```
+  - title: 向 `nil` 发送消息
+    description: |
+      Objective-C 的一个显著特点是向 `nil`（空指针）发送消息是完全合法的，并且不会导致程序崩溃。
+      - **行为**: 当向 `nil` 发送消息时：
+        - 如果方法返回一个对象指针（如 `NSString *`），则返回 `nil`。
+        - 如果方法返回一个基本数值类型（如 `int`, `float`, `BOOL`），则返回 `0` 或 `NO`。
+        - 如果方法返回 `double` 或 `long double`，则返回 `0.0`。
+        - 如果方法返回结构体（`struct`），则返回一个所有成员都为零的结构体。
+        - 如果方法返回 `void`，则不执行任何操作。
+      - **优点**: 这可以简化代码，因为在很多情况下，不需要在发送消息前显式检查对象是否为 `nil`。
+    example: |
+      ```objectivec
+      NSString *nilString = nil;
+      NSArray *nilArray = nil;
+      id nilObject = nil;
+
+      // 向 nil 字符串发送 length 消息
+      NSUInteger length = [nilString length];
+      // length 将是 0
+
+      // 向 nil 数组发送 count 消息
+      NSUInteger count = [nilArray count];
+      // count 将是 0
+
+      // 向 nil 数组发送 objectAtIndex: 消息 (通常会崩溃，但对 nil 安全)
+      id object = [nilArray objectAtIndex:0];
+      // object 将是 nil
+
+      // 向 nil 对象发送任何消息
+      [nilObject doSomething]; // 不会执行任何操作，也不会崩溃
+      BOOL result = [nilObject isSomething]; // result 将是 NO (0)
+
+      NSLog(@"Length: %lu", (unsigned long)length);
+      NSLog(@"Count: %lu", (unsigned long)count);
+      NSLog(@"Object: %@", object);
+      NSLog(@"Result: %d", result);
+
+      // 这种特性很有用，例如在可选委托方法调用时：
+      // if ([self.delegate respondsToSelector:@selector(optionalMethod:)]) {
+      //     [self.delegate optionalMethod:someValue];
+      // }
+      // 如果不检查 respondsToSelector，直接调用 [self.delegate optionalMethod:someValue];
+      // 即使 self.delegate 为 nil，也不会崩溃。
+      ```
+  - title: 使用 `performSelector:` 动态发送消息
+    description: |
+      `NSObject` 协议提供了一系列 `performSelector:` 方法，允许在运行时根据一个 `SEL` 类型的变量（存储选择器）来动态地发送消息。这对于实现回调、插件架构或基于配置的调用非常有用。
+      - **常用方法**:
+        - `performSelector:(SEL)aSelector`: 发送无参数消息。
+        - `performSelector:(SEL)aSelector withObject:(id)object`: 发送带一个对象参数的消息。
+        - `performSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2`: 发送带两个对象参数的消息。
+      - **注意**:
+        - 这些方法通常只能传递对象类型的参数（`id`）。传递或返回非对象类型（如 `int`, `float`, 结构体）比较复杂，通常需要使用 `NSInvocation`。
+        - 对于可能引起编译器警告（如未知选择器）的情况，需要谨慎处理。
+        - ARC（自动引用计数）下，`performSelector:` 对返回值的处理有限制，可能导致内存管理问题，特别是对于非 `id` 返回类型。
+    example: |
+      ```objectivec
+      // 假设有一个 TargetClass 类，包含方法 processData: 和 displayResult
+      /*
+      @interface TargetClass : NSObject
+      - (void)processData:(NSString *)data;
+      - (void)displayResult;
+      @end
+
+      @implementation TargetClass
+      - (void)processData:(NSString *)data {
+          NSLog(@"Processing data: %@", data);
+      }
+      - (void)displayResult {
+          NSLog(@"Displaying result.");
+      }
+      @end
+      */
+
+      TargetClass *target = [[TargetClass alloc] init];
+      NSString *dataToProcess = @"Some Input Data";
+
+      // 1. 获取选择器
+      SEL processSelector = @selector(processData:);
+      SEL displaySelector = @selector(displayResult);
+
+      // 2. 使用 performSelector: 动态调用方法
+      // 检查 target 是否响应选择器（推荐做法）
+      if ([target respondsToSelector:processSelector]) {
+          // 调用 processData: 方法，传递 dataToProcess 作为参数
+          // 忽略编译器关于 performSelector 可能导致内存泄漏的警告 (谨慎使用)
+          #pragma clang diagnostic push
+          #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+          [target performSelector:processSelector withObject:dataToProcess];
+          #pragma clang diagnostic pop
+      }
+
+      if ([target respondsToSelector:displaySelector]) {
+          // 调用 displayResult 方法 (无参数)
+          #pragma clang diagnostic push
+          #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+          [target performSelector:displaySelector];
+          #pragma clang diagnostic pop
+      }
+
+      // 输出:
+      // Processing data: Some Input Data
+      // Displaying result.
+      ```

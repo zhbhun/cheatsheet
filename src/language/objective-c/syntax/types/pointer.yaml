@@ -1,0 +1,398 @@
+id: pointer
+title: 指针
+query: Objective-C 指针类型
+description: 指针是一种变量，它存储的是另一个变量的内存地址，而不是变量的值本身。在 Objective-C 中，指针被广泛用于管理对象（几乎所有对象都是通过指针来访问和操作的）和处理 C 语言风格的数据结构（如字符串和数组）。Objective-C 使用星号 `*` 来声明指针。
+usage:
+  - title: 声明和初始化指针
+    description: |
+      声明指针需要指定指针将要指向的数据类型，并在变量名前加上星号 `*`。
+      - 对于基本数据类型（如 `int`, `float` 等），可以使用取地址运算符 `&` 获取变量的内存地址并赋给指针。
+      - 对于 Objective-C 对象（如 `NSString`, `NSArray`, `NSDictionary` 或自定义类的实例），变量本身就存储对象的地址（指针），直接赋值即可。对象指针通常初始化为 `nil`（空指针）或一个新创建的对象实例。
+
+      **语法:**
+      ```objectivec
+      DataType *pointerName; // 声明指针
+      pointerName = &variable; // 指向基本数据类型变量的地址
+      pointerName = objectInstance; // 指向 Objective-C 对象
+      DataType *pointerName = nil; // 初始化为空指针
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 指向基本数据类型的指针 ---
+              int score = 100;
+              int *scorePtr; // 声明一个指向 int 类型的指针 scorePtr
+              scorePtr = &score; // 将变量 score 的内存地址赋值给 scorePtr
+
+              NSLog(@"score 的值: %d", score);
+              NSLog(@"score 的内存地址: %p", &score);
+              NSLog(@"scorePtr 指向的地址: %p", scorePtr);
+              NSLog(@"通过 scorePtr 访问 score 的值: %d", *scorePtr); // 使用 * 解引用指针
+
+              // --- 指向 Objective-C 对象的指针 ---
+              NSString *message = @"Hello, Objective-C!"; // 声明并初始化一个 NSString 对象指针
+              NSString *anotherMessage = message; // 声明另一个指针，指向同一个 NSString 对象
+              NSString *emptyMessage = nil; // 声明一个 NSString 指针并初始化为 nil
+
+              NSLog(@"message 指向的对象内容: %@", message);
+              NSLog(@"message 指向的地址: %p", message);
+              NSLog(@"anotherMessage 指向的地址: %p", anotherMessage); // 与 message 相同
+              NSLog(@"emptyMessage 是否为 nil: %d", emptyMessage == nil); // 输出 1 (true)
+
+              // --- 初始化对象指针 ---
+              NSNumber *numberObject = @123; // 创建一个 NSNumber 对象，numberObject 是指向该对象的指针
+              NSLog(@"NSNumber 对象的值: %@", numberObject);
+
+              // --- 指向 NULL (C 风格空指针) ---
+              char *cStringPtr = NULL; // C 风格的空指针，通常用于非对象指针
+              NSLog(@"cStringPtr 是否为 NULL: %d", cStringPtr == NULL); // 输出 1 (true)
+          }
+          return 0;
+      }
+      ```
+  - title: 访问指针指向的数据
+    description: |
+      访问指针指向的数据取决于指针的类型。
+      - **基本数据类型指针**: 使用解引用运算符 `*` 来获取或修改指针所指向地址处的值。
+      - **对象指针**: 使用点 `.` 语法或方括号 `[]` 消息发送语法来访问对象的属性或调用对象的方法。点语法是访问属性的首选方式（编译器会自动转换为方法调用），方括号语法用于调用任何方法。直接使用 `*` 解引用对象指针在 Objective-C 中没有意义（对象内部结构是隐藏的）。早期可能使用 `->` 访问对象的实例变量，但这已不推荐，应通过属性或方法访问。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 访问基本数据类型指针 ---
+              int value = 42;
+              int *valuePtr = &value;
+
+              // 读取值
+              NSLog(@"通过指针读取值: %d", *valuePtr); // 输出: 通过指针读取值: 42
+
+              // 修改值
+              *valuePtr = 99;
+              NSLog(@"通过指针修改后，原变量的值: %d", value); // 输出: 通过指针修改后，原变量的值: 99
+
+              // --- 访问对象指针 ---
+              NSMutableString *greeting = [NSMutableString stringWithString:@"Hello"];
+              NSString *immutableGreeting = @"World";
+
+              // 使用点语法访问属性 (length 是属性)
+              NSUInteger len = greeting.length;
+              NSLog(@"greeting 的长度 (点语法): %lu", len); // 输出: greeting 的长度 (点语法): 5
+
+              // 使用方括号语法调用方法 (length 也是方法)
+              NSUInteger len2 = [greeting length];
+              NSLog(@"greeting 的长度 (方括号): %lu", len2); // 输出: greeting 的长度 (方括号): 5
+
+              // 使用方括号语法调用其他方法 (修改对象)
+              [greeting appendString:@", World!"];
+              NSLog(@"修改后的 greeting: %@", greeting); // 输出: 修改后的 greeting: Hello, World!
+
+              // 访问不可变对象的属性/方法
+              NSLog(@"immutableGreeting 的长度: %lu", immutableGreeting.length); // 输出: immutableGreeting 的长度: 5
+
+              // 错误示例：不能直接解引用对象指针来获取内容
+              // NSLog(@"错误示例: %d", *greeting); // 这会导致编译错误或运行时崩溃
+          }
+          return 0;
+      }
+      ```
+  - title: 空指针 (`nil` 和 `NULL`)
+    description: |
+      空指针表示一个不指向任何有效内存地址的指针。在 Objective-C 中，有两个主要的空指针常量：
+      - **`nil`**: 用于 Objective-C 对象指针。它是一个定义为 `(id)0` 的宏。向 `nil` 发送消息是安全的，不会导致程序崩溃，并且通常返回 0、`NO` 或 `nil`（取决于方法的返回类型）。
+      - **`NULL`**: 用于 C 风格的指针（如指向基本类型、结构体或 C 字符串的指针）。它是一个定义为 `(void*)0` 的宏。
+
+      检查指针是否为空是避免访问无效内存导致崩溃的关键步骤。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 使用 nil ---
+              NSString *objectPointer = nil; // 初始化对象指针为 nil
+
+              // 检查指针是否为 nil
+              if (objectPointer == nil) {
+                  NSLog(@"objectPointer 是 nil。"); // 这行会被执行
+              } else {
+                  NSLog(@"objectPointer 指向一个对象: %@", objectPointer);
+              }
+
+              // 向 nil 发送消息是安全的
+              NSUInteger length = [objectPointer length];
+              NSLog(@"向 nil 发送 length 消息返回: %lu", length); // 输出: 向 nil 发送 length 消息返回: 0
+
+              NSString *upperCase = [objectPointer uppercaseString];
+              NSLog(@"向 nil 发送 uppercaseString 消息返回: %@", upperCase); // 输出: 向 nil 发送 uppercaseString 消息返回: (null) (等同于 nil)
+
+              // --- 使用 NULL ---
+              int *cPointer = NULL; // 初始化 C 风格指针为 NULL
+
+              // 检查指针是否为 NULL
+              if (cPointer == NULL) {
+                  NSLog(@"cPointer 是 NULL。"); // 这行会被执行
+              } else {
+                  // 尝试解引用 NULL 会导致运行时错误（崩溃）
+                  // NSLog(@"访问 NULL 指针的值: %d", *cPointer);
+                  NSLog(@"cPointer 指向一个有效的 int 地址。");
+              }
+
+              // --- nil 和 NULL 的比较 ---
+              // 在实践中，nil 和 NULL 通常都等于 0，但应根据指针类型使用正确的常量
+              NSLog(@"nil == NULL ? %d", nil == NULL); // 输出: nil == NULL ? 1 (true)
+
+              // 赋值示例
+              objectPointer = @"Not nil anymore";
+              if (objectPointer != nil) {
+                  NSLog(@"objectPointer 现在指向: %@", objectPointer); // 输出: objectPointer 现在指向: Not nil anymore
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: '`id` 类型：通用对象指针'
+    description: |
+      `id` 是 Objective-C 中的一种特殊数据类型，代表“任意类型的 Objective-C 对象指针”。它是一个通用指针，可以指向任何继承自 `NSObject`（或实现了 `<NSObject>` 协议）的类的实例。
+      - **优点**: 提供了极大的灵活性，允许编写可以处理多种对象类型的代码，尤其是在处理集合或实现委托模式时。
+      - **缺点**: 编译器在编译时不进行类型检查。向 `id` 类型的指针发送消息时，编译器假定该对象能够响应该消息。如果在运行时对象实际不能响应该消息，则会抛出异常（`unrecognized selector sent to instance`）。
+
+      在现代 Objective-C (启用 ARC 和类型推断) 中，应尽可能使用具体的类类型指针（如 `NSString *` 或 `NSArray *`）以获得更好的编译时检查和代码清晰度。但 `id` 在某些框架和旧代码中仍然很常见。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量
+              id anyObject;
+
+              // 将 NSString 对象赋值给 id 变量
+              anyObject = @"This is a string";
+              // 可以向 id 变量发送 NSString 的消息
+              NSUInteger length = [anyObject length]; // 运行时检查 anyObject 是否响应 length
+              NSLog(@"对象是字符串，长度: %lu", length); // 输出: 对象是字符串，长度: 16
+
+              // 将 NSArray 对象赋值给同一个 id 变量
+              anyObject = @[@"Apple", @"Banana", @"Cherry"];
+              // 可以向 id 变量发送 NSArray 的消息
+              NSUInteger count = [anyObject count]; // 运行时检查 anyObject 是否响应 count
+              NSLog(@"对象是数组，数量: %lu", count); // 输出: 对象是数组，数量: 3
+              NSLog(@"数组第一个元素: %@", [anyObject objectAtIndex:0]); // 输出: 数组第一个元素: Apple
+
+              // 将 NSNumber 对象赋值给 id 变量
+              anyObject = @42;
+              // 可以向 id 变量发送 NSNumber 的消息
+              NSInteger intValue = [anyObject integerValue];
+              NSLog(@"对象是数字，值: %ld", (long)intValue); // 输出: 对象是数字，值: 42
+
+              // 潜在的风险：发送不兼容的消息
+              // 如果注释掉上一行 (anyObject = @42;)，anyObject 仍然是 NSArray
+              // 下面的调用将在运行时崩溃，因为 NSArray 没有 -integerValue 方法
+              // NSInteger riskyValue = [anyObject integerValue];
+              // NSLog(@"尝试调用不兼容的方法: %ld", (long)riskyValue); // 会导致 unrecognized selector 异常
+
+              // 使用类型检查来增加安全性
+              if ([anyObject isKindOfClass:[NSString class]]) {
+                  NSLog(@"对象确实是 NSString");
+              } else if ([anyObject respondsToSelector:@selector(count)]) {
+                  // 检查对象是否能响应某个方法
+                  NSLog(@"对象可以响应 count 消息，可能是集合类型。");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 指针与 C 风格数组
+    description: |
+      在 C 和 Objective-C 中，数组名通常可以被视为指向数组第一个元素的常量指针。这使得指针算术可以用来遍历数组元素。
+      - `arrayName` 等价于 `&arrayName[0]`。
+      - `*(arrayName + i)` 等价于 `arrayName[i]`。
+      - 可以声明一个指针并使其指向数组的某个元素，然后通过移动指针来访问其他元素。
+
+      这主要适用于 C 风格的数组（如 `int[]`, `char[]`），而不是 Objective-C 的 `NSArray` 或 `NSMutableArray` 对象，后者需要使用它们自己的方法（如 `objectAtIndex:` 或下标 `[]`）来访问元素。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- C 风格整型数组 ---
+              int numbers[] = {10, 20, 30, 40, 50};
+              int *pNumbers; // 声明一个指向 int 的指针
+
+              // 数组名作为指针
+              pNumbers = numbers; // pNumbers 指向数组的第一个元素 (numbers[0])
+              NSLog(@"第一个元素 (通过指针): %d", *pNumbers); // 输出: 第一个元素 (通过指针): 10
+              NSLog(@"第一个元素 (通过数组名解引用): %d", *numbers); // 输出: 第一个元素 (通过数组名解引用): 10
+
+              // 使用指针算术访问元素
+              NSLog(@"第二个元素 (pNumbers+1): %d", *(pNumbers + 1)); // 输出: 第二个元素 (pNumbers+1): 20
+              NSLog(@"第三个元素 (numbers+2): %d", *(numbers + 2)); // 输出: 第三个元素 (numbers+2): 30
+
+              // 移动指针来遍历数组
+              NSLog(@"遍历数组:");
+              for (int i = 0; i < 5; i++) {
+                  NSLog(@"元素 %d: %d", i, *pNumbers); // 输出当前指针指向的值
+                  pNumbers++; // 移动指针到下一个 int 的位置
+              }
+              // 注意：循环结束后，pNumbers 不再指向数组开头
+
+              // --- C 风格字符数组 (字符串) ---
+              char message[] = "Hello"; // C 字符串是以 '\0' 结尾的字符数组
+              char *pMessage = message; // pMessage 指向 'H'
+
+              NSLog(@"C 字符串: %s", message); // %s 格式说明符用于打印 C 字符串
+              NSLog(@"第一个字符: %c", *pMessage); // 输出: 第一个字符: H
+              NSLog(@"第二个字符: %c", *(pMessage + 1)); // 输出: 第二个字符: e
+
+              // 遍历 C 字符串直到空终止符 '\0'
+              NSLog(@"遍历 C 字符串:");
+              while (*pMessage != '\0') {
+                  NSLog(@"字符: %c", *pMessage);
+                  pMessage++;
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 指向指针的指针 (双重指针)
+    description: |
+      指向指针的指针（也称为双重指针）是一个存储另一个指针地址的指针。它使用两个星号 `**` 来声明。
+      - **常见用途 1：通过方法参数返回指针**: 当你需要一个方法或函数来修改调用者传入的指针本身（即让它指向一个新的内存地址或对象）时，需要传递该指针的地址。一个典型的例子是 Objective-C 中通过 `NSError **` 参数返回错误对象。方法内部可以创建 `NSError` 对象，并将指向该对象的指针赋值给 `*errorPtr`，从而修改调用者作用域中的 `error` 指针。
+      - **常见用途 2：动态分配指针数组**: 可以用来创建和管理指针数组（数组的每个元素都是一个指针）。
+
+      **语法:**
+      ```objectivec
+      DataType **pointerToPointer;
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 模拟一个可能失败并返回错误信息的方法
+      BOOL performTask(NSString *input, NSError **errorPtr) {
+          if ([input length] == 0) {
+              if (errorPtr != NULL) { // 检查调用者是否关心错误信息
+                  // 创建 NSError 对象
+                  NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: @"输入不能为空。" };
+                  NSError *error = [NSError errorWithDomain:@"MyTaskErrorDomain"
+                                                       code:101
+                                                   userInfo:userInfo];
+                  // 修改调用者传入的指针所指向的内容，使其指向新创建的 error 对象
+                  *errorPtr = error;
+              }
+              return NO; // 任务失败
+          }
+          NSLog(@"任务成功执行，输入: %@", input);
+          return YES; // 任务成功
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 示例 1: 使用 NSError ** 返回错误 ---
+              NSError *taskError = nil; // 初始化为 nil，准备接收可能的错误对象
+              NSString *validInput = @"Some data";
+              NSString *invalidInput = @"";
+
+              // 调用成功的情况
+              BOOL success1 = performTask(validInput, &taskError); // 传递 taskError 的地址
+              if (success1) {
+                  NSLog(@"任务 1 成功。"); // 输出: 任务 1 成功。
+              } else {
+                  NSLog(@"任务 1 失败，错误: %@", [taskError localizedDescription]);
+              }
+              // 此时 taskError 仍然是 nil
+
+              NSLog(@"---");
+
+              // 调用失败的情况
+              taskError = nil; // 重置为 nil
+              BOOL success2 = performTask(invalidInput, &taskError); // 传递 taskError 的地址
+              if (success2) {
+                  NSLog(@"任务 2 成功。");
+              } else {
+                  // taskError 现在指向 performTask 方法内部创建的 NSError 对象
+                  NSLog(@"任务 2 失败，错误: %@", [taskError localizedDescription]); // 输出: 任务 2 失败，错误: 输入不能为空。
+                  NSLog(@"错误对象地址: %p", taskError);
+              }
+
+              // --- 示例 2: 指向指针的指针的基本用法 ---
+              int value = 10;
+              int *ptr = &value; // ptr 指向 value
+              int **ptrToPtr = &ptr; // ptrToPtr 指向 ptr
+
+              NSLog(@"Value = %d", value);
+              NSLog(@"*ptr = %d", *ptr);
+              NSLog(@"*(*ptrToPtr) = %d", *(*ptrToPtr)); // 两次解引用得到 value 的值
+
+              NSLog(@"Address of value = %p", &value);
+              NSLog(@"Address stored in ptr = %p", ptr);
+              NSLog(@"Address of ptr = %p", &ptr);
+              NSLog(@"Address stored in ptrToPtr = %p", ptrToPtr);
+          }
+          return 0;
+      }
+      ```
+  - title: 指针比较
+    description: |
+      比较两个指针是检查它们是否指向内存中的 *同一个地址*。
+      - 使用 `==` 运算符比较两个指针是否相等（指向同一地址）。
+      - 使用 `!=` 运算符比较两个指针是否不相等（指向不同地址）。
+
+      **重要**: 比较指针地址与比较指针所指向的对象的内容是不同的。
+      - 指针比较 (`ptr1 == ptr2`) 检查的是地址。
+      - 对象内容比较通常使用 `-isEqual:` 方法（如 `[obj1 isEqual:obj2]`）来判断两个对象在逻辑上是否相等（例如，两个不同的 `NSString` 对象可以包含相同的字符序列）。
+
+      对于 `nil` 或 `NULL` 的检查，也使用 `==` 或 `!=`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 对象指针比较 ---
+              NSString *str1 = @"Hello"; // str1 指向一个常量字符串对象
+              NSString *str2 = @"Hello"; // str2 可能指向与 str1 相同的常量字符串对象 (编译器优化)
+              NSString *str3 = [NSString stringWithFormat:@"%@", @"Hello"]; // str3 指向堆上新创建的字符串对象
+              NSString *str4 = str1; // str4 指向与 str1 完全相同的对象地址
+              NSString *strNil = nil; // 空指针
+
+              NSLog(@"str1 地址: %p", str1);
+              NSLog(@"str2 地址: %p", str2); // 通常与 str1 相同
+              NSLog(@"str3 地址: %p", str3); // 通常与 str1 不同
+              NSLog(@"str4 地址: %p", str4); // 与 str1 相同
+
+              // 比较指针地址
+              NSLog(@"str1 == str2 ? %d", str1 == str2); // 可能为 1 (true)
+              NSLog(@"str1 == str3 ? %d", str1 == str3); // 通常为 0 (false)
+              NSLog(@"str1 == str4 ? %d", str1 == str4); // 必定为 1 (true)
+              NSLog(@"str1 != str3 ? %d", str1 != str3); // 通常为 1 (true)
+              NSLog(@"strNil == nil ? %d", strNil == nil); // 必定为 1 (true)
+
+              // 比较对象内容
+              NSLog(@"[str1 isEqual:str2] ? %d", [str1 isEqual:str2]); // 必定为 1 (true)
+              NSLog(@"[str1 isEqual:str3] ? %d", [str1 isEqual:str3]); // 必定为 1 (true)
+
+              // --- 基本类型指针比较 ---
+              int a = 10, b = 10;
+              int *pA = &a;
+              int *pB = &b;
+              int *pA2 = &a; // pA2 指向与 pA 相同的地址
+              int *pNull = NULL;
+
+              NSLog(@"pA 地址: %p", pA);
+              NSLog(@"pB 地址: %p", pB); // 与 pA 不同
+              NSLog(@"pA2 地址: %p", pA2); // 与 pA 相同
+
+              NSLog(@"pA == pB ? %d", pA == pB); // 必定为 0 (false)，因为 a 和 b 是不同变量
+              NSLog(@"pA == pA2 ? %d", pA == pA2); // 必定为 1 (true)
+              NSLog(@"pNull == NULL ? %d", pNull == NULL); // 必定为 1 (true)
+          }
+          return 0;
+      }
+      ```

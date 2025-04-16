@@ -1,0 +1,445 @@
+id: visibility
+title: 类访问控制
+description: Objective-C 使用头文件（`.h`）和实现文件（`.m`）来控制类成员（属性和方法）的可见性。头文件用于声明公共接口，供其他类访问；实现文件包含私有实现细节和仅供内部使用的成员。这种机制有助于封装、隐藏实现细节，并提供清晰的 API。
+usage:
+  - title: 区分公共接口和私有实现
+    description: |
+      Objective-C 通过文件结构来区分公共接口和私有实现：
+      - **头文件 (`.h`)**: 声明类的公共接口，包括外部可以访问的属性和方法。其他类通过导入此头文件来使用该类。
+      - **实现文件 (`.m`)**: 包含类的内部实现代码，包括方法的具体定义和私有成员（属性和方法）。通常在此文件中使用**类扩展 (Class Extension)** 来声明私有属性和方法。
+    example: |
+      ```objectivec
+      // MyClass.h - 公共接口声明
+      #import <Foundation/Foundation.h>
+
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface MyClass : NSObject
+
+      // 公共属性，外部可见可访问
+      @property (nonatomic, strong) NSString *publicName;
+
+      // 公共方法，外部可以调用
+      - (void)publicMethod;
+
+      @end
+
+      NS_ASSUME_NONNULL_END
+
+      // MyClass.m - 私有实现和定义
+      #import "MyClass.h"
+
+      // 类扩展 (Class Extension) - 用于声明私有属性和方法
+      @interface MyClass ()
+
+      // 私有属性，仅在 MyClass.m 内部可见
+      @property (nonatomic, assign) NSInteger privateCounter;
+
+      // 私有方法，仅在 MyClass.m 内部调用
+      - (void)privateMethod;
+
+      @end
+
+      @implementation MyClass
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _publicName = @"Default Name";
+              _privateCounter = 0;
+          }
+          return self;
+      }
+
+      // 公共方法的实现
+      - (void)publicMethod {
+          NSLog(@"Executing public method.");
+          // 调用私有方法
+          [self privateMethod];
+          // 访问私有属性
+          self.privateCounter++;
+          NSLog(@"Private counter is now: %ld", (long)self.privateCounter);
+      }
+
+      // 私有方法的实现
+      - (void)privateMethod {
+          NSLog(@"Executing private method.");
+      }
+
+      @end
+
+      // main.m - 使用 MyClass
+      #import <Foundation/Foundation.h>
+      #import "MyClass.h" // 导入头文件以访问公共接口
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyClass *myObject = [[MyClass alloc] init];
+
+              // 访问公共属性
+              NSLog(@"Public name: %@", myObject.publicName);
+              myObject.publicName = @"New Name";
+              NSLog(@"Updated public name: %@", myObject.publicName);
+
+              // 调用公共方法
+              [myObject publicMethod];
+
+              // 尝试访问私有属性或调用私有方法会导致编译错误
+              // myObject.privateCounter = 10; // 编译错误: Property 'privateCounter' not found
+              // [myObject privateMethod]; // 编译错误: No visible @interface for 'MyClass' declares the selector 'privateMethod'
+          }
+          return 0;
+      }
+      ```
+  - title: 声明公共属性和方法
+    description: |
+      在类的头文件 (`.h`) 的 `@interface` 块中声明的属性和方法是公共的。这意味着任何导入了该头文件的其他类都可以访问这些属性（读取和写入，除非标记为 `readonly`）和调用这些方法。
+    example: |
+      ```objectivec
+      // Person.h - 公共接口
+      #import <Foundation/Foundation.h>
+
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface Person : NSObject
+
+      // 公共属性，外部可读写
+      @property (nonatomic, strong) NSString *name;
+      // 公共属性，外部可读写
+      @property (nonatomic, assign) NSInteger age;
+
+      // 公共初始化方法
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age;
+
+      // 公共方法，用于打印问候语
+      - (void)greet;
+
+      @end
+
+      NS_ASSUME_NONNULL_END
+
+
+      // Person.m - 实现
+      #import "Person.h"
+
+      @implementation Person
+
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age {
+          self = [super init];
+          if (self) {
+              _name = [name copy]; // 使用 copy 以确保字符串不可变性
+              _age = age;
+          }
+          return self;
+      }
+
+      - (void)greet {
+          NSLog(@"Hello, my name is %@ and I am %ld years old.", self.name, (long)self.age);
+      }
+
+      @end
+
+      // main.m - 使用 Person 类
+      #import <Foundation/Foundation.h>
+      #import "Person.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用公共初始化方法创建实例
+              Person *person = [[Person alloc] initWithName:@"Alice" age:30];
+
+              // 访问并修改公共属性
+              NSLog(@"Initial name: %@", person.name); // 输出: Initial name: Alice
+              person.name = @"Bob";
+              NSLog(@"Updated name: %@", person.name); // 输出: Updated name: Bob
+
+              // 调用公共方法
+              [person greet]; // 输出: Hello, my name is Bob and I am 30 years old.
+          }
+          return 0;
+      }
+      ```
+  - title: 声明私有属性和方法 (使用类扩展)
+    description: |
+      为了隐藏实现细节，应将仅供类内部使用的属性和方法声明为私有的。这通常通过在实现文件 (`.m`) 中使用**类扩展 (Class Extension)** 来实现。类扩展的语法是 `@interface ClassName ()`。
+      - **私有属性**: 在类扩展中声明的 `@property` 仅在当前类的实现文件 (`.m`) 中可见和访问。
+      - **私有方法**: 在类扩展中声明的方法原型，其实现也在 `.m` 文件中。同样，这些方法只能在类的内部调用。也可以不在类扩展中声明，直接在 `@implementation` 中定义方法，效果类似（对于纯内部调用的方法更常见）。
+    example: |
+      ```objectivec
+      // Calculator.h - 公共接口
+      #import <Foundation/Foundation.h>
+
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface Calculator : NSObject
+
+      // 公共方法：执行加法
+      - (double)add:(double)a to:(double)b;
+
+      // 公共方法：获取上次计算结果的描述
+      - (NSString *)lastResultDescription;
+
+      @end
+
+      NS_ASSUME_NONNULL_END
+
+
+      // Calculator.m - 实现和私有成员
+      #import "Calculator.h"
+
+      // 类扩展：声明私有属性和方法
+      @interface Calculator ()
+
+      // 私有属性：存储上次计算的结果
+      @property (nonatomic, assign) double lastResult;
+      // 私有属性：记录操作次数
+      @property (nonatomic, assign) NSInteger operationCount;
+
+      // 私有方法：用于记录操作
+      - (void)logOperation:(NSString *)operationName;
+      // 私有方法（未在类扩展声明，直接定义）：格式化结果
+      - (NSString *)formatResult:(double)result;
+
+      @end
+
+
+      @implementation Calculator
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _lastResult = 0.0;
+              _operationCount = 0;
+          }
+          return self;
+      }
+
+      // 公共方法实现
+      - (double)add:(double)a to:(double)b {
+          self.lastResult = a + b; // 访问私有属性
+          [self logOperation:@"Addition"]; // 调用私有方法
+          return self.lastResult;
+      }
+
+      // 公共方法实现
+      - (NSString *)lastResultDescription {
+          // 调用另一个（未在扩展声明的）私有方法
+          return [self formatResult:self.lastResult];
+      }
+
+      // 私有方法实现
+      - (void)logOperation:(NSString *)operationName {
+          self.operationCount++; // 访问私有属性
+          NSLog(@"Performed operation: %@. Total operations: %ld", operationName, (long)self.operationCount);
+      }
+
+      // 私有方法实现 (未在类扩展中声明)
+      - (NSString *)formatResult:(double)result {
+          return [NSString stringWithFormat:@"Last result was %.2f", result];
+      }
+
+      @end
+
+      // main.m - 使用 Calculator 类
+      #import <Foundation/Foundation.h>
+      #import "Calculator.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init];
+              double sum = [calc add:10.5 to:5.2];
+              NSLog(@"Sum: %.2f", sum); // 输出: Sum: 15.70
+
+              NSString *desc = [calc lastResultDescription];
+              NSLog(@"%@", desc); // 输出: Last result was 15.70
+
+              // 尝试访问私有属性或方法将失败
+              // calc.lastResult = 100.0; // 编译错误
+              // [calc logOperation:@"Manual Log"]; // 编译错误
+          }
+          return 0;
+      }
+      ```
+  - title: 实现只读公共属性
+    description: |
+      有时希望属性对外部是只读的，但允许在类内部修改。这可以通过以下方式实现：
+      1. 在头文件 (`.h`) 中将属性声明为 `readonly`。
+      2. 在实现文件 (`.m`) 的类扩展中，将**同名属性**重新声明为 `readwrite`。
+      这样，外部代码只能读取该属性，而类内部的代码可以通过 `self.propertyName = ...` 或直接访问下划线实例变量 (`_propertyName = ...`) 来修改它。
+    example: |
+      ```objectivec
+      // Counter.h - 公共接口
+      #import <Foundation/Foundation.h>
+
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface Counter : NSObject
+
+      // 公共只读属性，外部只能读取 count 的值
+      @property (nonatomic, assign, readonly) NSInteger count;
+
+      // 公共方法，用于增加计数
+      - (void)increment;
+
+      // 公共方法，用于重置计数
+      - (void)reset;
+
+      @end
+
+      NS_ASSUME_NONNULL_END
+
+
+      // Counter.m - 实现
+      #import "Counter.h"
+
+      // 类扩展：将 count 属性重新声明为 readwrite，使其内部可修改
+      @interface Counter ()
+      @property (nonatomic, assign, readwrite) NSInteger count;
+      @end
+
+      @implementation Counter
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _count = 0; // 初始化内部可写的属性
+          }
+          return self;
+      }
+
+      - (void)increment {
+          self.count++; // 在内部修改属性值
+          NSLog(@"Count incremented to: %ld", (long)self.count);
+      }
+
+      - (void)reset {
+          self.count = 0; // 在内部修改属性值
+          NSLog(@"Count reset to: %ld", (long)self.count);
+      }
+
+      @end
+
+      // main.m - 使用 Counter 类
+      #import <Foundation/Foundation.h>
+      #import "Counter.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Counter *myCounter = [[Counter alloc] init];
+
+              // 读取只读属性
+              NSLog(@"Initial count: %ld", (long)myCounter.count); // 输出: Initial count: 0
+
+              // 调用公共方法来修改内部状态
+              [myCounter increment]; // 输出: Count incremented to: 1
+              [myCounter increment]; // 输出: Count incremented to: 2
+
+              // 再次读取只读属性
+              NSLog(@"Current count: %ld", (long)myCounter.count); // 输出: Current count: 2
+
+              // 尝试从外部写入只读属性会导致编译错误
+              // myCounter.count = 10; // 编译错误: Assignment to readonly property
+
+              [myCounter reset]; // 输出: Count reset to: 0
+              NSLog(@"Count after reset: %ld", (long)myCounter.count); // 输出: Count after reset: 0
+          }
+          return 0;
+      }
+      ```
+  - title: 实例变量可见性指令 (历史用法)
+    description: |
+      Objective-C 还提供了直接控制实例变量（成员变量）可见性的指令：`@public`, `@protected`, `@private`, `@package`。这些指令写在 `@interface` 的花括号 `{}` 内。
+      - `@public`: 实例变量可以在任何地方访问。**（极少使用，破坏封装）**
+      - `@protected`: 实例变量可以在本类及其子类中访问。（默认）
+      - `@private`: 实例变量只能在本类中访问。
+      - `@package`: 在 64 位架构下，行为类似于 `@public`，但在框架之外的代码中行为类似 `@private`。（用于框架内部共享）
+
+      **注意**: 现代 Objective-C 编程强烈推荐使用 `@property` 和类扩展来管理访问控制，而不是直接操作实例变量和使用这些可见性指令。直接暴露实例变量通常被认为是不好的实践。
+    example: |
+      ```objectivec
+      // LegacyClass.h
+      #import <Foundation/Foundation.h>
+
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface LegacyClass : NSObject {
+          // 不推荐直接声明实例变量，尤其是 public
+          @public
+          NSString *publicVariable; // 任何地方都可以直接访问
+
+          @protected // 默认，可以省略
+          NSInteger protectedVariable; // 本类和子类可以访问
+
+          @private
+          double privateVariable; // 仅本类可以访问
+      }
+
+      // 推荐使用属性
+      @property (nonatomic, strong, readonly) NSString *recommendedProperty;
+
+      - (void)showVariables;
+
+      @end
+
+      NS_ASSUME_NONNULL_END
+
+      // LegacyClass.m
+      #import "LegacyClass.h"
+
+      @interface LegacyClass()
+      @property (nonatomic, strong, readwrite) NSString *recommendedProperty; // 内部可写
+      @end
+
+      @implementation LegacyClass
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              publicVariable = @"Public Data";
+              protectedVariable = 10;
+              privateVariable = 3.14;
+              self.recommendedProperty = @"Recommended Way"; // 初始化属性
+          }
+          return self;
+      }
+
+      - (void)showVariables {
+          NSLog(@"Public: %@", publicVariable);
+          NSLog(@"Protected: %ld", (long)protectedVariable);
+          NSLog(@"Private: %f", privateVariable); // 内部可以访问所有变量
+          NSLog(@"Property: %@", self.recommendedProperty);
+      }
+
+      - (void)internalModify {
+          privateVariable = 6.28; // 可以修改私有变量
+          NSLog(@"Modified private variable internally.");
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "LegacyClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              LegacyClass *obj = [[LegacyClass alloc] init];
+
+              // 直接访问 public 实例变量 (不推荐)
+              NSLog(@"Accessing public variable directly: %@", obj->publicVariable);
+              obj->publicVariable = @"Modified Public Data"; // 可以直接修改
+              NSLog(@"Modified public variable: %@", obj->publicVariable);
+
+              // 访问推荐的只读属性
+              NSLog(@"Accessing recommended property: %@", obj.recommendedProperty);
+              // obj.recommendedProperty = @"Try Modify"; // 编译错误: Assignment to readonly property
+
+              // 尝试直接访问 protected 或 private 变量会导致编译错误
+              // NSLog(@"Accessing protected: %ld", obj->protectedVariable); // 编译错误 (除非是子类)
+              // NSLog(@"Accessing private: %f", obj->privateVariable); // 编译错误
+
+              [obj showVariables];
+          }
+          return 0;
+      }
+      ```

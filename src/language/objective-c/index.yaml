@@ -1,0 +1,131 @@
+id: objective-c
+title: Objective‑C
+documents:
+  - https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC
+children:
+  - syntax
+outlines:
+  - id: syntax
+    title: 语法
+    children:
+      - id: basics
+        title: 基础
+        children:
+          - id: variables
+            title: 变量
+          - id: comment
+            title: 注释
+          - id: directives
+            title: 预处理指令
+      - id: types
+        title: 数据类型
+        children:
+          - id: number
+            title: 数值
+          - id: boolean
+            title: 布尔值
+          - id: character
+            title: 字符
+          - id: string
+            title: 字符串
+          - id: enum
+            title: 枚举
+          - id: union
+            title: 联合体
+          - id: struct
+            title: 结构体
+          - id: pointer
+            title: 指针
+          - id: 'null'
+            title: nil / NULL / Nil
+          - id: alias
+            title: 类型别名
+          - id: void
+            title: 无返回值
+          - id: any
+            title: 任意
+      - id: converts
+        title: 类型转换
+        children:
+          - id: explicit
+            title: 显示类型转换
+          - id: implicit
+            title: 隐式类型转换
+      - id: expressions
+        title: 表达式
+        children:
+          - id: arithmetic
+            title: 算术表达式
+          - id: assignment
+            title: 赋值表达式
+          - id: comparison
+            title: 比较表达式
+          - id: logic
+            title: 逻辑表达式
+          - id: ternary
+            title: 三元表达式
+          - id: is
+            title: 类型检查
+          - id: function
+            title: 代码块
+          - id: optional-chaining
+            title: 可选链表达式
+          - id: keypath
+            title: valueForKeyPath
+          - id: selector
+            title: 选择器表达式
+          - id: message
+            title: 消息发送表达式
+          - id: dot
+            title: 点语法
+          - id: protocol
+            title: 协议引用表达式
+          - id: availability
+            title: 可用性检查表达式
+      - id: statements
+        title: 语句
+        children:
+          - id: branch
+            title: 条件语句
+          - id: switch
+            title: Switch
+          - id: loop
+            title: 循环语句
+          - id: label
+            title: 标签
+          - id: try
+            title: 错误处理
+          - id: autoreleasepool
+            title: '@autoreleasepool'
+      - id: functions
+        title: 函数与方法
+        children:
+          - id: definition
+            title: 函数定义
+          - id: parameter
+            title: 函数参数
+          - id: return
+            title: 返回值
+          - id: anonymous
+            title: 闭包
+      - id: classes
+        title: 类
+        children:
+          - id: definition
+            title: 类定义
+          - id: constructor
+            title: 类构造函数
+          - id: property
+            title: 类属性
+          - id: method
+            title: 类方法
+          - id: visibility
+            title: 类访问控制
+          - id: static
+            title: 静态属性
+          - id: inheritance
+            title: 类继承
+          - id: interface
+            title: 协议
+          - id: extension
+            title: 类扩展

@@ -1,0 +1,332 @@
+id: method
+title: 类方法
+description: Objective-C 中的类方法是与类本身关联而不是与类的任何特定实例关联的方法。它们通常用于执行不依赖于对象状态的操作，例如创建类的实例（工厂方法）或提供通用的工具函数。类方法通过在方法声明和定义前加上加号（`+`）来标识。
+usage:
+  - title: 声明和实现一个简单的类方法
+    description: |
+      类方法使用 `+` 符号声明在接口（`.h` 文件）中，并在实现（`.m` 文件）中定义。这与使用 `-` 符号声明和定义的实例方法相对。类方法不能直接访问实例变量，因为它们不与特定实例相关联。
+    example: |
+      ```objectivec
+      // MyClass.h
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+
+      // 声明一个类方法
+      + (void)printClassName;
+
+      @end
+
+      // MyClass.m
+      #import "MyClass.h"
+
+      @implementation MyClass
+
+      // 实现类方法
+      + (void)printClassName {
+          // 类方法内部可以直接使用 self 关键字，此时 self 指向类本身 (Class object)
+          NSLog(@"This is class: %@", NSStringFromClass(self));
+          // 或者直接使用类名
+          // NSLog(@"This is class: %@", NSStringFromClass([MyClass class]));
+      }
+
+      @end
+
+      // main.m 或其他调用处
+      #import "MyClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用类方法
+              [MyClass printClassName];
+              // 输出: This is class: MyClass
+          }
+          return 0;
+      }
+      ```
+  - title: 调用类方法
+    description: 调用类方法时，消息是发送给类本身，而不是类的实例。使用方括号语法，将类名放在接收者位置。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 假设 MyUtilityClass 类已定义，并包含一个类方法
+      @interface MyUtilityClass : NSObject
+      + (NSString *)generateUUIDString;
+      @end
+
+      @implementation MyUtilityClass
+      + (NSString *)generateUUIDString {
+          return [[NSUUID UUID] UUIDString];
+      }
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 直接通过类名调用类方法
+              NSString *uuid = [MyUtilityClass generateUUIDString];
+              NSLog(@"Generated UUID: %@", uuid);
+              // 输出: Generated UUID: <一个唯一的UUID字符串>
+          }
+          return 0;
+      }
+      ```
+  - title: 使用类方法作为工具函数
+    description: 类方法非常适合实现不需要访问特定实例数据的工具或辅助函数。例如，数学计算、字符串格式化或配置设置访问等。
+    example: |
+      ```objectivec
+      // StringHelper.h
+      #import <Foundation/Foundation.h>
+
+      @interface StringHelper : NSObject
+
+      // 声明一个用于检查字符串是否为空或仅包含空格的类方法
+      + (BOOL)isNullOrWhiteSpace:(NSString *)string;
+
+      @end
+
+      // StringHelper.m
+      #import "StringHelper.h"
+
+      @implementation StringHelper
+
+      + (BOOL)isNullOrWhiteSpace:(NSString *)string {
+          if (string == nil) {
+              return YES; // 检查 nil
+          }
+          // 移除字符串两端的空白和换行符
+          NSString *trimmedString = [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+          // 检查处理后的字符串长度是否为 0
+          return [trimmedString length] == 0;
+      }
+
+      @end
+
+      // main.m
+      #import "StringHelper.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *str1 = @"  Hello  ";
+              NSString *str2 = @"   ";
+              NSString *str3 = nil;
+
+              // 使用类方法进行检查
+              BOOL check1 = [StringHelper isNullOrWhiteSpace:str1]; // NO
+              BOOL check2 = [StringHelper isNullOrWhiteSpace:str2]; // YES
+              BOOL check3 = [StringHelper isNullOrWhiteSpace:str3]; // YES
+
+              NSLog(@"'%@' is null or whitespace: %d", str1, check1);
+              NSLog(@"'%@' is null or whitespace: %d", str2, check2);
+              NSLog(@"'%@' is null or whitespace: %d", str3, check3);
+              // 输出：
+              // '  Hello  ' is null or whitespace: 0
+              // '   ' is null or whitespace: 1
+              // '(null)' is null or whitespace: 1
+          }
+          return 0;
+      }
+      ```
+  - title: 使用类方法作为工厂方法
+    description: 工厂方法是一种常用的设计模式，它使用类方法来封装对象的创建过程。这使得创建对象的代码更简洁，并可以在创建过程中加入特定的初始化逻辑或返回共享实例（单例）。
+    example: |
+      ```objectivec
+      // Car.h
+      #import <Foundation/Foundation.h>
+
+      @interface Car : NSObject
+
+      @property (nonatomic, copy) NSString *model;
+      @property (nonatomic, copy) NSString *color;
+
+      // 工厂方法，用于创建特定配置的 Car 实例
+      + (instancetype)carWithModel:(NSString *)model color:(NSString *)color;
+
+      // 工厂方法，创建默认配置的 Car 实例
+      + (instancetype)defaultCar;
+
+      @end
+
+      // Car.m
+      #import "Car.h"
+
+      @implementation Car
+
+      // 私有初始化方法（可选）
+      - (instancetype)initWithModel:(NSString *)model color:(NSString *)color {
+          self = [super init];
+          if (self) {
+              _model = [model copy];
+              _color = [color copy];
+          }
+          return self;
+      }
+
+      // 实现工厂方法
+      + (instancetype)carWithModel:(NSString *)model color:(NSString *)color {
+          // 在类方法内部，使用 alloc 和自定义的 init 方法创建实例
+          return [[self alloc] initWithModel:model color:color];
+          // 注意：这里使用 self 而不是具体的类名 [Car alloc]，这使得子类可以继承并使用这个工厂方法创建子类的实例
+      }
+
+      + (instancetype)defaultCar {
+          // 调用另一个工厂方法或直接初始化
+          return [self carWithModel:@"Generic" color:@"Black"];
+      }
+
+      - (NSString *)description {
+          return [NSString stringWithFormat:@"Car: Model=%@, Color=%@", self.model, self.color];
+      }
+
+      @end
+
+      // main.m
+      #import "Car.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用工厂方法创建 Car 实例
+              Car *myCar = [Car carWithModel:@"Sedan" color:@"Red"];
+              Car *defaultCar = [Car defaultCar];
+
+              NSLog(@"%@", myCar);
+              NSLog(@"%@", defaultCar);
+              // 输出：
+              // Car: Model=Sedan, Color=Red
+              // Car: Model=Generic, Color=Black
+          }
+          return 0;
+      }
+      ```
+  - title: 在类方法中使用 self
+    description: 在类方法的实现中，`self` 关键字指向的是类本身（`Class` 对象），而不是类的实例。这允许类方法调用其他类方法或获取类的信息（如类名）。这对于工厂方法和处理类级别状态特别有用。
+    example: |
+      ```objectivec
+      // Logger.h
+      #import <Foundation/Foundation.h>
+
+      @interface Logger : NSObject
+
+      + (void)logMessage:(NSString *)message;
+      + (NSString *)loggerName;
+
+      @end
+
+      // Logger.m
+      #import "Logger.h"
+
+      @implementation Logger
+
+      + (NSString *)loggerName {
+          // 使用 self 获取当前的类对象，然后转换为字符串
+          return NSStringFromClass(self);
+      }
+
+      + (void)logMessage:(NSString *)message {
+          // 在类方法内部调用另一个类方法 loggerName
+          // 使用 self 调用，而不是 [Logger loggerName]
+          // 这使得子类重写 loggerName 后，logMessage 会使用子类的实现
+          NSString *name = [self loggerName];
+          NSLog(@"[%@]: %@", name, message);
+      }
+
+      @end
+
+      // SubLogger.h (子类)
+      #import "Logger.h"
+      @interface SubLogger : Logger
+      @end
+
+      // SubLogger.m
+      #import "SubLogger.h"
+      @implementation SubLogger
+      // 重写类方法
+      + (NSString *)loggerName {
+          return @"SubLogger";
+      }
+      @end
+
+
+      // main.m
+      #import "Logger.h"
+      #import "SubLogger.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用基类的类方法
+              [Logger logMessage:@"This is a standard log."];
+              // 输出: [Logger]: This is a standard log.
+
+              // 调用子类的类方法 (继承自 Logger)
+              [SubLogger logMessage:@"This is a sub-level log."];
+              // 输出: [SubLogger]: This is a sub-level log.
+              // 注意：logMessage 内部调用的 [self loggerName] 解析为 [SubLogger loggerName]
+          }
+          return 0;
+      }
+      ```
+  - title: 类方法与继承
+    description: 类方法可以被子类继承和重写（Override）。当子类调用一个继承来的类方法时，该方法内部的 `self` 会指向子类本身。如果子类重写了父类的类方法，那么通过子类调用时将执行子类的版本。可以使用 `super` 关键字在子类的类方法中调用父类的同名类方法。
+    example: |
+      ```objectivec
+      // Animal.h
+      #import <Foundation/Foundation.h>
+      @interface Animal : NSObject
+      + (NSString *)species;
+      + (void)printInfo;
+      @end
+
+      // Animal.m
+      #import "Animal.h"
+      @implementation Animal
+      + (NSString *)species {
+          return @"Generic Animal";
+      }
+      + (void)printInfo {
+          NSLog(@"Species: %@", [self species]); // 使用 self 调用 species
+      }
+      @end
+
+      // Dog.h
+      #import "Animal.h"
+      @interface Dog : Animal
+      @end
+
+      // Dog.m
+      #import "Dog.h"
+      @implementation Dog
+      // 重写类方法 species
+      + (NSString *)species {
+          return @"Canine";
+      }
+      // 重写类方法 printInfo，并调用父类实现
+      + (void)printInfo {
+          NSLog(@"--- Dog Info ---");
+          [super printInfo]; // 调用父类 Animal 的 printInfo 实现
+          NSLog(@"Known as: Man's best friend");
+      }
+      @end
+
+      // main.m
+      #import "Animal.h"
+      #import "Dog.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用 Animal 的类方法
+              [Animal printInfo];
+              // 输出: Species: Generic Animal
+
+              NSLog(@"\n");
+
+              // 调用 Dog 的类方法
+              [Dog printInfo];
+              // 输出:
+              // --- Dog Info ---
+              // Species: Canine  (因为 printInfo 内部调用 [self species]，self 是 Dog，所以调用 Dog 的 species)
+              // Known as: Man's best friend
+          }
+          return 0;
+      }
+      ```

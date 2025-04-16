@@ -1,0 +1,500 @@
+id: inheritance
+title: 类继承
+description: Objective-C 中的类继承允许一个类（子类/Subclass）继承另一个类（父类/Superclass）的属性和方法，是实现代码重用和构建类层次结构的基础。子类不仅拥有父类的特性，还可以添加自己的特性或修改继承来的行为。通过在子类接口声明中使用 `:` 指定父类来实现。
+usage:
+  - title: 创建子类
+    description: |
+      定义一个新类并指定其父类。子类将自动拥有父类所有非私有的属性和方法。
+      这是继承最基础的用法。
+
+      **语法:**
+      - `@interface SubclassName : SuperclassName`: 在子类的 `@interface` 声明中，使用冒号 `:` 后跟父类的名称来表示继承关系。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义父类 Vehicle
+      @interface Vehicle : NSObject // 所有类最终都继承自 NSObject (除非显式指定其他根类)
+      @property (nonatomic, assign) int numberOfWheels; // 父类属性
+      - (void)move; // 父类方法
+      @end
+
+      @implementation Vehicle
+      - (instancetype)init {
+          self = [super init]; // 调用父类(NSObject)的初始化方法
+          if (self) {
+              _numberOfWheels = 0; // 初始化默认轮子数量
+              NSLog(@"Vehicle initialized.");
+          }
+          return self;
+      }
+      - (void)move {
+          NSLog(@"The vehicle is moving.");
+      }
+      @end
+
+      // 定义子类 Car，继承自 Vehicle
+      // 使用 : Vehicle 来指定父类
+      @interface Car : Vehicle
+      // Car 会自动继承 numberOfWheels 属性和 move 方法
+      // 子类可以暂时没有任何自己的实现
+      @end
+
+      @implementation Car
+      // 子类的实现部分，即使为空，也已继承父类功能
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 Car 类的实例
+              Car *myCar = [[Car alloc] init]; // 调用 init 时，会先执行 Vehicle 的 init
+
+              // 子类实例可以直接使用继承来的属性和方法
+              myCar.numberOfWheels = 4;
+              NSLog(@"My car has %d wheels.", myCar.numberOfWheels); // 输出: My car has 4 wheels.
+
+              [myCar move]; // 输出: The vehicle is moving.
+          }
+          return 0;
+      }
+      // 输出:
+      // Vehicle initialized.
+      // My car has 4 wheels.
+      // The vehicle is moving.
+      ```
+  - title: 访问继承的成员
+    description: 子类的实例可以直接访问和使用从父类继承来的非私有属性（通过点语法或 getter/setter 方法）和方法（通过消息发送），就像这些成员是子类自己定义的一样。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle (同上)
+      @interface Vehicle : NSObject
+      @property (nonatomic, assign) int numberOfWheels;
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (instancetype)init { self = [super init]; if (self) { _numberOfWheels = 0; NSLog(@"Vehicle initialized.");} return self; }
+      - (void)move { NSLog(@"The vehicle is moving."); }
+      @end
+
+      // 子类 Car (同上)
+      @interface Car : Vehicle
+      @end
+      @implementation Car
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Car *myCar = [[Car alloc] init]; // 创建子类实例
+
+              // 访问继承的属性
+              myCar.numberOfWheels = 4; // 使用点语法设置继承的属性
+              int wheels = myCar.numberOfWheels; // 使用点语法获取继承的属性
+              NSLog(@"Number of wheels: %d", wheels); // 输出: Number of wheels: 4
+
+              // 调用继承的方法
+              [myCar move]; // 直接向子类实例发送继承来的消息
+                           // 输出: The vehicle is moving.
+          }
+          return 0;
+      }
+      // 输出:
+      // Vehicle initialized.
+      // Number of wheels: 4
+      // The vehicle is moving.
+      ```
+  - title: 扩展父类
+    description: 子类可以在继承父类所有功能的基础上，添加自己特有的属性和方法，以满足更具体的需求。这使得子类比父类具有更丰富的功能。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle (同上)
+      @interface Vehicle : NSObject
+      @property (nonatomic, assign) int numberOfWheels;
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (instancetype)init { self = [super init]; if (self) { _numberOfWheels = 0; NSLog(@"Vehicle initialized."); } return self; }
+      - (void)move { NSLog(@"The vehicle is moving."); }
+      @end
+
+      // 子类 Car 继承自 Vehicle，并添加新属性和方法
+      @interface Car : Vehicle
+      // 新增属性：品牌
+      @property (nonatomic, strong) NSString *brand;
+      // 新增方法：鸣笛
+      - (void)honk;
+      @end
+
+      @implementation Car
+      // 实现新增的方法
+      - (void)honk {
+          NSLog(@"%@ car says: Beep beep!", self.brand ?: @"The"); // 如果 brand 未设置，则输出 "The car..."
+      }
+      // 注意：Car 仍然继承了 numberOfWheels 和 move
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Car *myCar = [[Car alloc] init]; // 父类初始化会先执行
+              myCar.numberOfWheels = 4; // 访问继承的属性
+              myCar.brand = @"Toyota";   // 访问子类新增的属性
+
+              NSLog(@"My car is a %@ with %d wheels.", myCar.brand, myCar.numberOfWheels);
+              // 输出: My car is a Toyota with 4 wheels.
+
+              [myCar move]; // 调用继承的方法
+                           // 输出: The vehicle is moving.
+              [myCar honk]; // 调用子类新增的方法
+                           // 输出: Toyota car says: Beep beep!
+          }
+          return 0;
+      }
+      // 输出:
+      // Vehicle initialized.
+      // My car is a Toyota with 4 wheels.
+      // The vehicle is moving.
+      // Toyota car says: Beep beep!
+      ```
+  - title: 重写父类方法
+    description: |
+      子类可以提供一个与父类方法具有相同名称、相同参数类型和相同返回类型的新实现，这称为方法重写（Override）。当通过子类实例调用该方法时，将执行子类中的版本，而不是父类的版本。这允许子类改变或特化继承来的行为。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle (同上)
+      @interface Vehicle : NSObject
+      @property (nonatomic, assign) int numberOfWheels;
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (instancetype)init { self = [super init]; if (self) { _numberOfWheels = 0; NSLog(@"Vehicle initialized."); } return self; }
+      - (void)move { NSLog(@"The vehicle is moving."); } // 父类的 move 实现
+      @end
+
+      // 子类 Car 继承自 Vehicle
+      @interface Car : Vehicle
+      @property (nonatomic, strong) NSString *brand;
+      // Car 将重写父类的 move 方法，需要在 @interface 中重新声明 (虽然非严格必需，但推荐)
+      - (void)move;
+      @end
+
+      @implementation Car
+      // 重写父类的 move 方法
+      - (void)move {
+          // 提供 Car 特定的移动行为，完全覆盖父类的实现
+          NSLog(@"The %@ car is driving on the road.", self.brand ?: @"car");
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Car *myCar = [[Car alloc] init]; // 父类初始化先执行
+              myCar.brand = @"Honda";
+              myCar.numberOfWheels = 4;
+
+              // 调用 move 方法
+              // 由于 Car 类重写了 move 方法，所以执行的是 Car 中的实现
+              [myCar move]; // 输出: The Honda car is driving on the road.
+
+              // 父类 Vehicle 的 move 方法实现被子类的实现覆盖了
+              // 若想在子类实现中调用父类版本，需要使用 super 关键字 (见下一节)
+          }
+          return 0;
+      }
+      // 输出:
+      // Vehicle initialized.
+      // The Honda car is driving on the road.
+      ```
+  - title: 调用父类实现 (`super`)
+    description: |
+      在子类重写的方法中，如果希望在执行子类特定逻辑的同时，也执行父类原有的逻辑，可以使用 `super` 关键字来调用父类版本的方法。`super` 告诉编译器在当前类的父类中查找并调用指定方法的实现。
+
+      **语法:**
+      - `[super methodName]`：在子类的方法实现中，调用父类名为 `methodName` 的方法的实现。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle (同上)
+      @interface Vehicle : NSObject
+      @property (nonatomic, assign) int numberOfWheels;
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (instancetype)init { self = [super init]; if (self) { _numberOfWheels = 0; NSLog(@"Vehicle initialized."); } return self; }
+      - (void)move { NSLog(@"The vehicle is moving."); } // 父类实现
+      @end
+
+      // 子类 Car
+      @interface Car : Vehicle
+      @property (nonatomic, strong) NSString *brand;
+      - (void)move; // 重写 move
+      @end
+
+      @implementation Car
+      // 重写 move 方法，并在其中调用父类的 move 实现
+      - (void)move {
+          NSLog(@"Car is preparing to move..."); // 子类特定逻辑 (前)
+
+          // 使用 super 调用父类的 move 方法实现
+          [super move];
+
+          NSLog(@"The %@ car drives smoothly.", self.brand ?: @"car"); // 子类特定逻辑 (后)
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Car *myCar = [[Car alloc] init]; // 父类初始化先执行
+              myCar.brand = @"BMW";
+
+              [myCar move]; // 调用 Car 的 move 方法
+          }
+          return 0;
+      }
+      // 输出:
+      // Vehicle initialized.
+      // Car is preparing to move...
+      // The vehicle is moving.        <-- 由 [super move] 调用产生
+      // The BMW car drives smoothly.
+      ```
+  - title: 初始化子类 (`[super init]`)
+    description: |
+      在子类的初始化方法（如 `init` 或自定义的指定初始化器 `initWith...`）中，**必须**首先调用父类的某个初始化方法（通常是父类的指定初始化器，或者如果父类没有明确指定，则调用 `[super init]`），以确保继承来的成员变量和父类自身状态得到正确初始化。这构成了所谓的“初始化链”。
+
+      **惯例步骤:**
+      1. 调用父类的初始化器：`self = [super designatedInitializer...];` 或 `self = [super init];`
+      2. 检查父类初始化是否成功：`if (self)`，因为父类初始化可能失败并返回 `nil`。
+      3. 如果成功，则初始化子类自己添加的成员变量。
+      4. 返回 `self`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle
+      @interface Vehicle : NSObject
+      @property (nonatomic, assign) int numberOfWheels;
+      // 父类的指定初始化器 (Designated Initializer)
+      - (instancetype)initWithNumberOfWheels:(int)wheels NS_DESIGNATED_INITIALIZER;
+      - (void)move;
+      @end
+      @implementation Vehicle
+      // 实现父类的指定初始化器
+      - (instancetype)initWithNumberOfWheels:(int)wheels {
+          self = [super init]; // 调用 NSObject 的 init
+          if (self) {
+              _numberOfWheels = wheels;
+              NSLog(@"Vehicle initialized with %d wheels.", _numberOfWheels);
+          }
+          return self;
+      }
+      // 提供一个默认的 init, 调用本类的指定初始化器 (方便起见)
+      - (instancetype)init {
+          // 委托给本类的指定初始化器
+          return [self initWithNumberOfWheels:0];
+      }
+      - (void)move { NSLog(@"The vehicle with %d wheels is moving.", self.numberOfWheels); }
+      @end
+
+      // 子类 Car
+      @interface Car : Vehicle
+      @property (nonatomic, strong) NSString *brand;
+      // 子类的指定初始化器
+      - (instancetype)initWithBrand:(NSString *)brand numberOfWheels:(int)wheels NS_DESIGNATED_INITIALIZER;
+      @end
+
+      @implementation Car
+      // 实现子类的指定初始化器
+      - (instancetype)initWithBrand:(NSString *)brand numberOfWheels:(int)wheels {
+          // 1. 调用父类的指定初始化器 [super designatedInitializer]
+          self = [super initWithNumberOfWheels:wheels];
+          // 2. 检查父类初始化是否成功
+          if (self) {
+              // 3. 初始化子类自己的属性
+              _brand = [brand copy]; // 使用 copy 对 NSString 更安全
+              NSLog(@"Car initialized with brand %@.", _brand);
+          }
+          // 4. 返回 self
+          return self;
+      }
+      // 实现父类的初始化器时，必须调用本类的指定初始化器或父类的初始化器
+      // 重写父类的 initWithNumberOfWheels
+      - (instancetype)initWithNumberOfWheels:(int)wheels {
+           // 调用本类的指定初始化器，提供默认 brand
+          return [self initWithBrand:@"Unknown" numberOfWheels:wheels];
+      }
+      // 重写默认 init
+      - (instancetype)init {
+          // 调用本类的指定初始化器，提供默认值
+          return [self initWithBrand:@"DefaultBrand" numberOfWheels:4];
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用子类的指定初始化器创建实例
+              NSLog(@"Creating Tesla...");
+              Car *myCar = [[Car alloc] initWithBrand:@"Tesla" numberOfWheels:4];
+              // 输出:
+              // Creating Tesla...
+              // Vehicle initialized with 4 wheels.
+              // Car initialized with brand Tesla.
+
+              NSLog(@"\nCreating Default Car...");
+              // 使用子类重写的默认 init
+              Car *defaultCar = [[Car alloc] init];
+              // 输出:
+              // Creating Default Car...
+              // Vehicle initialized with 4 wheels.
+              // Car initialized with brand DefaultBrand.
+
+              [myCar move];    // 输出: The vehicle with 4 wheels is moving. (继承自 Vehicle)
+              [defaultCar move]; // 输出: The vehicle with 4 wheels is moving.
+          }
+          return 0;
+      }
+      ```
+  - title: 使用多态
+    description: |
+      多态（Polymorphism）允许使用父类类型的指针（或 `id` 类型）来引用子类对象。当通过这个父类类型的指针调用一个被子类重写了的方法时，Objective-C 的动态运行时系统会确保执行的是子类中的那个特定实现。这使得代码可以编写得更通用和灵活，能够处理一系列共享共同父类的不同对象。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 父类 Vehicle (有 move 方法)
+      @interface Vehicle : NSObject
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (void)move { NSLog(@"Generic vehicle movement."); }
+      @end
+
+      // 子类 Car (重写了 move 方法)
+      @interface Car : Vehicle
+      - (void)move;
+      @end
+      @implementation Car
+      - (void)move { NSLog(@"Car is driving."); } // Car 的特定实现
+      @end
+
+      // 另一个子类 Bicycle (也重写了 move 方法)
+      @interface Bicycle : Vehicle
+      - (void)move;
+      @end
+      @implementation Bicycle
+      - (void)move { NSLog(@"Bicycle is pedaling."); } // Bicycle 的特定实现
+      @end
+
+      // 这个函数接受一个 Vehicle 类型的参数
+      // 它可以接收 Vehicle, Car, Bicycle 或任何 Vehicle 子类的实例
+      void makeVehicleMove(Vehicle *vehicle) {
+          NSLog(@"Making the vehicle move:");
+          // 不论传入的具体是哪个子类的对象，[vehicle move] 都会调用该对象所属类的 move 实现
+          [vehicle move]; // 这就是多态的表现
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个 Car 对象，用 Vehicle 指针引用
+              Vehicle *myVehicle1 = [[Car alloc] init];
+              // 创建一个 Bicycle 对象，用 Vehicle 指针引用
+              Vehicle *myVehicle2 = [[Bicycle alloc] init];
+              // 创建一个 Vehicle 对象
+              Vehicle *myVehicle3 = [[Vehicle alloc] init];
+
+              // 将不同子类的对象传递给同一个函数
+              makeVehicleMove(myVehicle1); // 输出: Making the vehicle move: \n Car is driving.
+              makeVehicleMove(myVehicle2); // 输出: Making the vehicle move: \n Bicycle is pedaling.
+              makeVehicleMove(myVehicle3); // 输出: Making the vehicle move: \n Generic vehicle movement.
+
+              NSLog(@"---");
+
+              // 也可以直接通过父类指针调用方法，同样表现出多态
+              [myVehicle1 move]; // 输出: Car is driving.
+              [myVehicle2 move]; // 输出: Bicycle is pedaling.
+              [myVehicle3 move]; // 输出: Generic vehicle movement.
+          }
+          return 0;
+      }
+      ```
+  - title: 检查类关系
+    description: |
+      在运行时，有时需要判断一个对象的具体类型或者它是否属于某个类继承体系。Objective-C 提供了几个方法来进行这种检查：
+
+      - `isKindOfClass:`: 判断接收消息的对象是否是指定类（或其任何子类）的实例。如果对象是该类本身的实例，或者是该类派生出的任何子类的实例，则返回 `YES`。
+      - `isMemberOfClass:`: 判断接收消息的对象是否**直接**是指定类的实例。只有当对象是该类本身的实例时才返回 `YES`，如果是子类的实例则返回 `NO`。
+      - `respondsToSelector:`: 判断对象是否能响应用给定的选择器（方法）。
+      - `conformsToProtocol:`: 判断对象是否遵循了指定的协议。
+
+      `isKindOfClass:` 和 `isMemberOfClass:` 是检查继承关系最常用的方法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义类层次: NSObject -> Vehicle -> Car -> ElectricCar
+      @interface Vehicle : NSObject
+      @end
+      @implementation Vehicle
+      @end
+
+      @interface Car : Vehicle
+      @end
+      @implementation Car
+      @end
+
+      @interface ElectricCar : Car
+      @end
+      @implementation ElectricCar
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Vehicle *aVehicle = [[Vehicle alloc] init];
+              Car *aCar = [[Car alloc] init];
+              ElectricCar *anElectricCar = [[ElectricCar alloc] init];
+              NSObject *anObject = [[NSObject alloc] init];
+
+              // --- 使用 isKindOfClass: (检查实例是否属于某个类或其子类) ---
+              NSLog(@"[aCar isKindOfClass: [Car class]]? %s", [aCar isKindOfClass:[Car class]] ? "YES" : "NO");             // YES (aCar 是 Car 的实例)
+              NSLog(@"[aCar isKindOfClass: [Vehicle class]]? %s", [aCar isKindOfClass:[Vehicle class]] ? "YES" : "NO");      // YES (Car 是 Vehicle 的子类)
+              NSLog(@"[aCar isKindOfClass: [NSObject class]]? %s", [aCar isKindOfClass:[NSObject class]] ? "YES" : "NO");    // YES (Car 是 NSObject 的子孙类)
+
+              NSLog(@"[anElectricCar isKindOfClass: [Car class]]? %s", [anElectricCar isKindOfClass:[Car class]] ? "YES" : "NO"); // YES (ElectricCar 是 Car 的子类)
+              NSLog(@"[anElectricCar isKindOfClass: [Vehicle class]]? %s", [anElectricCar isKindOfClass:[Vehicle class]] ? "YES" : "NO"); // YES (ElectricCar 是 Vehicle 的子孙类)
+
+              NSLog(@"[aVehicle isKindOfClass: [Car class]]? %s", [aVehicle isKindOfClass:[Car class]] ? "YES" : "NO");       // NO (Vehicle 不是 Car 或其子类)
+
+              NSLog(@"---");
+
+              // --- 使用 isMemberOfClass: (检查实例是否直接是某个类的实例) ---
+              NSLog(@"[aCar isMemberOfClass: [Car class]]? %s", [aCar isMemberOfClass:[Car class]] ? "YES" : "NO");          // YES (aCar 直接是 Car 类的实例)
+              NSLog(@"[aCar isMemberOfClass: [Vehicle class]]? %s", [aCar isMemberOfClass:[Vehicle class]] ? "YES" : "NO");   // NO (aCar 是 Car 类的实例, 不是 Vehicle 类的直接实例)
+              NSLog(@"[anElectricCar isMemberOfClass: [Car class]]? %s", [anElectricCar isMemberOfClass:[Car class]] ? "YES" : "NO"); // NO (anElectricCar 直接是 ElectricCar 类的实例, 不是 Car 类的直接实例)
+              NSLog(@"[anElectricCar isMemberOfClass: [ElectricCar class]]? %s", [anElectricCar isMemberOfClass:[ElectricCar class]] ? "YES" : "NO"); // YES
+
+              NSLog(@"---");
+
+              // --- 实际应用场景 ---
+              id someObject = anElectricCar; // 使用 id 类型，编译时不知道具体类型
+
+              if ([someObject isKindOfClass:[Vehicle class]]) {
+                  NSLog(@"Object is some kind of Vehicle."); // 会执行
+
+                  if ([someObject isMemberOfClass:[ElectricCar class]]) {
+                      NSLog(@"Specifically, it is an ElectricCar."); // 会执行
+                  } else if ([someObject isMemberOfClass:[Car class]]) {
+                       NSLog(@"Specifically, it is a regular Car.");
+                  } else if ([someObject isMemberOfClass:[Vehicle class]]) {
+                       NSLog(@"Specifically, it is just a Vehicle.");
+                  }
+              } else {
+                  NSLog(@"Object is not a Vehicle.");
+              }
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,173 @@
+id: comment
+title: 注释
+description: Objective-C 中的注释是用于解释代码含义、提高可读性的文本，它们会被编译器忽略。主要用于说明代码逻辑、记录开发信息或临时禁用代码段。Objective-C 支持单行注释（//）和多行注释（/* ... */）。
+usage:
+  - title: 创建单行注释
+    description: |
+      使用 `//` 可以创建单行注释。从 `//` 开始直到该行的末尾，所有内容都会被编译器忽略。常用于解释单行代码的作用或添加简短说明。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 这是一个单行注释，用于解释下面变量的用途
+              int score = 100; // 也可以在代码行的末尾添加注释，说明变量 score 的初始值
+
+              // 下面这行代码被注释掉了，因此不会被编译和执行
+              // NSLog(@"这行代码被注释掉了，不会执行");
+
+              // 效果: 控制台输出 "Current score: 100"
+              NSLog(@"Current score: %d", score);
+          }
+          return 0;
+      }
+      ```
+  - title: 创建多行注释
+    description: |
+      使用 `/*` 开始和 `*/` 结束可以创建多行注释。这种注释可以跨越多行，适用于解释复杂的代码块、函数、类，或者添加详细的文档说明。多行注释不能嵌套使用（即 `/* ... /* ... */ ... */` 是无效的）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              /*
+               这是一个多行注释。
+               它可以跨越多行，
+               通常用来详细说明某个功能或代码段的逻辑。
+               这里可以写很多行的解释。
+              */
+              NSString *message = @"Hello, World!"; // 定义一个字符串变量
+
+              /*
+               下面的代码块被注释掉了，在调试时可以暂时禁用它们。
+               int value = 10;
+               value += 5;
+               NSLog(@"注释掉的代码块中的值: %d", value);
+              */
+
+              // 效果: 控制台输出 "Message: Hello, World!"
+              NSLog(@"Message: %@", message);
+          }
+          return 0;
+      }
+      ```
+  - title: 创建文档注释 (Doc Comments)
+    description: |
+      Objective-C 支持特殊的注释格式，用于配合 Xcode 等工具生成代码文档（如 Quick Help）和 API 参考。常用的格式有：
+      - `///`：用于单行文档注释，通常放在属性或变量声明之前。
+      - `/** ... */`：用于多行文档注释，通常放在类、协议、方法或函数声明之前。
+
+      在这些注释中可以使用特殊的标记（也称为文档标签或关键字）来结构化文档信息，例如：
+      - `@brief`: 提供一个简短的摘要。
+      - `@discussion`: 提供更详细的描述。
+      - `@param <name>`: 描述一个方法或函数的参数。
+      - `@return`: 描述方法或函数的返回值。
+      - `@see`: 引用相关的类、方法或其他符号。
+      - `@warning`: 添加警告信息。
+      - `@note`: 添加注意事项。
+
+      Xcode 会解析这些注释，并在按住 Option 键单击代码符号时显示 Quick Help 弹出窗口。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      /**
+       @brief Calculator 类用于执行基本的算术运算。
+       @discussion 这个类提供加法和减法功能。它演示了如何使用文档注释来解释类的用途和方法。
+       @warning 请确保输入是有效的数字。
+       */
+      @interface Calculator : NSObject
+
+      /// 存储最近一次计算结果的属性。
+      @property (nonatomic, assign) double result;
+
+      /**
+       @brief 计算两个整数的和。
+       @param num1 第一个加数。这是一个整数。
+       @param num2 第二个加数。这也是一个整数。
+       @return 两个整数的和。
+       @seealso subtract:with:
+       @note 这个方法只处理整数加法。
+       */
+      - (int)add:(int)num1 with:(int)num2;
+
+      @end
+
+      @implementation Calculator
+
+      - (int)add:(int)num1 with:(int)num2 {
+          // 执行加法运算
+          self.result = num1 + num2;
+          // 返回计算结果
+          return (int)self.result;
+      }
+
+      // 另一个方法的实现（假设存在，用于 @seealso 示例）
+      /*
+      - (int)subtract:(int)num1 with:(int)num2 {
+          self.result = num1 - num2;
+          return (int)self.result;
+      }
+      */
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init];
+              // 调用 add 方法计算 5 和 3 的和
+              int sum = [calc add:5 with:3];
+              // 输出计算结果
+              // 效果: 控制台输出 "The sum is: 8"
+              // 在 Xcode 中 Option+单击 'add:with:' 方法名会显示其文档注释
+              NSLog(@"The sum is: %d", sum);
+          }
+          return 0;
+      }
+      ```
+  - title: 使用注释临时禁用代码
+    description: |
+      在开发和调试过程中，经常需要暂时屏蔽某段代码的功能，而不是直接删除它。可以使用单行注释 `//` 或多行注释 `/* ... */` 将不需要执行的代码块注释掉。这样，编译器会忽略这些代码，从而达到临时禁用的目的。这是一种非常常见且有用的调试技巧。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个执行任务 A 的函数
+      void performTaskA() {
+          NSLog(@"执行任务 A");
+      }
+
+      // 定义一个执行任务 B 的函数
+      void performTaskB() {
+          NSLog(@"执行任务 B");
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"程序开始");
+
+              performTaskA(); // 调用函数执行任务 A
+
+              // 假设在调试过程中，我们想暂时跳过任务 B
+              // 使用单行注释禁用对 performTaskB 的调用
+              // performTaskB();
+
+              // 也可以使用多行注释禁用一个包含多行代码的逻辑块
+              /*
+              NSLog(@"这部分日志现在不会显示");
+              int tempValue = 100;
+              if (tempValue > 50) {
+                  NSLog(@"临时值大于 50，这个日志也不会显示");
+              }
+              */
+
+              NSLog(@"程序结束");
+              // 效果: 控制台将输出 "程序开始", "执行任务 A", "程序结束"
+              // 由于 performTaskB() 调用被注释掉了，"执行任务 B" 不会输出
+              // 多行注释块内的所有代码（包括 NSLog）都不会被执行
+          }
+          return 0;
+      }
+      ```

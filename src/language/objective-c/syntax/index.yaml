@@ -1,0 +1,14 @@
+id: syntax
+title: 语法
+children:
+  - basics
+  - types
+  - converts
+  - expressions
+  - statements
+  - functions
+  - classes
+  - modules
+  - stdlib
+  - concurrency
+  - memory

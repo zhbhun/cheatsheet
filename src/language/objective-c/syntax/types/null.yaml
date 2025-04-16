@@ -1,0 +1,343 @@
+id: 'null'
+title: 空
+query: Objective-C 空类型
+description: 在 Objective-C 中，`id` 是一种特殊的类型，它表示指向任意 Objective-C 对象的指针。它类似于 C/C++ 中的 `void*`，但专门用于对象。`id` 提供了动态类型特性，允许你在运行时确定对象的实际类型。`nil` 是 Objective-C 中表示空对象指针的常量，类似于其他语言中的 `null`。向 `nil` 发送任何消息都是安全的，不会导致程序崩溃，并且通常会返回 0、`NO` 或 `nil`。
+usage:
+  - title: 声明 id 类型变量
+    description: |
+      使用 `id` 关键字声明一个可以指向任何 Objective-C 对象的变量。此时变量的初始值是未定义的，通常建议初始化为 `nil`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量，可以指向任何 Objective-C 对象
+              id genericObject;
+
+              // 最好在使用前将其初始化为 nil
+              genericObject = nil;
+
+              // 打印变量，此时为 nil
+              NSLog(@"genericObject: %@", genericObject); // 输出: genericObject: (null)
+          }
+          return 0;
+      }
+      ```
+  - title: 为 id 变量赋值
+    description: |
+      可以将任何 Objective-C 对象的指针赋值给 `id` 类型的变量。编译器不会在编译时检查类型，类型检查发生在运行时。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量
+              id myObject;
+
+              // 创建一个 NSString 对象并赋值给 myObject
+              NSString *myString = @"Hello, Objective-C!";
+              myObject = myString;
+              NSLog(@"myObject as String: %@", myObject); // 输出: myObject as String: Hello, Objective-C!
+
+              // 创建一个 NSNumber 对象并赋值给 myObject
+              NSNumber *myNumber = @123;
+              myObject = myNumber;
+              NSLog(@"myObject as Number: %@", myObject); // 输出: myObject as Number: 123
+
+              // 创建一个 NSArray 对象并赋值给 myObject
+              NSArray *myArray = @[@"Apple", @"Banana"];
+              myObject = myArray;
+              NSLog(@"myObject as Array: %@", myObject); // 输出: myObject as Array: (Apple, Banana)
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 nil 表示空对象
+    description: |
+      `nil` 是一个指向空对象的常量 (实际上是 `(id)0`)。它用于表示变量当前没有指向任何有效的 Objective-C 对象。这对于初始化指针变量、检查方法返回值或标记对象不再需要等场景非常有用。
+      **注意:**
+      - `nil`: 用于 Objective-C 对象指针 (如 `NSString *`, `id`)。
+      - `Nil`: 用于 Objective-C 类指针 (如 `Class`)，较少使用。
+      - `NULL`: 用于其他 C 指针类型 (如 `int *`, `char *`, `void *`)。
+      - `NSNull`: 一个单例对象，用于在不能使用 `nil` 的集合（如 `NSArray`, `NSDictionary`）中表示空值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 NSString 指针并初始化为 nil
+              NSString *message = nil;
+              NSLog(@"Initial message: %@", message); // 输出: Initial message: (null)
+
+              // 声明一个 id 变量并初始化为 nil
+              id dataObject = nil;
+              NSLog(@"Initial dataObject: %@", dataObject); // 输出: Initial dataObject: (null)
+
+              // 在条件语句中使用 nil
+              if (message == nil) {
+                  NSLog(@"Message is currently nil."); // 这行会被执行
+              }
+
+              // 模拟一个方法返回 nil
+              message = [NSString stringWithFormat:@"%@", @""]; // 假设某个操作后 message 变为空字符串，但不是 nil
+              if ([message length] == 0) {
+                   // 某些情况下，可能需要将空字符串视为无效，并设为 nil
+                   // message = nil;
+              }
+
+              // NSNull 用于集合
+              NSMutableArray *items = [NSMutableArray arrayWithObjects:@"Item1", [NSNull null], @"Item3", nil];
+              NSLog(@"Items with NSNull: %@", items); // 输出: Items with NSNull: (Item1, "<null>", Item3)
+              id secondItem = items[1];
+              if (secondItem == [NSNull null]) {
+                  NSLog(@"The second item is NSNull."); // 这行会被执行
+              }
+              // 注意：不能直接将 nil 添加到 NSArray 或 NSDictionary
+              // NSMutableArray *wrongItems = [NSMutableArray arrayWithObjects:@"Item1", nil, @"Item3", nil]; // 编译错误或运行时问题
+          }
+          return 0;
+      }
+      ```
+  - title: 向 id 类型变量发送消息
+    description: |
+      可以向 `id` 类型的变量发送任何消息（调用方法）。编译器在编译时不会进行严格的方法签名检查。如果对象在运行时能够响应这个消息，方法就会被执行；否则，会抛出运行时异常（`unrecognized selector sent to instance`）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id myObject;
+
+              // 指向 NSString 对象
+              myObject = @"This is a string";
+              // 调用 NSString 的 length 方法
+              NSUInteger len = [myObject length]; // 运行时检查 myObject 是否响应 length 消息
+              NSLog(@"Length of the string: %lu", (unsigned long)len); // 输出: Length of the string: 18
+
+              // 指向 NSNumber 对象
+              myObject = @(99.9);
+              // 调用 NSNumber 的 doubleValue 方法
+              double val = [myObject doubleValue]; // 运行时检查 myObject 是否响应 doubleValue 消息
+              NSLog(@"Double value: %f", val); // 输出: Double value: 99.900000
+
+              // 尝试调用一个对象不支持的方法（会导致运行时异常）
+              @try {
+                  // NSString 没有 doubleValue 方法
+                  myObject = @"Another string";
+                  // 下一行会触发 unrecognized selector 异常
+                  // double wrongVal = [myObject doubleValue];
+                  // NSLog(@"This won't be printed: %f", wrongVal);
+                  NSLog(@"Attempting to call doubleValue on a string would crash if uncommented.");
+              } @catch (NSException *exception) {
+                  NSLog(@"Caught exception: %@", exception);
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 向 nil 发送消息
+    description: |
+      Objective-C 的一个重要特性是向 `nil` 发送消息是完全安全的，不会导致程序崩溃。当向 `nil` 发送消息时：
+      - 如果方法返回一个对象指针类型 (`id`, `NSString *` 等)，则返回 `nil`。
+      - 如果方法返回数值类型（`int`, `float`, `BOOL` 等），则返回 0 或 `NO`。
+      - 如果方法返回 `struct` 类型，则返回一个所有成员都为 0 的结构体。
+      - `void` 方法不会执行任何操作。
+      这大大简化了代码，减少了对空指针的检查。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *nilString = nil;
+              id nilObject = nil;
+
+              // 向 nil 发送消息，返回对象类型
+              NSString *resultString = [nilString uppercaseString];
+              NSLog(@"Result of uppercaseString on nil: %@", resultString); // 输出: Result of uppercaseString on nil: (null)
+
+              // 向 nil 发送消息，返回数值类型
+              NSUInteger length = [nilString length];
+              NSLog(@"Result of length on nil: %lu", (unsigned long)length); // 输出: Result of length on nil: 0
+
+              // 向 nil 发送消息，返回 BOOL 类型
+              BOOL isEqual = [nilObject isEqual:@"Something"];
+              NSLog(@"Result of isEqual on nil: %@", isEqual ? @"YES" : @"NO"); // 输出: Result of isEqual on nil: NO
+
+              // 向 nil 发送消息，返回 void (无效果，不崩溃)
+              [nilObject removeAllObjects]; // 假设 nilObject 是 NSMutableArray，这行代码安全执行，什么也不做
+              NSLog(@"Called removeAllObjects on nil without crashing."); // 输出: Called removeAllObjects on nil without crashing.
+          }
+          return 0;
+      }
+      ```
+  - title: 检查 id 变量是否为 nil
+    description: |
+      在需要明确处理对象是否存在的情况下，可以使用标准的比较运算符 `==` 或 `!=` 来检查 `id` 或其他对象指针变量是否为 `nil`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 模拟一个可能返回 nil 的方法
+      NSString* findUser(int userId) {
+          if (userId == 1) {
+              return @"Alice";
+          } else {
+              return nil; // 用户未找到
+          }
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id userObject = findUser(1);
+
+              // 检查 userObject 是否为 nil
+              if (userObject != nil) {
+                  NSLog(@"User found: %@", userObject); // 输出: User found: Alice
+              } else {
+                  NSLog(@"User not found.");
+              }
+
+              userObject = findUser(2); // 查找一个不存在的用户
+
+              // 再次检查
+              if (userObject == nil) {
+                  NSLog(@"User not found."); // 输出: User not found.
+              } else {
+                  NSLog(@"User found: %@", userObject);
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 在集合中使用 id
+    description: |
+      `NSArray`, `NSDictionary`, `NSSet` 等 Foundation 框架的集合类通常存储 `id` 类型的对象。这使得它们可以存储不同类型的对象。从集合中取出对象时，其类型也是 `id`，如果需要调用特定类型的方法，最好进行类型检查或转换。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同类型对象的 NSArray
+              NSArray *mixedArray = @[
+                  @"A string",
+                  @42,
+                  [NSDate date],
+                  @[@"Nested", @"Array"]
+              ];
+
+              // 遍历数组，所有元素都被视为 id 类型
+              for (id element in mixedArray) {
+                  // 可以直接打印，因为所有 NSObject 子类都实现了 description 方法
+                  NSLog(@"Element: %@", element);
+
+                  // 如果需要调用特定方法，需要检查类型
+                  if ([element isKindOfClass:[NSString class]]) {
+                      NSLog(@"  It's a string with length: %lu", [(NSString *)element length]);
+                  } else if ([element isKindOfClass:[NSNumber class]]) {
+                      NSLog(@"  It's a number with int value: %d", [(NSNumber *)element intValue]);
+                  }
+              }
+              /* 输出类似:
+                 Element: A string
+                   It's a string with length: 8
+                 Element: 42
+                   It's a number with int value: 42
+                 Element: 2023-10-27 10:30:00 +0000 (示例日期)
+                 Element: (Nested, Array)
+              */
+
+              // 从 NSDictionary 获取对象也是 id 类型
+              NSDictionary *dict = @{
+                  @"name": @"Bob",
+                  @"age": @30
+              };
+              id nameValue = dict[@"name"]; // nameValue 是 id 类型
+              id ageValue = dict[@"age"];   // ageValue 也是 id 类型
+
+              if ([nameValue isKindOfClass:[NSString class]]) {
+                   NSLog(@"Name: %@", (NSString *)nameValue); // 输出: Name: Bob
+              }
+              if ([ageValue isKindOfClass:[NSNumber class]]) {
+                  NSLog(@"Age: %d", [(NSNumber *)ageValue intValue]); // 输出: Age: 30
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: id 类型的运行时检查与转换
+    description: |
+      由于 `id` 是泛型指针，当需要调用特定类的方法或确保对象是期望的类型时，需要进行运行时检查。常用方法有：
+      - `isKindOfClass:`: 检查对象是否是指定类或其子类的实例。
+      - `isMemberOfClass:`: 检查对象是否是指定类的直接实例（不包括子类）。
+      - `respondsToSelector:`: 检查对象是否能响应用 `@selector(...)` 指定的消息（方法）。
+      在确定类型后，通常需要将 `id` 变量强制类型转换为具体的对象指针类型，以便编译器进行更严格的检查和提供代码补全。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Dog : NSObject
+      - (void)bark;
+      @end
+      @implementation Dog
+      - (void)bark { NSLog(@"Woof!"); }
+      - (NSString *)description { return @"A Dog object"; }
+      @end
+
+      @interface Cat : NSObject
+      - (void)meow;
+      @end
+      @implementation Cat
+      - (void)meow { NSLog(@"Meow!"); }
+      - (NSString *)description { return @"A Cat object"; }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同对象的数组
+              NSArray *animals = @[[Dog new], [Cat new], @"Not an animal"];
+
+              for (id obj in animals) {
+                  NSLog(@"Processing object: %@", obj);
+
+                  // 1. 使用 isKindOfClass: 检查类型
+                  if ([obj isKindOfClass:[Dog class]]) {
+                      NSLog(@"  It's a Dog or its subclass.");
+                      // 类型安全转换并调用方法
+                      Dog *theDog = (Dog *)obj;
+                      [theDog bark]; // 输出: Woof!
+                  } else if ([obj isKindOfClass:[Cat class]]) {
+                      NSLog(@"  It's a Cat or its subclass.");
+                      Cat *theCat = (Cat *)obj;
+                      [theCat meow]; // 输出: Meow!
+                  } else {
+                      NSLog(@"  It's neither a Dog nor a Cat.");
+                  }
+
+                  // 2. 使用 respondsToSelector: 检查方法响应能力
+                  if ([obj respondsToSelector:@selector(bark)]) {
+                      NSLog(@"  It responds to bark.");
+                      // 可以直接调用，因为 id 类型允许调用任何方法（运行时决定）
+                      [obj bark]; // 输出: Woof! (仅对 Dog 对象)
+                  } else {
+                      NSLog(@"  It does not respond to bark.");
+                  }
+
+                  if ([obj respondsToSelector:@selector(uppercaseString)]) {
+                      NSLog(@"  It responds to uppercaseString.");
+                      // 对于 NSString 对象
+                      NSLog(@"  Uppercase: %@", [obj uppercaseString]); // 输出: Uppercase: NOT AN ANIMAL
+                  } else {
+                       NSLog(@"  It does not respond to uppercaseString.");
+                  }
+                  NSLog(@"---"); // 分隔符
+              }
+          }
+          return 0;
+      }
+      ```

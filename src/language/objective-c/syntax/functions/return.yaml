@@ -1,0 +1,343 @@
+id: return
+title: 返回值
+description: 在 Objective-C 中，返回值是方法执行完毕后向调用者传递结果的一种机制。方法可以返回基本数据类型（如 int, float, BOOL）、Objective-C 对象指针（如 NSString *, NSArray *）、通用对象类型 id，或者不返回任何值（void）。使用 `return` 关键字来指定要返回的值。
+usage:
+  - title: 返回 `void` (无返回值)
+    description: |
+      当方法不需要向调用者返回任何结果时，将其返回类型声明为 `void`。这类方法通常用于执行某个操作或修改对象状态，但没有具体的计算结果需要传回。`void` 方法可以显式使用 `return;` 来提前退出，或者在方法执行到最后时隐式返回。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Printer : NSObject
+      // 声明一个不返回任何值的方法
+      - (void)printMessage:(NSString *)message;
+      @end
+
+      @implementation Printer
+      - (void)printMessage:(NSString *)message {
+          if (message == nil || message.length == 0) {
+              NSLog(@"No message to print.");
+              return; // 如果消息为空，提前退出，不执行后续打印
+          }
+          // 执行打印操作
+          NSLog(@"Message: %@", message);
+          // 方法执行到最后，隐式返回
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Printer *myPrinter = [[Printer alloc] init];
+              // 调用 void 方法
+              [myPrinter printMessage:@"Hello, Objective-C!"];
+              [myPrinter printMessage:nil]; // 测试提前返回的情况
+          }
+          return 0;
+      }
+      // 输出:
+      // Message: Hello, Objective-C!
+      // No message to print.
+      ```
+  - title: 返回基本数据类型
+    description: |
+      方法可以返回 C 语言的基本数据类型，如 `int`、`float`、`double`、`BOOL`、`NSInteger`、`CGFloat` 等。在方法声明时指定相应的类型，并使用 `return` 关键字跟上要返回的具体值。`NSInteger` 和 `CGFloat` 是推荐使用的类型，因为它们会根据系统架构（32位或64位）自动适应大小。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Calculator : NSObject
+      // 声明返回整型的方法
+      - (int)add:(int)a to:(int)b;
+      // 声明返回布尔值的方法
+      - (BOOL)isPositive:(NSInteger)number;
+      @end
+
+      @implementation Calculator
+      - (int)add:(int)a to:(int)b {
+          int sum = a + b;
+          // 返回计算结果
+          return sum;
+      }
+
+      - (BOOL)isPositive:(NSInteger)number {
+          // 返回判断结果 (YES 或 NO)
+          return number > 0;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init];
+              // 调用返回 int 的方法并接收返回值
+              int result = [calc add:5 to:3];
+              NSLog(@"Sum: %d", result); // 输出 Sum: 8
+
+              // 调用返回 BOOL 的方法并接收返回值
+              BOOL checkPositive = [calc isPositive:10];
+              NSLog(@"Is 10 positive? %@", checkPositive ? @"YES" : @"NO"); // 输出 Is 10 positive? YES
+
+              BOOL checkNegative = [calc isPositive:-5];
+              NSLog(@"Is -5 positive? %@", checkNegative ? @"YES" : @"NO"); // 输出 Is -5 positive? NO
+          }
+          return 0;
+      }
+      ```
+  - title: 返回 Objective-C 对象
+    description: |
+      方法可以返回指向 Objective-C 对象的指针。返回类型通常是具体的类名加上星号（`*`），例如 `NSString *`、`NSArray *`、`NSDictionary *` 或自定义类的指针 `MyClass *`。使用 `return` 关键字返回对象的指针。在 ARC (Automatic Reference Counting) 环境下，编译器会自动处理内存管理。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 假设有一个自定义类 Person
+      @interface Person : NSObject
+      @property (nonatomic, copy) NSString *name;
+      - (instancetype)initWithName:(NSString *)name; // 使用 instancetype 更佳
+      @end
+
+      @implementation Person
+      - (instancetype)initWithName:(NSString *)name {
+          self = [super init];
+          if (self) {
+              _name = [name copy];
+          }
+          return self;
+      }
+      @end
+
+      @interface DataManager : NSObject
+      // 声明返回 NSString 对象的方法
+      - (NSString *)getUserGreeting:(NSString *)userName;
+      // 声明返回 NSArray 对象的方法
+      - (NSArray<NSString *> *)getDefaultItems;
+      // 声明返回自定义 Person 对象的方法
+      - (Person *)createPersonWithName:(NSString *)name;
+      @end
+
+      @implementation DataManager
+      - (NSString *)getUserGreeting:(NSString *)userName {
+          NSString *greeting = [NSString stringWithFormat:@"Hello, %@!", userName];
+          // 返回创建的 NSString 对象指针
+          return greeting;
+      }
+
+      - (NSArray<NSString *> *)getDefaultItems {
+          // 返回一个包含字符串的 NSArray 对象指针
+          return @[@"Apple", @"Banana", @"Cherry"];
+      }
+
+      - (Person *)createPersonWithName:(NSString *)name {
+          // 创建并返回 Person 对象指针
+          Person *newPerson = [[Person alloc] initWithName:name];
+          return newPerson;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataManager *manager = [[DataManager alloc] init];
+
+              // 调用返回 NSString * 的方法
+              NSString *greeting = [manager getUserGreeting:@"Alice"];
+              NSLog(@"%@", greeting); // 输出: Hello, Alice!
+
+              // 调用返回 NSArray * 的方法
+              NSArray<NSString *> *items = [manager getDefaultItems];
+              NSLog(@"Default items: %@", items); // 输出: Default items: (Apple, Banana, Cherry)
+
+              // 调用返回 Person * 的方法
+              Person *person = [manager createPersonWithName:@"Bob"];
+              NSLog(@"Created person: %@", person.name); // 输出: Created person: Bob
+          }
+          return 0;
+      }
+      ```
+  - title: 返回通用对象类型 `id`
+    description: |
+      `id` 是一个特殊的类型，代表指向任意 Objective-C 对象的指针。当方法可能返回不同类的对象，或者在编译时不确定具体的返回类型时，可以使用 `id`。虽然灵活，但使用 `id` 会失去编译时的类型检查，可能导致运行时错误。调用返回 `id` 的方法时，需要确保你知道实际返回的对象类型，或者进行类型检查。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface DynamicFactory : NSObject
+      // 声明返回 id 类型的方法
+      - (id)createObjectBasedOnType:(NSString *)type;
+      @end
+
+      @implementation DynamicFactory
+      - (id)createObjectBasedOnType:(NSString *)type {
+          if ([type isEqualToString:@"string"]) {
+              // 返回 NSString 对象
+              return @"This is a string object";
+          } else if ([type isEqualToString:@"number"]) {
+              // 返回 NSNumber 对象
+              return @(123);
+          } else if ([type isEqualToString:@"array"]) {
+              // 返回 NSArray 对象
+              return @[@"One", @"Two", @"Three"];
+          }
+          // 如果类型未知，返回 nil
+          return nil;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DynamicFactory *factory = [[DynamicFactory alloc] init];
+
+              // 调用返回 id 的方法
+              id stringObj = [factory createObjectBasedOnType:@"string"];
+              id numberObj = [factory createObjectBasedOnType:@"number"];
+              id arrayObj = [factory createObjectBasedOnType:@"array"];
+              id nullObj = [factory createObjectBasedOnType:@"unknown"];
+
+              // 需要知道对象类型或进行检查才能安全使用
+              if ([stringObj isKindOfClass:[NSString class]]) {
+                  NSLog(@"String object: %@", (NSString *)stringObj); // 输出: String object: This is a string object
+              }
+              if ([numberObj isKindOfClass:[NSNumber class]]) {
+                  NSLog(@"Number object: %@", (NSNumber *)numberObj); // 输出: Number object: 123
+              }
+              if ([arrayObj isKindOfClass:[NSArray class]]) {
+                  NSLog(@"Array object: %@", (NSArray *)arrayObj); // 输出: Array object: (One, Two, Three)
+              }
+              if (nullObj == nil) {
+                  NSLog(@"Unknown type returned nil."); // 输出: Unknown type returned nil.
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 返回 `instancetype`
+    description: |
+      `instancetype` 是一个特殊的返回类型关键字，主要用在初始化方法（`init...`）和类工厂方法中。它表示方法返回一个与接收消息的类相同类型的实例。使用 `instancetype` 比使用 `id` 更好，因为它提供了更强的编译时类型检查。例如，如果子类调用了父类的返回 `instancetype` 的方法，编译器知道返回的是子类类型，而不是父类或 `id`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+      @property (nonatomic, strong) NSString *identifier;
+      // 使用 instancetype 的初始化方法
+      - (instancetype)initWithIdentifier:(NSString *)identifier;
+      // 使用 instancetype 的类工厂方法
+      + (instancetype)defaultInstance;
+      @end
+
+      @implementation MyClass
+      - (instancetype)initWithIdentifier:(NSString *)identifier {
+          self = [super init]; // 调用父类的 init
+          if (self) {
+              _identifier = identifier;
+          }
+          // 返回当前类的实例
+          return self;
+      }
+
+      + (instancetype)defaultInstance {
+          // 返回当前类的实例
+          return [[self alloc] initWithIdentifier:@"Default"];
+      }
+      @end
+
+      // 子类继承 MyClass
+      @interface MySubclass : MyClass
+      @property (nonatomic, assign) NSInteger value;
+      @end
+
+      @implementation MySubclass
+      // 子类可以有自己的初始化逻辑，也可以复用父类的
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用初始化方法，返回 MyClass * 类型
+              MyClass *instance1 = [[MyClass alloc] initWithIdentifier:@"Instance1"];
+              NSLog(@"Instance 1 identifier: %@", instance1.identifier); // 输出: Instance 1 identifier: Instance1
+
+              // 调用类工厂方法，返回 MyClass * 类型
+              MyClass *defaultInstance = [MyClass defaultInstance];
+              NSLog(@"Default instance identifier: %@", defaultInstance.identifier); // 输出: Default instance identifier: Default
+
+              // 子类调用父类的工厂方法，返回 MySubclass * 类型 (因为用了 instancetype)
+              MySubclass *subInstance = [MySubclass defaultInstance];
+              subInstance.value = 100; // 可以直接访问子类的属性，编译器知道类型是 MySubclass *
+              NSLog(@"Sub instance identifier: %@, value: %ld", subInstance.identifier, (long)subInstance.value);
+              // 输出: Sub instance identifier: Default, value: 100
+
+              // 如果父类工厂方法返回 id 或 MyClass *，这里可能需要强制类型转换
+              // id subInstanceId = [MySubclass defaultInstance];
+              // MySubclass *subInstance = (MySubclass *)subInstanceId; // 需要转换
+              // subInstance.value = 100;
+          }
+          return 0;
+      }
+      ```
+  - title: 从类方法返回值
+    description: |
+      类方法（以 `+` 开头）属于类本身，而不是类的实例。它们也可以返回值，规则与实例方法（以 `-` 开头）相同。类方法常用于创建实例（工厂方法）、访问共享资源或执行与特定实例无关的操作。返回类型可以是 `void`、基本类型、对象指针、`id` 或 `instancetype`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface ConfigurationManager : NSObject
+      // 类方法，返回共享的配置字典
+      + (NSDictionary *)sharedConfiguration;
+      // 类方法，返回一个计算得到的常量值
+      + (NSInteger)maximumAllowedUsers;
+      // 类方法，创建一个预配置的实例 (工厂方法)
+      + (instancetype)managerWithDefaultSettings;
+      @end
+
+      @implementation ConfigurationManager
+
+      + (NSDictionary *)sharedConfiguration {
+          static NSDictionary *config = nil;
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              // 模拟加载配置
+              config = @{@"serverURL": @"https://api.example.com", @"timeout": @(30)};
+          });
+          // 返回共享的配置字典
+          return config;
+      }
+
+      + (NSInteger)maximumAllowedUsers {
+          // 返回一个常量值
+          return 1000;
+      }
+
+      + (instancetype)managerWithDefaultSettings {
+          // 创建并返回当前类的实例
+          ConfigurationManager *manager = [[self alloc] init];
+          // ...可以进行一些默认设置...
+          NSLog(@"Creating a ConfigurationManager instance with default settings.");
+          return manager;
+      }
+
+      - (instancetype)init {
+         self = [super init];
+         // 实例初始化逻辑
+         return self;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用类方法获取共享配置
+              NSDictionary *config = [ConfigurationManager sharedConfiguration];
+              NSLog(@"Server URL: %@", config[@"serverURL"]); // 输出: Server URL: https://api.example.com
+
+              // 调用类方法获取常量
+              NSInteger maxUsers = [ConfigurationManager maximumAllowedUsers];
+              NSLog(@"Maximum users: %ld", (long)maxUsers); // 输出: Maximum users: 1000
+
+              // 调用类工厂方法创建实例
+              ConfigurationManager *defaultManager = [ConfigurationManager managerWithDefaultSettings];
+              // 输出: Creating a ConfigurationManager instance with default settings.
+              NSLog(@"Default manager instance: %@", defaultManager); // 输出类似: Default manager instance: <ConfigurationManager: 0x...>
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,571 @@
+id: parameter
+title: 函数参数
+description: Objective-C 方法参数用于向方法传递数据。其独特的语法包含外部参数名（标签）和内部参数名，支持基本数据类型、对象指针、结构体、Block 等多种类型，并可通过 `nullable` 和 `nonnull` 等修饰符增强代码明确性和安全性。参数是实现方法交互和功能的基础。
+usage:
+  - title: 定义和调用无参数方法
+    description: |
+      最简单的方法形式，不接收任何外部输入。用于执行不需要额外信息的操作。方法声明以 `-` (实例方法) 或 `+` (类方法) 开头，后跟返回类型和方法名。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个类 MyClass
+      @interface MyClass : NSObject
+      // 声明一个无参数的实例方法
+      - (void)sayHello;
+      @end
+
+      @implementation MyClass
+      // 实现无参数方法
+      - (void)sayHello {
+          NSLog(@"Hello, Objective-C!"); // 打印消息
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 MyClass 的实例
+              MyClass *myObject = [[MyClass alloc] init];
+              // 调用无参数方法
+              [myObject sayHello]; // 输出: Hello, Objective-C!
+          }
+          return 0;
+      }
+      ```
+  - title: 定义和调用带单个参数的方法
+    description: |
+      方法可以接收一个参数来处理特定数据。参数定义在方法名后的冒号 `:` 之后，包含类型和内部参数名。调用时，方法名后紧跟冒号和参数值。
+
+      **语法:** `- (返回值类型)方法名:(参数类型)参数名;`
+      - `(参数类型)`: 指定参数的数据类型，如 `NSInteger`, `NSString *`。
+      - `参数名`: 在方法内部引用该参数时使用的名称。
+
+      **调用:** `[对象实例 方法名:参数值];`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Calculator : NSObject
+      // 声明带一个 NSInteger 参数的方法
+      - (void)printNumber:(NSInteger)number;
+      // 声明带一个 NSString* 参数的方法
+      - (void)greetUser:(NSString *)name;
+      @end
+
+      @implementation Calculator
+      // 实现带 NSInteger 参数的方法
+      - (void)printNumber:(NSInteger)number {
+          // number 是方法内部使用的参数名
+          NSLog(@"The number is: %ld", (long)number); // 打印传入的数字
+      }
+      // 实现带 NSString* 参数的方法
+      - (void)greetUser:(NSString *)name {
+          // name 是方法内部使用的参数名
+          NSLog(@"Hello, %@!", name); // 打印问候语，包含传入的姓名
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init];
+              // 调用带 NSInteger 参数的方法
+              [calc printNumber:100]; // 输出: The number is: 100
+              // 调用带 NSString* 参数的方法
+              [calc greetUser:@"Alice"]; // 输出: Hello, Alice!
+          }
+          return 0;
+      }
+      ```
+  - title: 定义和调用带多个参数的方法
+    description: |
+      Objective-C 使用外部参数名（标签）来区分多个参数，提高代码可读性。第一个参数的标签通常是方法名的一部分（紧跟在冒号前），后续参数需要显式指定外部标签。
+
+      **语法:** `- (返回值类型)方法名部分1:(参数类型1)内部名1 外部标签2:(参数类型2)内部名2 ...;`
+      - `方法名部分1`: 第一个参数前的部分，构成方法选择器的一部分。
+      - `外部标签2`: 第二个及以后参数的外部名称（标签），调用时必须使用。方法选择器由所有方法名部分和外部标签组成（例如 `setX:y:`）。
+      - `内部名1`, `内部名2`: 参数在方法内部使用的名称。
+
+      **调用:** `[对象实例 方法名部分1:值1 外部标签2:值2 ...];`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // 引入 CoreGraphics 以使用 CGFloat
+
+      @interface Point : NSObject
+      // 声明带两个 CGFloat 参数的方法
+      // 方法选择器是 "setX:y:"
+      // 第一个参数内部名为 x，无显式外部标签（但包含在方法名 setX: 中）
+      // 第二个参数外部标签为 y，内部名为 y
+      - (void)setX:(CGFloat)x y:(CGFloat)y;
+      @end
+
+      @implementation Point {
+          CGFloat _x; // 内部变量存储 x 坐标
+          CGFloat _y; // 内部变量存储 y 坐标
+      }
+      // 实现带两个参数的方法
+      - (void)setX:(CGFloat)x y:(CGFloat)y {
+          // x 和 y 是方法内部使用的参数名
+          _x = x; // 将传入的 x 赋值给内部变量 _x
+          _y = y; // 将传入的 y 赋值给内部变量 _y
+          NSLog(@"Point set to (%.1f, %.1f)", _x, _y); // 打印设置后的坐标
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Point *point = [[Point alloc] init];
+              // 调用带多个参数的方法，需写全方法选择器（包括外部标签）
+              [point setX:10.5 y:20.2]; // 输出: Point set to (10.5, 20.2)
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 `id` 作为通用对象参数类型
+    description: |
+      `id` 是一个特殊的类型，可以表示任何 Objective-C 对象的指针（相当于 `NSObject *` 的通用形式）。使用 `id` 作为参数类型可以增加方法的通用性，允许接收不同类的对象。主要缺点是编译器无法在编译时进行类型检查，需要在运行时（例如使用 `isKindOfClass:`）判断对象类型以确保安全调用特定方法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Logger : NSObject
+      // 声明一个接收 id 类型参数的方法
+      - (void)logObjectInfo:(id)anyObject;
+      @end
+
+      @implementation Logger
+      - (void)logObjectInfo:(id)anyObject {
+          // 检查对象是否为 nil
+          if (anyObject) {
+              // 可以安全调用 NSObject 的方法，如 description, class
+              NSLog(@"Object class: %@", [anyObject class]);
+              NSLog(@"Object description: %@", [anyObject description]);
+              // 如果需要调用特定子类的方法，需要进行类型检查
+              if ([anyObject isKindOfClass:[NSString class]]) {
+                  NSString *str = (NSString *)anyObject;
+                  NSLog(@"String length: %lu", (unsigned long)[str length]);
+              }
+          } else {
+              NSLog(@"Object is nil");
+          }
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Logger *logger = [[Logger alloc] init];
+              NSString *myString = @"This is a string";
+              NSNumber *myNumber = @123;
+              NSDate *myDate = [NSDate date];
+
+              // 使用 NSString 对象调用
+              [logger logObjectInfo:myString];
+              // 输出:
+              // Object class: __NSCFString (或类似)
+              // Object description: This is a string
+              // String length: 16
+
+              // 使用 NSNumber 对象调用
+              [logger logObjectInfo:myNumber];
+              // 输出:
+              // Object class: __NSCFNumber (或类似)
+              // Object description: 123
+
+              // 使用 nil 调用
+              [logger logObjectInfo:nil]; // 输出: Object is nil
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 `nullable` 和 `nonnull` 修饰参数
+    description: |
+      这些修饰符用于明确对象指针参数（包括 `id`）是否可以为 `nil`，增强代码的可读性、安全性，并改善与 Swift 的互操作性。
+
+      - `nonnull`: 表示该参数不应该为 `nil`。如果调用时传入 `nil`，编译器会发出警告。这是在 `NS_ASSUME_NONNULL_BEGIN/END` 区域内的默认行为。
+      - `nullable`: 表示该参数可以接受 `nil`。必须显式标记，或者在 `NS_ASSUME_NONNULL_BEGIN/END` 区域外声明。
+      - `_Nonnull` / `_Nullable`: 与 `nonnull` / `nullable` 基本相同，是早期引入的形式，常用于 C 指针和 Block 指针。
+      - `__nonnull` / `__nullable`: 功能同上，但作为关键字，可以用在类型声明的任何位置。
+      - `NS_ASSUME_NONNULL_BEGIN` 和 `NS_ASSUME_NONNULL_END`: 这对宏可以包围一段代码（通常是 `@interface` 或整个头文件），在这段代码中，所有未明确标记 `nullable` 的简单对象指针类型（如 `NSString *`, `id`) 都将被假定为 `nonnull`。
+
+      **注意:** 这些修饰符仅提供编译时检查和代码意图表达，并不会在运行时阻止传入 `nil`（除非代码中有断言或检查）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 使用宏假定区域内指针默认非空
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface ProfileManager : NSObject
+      // 声明一个 nonnull 的 NSString 参数，表示用户名不能为空
+      // 在 NS_ASSUME_NONNULL_BEGIN/END 内，不写修饰符默认就是 nonnull
+      - (void)updateUsername:(NSString *)username;
+
+      // 声明一个 nullable 的 NSString 参数，表示邮箱可以为空，必须显式标记 nullable
+      - (void)updateEmail:(nullable NSString *)email;
+
+      // 声明一个 nonnull 的 Block 参数
+      - (void)saveProfileWithCompletion:(void (^)(BOOL success))completionHandler;
+      @end
+
+      NS_ASSUME_NONNULL_END // 结束非空假定区域
+
+      @implementation ProfileManager
+      - (void)updateUsername:(NSString *)username {
+          // 编译器假定 username 非空
+          NSLog(@"Updating username to: %@", username);
+      }
+
+      - (void)updateEmail:(nullable NSString *)email {
+          if (email) {
+              NSLog(@"Updating email to: %@", email);
+          } else {
+              NSLog(@"Clearing email.");
+          }
+      }
+
+      - (void)saveProfileWithCompletion:(void (^)(BOOL success))completionHandler {
+          NSLog(@"Saving profile...");
+          // 模拟保存操作
+          BOOL didSave = YES;
+          // 调用非空的回调 Block
+          completionHandler(didSave);
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              ProfileManager *manager = [[ProfileManager alloc] init];
+
+              // 调用 nonnull 参数的方法
+              [manager updateUsername:@"Alice"]; // 输出: Updating username to: Alice
+              // [manager updateUsername:nil]; // 编译时会产生警告 (Passing nil to parameter expecting non-null)
+
+              // 调用 nullable 参数的方法
+              [manager updateEmail:@"alice@example.com"]; // 输出: Updating email to: alice@example.com
+              [manager updateEmail:nil];                // 输出: Clearing email.
+
+              // 调用带 nonnull Block 参数的方法
+              [manager saveProfileWithCompletion:^(BOOL success) {
+                  NSLog(@"Save completion: %s", success ? "Success" : "Failed"); // 输出: Save completion: Success
+              }];
+              // [manager saveProfileWithCompletion:nil]; // 编译时会产生警告
+          }
+          return 0;
+      }
+      ```
+  - title: 传递 Block 作为方法参数
+    description: |
+      Block 是 Objective-C 中的闭包实现，常作为参数用于回调（callback）、完成处理器（completion handler）或自定义操作。将 Block 作为参数传递，可以让方法的调用者提供一段代码，在方法执行到特定点（例如异步操作完成、枚举元素时）被执行。
+
+      **Block 参数语法:** `(返回类型 (^)(参数类型列表))`
+      - `返回类型`: Block 执行后返回的值的类型，`void` 表示无返回值。
+      - `^`: Block 类型的标志。
+      - `参数类型列表`: Block 接收的参数类型，`void` 表示无参数。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface DataFetcher : NSObject
+      // 声明一个方法，异步获取数据，并通过 Block 返回结果或错误
+      // Block 参数接收 NSData* (可能为 nil) 和 NSError* (可能为 nil)
+      - (void)fetchDataForURL:(NSURL *)url
+              completionHandler:(void (^)(NSData * _Nullable data, NSError * _Nullable error))handler;
+      @end
+
+      @implementation DataFetcher
+      - (void)fetchDataForURL:(NSURL *)url
+              completionHandler:(void (^)(NSData * _Nullable data, NSError * _Nullable error))handler {
+          NSLog(@"Starting data fetch for: %@", url);
+          // 模拟网络请求的异步过程
+          dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+              // 模拟延时和可能的失败
+              [NSThread sleepForTimeInterval:1.0];
+              BOOL success = arc4random_uniform(10) > 2; // 70% 成功率
+
+              NSData *fetchedData = nil;
+              NSError *fetchError = nil;
+
+              if (success) {
+                  NSString *resultString = [NSString stringWithFormat:@"Data from %@", url.host];
+                  fetchedData = [resultString dataUsingEncoding:NSUTF8StringEncoding];
+                  NSLog(@"Fetch succeeded.");
+              } else {
+                  fetchError = [NSError errorWithDomain:@"FetcherErrorDomain" code:1 userInfo:@{NSLocalizedDescriptionKey:@"Failed to fetch data"}];
+                  NSLog(@"Fetch failed.");
+              }
+
+              // 回到主线程调用 completion handler Block
+              dispatch_async(dispatch_get_main_queue(), ^{
+                  // 调用传入的 Block，传递结果
+                  handler(fetchedData, fetchError);
+              });
+          });
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataFetcher *fetcher = [[DataFetcher alloc] init];
+              NSURL *sampleURL = [NSURL URLWithString:@"https://example.com"];
+
+              NSLog(@"Requesting data...");
+              // 调用方法，并提供一个 Block 作为 completionHandler
+              [fetcher fetchDataForURL:sampleURL completionHandler:^(NSData * _Nullable data, NSError * _Nullable error) {
+                  // 这个 Block 会在数据获取完成后（异步）被调用
+                  if (error) {
+                      NSLog(@"Completion Handler: Error received: %@", error.localizedDescription);
+                  } else if (data) {
+                      NSString *receivedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                      NSLog(@"Completion Handler: Data received: %@", receivedString);
+                  } else {
+                      NSLog(@"Completion Handler: No data and no error received.");
+                  }
+              }];
+
+              NSLog(@"Request sent, waiting for response...");
+              // 为了让异步操作有时间完成，运行 runloop (在命令行工具中需要)
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:2.0]];
+          }
+          return 0;
+      }
+      // 可能的输出 (顺序和结果随机):
+      // Requesting data...
+      // Starting data fetch for: https://example.com
+      // Request sent, waiting for response...
+      // (1秒后)
+      // Fetch succeeded. (或 Fetch failed.)
+      // Completion Handler: Data received: Data from example.com (或 Completion Handler: Error received: Failed to fetch data)
+      ```
+  - title: 定义和使用带可变参数的方法
+    description: |
+      允许方法接收不定数量的参数，通常用于需要灵活处理多个输入值的场景，如格式化字符串 (`-[NSString initWithFormat:]`)、集合初始化 (`+[NSArray arrayWithObjects:]`) 或自定义日志。方法声明中，在最后一个固定参数后面使用 `...` (省略号) 表示可变参数。
+
+      **实现:** 方法内部需要使用 C 标准库 `<stdarg.h>` 中定义的宏来访问这些参数：
+      - `va_list`: 用于声明一个指向参数列表的变量。
+      - `va_start(ap, last_fixed_arg)`: 初始化 `va_list` 变量 `ap`，使其指向 `last_fixed_arg` (最后一个固定参数) 之后的第一个可变参数。
+      - `va_arg(ap, type)`: 获取当前参数的值，并使 `ap` 指向下一个参数。需要指定期望的参数类型 `type`。
+      - `va_end(ap)`: 清理 `va_list`。
+
+      **注意:**
+      - 必须至少有一个固定参数在 `...` 前面。
+      - 调用者必须确保传入的可变参数类型与 `va_arg` 中使用的类型匹配。
+      - 通常需要在可变参数列表的末尾使用一个特殊值（如 `nil` 对于对象指针）来标记列表的结束，或者通过固定参数（如格式化字符串）来确定参数的数量和类型。
+      - 使用 `NS_FORMAT_FUNCTION(F,A)` 宏可以帮助编译器检查 `printf` 风格的格式化字符串和参数是否匹配（F 是格式化字符串参数的位置，A 是可变参数开始的位置，都从1开始计数）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <stdarg.h> // 需要引入 stdarg.h
+
+      @interface CustomArrayCreator : NSObject
+      // 声明一个带可变参数的方法，用于创建包含指定对象的数组
+      // object1 是第一个固定对象参数
+      // ... 代表可变参数，后续可以传入任意数量的对象指针，以 nil 结束
+      - (NSArray *)createArrayWithObjects:(id)object1, ... NS_REQUIRES_NIL_TERMINATION;
+      // NS_REQUIRES_NIL_TERMINATION 宏提示编译器检查调用时是否以 nil 结尾
+      @end
+
+      @implementation CustomArrayCreator
+      - (NSArray *)createArrayWithObjects:(id)object1, ... {
+          NSMutableArray *array = [NSMutableArray array];
+          if (object1) {
+              // 首先添加第一个固定参数
+              [array addObject:object1];
+
+              // 初始化 va_list
+              va_list args;
+              // 使 args 指向 object1 之后的可变参数
+              va_start(args, object1);
+
+              // 循环获取可变参数，直到遇到 nil
+              id currentObject;
+              // va_arg 获取当前参数 (类型为 id)，并移动指针到下一个
+              // 循环条件是获取到的对象不是 nil
+              while ((currentObject = va_arg(args, id))) {
+                  [array addObject:currentObject];
+              }
+
+              // 清理 va_list
+              va_end(args);
+          }
+          // 返回包含所有传入对象的不可变数组副本
+          return [array copy];
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              CustomArrayCreator *creator = [[CustomArrayCreator alloc] init];
+
+              // 调用带可变参数的方法，传入多个对象，并以 nil 结尾
+              NSArray *myArray = [creator createArrayWithObjects:@"Apple", @"Banana", @(123), [NSDate date], nil];
+
+              NSLog(@"Created array: %@", myArray);
+              // 输出: Created array: (
+              //     Apple,
+              //     Banana,
+              //     123,
+              //     "<当前日期时间>"
+              // )
+
+              NSArray *singleElementArray = [creator createArrayWithObjects:@"OnlyOne", nil];
+              NSLog(@"Single element array: %@", singleElementArray); // 输出: Single element array: (OnlyOne)
+          }
+          return 0;
+      }
+      ```
+  - title: 传递结构体参数
+    description: |
+      Objective-C 方法可以直接接收 C 结构体（Struct）作为参数。常见的结构体如 Core Graphics 框架定义的几何类型 (`CGPoint`, `CGSize`, `CGRect`) 或 Foundation 框架的 `NSRange`。结构体通常是按值传递（Pass-by-Value）的，这意味着方法接收的是原始结构体的一个完整副本。在方法内部对参数结构体的修改不会影响到调用者传入的原始结构体变量。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      // 对于 CGPoint, CGRect 等需要引入 CoreGraphics (或 UIKit/AppKit)
+      #import <CoreGraphics/CoreGraphics.h>
+
+      typedef struct {
+          NSInteger hours;
+          NSInteger minutes;
+      } TimeDuration; // 自定义一个结构体
+
+      @interface GeometryTool : NSObject
+      // 声明一个接收 CGPoint 结构体的方法
+      - (void)printPointCoordinates:(CGPoint)point;
+      // 声明一个接收 TimeDuration 结构体的方法
+      - (NSInteger)totalMinutesForDuration:(TimeDuration)duration;
+      @end
+
+      @implementation GeometryTool
+      - (void)printPointCoordinates:(CGPoint)point {
+          // point 是传入结构体的副本
+          point.x += 1.0; // 修改副本的 x 值
+          NSLog(@"Point coordinates (inside method after modification): (%.1f, %.1f)", point.x, point.y);
+      }
+      - (NSInteger)totalMinutesForDuration:(TimeDuration)duration {
+          // duration 是传入结构体的副本
+          return duration.hours * 60 + duration.minutes;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              GeometryTool *tool = [[GeometryTool alloc] init];
+
+              // 测试 CGPoint
+              CGPoint originalPoint = CGPointMake(10.0, 20.0);
+              NSLog(@"Original point before call: (%.1f, %.1f)", originalPoint.x, originalPoint.y); // 输出: (10.0, 20.0)
+              [tool printPointCoordinates:originalPoint]; // 输出: Point coordinates (inside method after modification): (11.0, 20.0)
+              NSLog(@"Original point after call: (%.1f, %.1f)", originalPoint.x, originalPoint.y); // 输出: (10.0, 20.0) (原始值未变)
+
+              NSLog(@"---");
+
+              // 测试自定义结构体 TimeDuration
+              TimeDuration workTime;
+              workTime.hours = 2;
+              workTime.minutes = 30;
+              NSInteger totalMinutes = [tool totalMinutesForDuration:workTime];
+              NSLog(@"Duration: %ld hours, %ld minutes", (long)workTime.hours, (long)workTime.minutes); // 输出: Duration: 2 hours, 30 minutes
+              NSLog(@"Total minutes: %ld", (long)totalMinutes); // 输出: Total minutes: 150
+          }
+          return 0;
+      }
+      ```
+  - title: 理解参数传递机制
+    description: |
+      理解 Objective-C 中参数如何传递对于编写正确和高效的代码至关重要。主要有两种方式：
+
+      - **值传递 (Pass-by-Value):**
+        - 适用于：基本数据类型（`int`, `float`, `BOOL`, `NSInteger`, `CGFloat`, 指针本身的值等）和 C 结构体（`CGPoint`, `CGRect`, 自定义 struct 等）。
+        - 机制：方法接收的是原始值的一个**副本**。
+        - 效果：在方法内部对参数变量的任何修改都**不会**影响到方法外部调用者传入的原始变量。
+
+      - **引用传递 (Pass-by-Reference - 特指对象指针):**
+        - 适用于：Objective-C 对象指针（如 `NSString *`, `NSArray *`, `id`, `自定义类 *`）。
+        - 机制：传递的是对象的**内存地址（指针）的副本**。这意味着方法内部的参数指针和外部的原始指针都指向**同一个**内存中的对象。
+        - 效果：
+          - 通过方法内部的参数指针**修改所指向对象的内容**（例如调用可变对象的方法 `[mutableString appendString:...]`），会**影响**到原始对象。
+          - 如果在方法内部**将参数指针重新赋值**，使其指向一个**新的对象**（例如 `param = [[NSString alloc] init]`），这**不会**改变方法外部原始指针的指向，外部指针仍然指向原来的对象。
+
+      **总结:** 基本类型和结构体传值，对象传指针（的副本）。修改指针指向的内容会影响外部，修改指针本身（让它指向别处）则不会。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface ParameterPassingDemo : NSObject
+      // 演示值传递 (NSInteger)
+      - (void)tryToModifyValue:(NSInteger)number;
+      // 演示对象引用传递 - 修改对象内容
+      - (void)modifyContentsOfObject:(NSMutableString *)str;
+      // 演示对象引用传递 - 尝试重新赋值参数指针
+      - (void)tryToReassignObjectPointer:(NSString **)ptrToString; // 使用指针的指针来修改外部指针
+      - (void)tryToReassignObjectPointerDirectly:(NSMutableString *)str; // 直接修改参数指针（无效）
+      @end
+
+      @implementation ParameterPassingDemo
+      - (void)tryToModifyValue:(NSInteger)number {
+          number = 99; // 修改的是 number 的副本
+          NSLog(@"Inside tryToModifyValue: number = %ld", (long)number);
+      }
+
+      - (void)modifyContentsOfObject:(NSMutableString *)str {
+          // str 是指向原始 NSMutableString 对象的指针副本
+          [str appendString:@" - Modified"]; // 修改了指针指向的对象内容
+          NSLog(@"Inside modifyContentsOfObject: str = %@", str);
+      }
+
+      // 接收一个指向 NSString 指针的指针
+      - (void)tryToReassignObjectPointer:(NSString **)ptrToString {
+          NSLog(@"Inside tryToReassignObjectPointer (before): *ptrToString = %@", *ptrToString);
+          // 通过解引用指针的指针，修改外部指针指向的地址
+          *ptrToString = @"New String Assigned via Pointer";
+          NSLog(@"Inside tryToReassignObjectPointer (after): *ptrToString = %@", *ptrToString);
+      }
+
+      - (void)tryToReassignObjectPointerDirectly:(NSMutableString *)str {
+          NSLog(@"Inside tryToReassignObjectPointerDirectly (before): str = %@", str);
+          // str 是指针的副本，修改它只会改变这个副本的指向，不影响外部
+          str = [NSMutableString stringWithString:@"Attempted New String"];
+          NSLog(@"Inside tryToReassignObjectPointerDirectly (after): str = %@", str);
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              ParameterPassingDemo *demo = [[ParameterPassingDemo alloc] init];
+
+              // 1. 值传递示例
+              NSInteger originalValue = 10;
+              NSLog(@"Value - Before call: %ld", (long)originalValue); // 输出: 10
+              [demo tryToModifyValue:originalValue]; // 输出: Inside tryToModifyValue: number = 99
+              NSLog(@"Value - After call: %ld", (long)originalValue); // 输出: 10 (原始值不变)
+
+              NSLog(@"---");
+
+              // 2. 引用传递 - 修改对象内容示例
+              NSMutableString *originalString = [NSMutableString stringWithString:@"Original"];
+              NSLog(@"Object Content - Before call: %@", originalString); // 输出: Original
+              [demo modifyContentsOfObject:originalString]; // 输出: Inside modifyContentsOfObject: str = Original - Modified
+              NSLog(@"Object Content - After call: %@", originalString); // 输出: Original - Modified (原始对象内容被修改)
+
+              NSLog(@"---");
+
+              // 3. 引用传递 - 尝试修改外部指针 (使用指针的指针)
+              NSString *pointerToChange = @"Initial Pointer";
+              NSLog(@"Pointer Assignment (via **) - Before call: %@", pointerToChange); // 输出: Initial Pointer
+              [demo tryToReassignObjectPointer:&pointerToChange]; // 传递指针的地址
+              // 输出: Inside tryToReassignObjectPointer (before): *ptrToString = Initial Pointer
+              // 输出: Inside tryToReassignObjectPointer (after): *ptrToString = New String Assigned via Pointer
+              NSLog(@"Pointer Assignment (via **) - After call: %@", pointerToChange); // 输出: New String Assigned via Pointer (外部指针被修改)
+
+              NSLog(@"---");
+
+              // 4. 引用传递 - 尝试直接修改参数指针 (无效)
+              NSMutableString *pointerNotToChange = [NSMutableString stringWithString:@"Keep Me"];
+              NSLog(@"Pointer Assignment (Directly) - Before call: %@", pointerNotToChange); // 输出: Keep Me
+              [demo tryToReassignObjectPointerDirectly:pointerNotToChange];
+              // 输出: Inside tryToReassignObjectPointerDirectly (before): str = Keep Me
+              // 输出: Inside tryToReassignObjectPointerDirectly (after): str = Attempted New String
+              NSLog(@"Pointer Assignment (Directly) - After call: %@", pointerNotToChange); // 输出: Keep Me (外部指针未被修改)
+          }
+          return 0;
+      }
+      ```

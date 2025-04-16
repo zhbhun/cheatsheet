@@ -1,0 +1,577 @@
+id: try
+title: 错误处理
+description: Objective-C 提供两种主要的错误处理机制：通过 `NSError` 对象传递错误信息，以及使用 `@try...@catch...@finally` 块处理异常。`NSError` 是推荐的方式，用于处理可预见的、非致命的错误（如文件读写失败、网络错误）。异常 (`NSException`) 通常用于处理严重的编程错误或系统级问题，一般不应用于常规控制流。
+usage:
+  - title: 检查方法返回的错误 (NSError)
+    description: |
+      许多 Cocoa 和 Cocoa Touch 方法通过返回 `BOOL` 值（指示成功或失败）或 `nil`（指示对象创建或获取失败）并接受一个 `NSError` 指针的指针 (`NSError **`) 作为参数来报告错误。这是最常见的错误处理模式。
+
+      **关键模式:**
+      - 方法声明通常包含 `error:(NSError **)error` 参数。
+      - 调用时，声明一个 `NSError *` 变量并初始化为 `nil`，然后将其地址 (`&errorVariable`) 传递给方法。
+      - 检查方法的返回值（例如 `BOOL` 是否为 `NO`，或者对象指针是否为 `nil`）来判断操作是否失败。
+      - 如果操作失败，检查之前传入的 `errorVariable` 是否被填充了错误信息（即不再是 `nil`）。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *filePath = @"/path/to/nonexistent/file.txt"; // 一个不存在的文件路径
+              NSError *error = nil; // 1. 声明一个 NSError 指针，初始化为 nil
+
+              // 尝试使用 NSString 的方法读取文件内容，该方法使用 NSError 模式
+              NSString *fileContents = [NSString stringWithContentsOfFile:filePath
+                                                                 encoding:NSUTF8StringEncoding
+                                                                    error:&error]; // 2. 传入 error 指针的地址
+
+              // 3. 检查返回值是否为 nil，表示失败
+              if (fileContents == nil) {
+                  // 读取失败
+                  // 4. 检查 error 对象是否已被填充
+                  if (error != nil) {
+                      NSLog(@"读取文件失败: %@", error); // 输出整个错误对象信息
+                      // 可以进一步检查错误的具体信息
+                      NSLog(@"错误域 (Domain): %@", error.domain);
+                      NSLog(@"错误代码 (Code): %ld", (long)error.code);
+                      NSLog(@"本地化描述: %@", [error localizedDescription]); // 用户友好的描述
+                      NSLog(@"详细信息 (UserInfo): %@", error.userInfo); // 可能包含更多上下文
+                  } else {
+                      NSLog(@"读取文件失败，但没有提供错误信息。"); // 理论上可能发生，但不常见
+                  }
+              } else {
+                  // 读取成功
+                  NSLog(@"文件内容: %@", fileContents);
+              }
+          }
+          return 0;
+      }
+      // 可能的输出 (具体错误信息取决于系统和文件系统)：
+      // 读取文件失败: Error Domain=NSCocoaErrorDomain Code=260 "未能打开文件“file.txt”." UserInfo={NSFilePath=/path/to/nonexistent/file.txt, NSUnderlyingError=0x600001e8d590 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}}
+      // 错误域 (Domain): NSCocoaErrorDomain
+      // 错误代码 (Code): 260
+      // 本地化描述: 未能打开文件“file.txt”。
+      // 详细信息 (UserInfo): {
+      //     NSFilePath = "/path/to/nonexistent/file.txt";
+      //     NSUnderlyingError = "Error Domain=NSPOSIXErrorDomain Code=2 \"No such file or directory\"";
+      // }
+      ```
+  - title: 创建 NSError 对象
+    description: |
+      当你编写自己的方法或库，并且需要向调用者报告可预见的错误时，应该创建并返回 `NSError` 对象。
+
+      **关键要素:**
+      - `domain`: (NSString *) 标识错误来源的字符串，通常使用反向 DNS 格式（例如 `"com.yourcompany.yourapp.ErrorDomain"`）以保证唯一性。建议定义为常量。
+      - `code`: (NSInteger) 在指定的 `domain` 内标识具体错误类型的整数。通常使用枚举 (`NS_ENUM`) 来定义这些错误代码，提高可读性。
+      - `userInfo`: (NSDictionary *) 包含有关错误的额外信息的字典。这个字典是可选的，但非常有用。常用的 Key 由 Foundation 定义（建议使用这些标准 Key）：
+        - `NSLocalizedDescriptionKey`: (NSString *) 提供给用户的、本地化的错误描述。这是最重要的 Key 之一。
+        - `NSLocalizedFailureReasonErrorKey`: (NSString *) 提供给用户的、本地化的解释失败原因。
+        - `NSLocalizedRecoverySuggestionErrorKey`: (NSString *) 提供给用户的、本地化的如何从错误中恢复的建议。
+        - `NSUnderlyingErrorKey`: (NSError *) 如果此错误是由另一个底层错误引起的，则将底层 `NSError` 对象放在这里。这对于追踪错误的根本原因很有帮助。
+        - 你也可以添加自定义的 Key-Value 对来提供特定于错误的上下文信息。
+
+      **创建方法:**
+      - 使用类方法 `+ (instancetype)errorWithDomain:(NSErrorDomain)domain code:(NSInteger)code userInfo:(nullable NSDictionary<NSErrorUserInfoKey, id> *)dict;` 来创建 `NSError` 实例。
+      - 在你的方法中，如果调用者传入了 `NSError **` 参数（即 `error != NULL`），则在发生错误时创建 `NSError` 对象并将其赋值给 `*error`。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 1. 定义错误域常量
+      NSString * const MyCustomErrorDomain = @"com.example.myapp.ErrorDomain";
+
+      // 2. 使用 NS_ENUM 定义错误代码
+      typedef NS_ENUM(NSInteger, MyCustomErrorCode) {
+          MyCustomErrorCodeInvalidInput = 1001,
+          MyCustomErrorCodeOperationFailed = 1002,
+          MyCustomErrorCodeAuthenticationFailure = 1003
+      };
+
+      // 模拟一个执行操作并可能返回错误的方法
+      @interface MyService : NSObject
+      - (BOOL)performActionWithString:(NSString *)input error:(NSError **)error;
+      @end
+
+      @implementation MyService
+      - (BOOL)performActionWithString:(NSString *)input error:(NSError **)error {
+          // 检查输入有效性
+          if (input == nil || input.length == 0) {
+              if (error != NULL) { // 检查调用者是否关心错误信息
+                  // 3. 构建 userInfo 字典
+                  NSDictionary *userInfo = @{
+                      NSLocalizedDescriptionKey: @"操作失败", // 用户看到的描述
+                      NSLocalizedFailureReasonErrorKey: @"输入参数不能为空。", // 失败原因
+                      @"InputProvided": input ?: @"nil" // 可以添加自定义信息
+                  };
+                  // 4. 创建 NSError 对象并赋值给 *error
+                  *error = [NSError errorWithDomain:MyCustomErrorDomain
+                                               code:MyCustomErrorCodeInvalidInput
+                                           userInfo:userInfo];
+              }
+              return NO; // 操作失败
+          }
+
+          // 模拟操作失败，并附带底层错误
+          BOOL simulatedSuccess = NO; // 假设操作失败了
+          if (!simulatedSuccess) {
+              if (error != NULL) {
+                  // 模拟一个网络错误作为底层错误
+                  NSError *underlyingNetworkError = [NSError errorWithDomain:NSURLErrorDomain
+                                                                        code:NSURLErrorNotConnectedToInternet
+                                                                    userInfo:@{NSLocalizedDescriptionKey: @"无网络连接"}];
+
+                  NSDictionary *userInfo = @{
+                      NSLocalizedDescriptionKey: @"核心操作执行失败",
+                      NSLocalizedFailureReasonErrorKey: @"无法完成核心任务。",
+                      NSUnderlyingErrorKey: underlyingNetworkError // 5. 包含底层错误
+                  };
+                  *error = [NSError errorWithDomain:MyCustomErrorDomain
+                                               code:MyCustomErrorCodeOperationFailed
+                                           userInfo:userInfo];
+              }
+              return NO; // 操作失败
+          }
+
+          // 如果一切正常
+          return YES; // 操作成功
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyService *service = [[MyService alloc] init];
+              NSError *actionError = nil;
+
+              // 测试无效输入
+              BOOL result1 = [service performActionWithString:nil error:&actionError];
+              if (!result1) {
+                  NSLog(@"测试1失败: %@", actionError);
+                  // 输出: 测试1失败: Error Domain=com.example.myapp.ErrorDomain Code=1001 "操作失败" UserInfo={InputProvided=nil, NSLocalizedFailureReason=输入参数不能为空。, NSLocalizedDescription=操作失败}
+              }
+
+              actionError = nil; // 重置 error 对象
+
+              // 测试操作失败（带底层错误）
+              BOOL result2 = [service performActionWithString:@"validInput" error:&actionError];
+               if (!result2) {
+                   NSLog(@"测试2失败: %@", actionError);
+                   // 输出: 测试2失败: Error Domain=com.example.myapp.ErrorDomain Code=1002 "核心操作执行失败" UserInfo={NSLocalizedFailureReason=无法完成核心任务。, NSLocalizedDescription=核心操作执行失败, NSUnderlyingError=0x... {Error Domain=NSURLErrorDomain Code=-1009 "无网络连接" UserInfo={NSLocalizedDescription=无网络连接}}}
+                   // 注意 NSUnderlyingError 部分包含了网络错误信息
+               }
+          }
+          return 0;
+      }
+      ```
+  - title: 解析 NSError 信息
+    description: |
+      当你从方法调用中接收到一个 `NSError` 对象后，你需要检查它的属性来理解错误的具体情况，以便进行相应的处理，例如记录日志、向用户显示友好的提示信息、或者尝试从错误中恢复。
+
+      **常用属性和方法来提取信息:**
+      - `domain`: (NSString *) 获取错误的来源域。有助于区分不同模块或库产生的错误。
+      - `code`: (NSInteger) 获取错误代码。结合 `domain` 可以精确识别错误类型。
+      - `userInfo`: (NSDictionary *) 获取包含所有附加信息的字典。你可以直接访问这个字典来获取标准 Key（如 `NSLocalizedDescriptionKey`）或自定义 Key 对应的值。
+      - `localizedDescription`: (NSString *) 获取本地化的、适合向用户展示的错误描述。这是最常用的属性之一。
+      - `localizedFailureReason`: (NSString *) 获取本地化的失败原因描述。
+      - `localizedRecoverySuggestion`: (NSString *) 获取本地化的恢复建议。
+      - `localizedRecoveryOptions`: (NSArray<NSString *> *) 获取一个字符串数组，表示用户可以采取的恢复操作选项（较少见）。
+      - `underlyingError`: (NSError *) 通过访问 `userInfo` 字典中的 `NSUnderlyingErrorKey` 来获取嵌套的底层错误对象。检查底层错误对于调试复杂问题非常有帮助。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 一个辅助函数，用于打印 NSError 的详细信息
+      void printDetailedError(NSError *error) {
+          if (error == nil) {
+              NSLog(@"没有错误信息。");
+              return;
+          }
+
+          NSLog(@"--- 错误详情 ---");
+          NSLog(@"域 (Domain): %@", error.domain);
+          NSLog(@"代码 (Code): %ld", (long)error.code);
+          NSLog(@"本地化描述: %@", error.localizedDescription); // 主要给用户看
+
+          // 从 userInfo 中获取更详细的信息
+          NSDictionary *userInfo = error.userInfo;
+
+          if (userInfo[NSLocalizedFailureReasonErrorKey]) {
+              NSLog(@"失败原因: %@", userInfo[NSLocalizedFailureReasonErrorKey]);
+          }
+          if (userInfo[NSLocalizedRecoverySuggestionErrorKey]) {
+              NSLog(@"恢复建议: %@", userInfo[NSLocalizedRecoverySuggestionErrorKey]);
+          }
+          if (userInfo[NSHelpAnchorErrorKey]) { // 另一个标准 Key
+               NSLog(@"帮助锚点: %@", userInfo[NSHelpAnchorErrorKey]);
+          }
+
+          // 检查是否有自定义信息
+          if (userInfo[@"CustomInfo"]) {
+              NSLog(@"自定义信息: %@", userInfo[@"CustomInfo"]);
+          }
+
+          // 递归检查并打印底层错误
+          NSError *underlyingError = userInfo[NSUnderlyingErrorKey];
+          if (underlyingError) {
+              NSLog(@"--- 底层错误 ---");
+              printDetailedError(underlyingError); // 递归调用
+          }
+           NSLog(@"--- 详情结束 ---");
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个模拟的网络错误
+              NSError *networkError = [NSError errorWithDomain:NSURLErrorDomain
+                                                          code:NSURLErrorTimedOut
+                                                      userInfo:@{
+                                                          NSLocalizedDescriptionKey: @"请求超时",
+                                                          NSLocalizedFailureReasonErrorKey: @"服务器在规定时间内未响应。",
+                                                          @"RequestURL": @"https://api.example.com/data"
+                                                      }];
+
+              // 创建一个包装网络错误的自定义错误
+              NSError *appError = [NSError errorWithDomain:@"com.myapp.data.ErrorDomain"
+                                                      code:500
+                                                  userInfo:@{
+                                                      NSLocalizedDescriptionKey: @"获取用户数据失败",
+                                                      NSLocalizedRecoverySuggestionErrorKey: @"请检查网络连接并重试。",
+                                                      NSUnderlyingErrorKey: networkError, // 嵌套网络错误
+                                                      @"CustomInfo": @"UserID: 12345"
+                                                  }];
+
+              // 使用辅助函数打印错误信息
+              printDetailedError(appError);
+          }
+          return 0;
+      }
+      // 输出:
+      // --- 错误详情 ---
+      // 域 (Domain): com.myapp.data.ErrorDomain
+      // 代码 (Code): 500
+      // 本地化描述: 获取用户数据失败
+      // 恢复建议: 请检查网络连接并重试。
+      // 自定义信息: UserID: 12345
+      // --- 底层错误 ---
+      // --- 错误详情 ---
+      // 域 (Domain): NSURLErrorDomain
+      // 代码 (Code): -1001
+      // 本地化描述: 请求超时
+      // 失败原因: 服务器在规定时间内未响应。
+      // --- 详情结束 ---
+      // --- 详情结束 ---
+      ```
+  - title: 使用 @try...@catch 处理异常
+    description: |
+      `@try...@catch...@finally` 语句块用于捕获和处理在 Objective-C 中通过 `@throw` 抛出的异常 (`NSException` 对象)。这与 `NSError` 不同，异常通常表示程序遇到了无法正常继续的严重问题或编程错误。
+
+      **语法结构:**
+      - `@try { ... }`: 将可能抛出异常的代码包裹在这个块内。
+      - `@catch (ExceptionType *exception) { ... }`: 捕获特定类型的异常。`ExceptionType` 应为 `NSException` 或其子类。你可以有多个 `@catch` 块来处理不同类型的异常，它们会按照从上到下的顺序进行匹配。第一个匹配的 `@catch` 块会被执行。
+      - `@catch (id genericException) { ... }`: 捕获任何类型的异常对象，包括非 `NSException` 对象（尽管抛出非 `NSException` 对象非常罕见且不推荐）。这个通用捕获块通常放在所有特定类型 `@catch` 块之后。
+      - `@finally { ... }`: 这个块是可选的。无论 `@try` 块中是否发生异常，也无论异常是否被 `@catch` 块捕获，`@finally` 块中的代码 **总是** 会在控制流离开 `@try...@catch` 结构之前执行。它主要用于执行必要的清理工作，例如释放手动管理的资源（在非 ARC 或需要精确控制资源生命周期时）。
+
+      **重要注意事项:**
+      - **ARC 环境:** 在 ARC (Automatic Reference Counting) 下，编译器默认会确保 Objective-C 对象在异常抛出时能被正确释放。但 `@try` 块的存在可能会限制编译器的某些优化。
+      - **使用场景:** 异常处理主要用于处理不可恢复的错误、编程错误（如数组越界、无效参数），或者与某些特定框架（例如 AppKit/UIKit 的事件循环或 Core Data 的某些操作）进行交互时，这些框架可能使用异常来中止操作。
+      - **避免用于控制流:** 不应使用异常来控制程序的常规流程（例如，用异常代替 `if/else` 或 `NSError`）。这会使代码难以理解和维护。
+      - **性能:** 异常处理通常比正常的错误检查（如 `if` 或 `NSError`）开销更大。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSArray *myArray = @[@"Apple", @"Banana"];
+              NSString *retrievedValue = nil;
+              FILE *fileHandle = NULL; // 示例：一个需要手动管理的资源
+
+              @try {
+                  NSLog(@"尝试打开文件...");
+                  // 假设我们打开了一个需要手动关闭的文件（仅为演示 finally）
+                  fileHandle = fopen("temp.txt", "w");
+                  if (fileHandle == NULL) {
+                     NSLog(@"无法打开文件");
+                     // 在实际应用中，这里可能抛出异常或返回错误
+                  } else {
+                     NSLog(@"文件已打开");
+                  }
+
+
+                  NSLog(@"尝试访问数组索引...");
+                  // 这将导致 NSRangeException，因为索引 2 超出范围 [0, 1]
+                  retrievedValue = [myArray objectAtIndex:2];
+                  NSLog(@"成功获取值: %@", retrievedValue); // 这行不会执行
+
+              }
+              // 捕获特定的数组越界异常
+              @catch (NSRangeException *rangeException) {
+                  NSLog(@"捕获到 NSRangeException!");
+                  NSLog(@"异常名称: %@", rangeException.name);
+                  NSLog(@"原因: %@", rangeException.reason);
+                  NSLog(@"用户信息: %@", rangeException.userInfo);
+                  // 可以在这里进行恢复或记录日志
+                  retrievedValue = @"<Default Value>"; // 设定一个默认值
+
+              }
+              // 捕获其他所有 NSException 类型的异常
+              @catch (NSException *exception) {
+                  NSLog(@"捕获到其他 NSException!");
+                  NSLog(@"异常名称: %@", exception.name);
+                  NSLog(@"原因: %@", exception.reason);
+                  // 处理其他类型的程序错误
+
+              }
+              // 捕获任何类型的异常 (极少使用)
+              @catch (id anything) {
+                   NSLog(@"捕获到未知类型的异常: %@", anything);
+              }
+              // 无论是否发生异常，finally 块都会执行
+              @finally {
+                  NSLog(@"进入 finally 块。");
+                  // 在这里执行清理操作，例如关闭文件
+                  if (fileHandle != NULL) {
+                      fclose(fileHandle);
+                      NSLog(@"文件已关闭。");
+                      remove("temp.txt"); // 删除临时文件
+                  } else {
+                      NSLog(@"文件句柄为空，无需关闭。");
+                  }
+                  NSLog(@"离开 finally 块。");
+              }
+
+              // @try...@catch...@finally 结构结束后，程序继续执行
+              NSLog(@"程序继续执行。retrievedValue = %@", retrievedValue);
+          }
+          return 0;
+      }
+      // 可能的输出:
+      // 尝试打开文件...
+      // 文件已打开
+      // 尝试访问数组索引...
+      // 捕获到 NSRangeException!
+      // 异常名称: NSRangeException
+      // 原因: *** -[__NSArrayI objectAtIndex:]: index 2 beyond bounds [0 .. 1]
+      // 用户信息: (null)
+      // 进入 finally 块。
+      // 文件已关闭。
+      // 离开 finally 块。
+      // 程序继续执行。retrievedValue = <Default Value>
+      ```
+  - title: 使用 @throw 抛出异常
+    description: |
+      `@throw` 关键字用于主动抛出一个异常对象，通常是 `NSException` 类或其子类的实例。当程序遇到无法处理的严重错误，或者需要按照特定框架的设计模式（不常见）来中断当前执行流程时，可以使用 `@throw`。
+
+      **创建和抛出异常:**
+      1.  **创建 `NSException` 对象:** 使用 `NSException` 的类方法 `+ (NSException *)exceptionWithName:(NSExceptionName)name reason:(nullable NSString *)reason userInfo:(nullable NSDictionary *)userInfo;` 来创建一个异常实例。
+          - `name`: (NSExceptionName) 异常的名称，通常是一个常量字符串，用于标识异常类型（例如 `NSInvalidArgumentException`, `NSRangeException`，或自定义的名称如 `MyCustomValidationExceptionName`）。
+          - `reason`: (NSString *) 描述异常发生原因的字符串。
+          - `userInfo`: (NSDictionary *) 可选的字典，用于携带与异常相关的附加信息。
+      2.  **抛出异常:** 使用 `@throw exceptionObject;` 将创建的异常对象抛出。执行到 `@throw` 时，当前的执行流程会立即停止，并开始查找能够处理该异常的 `@catch` 块。
+
+      **注意事项:**
+      - **谨慎使用:** 抛出异常是一种激进的错误信号方式。它会中断正常的代码执行路径，可能导致调用栈上层的代码难以预测其行为。
+      - **替代方案:** 在绝大多数情况下，通过方法返回值（如 `BOOL` 或 `nil`）和 `NSError` 对象来报告错误是更优的选择，因为它允许调用者以更可控的方式处理错误。
+      - **何时考虑 `@throw`:**
+          - 检测到严重的逻辑错误或不可恢复的状态时。
+          - 实现需要中断操作的特定设计模式（例如，在某些递归或深度嵌套调用中快速返回到上层处理程序，但通常有更好的方法）。
+          - 与明确要求抛出异常的底层 API 或框架交互时。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义自定义异常名称
+      NSExceptionName const MyConfigurationExceptionName = @"MyConfigurationExceptionName";
+
+      // 模拟加载配置的方法，如果配置无效则抛出异常
+      NSDictionary* loadConfiguration(NSString *configPath) {
+          if (configPath == nil || ![[NSFileManager defaultManager] fileExistsAtPath:configPath]) {
+              // 配置路径无效，这是一个严重问题，无法继续
+              NSDictionary *errorInfo = @{
+                  @"ConfigPathAttempted": configPath ?: @"(nil)",
+                  @"Timestamp": [NSDate date]
+              };
+              // 1. 创建 NSException 对象
+              NSException *exception = [NSException exceptionWithName:MyConfigurationExceptionName
+                                                               reason:@"配置文件路径无效或文件不存在"
+                                                             userInfo:errorInfo];
+              // 2. 抛出异常
+              @throw exception;
+          }
+
+          // ... 假设这里是加载和解析配置文件的代码 ...
+          NSLog(@"配置文件 '%@' 加载成功 (模拟)", configPath);
+          return @{@"setting": @"value"}; // 返回模拟的配置
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSDictionary *config = nil;
+              NSString *validPath = @"./config.plist"; // 假设这个文件存在
+              NSString *invalidPath = @"/nonexistent/path/config.plist";
+
+              // 模拟创建有效路径的文件（仅为演示）
+              [@{} writeToFile:validPath atomically:YES];
+
+              // 尝试加载有效配置
+              @try {
+                  NSLog(@"尝试加载有效配置: %@", validPath);
+                  config = loadConfiguration(validPath);
+                  NSLog(@"有效配置加载完成: %@", config);
+              } @catch (NSException *e) {
+                  NSLog(@"加载有效配置时捕获到异常 (不应发生): %@ - %@", e.name, e.reason);
+              } @finally {
+                   NSLog(@"有效配置加载尝试结束。");
+                   // 清理模拟文件
+                   [[NSFileManager defaultManager] removeItemAtPath:validPath error:nil];
+              }
+
+
+              // 尝试加载无效配置
+              @try {
+                  NSLog(@"尝试加载无效配置: %@", invalidPath);
+                  config = loadConfiguration(invalidPath); // 这将抛出异常
+                  NSLog(@"无效配置加载完成 (不应执行)");
+
+              } @catch (NSException *e) {
+                  // 捕获之前抛出的异常
+                  if ([e.name isEqualToString:MyConfigurationExceptionName]) {
+                      NSLog(@"捕获到预期的配置异常!");
+                      NSLog(@"名称: %@", e.name);
+                      NSLog(@"原因: %@", e.reason);
+                      NSLog(@"附加信息: %@", e.userInfo);
+                      // 在这里可以进行错误处理，比如使用默认配置或终止程序
+                      config = @{@"defaultSetting": @"defaultValue"}; // 使用默认配置作为恢复策略
+                  } else {
+                      NSLog(@"捕获到其他意外异常: %@", e.name);
+                      // 如果捕获到不认识的异常，可以选择重新抛出
+                      // @throw e;
+                  }
+              } @finally {
+                  NSLog(@"无效配置加载尝试结束。");
+              }
+
+              NSLog(@"最终使用的配置: %@", config);
+          }
+          return 0;
+      }
+      // 可能的输出:
+      // 尝试加载有效配置: ./config.plist
+      // 配置文件 './config.plist' 加载成功 (模拟)
+      // 有效配置加载完成: { setting = value; }
+      // 有效配置加载尝试结束。
+      // 尝试加载无效配置: /nonexistent/path/config.plist
+      // 捕获到预期的配置异常!
+      // 名称: MyConfigurationExceptionName
+      // 原因: 配置文件路径无效或文件不存在
+      // 附加信息: { ConfigPathAttempted = "/nonexistent/path/config.plist"; Timestamp = "2023-10-27 10:30:00 +0000"; } // 时间戳会变化
+      // 无效配置加载尝试结束。
+      // 最终使用的配置: { defaultSetting = defaultValue; }
+      ```
+  - title: NSError 与异常的选择：何时使用哪个？
+    description: |
+      在 Objective-C 中，正确选择使用 `NSError` 还是异常 (`@try..@catch`) 对于编写健壮、可维护的代码至关重要。它们服务于不同的目的。
+
+      **优先使用 `NSError` 的场景 (推荐):**
+      - **可预见的、可恢复的错误:** 这是 `NSError` 的主要用途。例如：
+          - 文件操作失败（文件未找到、权限不足、磁盘空间满）。
+          - 网络请求错误（连接超时、服务器错误、无法解析主机）。
+          - 用户输入验证失败（格式错误、值超出范围）。
+          - 解析数据失败（JSON 或 XML 格式错误）。
+          - 任何你知道可能会发生并且希望调用者能够优雅处理的情况。
+      - **设计 API 时:** 当你创建自己的类和方法时，遵循 Cocoa 的标准模式，通过返回 `BOOL`/`nil` 并使用 `NSError **` 参数来报告错误。这使得你的 API 更易于被其他开发者理解和使用。
+      - **不中断控制流:** 使用 `NSError` 进行错误检查（如 `if (!success) { handleError(error); }`）不会突然中断代码的执行流程，使得错误处理逻辑更清晰。
+
+      **谨慎使用异常 (`@try...@catch`) 的场景:**
+      - **编程错误 (Bugs):** 异常最常用于指示代码中的逻辑错误。例如：
+          - 数组或集合访问越界 (`NSRangeException`)。
+          - 向对象发送了无法识别的消息/方法 (`NSInvalidArgumentException` - 虽然有时也用于无效输入，但通常表明调用代码有问题)。
+          - 传递了无效参数给方法 (`NSInvalidArgumentException`)。
+          **目标应该是修复这些 Bug，而不是在生产代码中捕获它们。** 在调试期间，让这些异常导致崩溃有助于快速定位问题。
+      - **不可恢复的系统级错误:** 发生非常严重的系统问题（如内存耗尽）时，程序可能无法继续运行，此时可能会抛出异常。但通常应用程序无法从此类情况中恢复。
+      - **框架规定的异常使用:** 某些特定的框架或库（尤其是较老的或者与 C++ 交互的）可能设计为使用异常来信号某些状态或中止操作。例如，AppKit/UIKit 的事件处理有时内部会使用异常。在这种情况下，你可能需要根据框架文档的要求来捕获特定的异常。
+      - **保护性地调用可能抛出异常的代码:** 如果你调用的第三方库或代码（尤其是桥接代码）文档说明或根据经验可能会抛出异常，使用 `@try...@catch` 包裹调用可以防止你的应用程序崩溃。
+
+      **核心原则:**
+      - **`NSError` 用于预期的运行时错误。**
+      - **异常用于意外的编程错误或系统级灾难。**
+      - **不要使用异常来控制正常的程序流程。** 如果你可以预见到某个错误条件，并希望调用者处理它，请使用 `NSError`。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // --- 使用 NSError 的示例 ---
+      @interface DataManager : NSObject
+      // 方法通过 NSError 报告错误
+      - (nullable NSData *)loadDataFromURL:(NSURL *)url error:(NSError **)error;
+      @end
+
+      @implementation DataManager
+      - (nullable NSData *)loadDataFromURL:(NSURL *)url error:(NSError **)error {
+          // 模拟网络请求
+          BOOL success = arc4random_uniform(2); // 随机成功或失败
+          if (!success) {
+              if (error != NULL) {
+                  *error = [NSError errorWithDomain:NSURLErrorDomain
+                                               code:NSURLErrorNetworkConnectionLost
+                                           userInfo:@{NSLocalizedDescriptionKey: @"模拟网络连接丢失"}];
+              }
+              return nil; // 返回 nil 表示失败
+          }
+          return [@"Fake Data" dataUsingEncoding:NSUTF8StringEncoding]; // 返回模拟数据
+      }
+      @end
+
+      // --- 使用异常的示例 (通常应避免) ---
+      @interface UnsafeCalculator : NSObject
+      // 一个设计不佳的方法，可能抛出异常
+      - (int)divide:(int)numerator by:(int)denominator;
+      @end
+
+      @implementation UnsafeCalculator
+      - (int)divide:(int)numerator by:(int)denominator {
+          if (denominator == 0) {
+              // 抛出异常表示编程错误（除以零）
+              @throw [NSException exceptionWithName:NSInvalidArgumentException
+                                             reason:@"除数不能为零"
+                                           userInfo:@{@"Denominator": @(denominator)}];
+          }
+          return numerator / denominator;
+      }
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 处理 NSError ---
+              DataManager *dataManager = [[DataManager alloc] init];
+              NSError *dataError = nil;
+              NSURL *someURL = [NSURL URLWithString:@"https://example.com"];
+              NSData *fetchedData = [dataManager loadDataFromURL:someURL error:&dataError];
+
+              if (fetchedData == nil) {
+                  NSLog(@"数据加载失败 (NSError): %@", dataError.localizedDescription);
+                  // 这里可以根据 dataError 的类型进行恢复或提示用户
+              } else {
+                  NSLog(@"数据加载成功。");
+              }
+
+
+              // --- 处理异常 (应谨慎) ---
+              UnsafeCalculator *calculator = [[UnsafeCalculator alloc] init];
+              @try {
+                  int result = [calculator divide:10 by:0]; // 这会抛出异常
+                  NSLog(@"除法结果: %d", result); // 不会执行
+              } @catch (NSException *exception) {
+                  NSLog(@"捕获到异常: %@ - %@", exception.name, exception.reason);
+                  // 在这里记录错误，但通常表明调用代码需要修复
+              }
+
+              NSLog(@"程序继续运行...");
+          }
+          return 0;
+      }
+      // 可能的输出 (Data Manager 部分是随机的):
+      // 数据加载失败 (NSError): 模拟网络连接丢失
+      // 捕获到异常: NSInvalidArgumentException - 除数不能为零
+      // 程序继续运行...
+      ```

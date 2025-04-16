@@ -1,0 +1,279 @@
+id: arithmetic
+title: 算术表达式
+description: Objective-C 中的算术表达式用于执行基本的数学运算，如加法、减法、乘法、除法和取模。这些运算通常应用于数值类型（如 int, float, double, NSInteger, CGFloat 等），是程序中进行数值计算和数据处理的基础。
+usage:
+  - title: 执行基本运算（加、减、乘、除）
+    description: |
+      使用标准的算术运算符对数值进行基本的数学计算。
+      - `+`: 加法运算符，计算两个数的和。
+      - `-`: 减法运算符，计算两个数的差。
+      - `*`: 乘法运算符，计算两个数的积。
+      - `/`: 除法运算符，计算两个数的商。注意整数除法会舍弃小数部分。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int a = 10;
+              int b = 3;
+
+              // 加法
+              int sum = a + b; // sum 的值为 13
+              NSLog(@"%d + %d = %d", a, b, sum);
+
+              // 减法
+              int difference = a - b; // difference 的值为 7
+              NSLog(@"%d - %d = %d", a, b, difference);
+
+              // 乘法
+              int product = a * b; // product 的值为 30
+              NSLog(@"%d * %d = %d", a, b, product);
+
+              // 整数除法 (结果舍弃小数部分)
+              int quotientInt = a / b; // quotientInt 的值为 3
+              NSLog(@"%d / %d = %d (整数除法)", a, b, quotientInt);
+
+              // 浮点数除法
+              double doubleA = 10.0;
+              double doubleB = 3.0;
+              double quotientDouble = doubleA / doubleB; // quotientDouble 的值为 3.333...
+              NSLog(@"%f / %f = %f (浮点数除法)", doubleA, doubleB, quotientDouble);
+          }
+          return 0;
+      }
+      ```
+  - title: 计算余数（取模）
+    description: |
+      使用取模运算符 `%` 计算两个整数相除后的余数。此运算符仅适用于整数类型。
+      - `%`: 取模运算符，返回第一个操作数除以第二个操作数的余数。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int dividend = 10;
+              int divisor = 3;
+
+              // 计算 10 除以 3 的余数
+              int remainder = dividend % divisor; // remainder 的值为 1
+              NSLog(@"%d %% %d = %d", dividend, divisor, remainder); // 使用 %% 转义 %
+
+              int dividend2 = 15;
+              int divisor2 = 5;
+
+              // 计算 15 除以 5 的余数
+              int remainder2 = dividend2 % divisor2; // remainder2 的值为 0
+              NSLog(@"%d %% %d = %d", dividend2, divisor2, remainder2);
+          }
+          return 0;
+      }
+      ```
+  - title: 在变量上运算
+    description: 算术运算符可以直接应用于变量，对变量存储的值进行计算，并将结果赋给另一个变量或用于其他表达式。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSInteger initialValue = 100;
+              NSInteger increase = 50;
+              NSInteger multiplier = 2;
+
+              // 使用变量进行加法
+              NSInteger finalValue = initialValue + increase; // finalValue = 100 + 50 = 150
+              NSLog(@"Initial: %ld, Increase: %ld, Final: %ld", (long)initialValue, (long)increase, (long)finalValue);
+
+              // 使用变量进行乘法和减法
+              NSInteger calculatedResult = (initialValue + increase) * multiplier - 10; // calculatedResult = (100 + 50) * 2 - 10 = 150 * 2 - 10 = 300 - 10 = 290
+              NSLog(@"Calculated Result: %ld", (long)calculatedResult);
+          }
+          return 0;
+      }
+      ```
+  - title: 处理浮点数
+    description: |
+      使用 `float`、`double` 或 `CGFloat` 类型进行涉及小数的算术运算。注意浮点数运算可能存在精度问题。整数和浮点数混合运算时，结果通常会是浮点数类型。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // 引入 CGFloat
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              double price = 19.99;
+              double taxRate = 0.08;
+              int quantity = 2;
+
+              // 计算总价（浮点数乘法和加法）
+              double taxAmount = price * taxRate; // taxAmount ≈ 1.5992
+              double totalPrice = price + taxAmount; // totalPrice ≈ 21.5892
+              NSLog(@"Price: %.2f, Tax: %.2f, Total Price: %.2f", price, taxAmount, totalPrice);
+
+              // 混合类型运算 (double * int)
+              double totalCost = totalPrice * quantity; // totalCost ≈ 21.5892 * 2 = 43.1784
+              NSLog(@"Total Cost for %d items: %.2f", quantity, totalCost);
+
+              // 使用 CGFloat (常用于图形和 UI 计算)
+              CGFloat width = 100.5;
+              CGFloat height = 50.25;
+              CGFloat area = width * height; // area ≈ 5050.125
+              NSLog(@"Width: %.2f, Height: %.2f, Area: %.2f", width, height, area);
+          }
+          return 0;
+      }
+      ```
+  - title: 控制运算顺序
+    description: |
+      Objective-C 遵循标准的数学运算优先级（PEMDAS/BODMAS）：括号 > 乘除模 > 加减。使用圆括号 `()` 可以改变默认的运算顺序，强制先计算括号内的表达式。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int a = 5;
+              int b = 10;
+              int c = 2;
+
+              // 默认顺序: 先乘除，后加减
+              int result1 = a + b * c; // 等价于 a + (b * c) = 5 + (10 * 2) = 5 + 20 = 25
+              NSLog(@"a + b * c = %d", result1);
+
+              // 使用括号改变顺序: 先加，后乘
+              int result2 = (a + b) * c; // 等价于 (5 + 10) * 2 = 15 * 2 = 30
+              NSLog(@"(a + b) * c = %d", result2);
+
+              // 包含除法和模运算
+              int result3 = b / c + a % c; // 等价于 (b / c) + (a % c) = (10 / 2) + (5 % 2) = 5 + 1 = 6
+              NSLog(@"b / c + a %% c = %d", result3);
+          }
+          return 0;
+      }
+      ```
+  - title: 使用一元运算符
+    description: |
+      一元运算符作用于单个操作数。
+      - `+`: 一元正号，表示正值（通常省略）。
+      - `-`: 一元负号，取操作数的相反数。
+      - `++`: 自增运算符，将操作数的值加 1。有前缀 (`++a`) 和后缀 (`a++`) 两种形式。
+        - 前缀：先加 1，再使用变量的值。
+        - 后缀：先使用变量的值，再加 1。
+      - `--`: 自减运算符，将操作数的值减 1。同样有前缀 (`--a`) 和后缀 (`a--`) 两种形式。
+        - 前缀：先减 1，再使用变量的值。
+        - 后缀：先使用变量的值，再减 1。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int count = 5;
+              int value = -10;
+
+              // 一元负号
+              int negativeCount = -count; // negativeCount = -5
+              int positiveValue = -value; // positiveValue = 10
+              NSLog(@"Negative count: %d", negativeCount);
+              NSLog(@"Positive value: %d", positiveValue);
+
+              // 前缀自增 (先加 1，再赋值)
+              int prefixIncrementResult = ++count; // count 变为 6, prefixIncrementResult = 6
+              NSLog(@"Prefix Increment: count = %d, result = %d", count, prefixIncrementResult);
+
+              // 后缀自增 (先赋值，再加 1)
+              count = 5; // 重置 count
+              int postfixIncrementResult = count++; // postfixIncrementResult = 5, count 变为 6
+              NSLog(@"Postfix Increment: count = %d, result = %d", count, postfixIncrementResult);
+
+              // 前缀自减 (先减 1，再赋值)
+              count = 5; // 重置 count
+              int prefixDecrementResult = --count; // count 变为 4, prefixDecrementResult = 4
+              NSLog(@"Prefix Decrement: count = %d, result = %d", count, prefixDecrementResult);
+
+              // 后缀自减 (先赋值，再减 1)
+              count = 5; // 重置 count
+              int postfixDecrementResult = count--; // postfixDecrementResult = 5, count 变为 4
+              NSLog(@"Postfix Decrement: count = %d, result = %d", count, postfixDecrementResult);
+          }
+          return 0;
+      }
+      ```
+  - title: 使用复合赋值运算符
+    description: |
+      复合赋值运算符将算术运算和赋值组合在一起，提供了一种更简洁的写法来更新变量的值。
+      - `+=`: 加法赋值 (e.g., `a += b` 等价于 `a = a + b`)
+      - `-=`: 减法赋值 (e.g., `a -= b` 等价于 `a = a - b`)
+      - `*=`: 乘法赋值 (e.g., `a *= b` 等价于 `a = a * b`)
+      - `/=`: 除法赋值 (e.g., `a /= b` 等价于 `a = a / b`)
+      - `%=`: 取模赋值 (e.g., `a %= b` 等价于 `a = a % b`)
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int score = 100;
+              int adjustment = 10;
+
+              // 加法赋值
+              score += adjustment; // score = 100 + 10 = 110
+              NSLog(@"Score after += %d: %d", adjustment, score);
+
+              // 减法赋值
+              score -= 20; // score = 110 - 20 = 90
+              NSLog(@"Score after -= 20: %d", score);
+
+              // 乘法赋值
+              score *= 2; // score = 90 * 2 = 180
+              NSLog(@"Score after *= 2: %d", score);
+
+              // 除法赋值
+              score /= 3; // score = 180 / 3 = 60
+              NSLog(@"Score after /= 3: %d", score);
+
+              // 取模赋值
+              score %= 7; // score = 60 % 7 = 4
+              NSLog(@"Score after %%= 7: %d", score);
+          }
+          return 0;
+      }
+      ```
+  - title: 类型转换（Casting）
+    description: |
+      在混合类型的算术表达式中，有时需要显式地将一个数值类型转换为另一个类型，以确保得到期望的结果。例如，在进行整数除法时，如果希望得到精确的浮点数结果，需要将至少一个操作数转换为浮点类型。使用 `(type)` 语法进行转换。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int total = 10;
+              int count = 3;
+
+              // 默认整数除法，结果为 3
+              int averageInt = total / count;
+              NSLog(@"Integer Average: %d", averageInt);
+
+              // 将 total 显式转换为 double 类型，进行浮点数除法
+              double averageDouble = (double)total / count; // 10.0 / 3 ≈ 3.333...
+              NSLog(@"Double Average (cast total): %f", averageDouble);
+
+              // 将 count 显式转换为 double 类型，效果相同
+              double averageDouble2 = total / (double)count; // 10 / 3.0 ≈ 3.333...
+              NSLog(@"Double Average (cast count): %f", averageDouble2);
+
+              // 将两个都转换，效果也相同
+              double averageDouble3 = (double)total / (double)count; // 10.0 / 3.0 ≈ 3.333...
+              NSLog(@"Double Average (cast both): %f", averageDouble3);
+
+              float floatValue = 9.87;
+              // 将浮点数转换为整数 (小数部分被截断)
+              int intValue = (int)floatValue; // intValue = 9
+              NSLog(@"Float %.2f cast to int: %d", floatValue, intValue);
+          }
+          return 0;
+      }
+      ```

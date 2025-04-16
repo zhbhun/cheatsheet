@@ -1,0 +1,252 @@
+id: variables
+title: 变量
+description: 在 Objective-C 中，变量是用于存储数据的命名内存位置。它们可以是基本数据类型（如整数、浮点数、布尔值）或对象类型（如字符串、数组等）。变量在使用前必须声明其类型和名称，以便编译器为其分配内存。
+usage:
+  - title: 声明和初始化基本数据类型变量
+    description: |
+      声明变量时需要指定其数据类型和名称。可以在声明时或之后进行初始化（赋值）。
+      常见的基本数据类型包括：
+      - `int`: 存储整数。
+      - `float`: 存储单精度浮点数。
+      - `double`: 存储双精度浮点数。
+      - `char`: 存储单个字符。
+      - `BOOL`: 存储布尔值 (`YES` 或 `NO`)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明变量
+              int age;
+              float price;
+              double distance;
+              char initial;
+              BOOL isAvailable;
+
+              // 初始化变量
+              age = 30;                     // 整数
+              price = 99.95f;               // 浮点数 (注意 'f' 后缀)
+              distance = 12345.6789;        // 双精度浮点数
+              initial = 'J';                // 字符 (使用单引号)
+              isAvailable = YES;            // 布尔值 (YES 或 NO)
+
+              // 声明并同时初始化
+              int score = 100;
+              float taxRate = 0.05f;
+
+              // 输出变量值
+              NSLog(@"年龄: %d", age); // 输出: 年龄: 30
+              NSLog(@"价格: %.2f", price); // 输出: 价格: 99.95 (%.2f 指定保留两位小数)
+              NSLog(@"距离: %f", distance); // 输出: 距离: 12345.678900
+              NSLog(@"首字母: %c", initial); // 输出: 首字母: J
+              NSLog(@"是否可用: %d", isAvailable); // 输出: 是否可用: 1 (YES 通常表示为 1)
+              NSLog(@"分数: %d, 税率: %.2f", score, taxRate); // 输出: 分数: 100, 税率: 0.05
+          }
+          return 0;
+      }
+      ```
+  - title: 声明和初始化对象类型变量
+    description: |
+      对象类型的变量存储的是指向对象内存地址的指针。声明对象类型变量时，需要在类型名称后加上星号 `*`。
+      常用对象类型：
+      - `NSString *`: 存储字符串对象。
+      - `NSNumber *`: 存储数字对象（可以包装基本数据类型）。
+      - `NSArray *`: 存储有序集合对象。
+      - `NSDictionary *`: 存储键值对集合对象。
+      对象通常使用 `alloc` 和 `init` 方法或便利构造器来创建和初始化。字符串有字面量语法 `@""`。数字对象也有字面量语法 `@()`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明对象类型变量 (指针)
+              NSString *name;
+              NSNumber *count;
+              NSArray *items;
+
+              // 初始化对象变量
+              // 使用字符串字面量
+              name = @"张三";
+
+              // 使用便利构造器创建 NSNumber
+              count = [NSNumber numberWithInt:10];
+              // 或者使用数字字面量 (推荐)
+              NSNumber *quantity = @5;
+
+              // 使用便利构造器创建 NSArray
+              items = [NSArray arrayWithObjects:@"Apple", @"Banana", @"Cherry", nil];
+              // 或者使用数组字面量 (推荐)
+              NSArray *colors = @[@"Red", @"Green", @"Blue"];
+
+              // 声明并同时初始化
+              NSString *greeting = @"Hello, World!";
+              NSDictionary *person = @{ @"firstName": @"Li", @"lastName": @"Si" }; // 字典字面量
+
+              // 输出对象变量 (使用 %@ 格式说明符)
+              NSLog(@"姓名: %@", name);           // 输出: 姓名: 张三
+              NSLog(@"数量: %@", count);         // 输出: 数量: 10
+              NSLog(@"数量 (字面量): %@", quantity); // 输出: 数量 (字面量): 5
+              NSLog(@"物品: %@", items);         // 输出: 物品: (Apple, Banana, Cherry)
+              NSLog(@"颜色: %@", colors);        // 输出: 颜色: (Red, Green, Blue)
+              NSLog(@"问候语: %@", greeting);     // 输出: 问候语: Hello, World!
+              NSLog(@"个人信息: %@", person);     // 输出: 个人信息: { firstName = Li; lastName = Si; }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 `id` 类型声明通用对象变量
+    description: |
+      `id` 是一种通用的对象指针类型，可以指向任何类型的 Objective-C 对象。它提供了灵活性，因为你可以在运行时确定对象的实际类型。但缺点是编译器无法在编译时进行严格的类型检查。
+      使用 `id` 类型时，变量不需要星号 `*`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量
+              id anything;
+
+              // 将 NSString 对象赋值给 id 变量
+              anything = @"这是一个字符串";
+              NSLog(@"变量内容: %@", anything); // 输出: 变量内容: 这是一个字符串
+              NSLog(@"变量类型: %@", [anything class]); // 输出: 变量类型: __NSCFConstantString 或类似的 NSString 子类
+
+              // 将 NSNumber 对象赋值给同一个 id 变量
+              anything = @123.45;
+              NSLog(@"变量内容: %@", anything); // 输出: 变量内容: 123.45
+              NSLog(@"变量类型: %@", [anything class]); // 输出: 变量类型: __NSCFNumber 或类似的 NSNumber 子类
+
+              // 将 NSArray 对象赋值给同一个 id 变量
+              anything = @[@"One", @"Two"];
+               NSLog(@"变量内容: %@", anything); // 输出: 变量内容: (One, Two)
+              NSLog(@"变量类型: %@", [anything class]); // 输出: 变量类型: __NSArrayI 或类似的 NSArray 子类
+          }
+          return 0;
+      }
+      ```
+  - title: 使用类型限定符 `const`
+    description: |
+      `const` 限定符用于声明常量，表示变量的值在初始化后不能被修改。这有助于提高代码的可读性和安全性。
+      - `const typeName variableName = value;`: 声明一个值不可变的变量。
+      - `typeName * const pointerName = &variable;`: 声明一个指针本身不可变（不能指向其他地址），但指针指向的值可以改变。
+      - `const typeName * pointerName = &variable;`: 声明一个指针指向的值不可变，但指针本身可以指向其他地址。
+      - `const typeName * const pointerName = &variable;`: 声明一个指针本身和它指向的值都不可变。
+      对于初学者，最常用的是第一种形式，用于定义基本类型的常量。对于对象，通常用于表示指针指向的对象内容不应通过该指针修改。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个整型常量
+              const int maxUsers = 100;
+              // maxUsers = 150; // 这行代码会导致编译错误，因为 maxUsers 是常量
+
+              // 声明一个指向常量的指针 (字符串内容不能通过此指针修改)
+              const NSString *appName = @"MyApp";
+              // appName = @"NewApp"; // 合法，指针可以指向新的常量字符串
+              // [appName stringByAppendingString:@" V2"]; // 不建议这样做，因为语义上 appName 指向常量
+
+              // 声明一个常量指针 (指针本身不能指向其他对象)
+              NSString * const defaultLanguage = @"English";
+              // defaultLanguage = @"Chinese"; // 这行代码会导致编译错误，指针本身是常量
+
+              // 声明一个指向常量的常量指针
+              const NSString * const companyName = @"MyCompany";
+              // companyName = @"OtherCompany"; // 编译错误
+              // [companyName stringByAppendingString:@" Inc."]; // 不建议
+
+              NSLog(@"最大用户数: %d", maxUsers);   // 输出: 最大用户数: 100
+              NSLog(@"应用名称: %@", appName);     // 输出: 应用名称: MyApp
+              NSLog(@"默认语言: %@", defaultLanguage); // 输出: 默认语言: English
+              NSLog(@"公司名称: %@", companyName); // 输出: 公司名称: MyCompany
+          }
+          return 0;
+      }
+      ```
+  - title: 变量的作用域
+    description: |
+      变量的作用域决定了变量可以在代码的哪些部分被访问。
+      - **局部变量 (Local Variables)**：在方法、函数或代码块（如 `if`语句、`for`循环内）中声明的变量。它们只能在声明它们的代码块内部访问，并且在该代码块执行完毕后销毁。
+      - **实例变量 (Instance Variables)**：在类的 `@interface` 或 `@implementation` 的大括号 `{}` 内声明的变量。它们属于类的每个实例（对象），只有该类的实例方法可以访问。实例变量的生命周期与对象的生命周期相同。 (通常通过属性 `@property` 来间接管理实例变量)
+      - **全局变量 (Global Variables)**：在所有函数和方法之外声明的变量。它们可以在程序的任何地方访问。通常应避免过多使用全局变量。
+      - **静态变量 (Static Variables)**：使用 `static` 关键字声明的变量。
+        - 静态局部变量：在函数或方法内部声明，但其生命周期是整个程序运行期间，只初始化一次。作用域仍是局部。
+        - 静态全局变量：在函数外部声明，作用域限制在声明它的文件内。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 全局变量
+      NSString *globalMessage = @"这是一个全局消息";
+      // 静态全局变量 (作用域限制在此文件)
+      static int fileCounter = 0;
+
+      // 定义一个简单的类
+      @interface MyClass : NSObject {
+          // 实例变量 (较少直接这样声明，通常用 @property)
+          NSString *_instanceVar;
+      }
+      - (void)testMethod:(int)param;
+      - (void)printInstanceVar;
+      @end
+
+      @implementation MyClass
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _instanceVar = @"实例变量的值"; // 初始化实例变量
+          }
+          return self;
+      }
+
+      - (void)testMethod:(int)param {
+          // 局部变量
+          int localVar = 10;
+          NSLog(@"参数 (局部): %d", param); // 输出: 参数 (局部): 5 (取决于调用)
+          NSLog(@"局部变量: %d", localVar); // 输出: 局部变量: 10
+          NSLog(@"访问实例变量: %@", _instanceVar); // 输出: 访问实例变量: 实例变量的值
+          NSLog(@"访问全局变量: %@", globalMessage); // 输出: 访问全局变量: 这是一个全局消息
+
+          // 静态局部变量
+          static int methodCallCount = 0;
+          methodCallCount++;
+          NSLog(@"方法调用次数 (静态局部): %d", methodCallCount); // 每次调用此方法，该值会递增
+
+          fileCounter++; // 可以访问静态全局变量
+          NSLog(@"文件计数器 (静态全局): %d", fileCounter);
+      }
+
+      - (void)printInstanceVar {
+           NSLog(@"从另一个方法访问实例变量: %@", _instanceVar);
+      }
+
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 访问全局变量
+              NSLog(@"全局变量 (main): %@", globalMessage); // 输出: 全局变量 (main): 这是一个全局消息
+
+              MyClass *obj1 = [[MyClass alloc] init];
+              [obj1 testMethod:5];
+              [obj1 testMethod:8]; // 再次调用，观察静态局部变量的变化
+              [obj1 printInstanceVar]; // 输出: 从另一个方法访问实例变量: 实例变量的值
+
+              MyClass *obj2 = [[MyClass alloc] init];
+              [obj2 testMethod:10]; // obj2 有自己的 _instanceVar，但共享静态变量
+
+              // 不能在这里访问 localVar 或 param，因为它们是 testMethod 的局部变量
+              // NSLog(@"%d", localVar); // 编译错误
+
+              // 可以访问文件作用域的静态全局变量
+              NSLog(@"文件计数器 (main): %d", fileCounter); // 输出: 文件计数器 (main): 3
+          }
+          return 0;
+      }
+      ```

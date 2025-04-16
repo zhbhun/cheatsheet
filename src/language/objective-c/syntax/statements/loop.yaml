@@ -1,0 +1,213 @@
+id: loop
+title: 循环语句
+description: Objective-C 中的循环语句用于重复执行一段代码块，直到满足特定条件为止。常见的循环类型包括 `for` 循环、`while` 循环、`do-while` 循环以及用于集合遍历的 `for...in` 循环（快速枚举）。它们使得处理重复性任务（如遍历数组、处理数据流等）更加高效。
+usage:
+  - title: 使用 for 循环
+    description: |
+      `for` 循环是最常用的循环结构之一，通常用于已知循环次数的情况。它包含三个部分：
+      1.  **初始化表达式**：在循环开始前执行一次，通常用于初始化计数器。
+      2.  **条件表达式**：在每次循环迭代开始前进行评估。如果为真 (非零)，则执行循环体；如果为假 (零)，则退出循环。
+      3.  **增量/减量表达式**：在每次循环迭代结束后执行，通常用于更新计数器。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             // 使用 for 循环打印数字 0 到 4
+             NSLog(@"使用 for 循环:");
+             // 初始化: int i = 0
+             // 条件: i < 5
+             // 增量: i++
+             for (int i = 0; i < 5; i++) {
+                 NSLog(@"当前的数字是: %d", i); // 循环体，打印当前计数器的值
+             }
+             // 输出:
+             // 当前的数字是: 0
+             // 当前的数字是: 1
+             // 当前的数字是: 2
+             // 当前的数字是: 3
+             // 当前的数字是: 4
+         }
+         return 0;
+      }
+      ```
+  - title: 使用 while 循环
+    description: |
+      `while` 循环在每次迭代开始之前检查条件表达式。如果条件为真，则执行循环体内的代码；如果条件为假，则跳过循环体，继续执行后面的代码。适用于循环次数未知，但知道循环继续执行的条件。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             int count = 0;
+             NSLog(@"使用 while 循环:");
+             // 条件: count < 3
+             while (count < 3) {
+                 NSLog(@"Count is: %d", count); // 打印当前计数值
+                 count++; // 增加计数值，确保循环最终会结束
+             }
+             // 输出:
+             // Count is: 0
+             // Count is: 1
+             // Count is: 2
+         }
+         return 0;
+      }
+      ```
+  - title: 使用 do-while 循环
+    description: |
+      `do-while` 循环与 `while` 循环类似，但它先执行一次循环体，然后在每次迭代结束时检查条件表达式。这意味着 `do-while` 循环体**至少会执行一次**，即使条件初始时就为假。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             int number = 5;
+             NSLog(@"使用 do-while 循环:");
+             // 先执行循环体，再检查条件
+             do {
+                 NSLog(@"Number is: %d", number); // 至少执行一次打印
+                 number++; // 递增 number
+             } while (number < 5); // 条件: number < 5 (第一次检查时 number 为 6，条件为假)
+
+             // 输出:
+             // Number is: 5
+             // 循环体仅执行一次，因为执行后 number 变为 6，不再满足 < 5 的条件
+         }
+         return 0;
+      }
+      ```
+  - title: 使用 for...in (快速枚举)
+    description: |
+      `for...in` 循环（也称为快速枚举）是 Objective-C 中遍历集合（如 `NSArray`, `NSDictionary`, `NSSet` 等）元素的简洁高效的方式。它会自动迭代集合中的每个对象。
+      - **语法**: `for (ObjectType *variableName in collection)`
+      - `ObjectType`: 集合中元素的类型。
+      - `variableName`: 每次迭代时，当前元素的引用。
+      - `collection`: 要遍历的集合对象。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             // 创建一个 NSArray 数组
+             NSArray *fruits = @[@"Apple", @"Banana", @"Cherry"];
+
+             NSLog(@"使用 for...in 遍历 NSArray:");
+             // 遍历 fruits 数组中的每个元素
+             for (NSString *fruit in fruits) {
+                 NSLog(@"Fruit: %@", fruit); // 打印当前水果名称
+             }
+             // 输出:
+             // Fruit: Apple
+             // Fruit: Banana
+             // Fruit: Cherry
+
+             // 创建一个 NSDictionary 字典
+             NSDictionary *capitals = @{@"USA": @"Washington D.C.", @"UK": @"London", @"Japan": @"Tokyo"};
+
+             NSLog(@"\n使用 for...in 遍历 NSDictionary 的键:");
+             // 遍历 capitals 字典中的每个键 (Key)
+             for (NSString *country in capitals) {
+                 NSString *capital = capitals[country]; // 通过键获取对应的值
+                 NSLog(@"The capital of %@ is %@", country, capital);
+             }
+             // 输出: (字典遍历顺序不保证)
+             // The capital of USA is Washington D.C.
+             // The capital of UK is London
+             // The capital of Japan is Tokyo
+         }
+         return 0;
+      }
+      ```
+  - title: 使用 break 语句
+    description: |
+      `break` 语句用于立即终止当前所在的循环（`for`, `while`, `do-while`, `for...in`）或 `switch` 语句的执行。程序控制将传递给循环或 `switch` 语句之后的下一条语句。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             NSLog(@"使用 break 语句:");
+             for (int i = 0; i < 10; i++) {
+                 if (i == 3) {
+                     NSLog(@"遇到 i == 3, 退出循环！");
+                     break; // 当 i 等于 3 时，立即跳出 for 循环
+                 }
+                 NSLog(@"当前 i 的值: %d", i);
+             }
+             NSLog(@"循环已结束。");
+             // 输出:
+             // 当前 i 的值: 0
+             // 当前 i 的值: 1
+             // 当前 i 的值: 2
+             // 遇到 i == 3, 退出循环！
+             // 循环已结束。
+         }
+         return 0;
+      }
+      ```
+  - title: 使用 continue 语句
+    description: |
+      `continue` 语句用于跳过当前循环体中尚未执行的部分，并立即开始下一次循环迭代。在 `for` 循环中，它会跳转到增量/减量表达式；在 `while` 和 `do-while` 循环中，它会跳转到条件表达式的判断。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             NSLog(@"使用 continue 语句:");
+             for (int i = 0; i < 5; i++) {
+                 if (i == 2) {
+                     NSLog(@"遇到 i == 2, 跳过本次迭代的剩余部分！");
+                     continue; // 当 i 等于 2 时，跳过下面的 NSLog，直接进入下一次迭代 (i++)
+                 }
+                 NSLog(@"当前 i 的值: %d", i); // 当 i == 2 时，这句不会被执行
+             }
+             NSLog(@"循环已完成。");
+             // 输出:
+             // 当前 i 的值: 0
+             // 当前 i 的值: 1
+             // 遇到 i == 2, 跳过本次迭代的剩余部分！
+             // 当前 i 的值: 3
+             // 当前 i 的值: 4
+             // 循环已完成。
+         }
+         return 0;
+      }
+      ```
+  - title: 嵌套循环
+    description: |
+      可以在一个循环结构内部再包含一个或多个循环结构，这称为嵌套循环。内层循环会在外层循环的每次迭代中完整地执行一遍。常用于处理多维数据结构或需要多重迭代的场景。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main() {
+         @autoreleasepool {
+             NSLog(@"使用嵌套循环:");
+             // 外层循环
+             for (int i = 1; i <= 2; i++) {
+                 NSLog(@"外层循环: i = %d", i);
+                 // 内层循环
+                 for (int j = 1; j <= 3; j++) {
+                     NSLog(@"  内层循环: j = %d", j); // 内层循环会完整执行
+                 }
+             }
+             // 输出:
+             // 外层循环: i = 1
+             //   内层循环: j = 1
+             //   内层循环: j = 2
+             //   内层循环: j = 3
+             // 外层循环: i = 2
+             //   内层循环: j = 1
+             //   内层循环: j = 2
+             //   内层循环: j = 3
+         }
+         return 0;
+      }
+      ```

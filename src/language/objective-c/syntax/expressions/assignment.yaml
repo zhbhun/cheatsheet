@@ -1,0 +1,185 @@
+id: assignment
+title: 赋值表达式
+description: Objective-C 中的赋值表达式用于将一个值赋给一个变量。它使用 `=` 运算符，将右侧表达式计算出的值存储到左侧的变量中。赋值表达式本身也有一个值，即赋给左侧变量的值。
+usage:
+  - title: 基本赋值
+    description: |
+      使用 `=` 运算符将右侧的值赋给左侧的变量。这是最基本和最常见的赋值形式。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个整型变量 score
+              int score;
+
+              // 使用赋值表达式将值 100 赋给 score
+              score = 100;
+
+              // 打印 score 的值，验证赋值结果
+              NSLog(@"分数是: %d", score); // 输出: 分数是: 100
+
+              // 声明一个 NSString 对象指针 greeting
+              NSString *greeting;
+
+              // 将一个字符串字面量赋给 greeting
+              // 注意：字符串字面量会自动转换为 NSString 对象
+              greeting = @"你好, Objective-C!";
+
+              // 打印 greeting 的值
+              NSLog(@"问候语: %@", greeting); // 输出: 问候语: 你好, Objective-C!
+          }
+          return 0;
+      }
+      ```
+  - title: 复合赋值
+    description: |
+      复合赋值运算符将算术运算或位运算与赋值操作结合起来，简化代码。它们先执行运算，然后将结果赋给左侧的变量。
+      常用的复合赋值运算符包括：
+      - `+=`: 加法赋值 ( `a += b` 等同于 `a = a + b` )
+      - `-=`: 减法赋值 ( `a -= b` 等同于 `a = a - b` )
+      - `*=`: 乘法赋值 ( `a *= b` 等同于 `a = a * b` )
+      - `/=`: 除法赋值 ( `a /= b` 等同于 `a = a / b` )
+      - `%=`: 取模赋值 ( `a %= b` 等同于 `a = a % b` )
+      - `&=`: 按位与赋值 ( `a &= b` 等同于 `a = a & b` )
+      - `|=`: 按位或赋值 ( `a |= b` 等同于 `a = a | b` )
+      - `^=`: 按位异或赋值 ( `a ^= b` 等同于 `a = a ^ b` )
+      - `<<=`: 左移赋值 ( `a <<= b` 等同于 `a = a << b` )
+      - `>>=`: 右移赋值 ( `a >>= b` 等同于 `a = a >> b` )
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int count = 5;
+              NSLog(@"初始 count: %d", count); // 输出: 初始 count: 5
+
+              // 加法赋值
+              count += 3; // count = count + 3
+              NSLog(@"count += 3 后: %d", count); // 输出: count += 3 后: 8
+
+              // 乘法赋值
+              count *= 2; // count = count * 2
+              NSLog(@"count *= 2 后: %d", count); // 输出: count *= 2 后: 16
+
+              int flags = 0b1010; // 二进制表示 10
+              NSLog(@"初始 flags: %d", flags); // 输出: 初始 flags: 10
+
+              // 按位或赋值
+              flags |= 0b0101; // flags = flags | 0b0101 (10 | 5 = 15)
+              NSLog(@"flags |= 0b0101 后: %d", flags); // 输出: flags |= 0b0101 后: 15
+          }
+          return 0;
+      }
+      ```
+  - title: 在声明时赋值（初始化）
+    description: |
+      可以在声明变量的同时使用赋值表达式为其提供初始值。这是一种常见的初始化变量的方式。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 在声明时初始化整型变量 age
+              int age = 30;
+              NSLog(@"年龄: %d", age); // 输出: 年龄: 30
+
+              // 在声明时初始化浮点型变量 price
+              float price = 99.9f;
+              NSLog(@"价格: %.1f", price); // 输出: 价格: 99.9
+
+              // 在声明时初始化 NSString 对象指针 name
+              NSString *name = @"Alice";
+              NSLog(@"姓名: %@", name); // 输出: 姓名: Alice
+
+              // 同时声明并初始化多个同类型变量 (虽然不推荐这样写，但语法允许)
+              int x = 1, y = 2, z = 3;
+              NSLog(@"x=%d, y=%d, z=%d", x, y, z); // 输出: x=1, y=2, z=3
+          }
+          return 0;
+      }
+      ```
+  - title: 赋值表达式的值
+    description: |
+      赋值表达式本身是有值的，它的值就是赋给左侧变量的值。这允许将赋值表达式用在其他需要值的地方，例如条件判断或链式赋值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int a, b;
+
+              // 链式赋值：将 10 赋给 b，然后将赋值表达式 b = 10 的结果（即 10）赋给 a
+              a = b = 10;
+              NSLog(@"a = %d, b = %d", a, b); // 输出: a = 10, b = 10
+
+              int c;
+              // 在 if 条件中使用赋值表达式
+              // 将 5 赋给 c，然后判断 c 的值是否大于 0
+              if ((c = 5) > 0) {
+                   NSLog(@"c 被赋值为 %d 并且大于 0", c); // 输出: c 被赋值为 5 并且大于 0
+              }
+
+              // 另一个例子：赋值并检查对象是否为 nil
+              NSString *str = nil;
+              NSString *defaultStr = @"Default";
+              NSString *result;
+
+              // 将 str 的值赋给 result，然后检查 result 是否为 nil
+              if ((result = str) == nil) {
+                  result = defaultStr; // 如果 str 是 nil，则使用默认值
+              }
+              NSLog(@"结果字符串: %@", result); // 输出: 结果字符串: Default
+
+              str = @"Not Nil";
+              // 再次执行，这次 str 不是 nil
+               if ((result = str) == nil) {
+                  result = defaultStr;
+              }
+               NSLog(@"结果字符串: %@", result); // 输出: 结果字符串: Not Nil
+          }
+          return 0;
+      }
+      ```
+  - title: 指针赋值
+    description: |
+      在 Objective-C 中，对象通常通过指针来操作。赋值表达式用于将一个对象的内存地址赋给一个指针变量，或者将 `nil` 赋给指针表示不指向任何对象。赋值时不会复制对象本身，只是复制指针（地址）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个 NSMutableArray 对象，并将其地址赋给 array1
+              NSMutableArray *array1 = [NSMutableArray arrayWithObjects:@"A", @"B", nil];
+              NSLog(@"array1: %@", array1); // 输出: array1: (A, B)
+
+              // 声明另一个指针 array2
+              NSMutableArray *array2;
+
+              // 将 array1 的地址赋给 array2
+              // 现在 array1 和 array2 指向同一个 NSMutableArray 对象
+              array2 = array1;
+              NSLog(@"array2 (赋值后): %@", array2); // 输出: array2 (赋值后): (A, B)
+
+              // 通过 array2 修改对象
+              [array2 addObject:@"C"];
+              NSLog(@"通过 array2 添加元素后...");
+
+              // 因为它们指向同一个对象，所以 array1 也会反映这个修改
+              NSLog(@"array1: %@", array1); // 输出: array1: (A, B, C)
+              NSLog(@"array2: %@", array2); // 输出: array2: (A, B, C)
+
+              // 将 nil 赋给指针
+              array1 = nil;
+              NSLog(@"array1 (设为 nil 后): %@", array1); // 输出: array1 (设为 nil 后): (null)
+              // array2 仍然指向原来的对象
+              NSLog(@"array2 (array1 设为 nil 后): %@", array2); // 输出: array2 (array1 设为 nil 后): (A, B, C)
+          }
+          return 0;
+      }
+      ```

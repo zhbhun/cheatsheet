@@ -1,0 +1,544 @@
+id: function
+title: 代码块
+description: Objective-C 代码块（Blocks）是一种语言级别的特性，允许创建匿名的内联函数（闭包），可以捕获其定义范围内的变量。它们常用于回调、并发编程（如 GCD）、集合遍历和简化代码结构。使用 `^` 符号来声明和定义代码块。
+usage:
+  - title: 声明和定义 Block 变量
+    description: |
+      可以将 Block 赋值给一个变量，就像函数指针一样。你需要先声明 Block 变量的类型，然后定义 Block 的实现。
+
+      **语法**:
+      - 声明: `返回类型 (^块名称)(参数类型列表);`
+      - 定义: `块名称 = ^返回类型(参数列表) { // 实现代码 };`
+      - 也可以在声明时直接定义: `返回类型 (^块名称)(参数类型列表) = ^返回类型(参数列表) { // 实现代码 };`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 Block 变量 myBlock，它没有参数，返回 void
+              void (^myBlock)(void);
+
+              // 定义 (赋值) Block
+              myBlock = ^{
+                  NSLog(@"Hello from Block!");
+              };
+
+              // 调用 Block
+              myBlock(); // 输出: Hello from Block!
+
+              // 声明并同时定义一个带参数和返回值的 Block
+              int (^addBlock)(int, int) = ^int(int a, int b) {
+                  return a + b; // 返回 a 和 b 的和
+              };
+
+              // 调用 Block 并获取返回值
+              int sum = addBlock(5, 3);
+              NSLog(@"Sum: %d", sum); // 输出: Sum: 8
+          }
+          return 0;
+      }
+      ```
+  - title: 内联定义和使用 Block
+    description: |
+      Block 最常见的用法之一是直接在方法调用中定义并传递，通常用于回调或完成处理程序。这使得代码更紧凑，逻辑更集中。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 假设有一个方法，接受一个 Block 作为完成回调
+      void performAsyncTask(void (^completionBlock)(BOOL success)) {
+          NSLog(@"Starting async task...");
+          // 模拟异步操作
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+              BOOL taskSuccess = YES; // 假设任务成功
+              NSLog(@"Async task finished.");
+              // 调用传入的 Block 作为回调
+              completionBlock(taskSuccess);
+          });
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"Calling performAsyncTask...");
+
+              // 在方法调用中内联定义 Block
+              performAsyncTask(^(BOOL success) {
+                  // 这是 Block 的实现体，在异步任务完成时执行
+                  if (success) {
+                      NSLog(@"Completion handler: Task succeeded!"); // 输出: Completion handler: Task succeeded!
+                  } else {
+                      NSLog(@"Completion handler: Task failed!");
+                  }
+              });
+
+              NSLog(@"performAsyncTask call initiated.");
+
+              // 为了让异步任务有时间完成，需要运行事件循环 (在实际应用中通常不需要这样)
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:2.0]];
+          }
+          return 0;
+      }
+      ```
+  - title: 将 Block 作为方法参数
+    description: |
+      可以定义接受 Block 作为参数的方法。这在设计 API 时非常有用，允许调用者提供自定义的代码逻辑（例如回调函数）。
+
+      **方法声明语法**:
+      `- (void)methodName:(返回类型 (^)(参数列表))blockName;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface DataProcessor : NSObject
+      // 定义一个方法，接受一个处理数据的 Block
+      - (void)processData:(NSArray *)data withHandler:(void (^)(id processedItem))handlerBlock;
+      @end
+
+      @implementation DataProcessor
+      - (void)processData:(NSArray *)data withHandler:(void (^)(id processedItem))handlerBlock {
+          NSLog(@"Start processing data...");
+          for (id item in data) {
+              // 模拟处理每个数据项
+              NSString *processedItem = [NSString stringWithFormat:@"Processed: %@", item];
+              // 调用传入的 Block，传递处理后的结果
+              handlerBlock(processedItem);
+          }
+          NSLog(@"Finished processing data.");
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataProcessor *processor = [[DataProcessor alloc] init];
+              NSArray *items = @[@"Apple", @"Banana", @"Cherry"];
+
+              // 调用方法，并传入一个 Block 来处理每个结果
+              [processor processData:items withHandler:^(id processedItem) {
+                  // 这个 Block 会被 processData 方法为每个元素调用一次
+                  NSLog(@"Handler received: %@", processedItem);
+                  // 输出:
+                  // Handler received: Processed: Apple
+                  // Handler received: Processed: Banana
+                  // Handler received: Processed: Cherry
+              }];
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 typedef 定义 Block 类型
+    description: |
+      当 Block 类型签名变得复杂或需要重复使用时，可以使用 `typedef` 来定义一个 Block 类型别名，使代码更清晰易读。
+
+      **语法**:
+      `typedef 返回类型 (^类型名称)(参数列表);`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 使用 typedef 定义一个 Block 类型别名
+      typedef void (^CompletionHandler)(BOOL success, NSError * _Nullable error);
+
+      // 模拟一个网络请求类
+      @interface NetworkManager : NSObject
+      // 使用类型别名声明方法参数
+      - (void)fetchDataWithURL:(NSURL *)url completion:(CompletionHandler)completion;
+      @end
+
+      @implementation NetworkManager
+      - (void)fetchDataWithURL:(NSURL *)url completion:(CompletionHandler)completion {
+          NSLog(@"Fetching data from: %@", url);
+          // 模拟网络延迟和结果
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+              BOOL success = YES; // 假设成功
+              NSError *error = nil;
+              if (!success) {
+                  error = [NSError errorWithDomain:@"NetworkError" code:1 userInfo:nil];
+              }
+              // 调用 Block 回调
+              completion(success, error);
+          });
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NetworkManager *manager = [[NetworkManager alloc] init];
+              NSURL *sampleURL = [NSURL URLWithString:@"https://example.com/data"];
+
+              // 使用 typedef 定义的 Block 类型来调用方法
+              [manager fetchDataWithURL:sampleURL completion:^(BOOL success, NSError * _Nullable error) {
+                  if (success) {
+                      NSLog(@"Data fetch successful!"); // 输出: Data fetch successful!
+                  } else {
+                      NSLog(@"Data fetch failed with error: %@", error);
+                  }
+              }];
+
+              NSLog(@"Initiated data fetch.");
+              // 运行事件循环以等待回调
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:2.0]];
+          }
+          return 0;
+      }
+      ```
+  - title: Block 捕获外部变量
+    description: |
+      Block 可以“捕获”（capture）其定义时所在作用域的局部变量。默认情况下，Block 捕获的是变量的常量副本（const copy）。这意味着在 Block 内部不能修改被捕获的非静态局部变量的值（除非该变量用 `__block` 修饰）。对于对象类型，捕获的是指向对象的指针的副本，可以通过该指针修改对象的状态。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int externalInt = 10;
+              NSString *externalString = @"Hello";
+              NSMutableString *mutableString = [NSMutableString stringWithString:@"Initial"];
+
+              // 定义一个 Block，捕获外部变量
+              void (^capturingBlock)(void) = ^{
+                  // 可以读取捕获的变量值 (捕获的是定义 Block 时的值)
+                  NSLog(@"Inside block: externalInt = %d", externalInt); // 输出: Inside block: externalInt = 10
+                  NSLog(@"Inside block: externalString = %@", externalString); // 输出: Inside block: externalString = Hello
+
+                  // 尝试修改基本类型的捕获变量 (默认会编译错误，除非用 __block)
+                  // externalInt = 20; // Compile error: Variable is not assignable (missing __block type specifier)
+
+                  // 可以通过捕获的指针修改对象的状态
+                  [mutableString appendString:@" Modified"];
+                  NSLog(@"Inside block: mutableString = %@", mutableString); // 输出: Inside block: mutableString = Initial Modified
+              };
+
+              // 修改外部变量的值
+              externalInt = 100;
+              externalString = @"World";
+              // 注意：修改外部变量的值不会影响 Block 内部已捕获的副本 (对于基本类型和不可变对象指针)
+              // 但对于可变对象，Block 内部的修改会影响外部对象
+
+              // 调用 Block
+              capturingBlock();
+
+              // 检查 Block 调用后外部变量的值
+              NSLog(@"Outside block: externalInt = %d", externalInt); // 输出: Outside block: externalInt = 100
+              NSLog(@"Outside block: externalString = %@", externalString); // 输出: Outside block: externalString = World
+              NSLog(@"Outside block: mutableString = %@", mutableString); // 输出: Outside block: mutableString = Initial Modified
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 __block 修改外部变量
+    description: |
+      如果需要在 Block 内部修改其定义作用域中的局部变量（包括基本类型和对象指针本身），需要使用 `__block` 存储类型修饰符来声明该变量。`__block` 变量实际上被封装在一个特殊结构中，允许 Block 内部和外部共享对该变量的访问和修改。
+
+      **语法**:
+      `__block 变量类型 变量名 = 初始值;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用 __block 修饰符声明变量
+              __block int counter = 0;
+              __block NSString *status = @"Pending";
+
+              // 定义一个 Block，捕获 __block 变量
+              void (^modifyingBlock)(void) = ^{
+                  // 现在可以在 Block 内部修改 counter 的值
+                  counter++;
+                  NSLog(@"Inside block: Counter incremented to %d", counter);
+
+                  // 也可以修改 __block 修饰的对象指针本身 (让它指向新对象)
+                  status = @"Completed";
+                  NSLog(@"Inside block: Status changed to %@", status);
+              };
+
+              NSLog(@"Before block call: Counter = %d, Status = %@", counter, status);
+              // 输出: Before block call: Counter = 0, Status = Pending
+
+              // 调用 Block
+              modifyingBlock();
+              // 输出: Inside block: Counter incremented to 1
+              // 输出: Inside block: Status changed to Completed
+
+              // 检查 Block 调用后外部 __block 变量的值
+              NSLog(@"After block call: Counter = %d, Status = %@", counter, status);
+              // 输出: After block call: Counter = 1, Status = Completed
+          }
+          return 0;
+      }
+      ```
+  - title: 将 Block 作为属性
+    description: |
+      可以在类的接口中声明 Block 类型的属性。这常用于实现委托（delegate）模式或回调机制。
+
+      **关键点**:
+      - **`copy` 属性特性**: 在 ARC（自动引用计数）下，Block 属性通常应声明为 `copy`。这是因为 Block 可能在栈上创建，当创建它的作用域结束时，栈上的 Block 会失效。使用 `copy` 会将 Block 从栈复制到堆上，确保其生命周期足够长。对于全局 Block 或堆上的 Block，`copy` 操作实际上不做任何事情或只增加引用计数。
+      - **内存管理**: 需要注意避免循环引用，特别是当 Block 捕获 `self` 时。
+
+      **属性声明语法**:
+      `@property (nonatomic, copy) 返回类型 (^属性名称)(参数列表);`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义 Block 类型别名，使属性声明更简洁
+      typedef void (^ButtonTapHandler)(void);
+
+      @interface MyButton : NSObject
+      // 声明一个 Block 属性，用于处理按钮点击事件
+      @property (nonatomic, copy) ButtonTapHandler tapHandler;
+
+      // 模拟按钮被点击的方法
+      - (void)simulateTap;
+      @end
+
+      @implementation MyButton
+      - (void)simulateTap {
+          NSLog(@"Button tapped!");
+          // 如果 tapHandler 已经被设置 (不为 nil)，则调用它
+          if (self.tapHandler) {
+              self.tapHandler(); // 执行 Block
+          } else {
+              NSLog(@"No tap handler set.");
+          }
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyButton *button = [[MyButton alloc] init];
+
+              // 设置 button 的 tapHandler 属性为一个 Block
+              button.tapHandler = ^{
+                  NSLog(@"Button tap handler executed!");
+              };
+
+              // 模拟点击按钮，会触发设置的 Block
+              [button simulateTap];
+              // 输出:
+              // Button tapped!
+              // Button tap handler executed!
+
+              // 将 handler 置为 nil
+              button.tapHandler = nil;
+              [button simulateTap];
+              // 输出:
+              // Button tapped!
+              // No tap handler set.
+          }
+          return 0;
+      }
+      ```
+  - title: 避免 Block 中的循环引用
+    description: |
+      当一个 Block 被一个对象持有（例如作为属性），并且该 Block 内部又强引用了该对象（通常是捕获 `self`），就会产生循环引用（Retain Cycle）。这会导致对象和 Block 都无法被释放，造成内存泄漏。
+
+      **解决方案**:
+      1.  **使用 `__weak`**: 在 Block 捕获 `self` 之前，创建一个 `self` 的弱引用（`__weak`）。在 Block 内部使用这个弱引用。
+      2.  **使用 `__strong` (可选)**: 如果需要在 Block 执行期间确保弱引用的对象不被释放（例如在异步回调中），可以在 Block 开头创建一个临时的强引用（`__strong`）指向弱引用对象。这个强引用只在 Block 执行期间有效。
+
+      **语法**:
+      ```objectivec
+      __weak typeof(self) weakSelf = self; // 创建弱引用
+      self.myBlock = ^{
+          __strong typeof(weakSelf) strongSelf = weakSelf; // 在 Block 内创建临时强引用
+          if (strongSelf) {
+              // 安全地使用 strongSelf 访问对象的属性或方法
+              [strongSelf doSomething];
+          } else {
+              // 对象已被释放
+          }
+      };
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      typedef void (^CompletionBlock)(void);
+
+      @interface MyClass : NSObject
+      @property (nonatomic, copy) CompletionBlock completion;
+      @property (nonatomic, strong) NSString *name;
+      - (void)setupBlock;
+      - (void)doSomething;
+      @end
+
+      @implementation MyClass
+
+      - (instancetype)initWithName:(NSString *)name {
+          self = [super init];
+          if (self) {
+              _name = name;
+              NSLog(@"%@ initialized.", _name);
+          }
+          return self;
+      }
+
+      - (void)setupBlock {
+          // 创建 self 的弱引用，避免循环引用
+          __weak typeof(self) weakSelf = self;
+
+          self.completion = ^{
+              // 在 Block 内部，创建对 weakSelf 的强引用 (可选但推荐用于异步场景)
+              __strong typeof(weakSelf) strongSelf = weakSelf;
+
+              // 检查 strongSelf 是否仍然有效 (对象可能在 Block 执行前被释放)
+              if (strongSelf) {
+                  // 安全地使用 strongSelf 访问属性或方法
+                  NSLog(@"Block executed for object: %@", strongSelf.name);
+                  [strongSelf doSomething]; // 调用自身的方法
+              } else {
+                  NSLog(@"Block executed, but the object was deallocated.");
+              }
+          };
+          NSLog(@"Block setup for object: %@", self.name);
+      }
+
+      - (void)doSomething {
+          NSLog(@"%@ is doing something.", self.name);
+      }
+
+      // dealloc 用于验证对象是否被正确释放
+      - (void)dealloc {
+          NSLog(@"%@ deallocated.", self.name);
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyClass *myObject = [[MyClass alloc] initWithName:@"MyObject"]; // 输出: MyObject initialized.
+              [myObject setupBlock]; // 输出: Block setup for object: MyObject
+
+              // 模拟调用 Block (例如，异步操作完成后)
+              if (myObject.completion) {
+                  myObject.completion();
+                  // 输出: Block executed for object: MyObject
+                  // 输出: MyObject is doing something.
+              }
+
+              // 当 myObject 不再被强引用时，它应该能被 dealloc
+              myObject = nil; // ARC 会释放对象
+              // 如果没有循环引用，会看到 dealloc 日志
+              // 输出: MyObject deallocated.
+          }
+          // 如果没有看到 dealloc 日志，说明存在循环引用
+
+          return 0;
+      }
+      ```
+  - title: 将 Block 作为方法返回值
+    description: |
+      方法可以返回一个 Block。这可以用于创建配置化或链式调用的 API。返回的 Block 通常会捕获方法调用时的一些状态。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义返回的 Block 类型
+      typedef NSString* (^GreetingGenerator)(NSString *name);
+
+      @interface Greeter : NSObject
+      // 这个方法返回一个可以生成问候语的 Block
+      - (GreetingGenerator)createGreetingGeneratorForLanguage:(NSString *)language;
+      @end
+
+      @implementation Greeter
+      - (GreetingGenerator)createGreetingGeneratorForLanguage:(NSString *)language {
+          NSString *greetingPrefix;
+          if ([language isEqualToString:@"Spanish"]) {
+              greetingPrefix = @"Hola";
+          } else {
+              greetingPrefix = @"Hello"; // 默认英语
+          }
+
+          // 返回一个 Block，这个 Block 捕获了 greetingPrefix
+          // 注意：返回的 Block 会被隐式 copy 到堆上
+          return ^NSString *(NSString *name) {
+              return [NSString stringWithFormat:@"%@, %@!", greetingPrefix, name];
+          };
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Greeter *greeter = [[Greeter alloc] init];
+
+              // 获取一个西班牙语的问候语生成器 Block
+              GreetingGenerator spanishGreeter = [greeter createGreetingGeneratorForLanguage:@"Spanish"];
+
+              // 调用返回的 Block
+              NSString *greeting1 = spanishGreeter(@"Maria");
+              NSLog(@"%@", greeting1); // 输出: Hola, Maria!
+
+              // 获取一个默认（英语）的问候语生成器 Block
+              GreetingGenerator englishGreeter = [greeter createGreetingGeneratorForLanguage:@"English"];
+
+              // 调用返回的 Block
+              NSString *greeting2 = englishGreeter(@"John");
+              NSLog(@"%@", greeting2); // 输出: Hello, John!
+          }
+          return 0;
+      }
+      ```
+  - title: 在 GCD 中使用 Block
+    description: |
+      代码块 (Blocks) 是 Grand Central Dispatch (GCD) 的核心。GCD 使用 Block 来封装你想要在不同队列（主队列、后台队列）上异步或同步执行的代码单元。
+
+      **常用 GCD 函数**:
+      - `dispatch_async(queue, block)`: 将 Block 异步提交到指定队列执行，函数立即返回。
+      - `dispatch_sync(queue, block)`: 将 Block 同步提交到指定队列执行，函数会等待 Block 执行完毕才返回。
+      - `dispatch_after(when, queue, block)`: 在指定时间后将 Block 异步提交到队列执行。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"Program started on main thread.");
+
+              // 1. 异步在后台队列执行任务
+              dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                  // 这个 Block 会在后台线程执行
+                  NSLog(@"Task 1: Running asynchronously on a background thread.");
+                  [NSThread sleepForTimeInterval:1.0]; // 模拟耗时操作
+                  NSLog(@"Task 1: Finished.");
+              });
+
+              // 2. 异步在主队列执行任务 (通常用于更新 UI)
+              dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                  // 假设后台任务完成，需要更新 UI
+                  NSString *result = @"Data loaded";
+                  dispatch_async(dispatch_get_main_queue(), ^{
+                      // 这个 Block 会在主线程执行
+                      NSLog(@"Task 2: Back on main thread to update UI with result: %@", result);
+                  });
+              });
+
+              // 3. 延迟执行任务
+              NSLog(@"Scheduling Task 3 to run after 2 seconds.");
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                  // 这个 Block 会在 2 秒后在主线程执行
+                  NSLog(@"Task 3: Executed after delay.");
+              });
+
+              NSLog(@"Main thread continues execution...");
+
+              // 需要保持主线程运行以观察异步任务和延迟任务的输出
+              // 在实际应用中，事件循环会自动处理
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+
+              NSLog(@"Program finished.");
+              // 可能的输出顺序 (Task 1 和 Task 2 的内部顺序不固定):
+              // Program started on main thread.
+              // Scheduling Task 3 to run after 2 seconds.
+              // Main thread continues execution...
+              // Task 1: Running asynchronously on a background thread.
+              // Task 1: Finished.
+              // Task 2: Back on main thread to update UI with result: Data loaded
+              // Task 3: Executed after delay.
+              // Program finished.
+          }
+          return 0;
+      }
+      ```

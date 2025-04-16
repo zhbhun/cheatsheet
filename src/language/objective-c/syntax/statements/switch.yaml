@@ -1,0 +1,214 @@
+id: switch
+title: Switch
+description: Objective-C 中的 `switch` 语句是一种多路分支选择结构。它允许根据一个整型或枚举类型表达式的值，从多个代码块中选择一个来执行。当有多个可能的执行路径，并且这些路径依赖于单个变量的值时，使用 `switch` 比使用一系列 `if-else if` 语句通常更清晰、更高效。它主要通过 `switch`、`case`、`break` 和 `default` 关键字来实现。
+usage:
+  - title: 基本 Switch 用法
+    description: |
+      `switch` 语句的基本结构是计算一个表达式的值，然后将该值与每个 `case` 标签后的常量进行比较。如果找到匹配项，则执行该 `case` 块中的代码。
+
+      **关键字:**
+      - `switch (expression)`: 开始一个 `switch` 语句，`expression` 必须是整型（`int`, `char`, `enum` 等）或可以提升为整型的类型。
+      - `case constant_expression:`: 定义一个分支。如果 `expression` 的值等于 `constant_expression`，则执行此处的代码。`constant_expression` 必须是编译时常量。
+      - `break;`: 用于跳出 `switch` 语句。执行完一个 `case` 块后，如果没有 `break`，程序会继续执行下一个 `case` 块（称为“贯穿”或 "fall-through"），直到遇到 `break` 或 `switch` 语句结束。通常每个 `case` 后面都需要 `break`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int day = 4; // 假设 day 是 4
+
+              // switch 语句开始，判断 day 的值
+              switch (day) {
+                  // case 标签：如果 day 等于 1
+                  case 1:
+                      NSLog(@"星期一");
+                      break; // 执行后跳出 switch
+                  // case 标签：如果 day 等于 2
+                  case 2:
+                      NSLog(@"星期二");
+                      break; // 执行后跳出 switch
+                  // case 标签：如果 day 等于 3
+                  case 3:
+                      NSLog(@"星期三");
+                      break; // 执行后跳出 switch
+                  // case 标签：如果 day 等于 4
+                  case 4:
+                      NSLog(@"星期四"); // day 为 4，匹配成功，执行此行
+                      break;          // 执行后跳出 switch
+                  // case 标签：如果 day 等于 5
+                  case 5:
+                      NSLog(@"星期五");
+                      break; // 执行后跳出 switch
+                  // 更多 case ...
+                  default: // 如果以上 case 都不匹配，则执行 default
+                      NSLog(@"周末");
+                      break; // 执行后跳出 switch
+              }
+              // 输出: 星期四
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 `default` 处理未匹配情况
+    description: |
+      `default` 标签是可选的。当 `switch` 表达式的值与所有 `case` 标签都不匹配时，`default` 块中的代码会被执行。一个 `switch` 语句最多只能有一个 `default` 标签。`default` 标签可以放在 `switch` 语句中的任何位置，但通常放在最后。如果在 `default` 块后没有其他 `case`，其后的 `break` 是可选的，但为了代码一致性和防止未来修改引入错误，建议保留。
+
+      **关键字:**
+      - `default:`: 定义一个默认分支，当没有 `case` 匹配时执行。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              char grade = 'F'; // 假设 grade 是 'F'
+
+              // switch 语句判断 grade 的值
+              switch (grade) {
+                  case 'A':
+                      NSLog(@"优秀");
+                      break;
+                  case 'B':
+                      NSLog(@"良好");
+                      break;
+                  case 'C':
+                      NSLog(@"中等");
+                      break;
+                  case 'D':
+                      NSLog(@"及格");
+                      break;
+                  // grade 为 'F'，以上 case 都不匹配
+                  default: // 执行 default 块
+                      NSLog(@"不及格或无效等级");
+                      break; // 明确跳出
+              }
+              // 输出: 不及格或无效等级
+          }
+          return 0;
+      }
+      ```
+  - title: 利用 Case 贯穿（Fall-Through）
+    description: |
+      通过省略 `case` 块末尾的 `break` 语句，可以实现 "贯穿"（Fall-Through）行为。这意味着程序会继续执行下一个 `case` 块的代码，无论下一个 `case` 的常量是否匹配，直到遇到 `break` 或 `switch` 语句结束。这可以用于将多个具有相同处理逻辑的 `case` 分组。
+
+      **注意:** 滥用贯穿可能导致代码难以理解和维护，应谨慎使用，并最好添加注释说明是故意贯穿。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int month = 2; // 假设 month 是 2
+
+              // switch 语句判断 month 的值
+              switch (month) {
+                  // 1, 3, 5, 7, 8, 10, 12 月有 31 天
+                  case 1:
+                  case 3:
+                  case 5:
+                  case 7:
+                  case 8:
+                  case 10:
+                  case 12:
+                      NSLog(@"这个月有 31 天");
+                      break; // 跳出 switch
+
+                  // 4, 6, 9, 11 月有 30 天
+                  case 4:
+                  case 6:
+                  case 9:
+                  case 11:
+                      NSLog(@"这个月有 30 天");
+                      break; // 跳出 switch
+
+                  // 2 月比较特殊
+                  case 2: // month 为 2，匹配成功，执行下面的代码
+                      NSLog(@"这个月是二月，通常有 28 或 29 天");
+                      // 这里故意省略 break，将执行下一个 case 的代码块
+                      // 这通常不是期望的行为，但用于演示贯穿
+
+                  // 这个 case 实际上永远不会被直接匹配到 month == 0 的情况
+                  // 但由于 case 2 的贯穿，当 month 为 2 时也会执行
+                  case 0: // 假设用于演示贯穿
+                      NSLog(@"贯穿效果：这里也被执行了");
+                      break; // 跳出 switch
+
+                  default:
+                      NSLog(@"无效的月份");
+                      break;
+              }
+              /*
+               输出:
+               这个月是二月，通常有 28 或 29 天
+               贯穿效果：这里也被执行了
+              */
+
+              // ----- 更常见的贯穿用法：分组 -----
+              char category = 'b';
+              switch (category) {
+                  case 'a':
+                  case 'b': // category 是 'b'，匹配成功
+                  case 'c': // 由于 'b' 后面没有 break，会继续执行这里的代码
+                      NSLog(@"属于类别 ABC"); // 执行此行
+                      break; // 跳出 switch
+                  case 'd':
+                  case 'e':
+                      NSLog(@"属于类别 DE");
+                      break;
+                  default:
+                      NSLog(@"其他类别");
+                      break;
+              }
+              // 输出: 属于类别 ABC
+          }
+          return 0;
+      }
+      ```
+  - title: 在 Switch 中使用枚举（Enum）
+    description: |
+      `switch` 语句非常适合与枚举类型（`enum`）一起使用。这使得代码更具可读性和可维护性，因为你可以使用有意义的枚举成员名称而不是魔术数字（magic numbers）。当 `switch` 的表达式是枚举类型时，`case` 标签应该使用相应的枚举成员。
+
+      **最佳实践:** 当使用 `enum` 进行 `switch` 时，如果覆盖了所有可能的枚举成员，可以省略 `default` 标签。一些编译器设置（如 `-Wswitch-enum`）会在 `switch` 没有覆盖所有枚举成员且没有 `default` 时发出警告，这有助于确保代码的完整性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个表示方向的枚举类型
+      typedef NS_ENUM(NSInteger, Direction) {
+          DirectionNorth,
+          DirectionSouth,
+          DirectionEast,
+          DirectionWest
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Direction currentDirection = DirectionEast; // 设置当前方向
+
+              // 使用 switch 处理不同的方向
+              switch (currentDirection) {
+                  // case 标签使用枚举成员
+                  case DirectionNorth:
+                      NSLog(@"向北走");
+                      break;
+                  case DirectionSouth:
+                      NSLog(@"向南走");
+                      break;
+                  case DirectionEast: // currentDirection 是 DirectionEast，匹配成功
+                      NSLog(@"向东走"); // 执行此行
+                      break;          // 跳出 switch
+                  case DirectionWest:
+                      NSLog(@"向西走");
+                      break;
+                  // 在这个例子中，我们覆盖了所有 Direction 的枚举成员
+                  // 因此可以省略 default，或者添加一个用于处理未来可能新增的枚举值
+                  // default:
+                  //    NSLog(@"未知的方向");
+                  //    break;
+              }
+              // 输出: 向东走
+          }
+          return 0;
+      }
+      ```

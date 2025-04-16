@@ -1,0 +1,185 @@
+id: ternary
+title: 三元表达式
+description: 'Objective-C 中的三元表达式（Ternary Conditional Operator）提供了一种简洁的方式来根据条件选择两个值中的一个。它通常用于替代简单的 `if-else` 语句，使代码更紧凑。其基本语法是 `condition ? value_if_true : value_if_false`。'
+usage:
+  - title: 基本的三元条件赋值
+    description: |
+      最常见的用法是根据一个布尔条件，将两个可能的值之一赋给变量。如果条件为真（`true` 或非零/非 `nil`），则表达式返回问号（`?`）后面的值；否则，返回冒号（`:`）后面的值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL isMember = YES;
+              // 根据 isMember 的值决定折扣率
+              // 如果 isMember 为 YES，discountRate 为 0.1
+              // 如果 isMember 为 NO， discountRate 为 0.05
+              double discountRate = isMember ? 0.1 : 0.05;
+
+              NSLog(@"Discount Rate: %.2f", discountRate); // 输出：Discount Rate: 0.10
+
+              int score = 75;
+              // 根据分数判断是否及格
+              // 如果 score >= 60，grade 为 "Pass"
+              // 如果 score < 60， grade 为 "Fail"
+              NSString *grade = (score >= 60) ? @"Pass" : @"Fail";
+
+              NSLog(@"Grade: %@", grade); // 输出：Grade: Pass
+          }
+          return 0;
+      }
+      ```
+  - title: 使用三元表达式处理 nil 值
+    description: |
+      三元表达式可以方便地处理可能为 `nil` 的对象，为变量提供一个默认值。如果对象非 `nil`，则使用该对象；如果对象是 `nil`，则使用指定的默认值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *userName = nil; // 假设用户名可能未设置
+              NSString *displayName;
+
+              // 检查 userName 是否为 nil
+              // 如果 userName 不是 nil，则 displayName 等于 userName
+              // 如果 userName 是 nil， 则 displayName 等于 "Guest"
+              displayName = userName ? userName : @"Guest";
+
+              NSLog(@"Display Name: %@", displayName); // 输出：Display Name: Guest
+
+              NSString *loadedConfig = @"CustomConfig"; // 假设从某处加载了配置
+              NSString *activeConfig;
+
+              // 使用加载的配置，如果存在的话
+              // 如果 loadedConfig 不是 nil，activeConfig 等于 loadedConfig
+              // 如果 loadedConfig 是 nil， activeConfig 等于 "DefaultConfig"
+              activeConfig = loadedConfig ? loadedConfig : @"DefaultConfig";
+
+              NSLog(@"Active Config: %@", activeConfig); // 输出：Active Config: CustomConfig
+          }
+          return 0;
+      }
+      ```
+  - title: 在三元表达式中调用方法
+    description: |
+      三元表达式的 `value_if_true` 和 `value_if_false` 部分可以是方法调用的结果。根据条件的真假，会执行对应的方法调用，并将其返回值作为整个表达式的结果。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 假设有一个简单的配置类
+      @interface AppConfig : NSObject
+      - (NSString *)defaultGreeting;
+      - (NSString *)customGreeting;
+      @end
+
+      @implementation AppConfig
+      - (NSString *)defaultGreeting {
+          return @"Hello!";
+      }
+      - (NSString *)customGreeting {
+          return @"Welcome back!";
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL isLoggedIn = YES;
+              AppConfig *config = [[AppConfig alloc] init];
+              NSString *greeting;
+
+              // 根据登录状态调用不同的问候方法
+              // 如果 isLoggedIn 为 YES，调用 customGreeting 方法
+              // 如果 isLoggedIn 为 NO， 调用 defaultGreeting 方法
+              greeting = isLoggedIn ? [config customGreeting] : [config defaultGreeting];
+
+              NSLog(@"Greeting: %@", greeting); // 输出：Greeting: Welcome back!
+          }
+          return 0;
+      }
+      ```
+  - title: 使用三元表达式设置对象属性
+    description: |
+      三元表达式的结果可以直接用于设置对象的属性。这使得根据条件动态配置对象属性的代码更加简洁。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <UIKit/UIKit.h> // 引入 UIKit 以使用 UIColor
+
+      // 假设在 UIViewController 或类似环境中
+      // @interface MyViewController : UIViewController
+      // @property (nonatomic, strong) UILabel *statusLabel;
+      // @end
+
+      // @implementation MyViewController
+      // - (void)updateStatus:(BOOL)isError {
+      //     if (!self.statusLabel) {
+      //         self.statusLabel = [[UILabel alloc] init];
+      //     }
+             BOOL isError = YES; // 示例条件
+             UILabel *statusLabel = [[UILabel alloc] init]; // 模拟一个 UILabel
+
+             // 根据 isError 状态设置文本颜色
+             // 如果 isError 为 YES，颜色设置为红色
+             // 如果 isError 为 NO， 颜色设置为绿色
+             statusLabel.textColor = isError ? [UIColor redColor] : [UIColor greenColor];
+
+             // 根据 isError 状态设置文本内容
+             // 如果 isError 为 YES，文本为 "Error Occurred"
+             // 如果 isError 为 NO， 文本为 "Operation Successful"
+             statusLabel.text = isError ? @"Error Occurred" : @"Operation Successful";
+
+             NSLog(@"Status Label Text: %@", statusLabel.text);
+             // 注意：UIColor 的描述信息比较复杂，这里不直接打印颜色对象
+             // NSLog(@"Status Label Color: %@", statusLabel.textColor);
+             // 在实际应用中可以通过调试器查看颜色是否正确设置
+
+      // }
+      // @end
+      ```
+  - title: 嵌套三元表达式（谨慎使用）
+    description: |
+      三元表达式可以嵌套使用，即在一个三元表达式的结果部分包含另一个三元表达式。但这会显著降低代码的可读性，通常建议使用 `if-else if-else` 语句或 `switch` 语句来代替复杂的嵌套。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int value = 10;
+              NSString *result;
+
+              // 示例：根据 value 的范围确定结果
+              // 这种嵌套方式可读性较差，不推荐在复杂逻辑中使用
+              // 如果 value > 0:
+              //   如果 value > 5，结果为 "Positive and Greater than 5"
+              //   否则 (value <= 5)，结果为 "Positive but Small"
+              // 否则 (value <= 0):
+              //   如果 value == 0，结果为 "Zero"
+              //   否则 (value < 0)，结果为 "Negative"
+              result = (value > 0) ?
+                          ((value > 5) ? @"Positive and Greater than 5" : @"Positive but Small") :
+                          ((value == 0) ? @"Zero" : @"Negative");
+
+              NSLog(@"Result: %@", result); // 输出：Result: Positive and Greater than 5
+
+              // 相同逻辑使用 if-else if-else 更清晰：
+              NSString *clearerResult;
+              if (value > 0) {
+                  if (value > 5) {
+                      clearerResult = @"Positive and Greater than 5";
+                  } else {
+                      clearerResult = @"Positive but Small";
+                  }
+              } else if (value == 0) {
+                  clearerResult = @"Zero";
+              } else {
+                  clearerResult = @"Negative";
+              }
+               NSLog(@"Clearer Result: %@", clearerResult); // 输出：Clearer Result: Positive and Greater than 5
+          }
+          return 0;
+      }
+      ```

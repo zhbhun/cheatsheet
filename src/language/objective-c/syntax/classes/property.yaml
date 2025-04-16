@@ -1,0 +1,591 @@
+id: property
+title: 类属性
+description: Objective‑C 的类属性（Property）是一种便捷的语法，用于声明类的实例变量以及自动合成或要求实现其对应的访问器方法（getter 和 setter）。它简化了封装过程，并允许开发者方便地控制内存管理、原子性、读写权限等特性。属性通过 `@property` 关键字在类的 `@interface` 声明块中定义。
+usage:
+  - title: 声明基本属性
+    description: |
+      使用 `@property` 关键字可以声明一个属性。编译器会根据声明自动处理实例变量的创建（默认以下划线开头，如 `_propertyName`）并合成标准的 getter 和 setter 方法。
+
+      **属性特性 (Attributes):**
+      属性可以附加多个特性来控制其行为，常见的默认特性组合（取决于类型和环境）：
+      - **读写权限:** `readwrite` (默认): 同时生成 getter 和 setter 方法。
+      - **原子性:** `atomic` (默认): 生成的方法是原子性的，保证基本的线程安全（但性能较低，且不能保证复杂操作的线程安全）。在多线程环境下读取或写入属性时，能保证操作的完整性，不会返回未完成写入的值。
+      - **内存管理 (ARC):**
+        - 对对象类型默认为 `strong`：表示强引用，持有对象，只要强引用存在，对象就不会被释放。
+        - 对基本数据类型（如 `int`, `float`, `BOOL`）和 C 结构体默认为 `assign`：简单的赋值，不涉及引用计数，用于非对象类型或需要避免循环引用的弱引用场景（但在 ARC 中对象类型推荐使用 `weak`）。
+      - **内存管理 (MRC):**
+        - 对对象类型默认为 `assign`。需要手动指定 `retain` 或 `copy`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // .h 文件
+      @interface Person : NSObject
+
+      // 声明一个 NSString 类型的属性 name
+      // ARC 下默认特性：(atomic, readwrite, strong)
+      @property NSString *name;
+
+      // 声明一个 NSInteger 类型的属性 age
+      // 默认特性：(atomic, readwrite, assign)
+      @property NSInteger age;
+
+      @end
+
+      // .m 文件
+      @implementation Person
+
+      // 编译器会自动合成 _name 和 _age 实例变量
+      // 以及 - (NSString *)name;
+      // 和 - (void)setName:(NSString *)name;
+      // 以及 - (NSInteger)age;
+      // 和 - (void)setAge:(NSInteger)age;
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Person *person = [[Person alloc] init];
+
+              // 使用点语法访问 setter
+              person.name = @"Alice";
+              person.age = 30;
+
+              // 使用点语法访问 getter
+              NSLog(@"Name: %@", person.name); // 输出: Name: Alice
+              NSLog(@"Age: %ld", (long)person.age); // 输出: Age: 30
+
+              // 也可以使用显式的 getter/setter 方法调用
+              // [person setName:@"Bob"];
+              // NSLog(@"Name: %@", [person name]);
+          }
+          return 0;
+      }
+      ```
+  - title: 声明只读属性
+    description: |
+      使用 `readonly` 特性可以声明一个只读属性。编译器只会合成 getter 方法，不会合成 setter 方法，也不会自动生成对应的可写实例变量（但通常会在内部手动管理一个实例变量）。尝试为只读属性赋值会导致编译错误。
+
+      **属性特性:**
+      - `readonly`: 指定属性为只读，只生成 getter 方法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // .h 文件
+      @interface Circle : NSObject
+
+      // 声明一个只读的半径属性
+      // 特性：(atomic, readonly, assign)
+      @property (readonly) double radius;
+
+      // 声明一个只读的面积属性，通常其值依赖于其他属性
+      // 特性：(atomic, readonly, assign)
+      // getter 方法通常需要手动实现
+      @property (readonly) double area;
+
+      - (instancetype)initWithRadius:(double)radius;
+
+      @end
+
+      // .m 文件
+      @implementation Circle {
+          // 手动声明一个实例变量来存储半径，因为 radius 属性是 readonly
+          // 如果不在 .h 中声明为 readonly，编译器会自动生成 _radius
+          // 但这里为了演示，我们手动管理
+          double _radius;
+      }
+
+      - (instancetype)initWithRadius:(double)radius {
+          self = [super init];
+          if (self) {
+              _radius = radius; // 初始化内部实例变量
+          }
+          return self;
+      }
+
+      // 实现只读属性 radius 的 getter
+      - (double)radius {
+          return _radius;
+      }
+
+      // 实现只读属性 area 的 getter
+      - (double)area {
+          return M_PI * _radius * _radius; // 根据半径计算面积
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Circle *circle = [[Circle alloc] initWithRadius:5.0];
+
+              // 可以读取只读属性
+              NSLog(@"Radius: %f", circle.radius); // 输出: Radius: 5.000000
+              NSLog(@"Area: %f", circle.area);   // 输出: Area: 78.539816
+
+              // 尝试写入只读属性会导致编译错误
+              // circle.radius = 10.0; // Error: Assignment to readonly property
+          }
+          return 0;
+      }
+      ```
+  - title: 声明强引用属性 (ARC)
+    description: |
+      在 ARC (Automatic Reference Counting) 环境下，使用 `strong` 特性声明对 Objective-C 对象的强引用属性。这是对象类型的默认特性。只要至少有一个强引用指向一个对象，该对象就不会被内存管理系统回收。
+
+      **属性特性:**
+      - `strong`: 表示强引用关系。属性持有对象的所有权。当属性被赋值新对象时，旧对象的引用计数减 1，新对象的引用计数加 1。当持有属性的对象被销毁时，其拥有的强引用属性指向的对象的引用计数也会减 1。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Document : NSObject
+      @property (strong) NSString *title; // 强引用一个 NSString 对象
+      @end
+
+      @implementation Document
+      // 编译器自动合成 _title 实例变量和 getter/setter
+      // setter 会负责管理引用计数 (ARC)
+      @end
+
+      @interface Editor : NSObject
+      // 声明一个强引用属性来持有 Document 对象
+      // (strong 是 ARC 下对象类型的默认值，可以省略)
+      @property (strong) Document *currentDocument;
+      @end
+
+      @implementation Editor
+      // 编译器自动合成 _currentDocument 实例变量和 getter/setter
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Editor *editor = [[Editor alloc] init];
+              Document *doc = [[Document alloc] init];
+              doc.title = @"My Important Document";
+
+              // editor 持有对 doc 的强引用
+              editor.currentDocument = doc;
+
+              NSLog(@"Editor's document title: %@", editor.currentDocument.title);
+              // 输出: Editor's document title: My Important Document
+
+              // 当 editor 不再需要 doc 时，解除强引用
+              // editor.currentDocument = nil;
+              // 如果没有其他强引用指向 doc，doc 对象将被释放
+
+              // 或者当 editor 本身被释放时，它持有的 currentDocument 的强引用也会解除
+          } // editor 在这里超出作用域，会被释放，其对 doc 的强引用解除
+            // 如果 main 函数是 doc 唯一的强引用来源，doc 也会在这里被释放
+          return 0;
+      }
+      ```
+  - title: 声明弱引用属性 (ARC)
+    description: |
+      在 ARC 环境下，使用 `weak` 特性声明对 Objective-C 对象的弱引用属性。弱引用不持有对象，当所引用的对象被销毁时，弱引用属性会自动被设置为 `nil`。这对于防止循环引用（Retain Cycles）至关重要，常见于 delegate 模式或父子对象关系中子对象需要引用父对象的情况。
+
+      **属性特性:**
+      - `weak`: 表示弱引用关系。属性不持有对象的所有权。它不会增加对象的引用计数。如果对象被释放，所有指向它的弱引用都会自动变为 `nil`。`weak` 只能用于对象类型，不能用于基本数据类型。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @class Child; // 前向声明
+
+      // Parent 类持有 Child 的强引用
+      @interface Parent : NSObject
+      @property (strong) Child *child;
+      @property (nonatomic, copy) NSString *name; // 使用 nonatomic 和 copy
+      @end
+
+      // Child 类持有 Parent 的弱引用，以避免循环引用
+      @interface Child : NSObject
+      // 使用 weak 避免 Parent 和 Child 互相强引用导致无法释放
+      @property (weak) Parent *parent;
+      @property (nonatomic, copy) NSString *name;
+      @end
+
+      @implementation Parent
+      - (void)dealloc {
+          NSLog(@"%@ deallocated", self.name);
+      }
+      @end
+
+      @implementation Child
+      - (void)dealloc {
+          NSLog(@"%@ deallocated", self.name);
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Parent *parent = [[Parent alloc] init];
+              parent.name = @"Parent";
+              Child *child = [[Child alloc] init];
+              child.name = @"Child";
+
+              // 建立双向引用
+              parent.child = child;   // Parent -> Child (strong)
+              child.parent = parent; // Child -> Parent (weak)
+
+              NSLog(@"Parent's child: %@", parent.child.name);
+              NSLog(@"Child's parent: %@", child.parent.name);
+              // 输出:
+              // Parent's child: Child
+              // Child's parent: Parent
+          }
+          // 当 autoreleasepool 结束时，parent 首先被释放
+          // 因为 child 对 parent 是 weak 引用，parent 可以成功释放
+          // parent 释放时，其对 child 的 strong 引用解除
+          // 如果没有其他对 child 的强引用，child 也会被释放
+          // 预期输出:
+          // Parent deallocated
+          // Child deallocated
+          return 0;
+      }
+      ```
+  - title: 声明拷贝属性 (ARC/MRC)
+    description: |
+      使用 `copy` 特性声明属性时，setter 方法会将被赋的值的副本（而不是引用本身）赋给属性。这通常用于确保属性持有的对象状态不会在外部被意外修改，特别是对于那些有可变（Mutable）子类的类，如 `NSString`/`NSMutableString`, `NSArray`/`NSMutableArray`, `NSDictionary`/`NSMutableDictionary`。
+
+      **属性特性:**
+      - `copy`: setter 方法在赋值时会调用对象的 `copy` 方法（需要对象遵循 `NSCopying` 协议）。属性持有的是对象的副本。原对象之后发生的改变不会影响属性的值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Configuration : NSObject
+      // 使用 copy 特性来存储配置名称，确保即使传入的是 NSMutableString，
+      // 内部存储的也是其不可变副本。
+      // 同时使用 nonatomic 提高性能。
+      @property (nonatomic, copy) NSString *configName;
+
+      // 使用 copy 特性来存储配置项，防止外部修改传入的数组
+      @property (nonatomic, copy) NSArray *settings;
+      @end
+
+      @implementation Configuration
+      // 编译器自动合成 _configName, _settings 实例变量
+      // 以及对应的 getter 和 copy setter
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Configuration *config = [[Configuration alloc] init];
+
+              // --- 演示 copy NSString ---
+              NSMutableString *mutableName = [NSMutableString stringWithString:@"Default Config"];
+              config.configName = mutableName; // setter 会调用 [mutableName copy]
+
+              NSLog(@"Config name initially: %@", config.configName);
+              // 输出: Config name initially: Default Config
+
+              // 修改原始的可变字符串
+              [mutableName appendString:@" Modified"];
+              NSLog(@"Original mutable name after modification: %@", mutableName);
+              // 输出: Original mutable name after modification: Default Config Modified
+
+              // 由于 configName 是 copy 的，它不受原始字符串修改的影响
+              NSLog(@"Config name after original modified: %@", config.configName);
+              // 输出: Config name after original modified: Default Config
+
+              // --- 演示 copy NSArray ---
+              NSMutableArray *mutableSettings = [NSMutableArray arrayWithObjects:@"Setting1", @"Setting2", nil];
+              config.settings = mutableSettings; // setter 会调用 [mutableSettings copy]
+
+              NSLog(@"Config settings initially: %@", config.settings);
+              // 输出: Config settings initially: (Setting1, Setting2)
+
+              // 修改原始的可变数组
+              [mutableSettings addObject:@"Setting3"];
+               NSLog(@"Original mutable settings after modification: %@", mutableSettings);
+              // 输出: Original mutable settings after modification: (Setting1, Setting2, Setting3)
+
+              // 由于 config.settings 是 copy 的，它不受原始数组修改的影响
+              NSLog(@"Config settings after original modified: %@", config.settings);
+              // 输出: Config settings after original modified: (Setting1, Setting2)
+          }
+          return 0;
+      }
+      ```
+  - title: 声明非原子属性
+    description: |
+      使用 `nonatomic` 特性可以指定属性的访问器方法（getter/setter）是非原子的。非原子访问速度更快，因为它不使用锁来保护读写操作。这是 iOS 和 macOS 开发中最常用的特性，因为原子性带来的性能开销通常是不必要的，并且 `atomic` 仅能保证单个读或写操作的原子性，不能保证更复杂操作序列的线程安全。线程安全通常需要在更高层面通过锁（`NSLock`, `@synchronized`等）或其他并发控制机制来保证。
+
+      **属性特性:**
+      - `nonatomic`: 生成的 getter 和 setter 方法是非原子性的，访问速度快，但不是线程安全的。如果多个线程同时访问该属性，可能会导致数据竞争或不一致。
+      - `atomic` (默认): 生成的 getter 和 setter 方法是原子性的，使用内部锁来确保访问时的线程安全（仅限于单个读/写操作），但性能较低。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Counter : NSObject
+
+      // 声明一个非原子属性，提高访问性能
+      // 在单线程环境或已自行处理线程安全的环境下推荐使用 nonatomic
+      @property (nonatomic, assign) NSInteger count;
+
+      // 声明一个原子属性 (默认行为，atomic 关键字可省略)
+      // 适合需要在多线程环境中简单读写且不关心极致性能的场景
+      @property (atomic, strong) NSString *statusMessage;
+      // 等同于 @property (strong) NSString *statusMessage;
+
+      @end
+
+      @implementation Counter
+      // 编译器自动合成 _count 和 _statusMessage 实例变量
+      // 以及对应的 getter/setter (nonatomic for count, atomic for statusMessage)
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Counter *counter = [[Counter alloc] init];
+
+              // 访问非原子属性 (更快)
+              counter.count = 10;
+              NSLog(@"Count: %ld", (long)counter.count); // 输出: Count: 10
+
+              // 访问原子属性 (稍慢，有线程安全保障)
+              counter.statusMessage = @"Initialized";
+              NSLog(@"Status: %@", counter.statusMessage); // 输出: Status: Initialized
+
+              // 在多线程场景下，对 nonatomic 属性的并发读写需要外部同步机制
+              // 而对 atomic 属性的单次读或写是线程安全的，但组合操作仍需注意
+          }
+          return 0;
+      }
+      ```
+  - title: 自定义访问器名称
+    description: |
+      默认情况下，属性 `propertyName` 的 getter 方法名为 `propertyName`，setter 方法名为 `setPropertyName:`。可以使用 `getter=` 和 `setter=` 特性来指定自定义的访问器方法名称。这在某些特定场景下可能有用，例如，对于 `BOOL` 类型的属性，getter 方法名通常约定为 `isPropertyName`。
+
+      **属性特性:**
+      - `getter=getterName`: 指定 getter 方法的名称。
+      - `setter=setterName:`: 指定 setter 方法的名称（注意方法名包含冒号）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Task : NSObject
+
+      // 声明一个 BOOL 属性，并自定义 getter 名称为 isCompleted
+      // 默认 setter 名称为 setCompleted:
+      @property (nonatomic, assign, getter=isCompleted) BOOL completed;
+
+      // 声明一个属性，并同时自定义 getter 和 setter 名称
+      @property (nonatomic, strong, getter=fetchTitle, setter=updateTitle:) NSString *title;
+
+      @end
+
+      @implementation Task
+      // 编译器自动合成 _completed 和 _title 实例变量
+      // 合成方法：
+      // - (BOOL)isCompleted;
+      // - (void)setCompleted:(BOOL)completed;
+      // - (NSString *)fetchTitle;
+      // - (void)updateTitle:(NSString *)title;
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Task *task = [[Task alloc] init];
+
+              // 使用自定义的 setter
+              [task updateTitle:@"Finish Report"];
+              // 点语法仍然有效，会调用自定义的 setter/getter
+              task.completed = YES;
+
+              // 使用自定义的 getter
+              NSLog(@"Task Title: %@", [task fetchTitle]); // 输出: Task Title: Finish Report
+              NSLog(@"Is Task Completed: %d", [task isCompleted]); // 输出: Is Task Completed: 1 (YES)
+
+              // 点语法访问时，编译器会自动映射到自定义的访问器
+              NSLog(@"Task Title (dot syntax): %@", task.title); // 输出: Task Title (dot syntax): Finish Report
+              NSLog(@"Is Task Completed (dot syntax): %d", task.completed); // 输出: Is Task Completed (dot syntax): 1
+          }
+          return 0;
+      }
+      ```
+  - title: 指定属性可空性
+    description: |
+      Objective-C 允许使用可空性注解 (`nullable`, `nonnull`, `null_unspecified`) 来明确属性是否可以接受 `nil` 值。这有助于提高代码的健壮性，并且能更好地与 Swift 进行交互。
+
+      **可空性注解:**
+      - `nullable`: 表示属性可以持有 `nil` 值。指针类型（对象、block等）默认为 `nullable`。
+      - `nonnull`: 表示属性不应持有 `nil` 值。向 `nonnull` 属性赋 `nil` 会产生编译器警告。
+      - `null_unspecified`: (默认) 表示未指定可空性。通常表现得像 `nullable`。
+
+      **宏:**
+      - `NS_ASSUME_NONNULL_BEGIN` 和 `NS_ASSUME_NONNULL_END`: 这对宏可以包围一段代码（通常是整个 `@interface` 或其一部分），在这段区域内，所有未显式指定可空性的简单指针类型（如 `NSString *`）都会被假定为 `nonnull`。这可以减少代码中 `nonnull` 的重复声明。`nullable` 仍然需要显式声明。
+
+      **旧式注解 (常用于 C 函数参数或返回值):**
+      - `_Nullable`: 等同于 `nullable`。
+      - `_Nonnull`: 等同于 `nonnull`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 使用宏简化 nonnull 声明
+      NS_ASSUME_NONNULL_BEGIN
+
+      @interface UserProfile : NSObject
+
+      // 在 NS_ASSUME_NONNULL_BEGIN/END 区域内，默认是 nonnull
+      @property (nonatomic, copy) NSString *username; // 隐含 nonnull
+
+      // 显式声明为 nullable，表示 email 可以是 nil
+      @property (nonatomic, copy, nullable) NSString *email;
+
+      // NSNumber 对象，默认也是 nonnull
+      @property (nonatomic, strong) NSNumber *userID;
+
+      // 显式声明一个 nonnull 的属性 (虽然在区域内是默认，但可以显式写)
+      @property (nonatomic, strong, nonnull) NSDate *creationDate;
+
+      // 如果不使用宏，需要为每个非空的属性添加 nonnull
+      // @property (nonatomic, copy, nonnull) NSString *username;
+      // @property (nonatomic, copy, nullable) NSString *email;
+      // @property (nonatomic, strong, nonnull) NSNumber *userID;
+
+      - (instancetype)initWithUsername:(NSString *)username userID:(NSNumber *)userID;
+
+      @end
+
+      NS_ASSUME_NONNULL_END // 结束 nonnull 假定区域
+
+      @implementation UserProfile
+
+      // 实现初始化方法，注意参数也受 nonnull 影响
+      - (instancetype)initWithUsername:(NSString *)username userID:(NSNumber *)userID {
+           self = [super init];
+           if (self) {
+               _username = [username copy]; // username 被假定为 nonnull
+               _userID = userID;           // userID 被假定为 nonnull
+               _creationDate = [NSDate date]; // creationDate 是 nonnull
+               // _email 默认为 nil (因为是 nullable)
+           }
+           return self;
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 UserProfile 实例，必须提供 nonnull 的参数
+              UserProfile *profile = [[UserProfile alloc] initWithUsername:@"johndoe" userID:@123];
+
+              NSLog(@"Username: %@", profile.username); // 输出: Username: johndoe
+              NSLog(@"UserID: %@", profile.userID);     // 输出: UserID: 123
+              NSLog(@"Creation Date: %@", profile.creationDate); // 输出: Creation Date: <当前日期时间>
+
+              // email 是 nullable，可以为 nil 或赋值
+              profile.email = @"john.doe@example.com";
+              if (profile.email) {
+                  NSLog(@"Email: %@", profile.email); // 输出: Email: john.doe@example.com
+              } else {
+                  NSLog(@"Email is not set.");
+              }
+
+              // 尝试给 nonnull 属性赋 nil 会产生警告 (如果编译器设置允许)
+              // profile.username = nil; // Warning: Null passed to a callee that requires a non-null argument
+          }
+          return 0;
+      }
+      ```
+  - title: 声明类属性
+    description: |
+      使用 `class` 特性可以声明类属性（类似于 Swift 中的 `static` 属性）。类属性是关联于类本身而不是类的实例。访问类属性需要通过类名而不是实例对象。类属性可以是只读的 (`readonly`) 或可读写的 (`readwrite`)。
+
+      **属性特性:**
+      - `class`: 指定这是一个类属性。类属性默认是 `atomic` 和 `readonly`。如果需要可写，必须同时指定 `readwrite`。
+
+      **注意:**
+      - 类属性的实现（getter/setter）需要在 `@implementation` 中使用 `+` 类方法来实现。编译器不会自动合成类属性的实现或实例变量。
+      - 类属性是 Objective-C 2.0 较晚加入的特性，主要用于提供类似于 Swift `static var`/`let` 的功能。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface AppSettings : NSObject
+
+      // 声明一个只读的类属性 (默认 readonly)
+      // 用于获取共享的配置实例，通常实现为单例模式
+      @property (class, strong, readonly) AppSettings *sharedSettings;
+
+      // 声明一个可读写的类属性，用于存储全局设置项
+      // 需要同时指定 readwrite
+      @property (class, nonatomic, strong, readwrite, nullable) NSString *apiBaseURL;
+
+      // 实例属性
+      @property (nonatomic, strong) UIColor *themeColor; // 假设 UIColor 存在
+
+      @end
+
+      @implementation AppSettings
+
+      // --- 实现类属性 ---
+
+      // 实现只读类属性 sharedSettings 的 getter (+ 类方法)
+      static AppSettings *_sharedSettings = nil;
+      + (AppSettings *)sharedSettings {
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              _sharedSettings = [[self alloc] init];
+              // 初始化默认主题色等实例属性
+              _sharedSettings.themeColor = [UIColor blueColor]; // 假设 UIColor 有 blueColor 类方法
+          });
+          return _sharedSettings;
+      }
+
+      // 实现可读写类属性 apiBaseURL 的 getter 和 setter (+ 类方法)
+      static NSString *_apiBaseURL = nil;
+      + (NSString *)apiBaseURL {
+          return _apiBaseURL;
+      }
+      + (void)setApiBaseURL:(NSString *)url {
+          // 这里可以添加验证逻辑等
+          _apiBaseURL = [url copy]; // 使用 copy 保护
+      }
+
+      // --- 实例方法 ---
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              // 初始化实例属性
+              // themeColor 在 sharedSettings 中初始化了
+          }
+          return self;
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 访问只读类属性 (获取单例)
+              AppSettings *settings1 = [AppSettings sharedSettings];
+              AppSettings *settings2 = AppSettings.sharedSettings; // 也可以用点语法访问类属性 getter
+
+              NSLog(@"Are settings instances the same? %d", settings1 == settings2); // 输出: Are settings instances the same? 1 (YES)
+              NSLog(@"Default theme color: %@", settings1.themeColor); // 访问单例的实例属性
+
+              // 访问和修改可读写的类属性
+              [AppSettings setApiBaseURL:@"https://api.example.com"]; // 使用 setter
+              AppSettings.apiBaseURL = @"https://api.new.com"; // 使用点语法
+
+              NSLog(@"API Base URL: %@", [AppSettings apiBaseURL]); // 使用 getter
+              NSLog(@"API Base URL (dot syntax): %@", AppSettings.apiBaseURL); // 使用点语法
+              // 输出: API Base URL: https://api.new.com
+              // 输出: API Base URL (dot syntax): https://api.new.com
+          }
+          return 0;
+      }
+      // 假设 UIColor 的简单实现
+      @interface UIColor : NSObject
+      + (UIColor *)blueColor;
+      @end
+      @implementation UIColor
+      + (UIColor *)blueColor { return [[UIColor alloc] init]; }
+      - (NSString *)description { return @"Blue Color"; } // 简化输出
+      @end
+      ```

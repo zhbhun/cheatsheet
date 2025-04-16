@@ -1,0 +1,372 @@
+id: alias
+title: 类型别名
+description: Objective-C 中的类型别名（Type Alias）允许开发者为已存在的数据类型（包括基本类型、结构体、枚举、Block、对象类型指针等）创建一个新的、通常更具描述性或更简洁的名称。这主要通过 C 语言的 `typedef` 关键字来实现。使用类型别名可以极大地提高代码的可读性和可维护性，尤其是在处理复杂的类型声明（如 Block 或结构体指针）时。
+usage:
+  - title: 为基本数据类型定义别名
+    description: |
+      使用 `typedef` 关键字为 C 语言的基本数据类型（如 `int`, `float`, `char` 等）或 Objective-C 的特定整数类型（如 `NSInteger`, `NSUInteger`）创建别名。这有助于统一代码中的类型表示或增加语义清晰度。
+
+      **语法:**
+      `typedef <原始类型> <别名>;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 为 NSInteger 定义一个别名叫做 Counter
+      typedef NSInteger Counter;
+
+      // 为 double 定义一个别名叫做 Price
+      typedef double Price;
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用别名 Counter 声明变量
+              Counter itemCount = 10;
+
+              // 使用别名 Price 声明变量
+              Price itemPrice = 99.99;
+
+              // 输出变量值
+              NSLog(@"Item Count: %ld", (long)itemCount); // NSInteger 在 64 位系统上是 long
+              NSLog(@"Item Price: %.2f", itemPrice);
+          }
+          return 0;
+      }
+      // 输出:
+      // Item Count: 10
+      // Item Price: 99.99
+      ```
+  - title: 为结构体（Struct）定义别名
+    description: |
+      使用 `typedef` 可以简化结构体的声明和使用。通常与 `struct` 定义结合使用，为匿名或命名的结构体创建一个简洁的别名。
+
+      **语法:**
+      ```c
+      // 方式一：先定义结构体，再用 typedef
+      struct MyPoint {
+          CGFloat x;
+          CGFloat y;
+      };
+      typedef struct MyPoint Point;
+
+      // 方式二：在定义结构体的同时使用 typedef (更常用)
+      typedef struct {
+          CGFloat width;
+          CGFloat height;
+      } Size;
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // 引入 CoreGraphics 框架以使用 CGFloat
+
+      // 定义一个表示二维坐标点的结构体，并为其创建别名 Point
+      typedef struct {
+          CGFloat x;
+          CGFloat y;
+      } Point;
+
+      // 定义一个函数，参数使用 Point 别名
+      void printPoint(Point p) {
+          NSLog(@"Point coordinates: (%.2f, %.2f)", p.x, p.y);
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用别名 Point 声明并初始化一个结构体变量
+              Point center = {10.5, 20.3};
+
+              // 调用函数，传入 Point 类型的变量
+              printPoint(center);
+          }
+          return 0;
+      }
+      // 输出:
+      // Point coordinates: (10.50, 20.30)
+      ```
+  - title: 为枚举（Enum）定义别名
+    description: |
+      使用 `typedef` 为枚举类型创建别名，使得枚举类型的使用更加方便。现代 Objective-C 更推荐使用 `NS_ENUM` 和 `NS_OPTIONS` 宏来定义枚举，它们自带 `typedef` 功能，并提供更好的类型检查和 Swift 兼容性。
+
+      **语法 (传统):**
+      ```c
+      typedef enum {
+          ValueA,
+          ValueB,
+          ValueC
+      } MyEnumName;
+      ```
+      **语法 (推荐使用 NS_ENUM):**
+      ```objectivec
+      typedef NS_ENUM(NSInteger, NetworkStatus) {
+          NetworkStatusNotReachable,
+          NetworkStatusReachableViaWiFi,
+          NetworkStatusReachableViaWWAN
+      };
+      ```
+      `NS_ENUM` 用于定义互斥的枚举值集合。`NSInteger` 是底层使用的整数类型。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 使用 NS_ENUM 定义表示方向的枚举类型，并自动创建别名 Direction
+      typedef NS_ENUM(NSUInteger, Direction) {
+          DirectionNorth,
+          DirectionSouth,
+          DirectionEast,
+          DirectionWest
+      };
+
+      // 函数接受 Direction 类型的参数
+      NSString *directionToString(Direction dir) {
+          switch (dir) {
+              case DirectionNorth: return @"North";
+              case DirectionSouth: return @"South";
+              case DirectionEast:  return @"East";
+              case DirectionWest:  return @"West";
+              default:             return @"Unknown";
+          }
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用别名 Direction 声明变量
+              Direction currentDirection = DirectionEast;
+
+              // 调用函数并打印结果
+              NSLog(@"Current direction: %@", directionToString(currentDirection));
+
+              currentDirection = DirectionSouth;
+              NSLog(@"New direction: %@", directionToString(currentDirection));
+          }
+          return 0;
+      }
+      // 输出:
+      // Current direction: East
+      // New direction: South
+      ```
+  - title: 为 Block 类型定义别名
+    description: |
+      Block 的类型签名可能非常复杂，使用 `typedef` 为 Block 类型创建别名是 Objective-C 中非常常见的做法，极大地提高了代码的可读性，尤其是在定义属性、方法参数或返回值时。
+
+      **语法:**
+      `typedef <返回类型> (^<别名>)(<参数列表>);`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个 Block 别名 CompletionHandler
+      // 该 Block 类型没有返回值 (void)
+      // 接受两个参数：一个 BOOL 表示成功状态，一个 NSError 对象指针表示错误信息
+      typedef void (^CompletionHandler)(BOOL success, NSError * _Nullable error);
+
+      // 模拟一个异步操作的方法，它接受一个 CompletionHandler 类型的 Block 作为回调
+      void performAsyncTask(BOOL shouldSucceed, CompletionHandler handler) {
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+              if (shouldSucceed) {
+                  NSLog(@"Task completed successfully.");
+                  // 调用 Block，传递成功状态和 nil 错误
+                  handler(YES, nil);
+              } else {
+                  // 创建一个示例错误
+                  NSError *taskError = [NSError errorWithDomain:@"MyAsyncTaskErrorDomain"
+                                                            code:101
+                                                        userInfo:@{NSLocalizedDescriptionKey:@"Task failed"}];
+                  NSLog(@"Task failed.");
+                  // 调用 Block，传递失败状态和错误对象
+                  handler(NO, taskError);
+              }
+          });
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"Starting async task (will succeed)...");
+
+              // 使用别名 CompletionHandler 定义并实现一个 Block
+              CompletionHandler successHandler = ^(BOOL success, NSError * _Nullable error) {
+                  if (success) {
+                      NSLog(@"Success Handler: Operation was successful.");
+                  } else {
+                      NSLog(@"Success Handler: Operation failed with error: %@", error.localizedDescription);
+                  }
+              };
+
+              // 调用异步方法，传入 Block
+              performAsyncTask(YES, successHandler);
+
+
+              // 为了演示失败情况，再调用一次 (在实际应用中需要更好的异步管理)
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                   NSLog(@"Starting async task (will fail)...");
+                   performAsyncTask(NO, ^(BOOL success, NSError * _Nullable error) {
+                       if (success) {
+                           NSLog(@"Failure Handler: Operation was successful."); // 这不会执行
+                       } else {
+                           NSLog(@"Failure Handler: Operation failed with error: %@", error.localizedDescription);
+                       }
+                       // 为了让命令行程序等待异步操作完成，这里简单退出
+                       // exit(0); // 在实际应用中不应这样退出
+                   });
+              });
+
+
+              // 保持运行循环，以便异步回调可以执行 (仅用于命令行工具示例)
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5]];
+          }
+          return 0;
+      }
+      // 可能的输出顺序 (由于异步性):
+      // Starting async task (will succeed)...
+      // (等待 1 秒)
+      // Task completed successfully.
+      // Success Handler: Operation was successful.
+      // (等待 1 秒)
+      // Starting async task (will fail)...
+      // (等待 1 秒)
+      // Task failed.
+      // Failure Handler: Operation failed with error: Task failed
+      ```
+  - title: 为对象类型指针定义别名
+    description: |
+      虽然不那么常见，但 `typedef` 也可以为指向 Objective-C 对象的指针类型创建别名。这通常用于强调指针的特定用途或简化重复的长类型名称。
+
+      **语法:**
+      `typedef <类名> * <别名>;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 为 NSString 指针类型定义一个别名 StringRef
+      typedef NSString * StringRef;
+
+      // 为 NSDictionary 指针类型定义一个别名 DictionaryRef
+      typedef NSDictionary * DictionaryRef;
+
+      // 函数使用别名作为参数类型和返回类型
+      StringRef processString(StringRef input) {
+          return [input uppercaseString];
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用别名 StringRef 声明变量
+              StringRef myName = @"Objective-C";
+              NSLog(@"Original string: %@", myName);
+
+              // 调用函数并使用别名声明返回变量
+              StringRef upperName = processString(myName);
+              NSLog(@"Uppercase string: %@", upperName);
+
+              // 使用别名 DictionaryRef 声明变量
+              DictionaryRef userInfo = @{@"name": @"Alice", @"age": @30};
+              NSLog(@"User Info: %@", userInfo);
+          }
+          return 0;
+      }
+      // 输出:
+      // Original string: Objective-C
+      // Uppercase string: OBJECTIVE-C
+      // User Info: {
+      //     age = 30;
+      //     name = Alice;
+      // }
+      ```
+  - title: 类型别名在方法和属性声明中的应用
+    description: |
+      类型别名的主要优势在于简化方法签名和属性声明，尤其是对于复杂的 Block 类型或自定义结构体/枚举。这使得接口更清晰、易懂。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // For CGPoint
+
+      // 为 CGPoint 结构体定义别名 Location
+      typedef CGPoint Location;
+
+      // 为一个 Block 定义别名 DataProcessingBlock
+      // 该 Block 接受 NSData，返回处理后的 NSData 或 nil
+      typedef NSData * _Nullable (^DataProcessingBlock)(NSData * _Nonnull inputData);
+
+      // 定义一个类的接口
+      @interface DataManager : NSObject
+
+      // 属性使用类型别名 Location
+      @property (nonatomic, assign) Location currentLocation;
+
+      // 属性使用 Block 类型别名 DataProcessingBlock
+      @property (nonatomic, copy, nullable) DataProcessingBlock processingLogic;
+
+      // 方法参数和返回值使用类型别名
+      - (void)updateLocation:(Location)newLocation;
+      - (void)processData:(NSData * _Nonnull)data completion:(void (^ _Nonnull)(NSData * _Nullable processedData))completionBlock; // 没用别名的 Block
+      - (void)processDataWithCustomLogic:(NSData * _Nonnull)data; // 使用属性中的 Block 别名
+
+      @end
+
+      @implementation DataManager
+
+      - (void)updateLocation:(Location)newLocation {
+          self.currentLocation = newLocation;
+          NSLog(@"Location updated to: (%.2f, %.2f)", self.currentLocation.x, self.currentLocation.y);
+      }
+
+      // 未使用 Block 别名的示例方法实现
+      - (void)processData:(NSData * _Nonnull)data completion:(void (^ _Nonnull)(NSData * _Nullable processedData))completionBlock {
+          NSLog(@"Processing data the default way...");
+          // 模拟处理
+          NSData *result = [@"Default Processed: " dataUsingEncoding:NSUTF8StringEncoding];
+          completionBlock(result);
+      }
+
+      // 使用属性中定义的 Block 别名的示例方法实现
+      - (void)processDataWithCustomLogic:(NSData * _Nonnull)data {
+          if (self.processingLogic) {
+              NSLog(@"Processing data using custom logic block...");
+              NSData *result = self.processingLogic(data); // 调用存储的 Block
+              NSLog(@"Custom logic result data length: %lu", (unsigned long)result.length);
+          } else {
+              NSLog(@"No custom processing logic set.");
+          }
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataManager *manager = [[DataManager alloc] init];
+
+              // 使用 Location 别名设置位置
+              Location startLocation = CGPointMake(10.0, 20.0);
+              [manager updateLocation:startLocation];
+
+              // 设置自定义处理逻辑 (使用 DataProcessingBlock 别名)
+              manager.processingLogic = ^NSData * _Nullable(NSData * _Nonnull inputData) {
+                  NSString *inputString = [[NSString alloc] initWithData:inputData encoding:NSUTF8StringEncoding];
+                  NSString *processedString = [NSString stringWithFormat:@"Custom Logic Applied to: %@", inputString];
+                  return [processedString dataUsingEncoding:NSUTF8StringEncoding];
+              };
+
+              NSData *sampleData = [@"Some data" dataUsingEncoding:NSUTF8StringEncoding];
+              [manager processDataWithCustomLogic:sampleData];
+
+              // 清空处理逻辑，再次调用
+              manager.processingLogic = nil;
+              [manager processDataWithCustomLogic:sampleData];
+
+              // 调用未使用别名的方法
+              [manager processData:sampleData completion:^(NSData * _Nullable processedData) {
+                  NSString *resultString = [[NSString alloc] initWithData:processedData encoding:NSUTF8StringEncoding];
+                  NSLog(@"Default completion result: %@", resultString);
+              }];
+
+          }
+          return 0;
+      }
+      // 输出:
+      // Location updated to: (10.00, 20.00)
+      // Processing data using custom logic block...
+      // Custom logic result data length: 33
+      // No custom processing logic set.
+      // Processing data the default way...
+      // Default completion result: Default Processed:
+      ```

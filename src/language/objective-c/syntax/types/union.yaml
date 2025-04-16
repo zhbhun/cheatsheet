@@ -1,0 +1,380 @@
+id: union
+title: 联合体
+query: Objective-C 联合体
+description: Objective-C 中的联合体 (`union`) 是一种特殊的数据结构，它允许在相同的内存位置存储不同的数据类型，但同一时间只有一个成员是有效的。联合体的大小由其最大的成员决定。它常用于需要在同一块内存空间中根据情况存储不同类型数据，以节省内存的场景，例如处理不同格式的数据包或表示一个值可能是多种类型之一。
+usage:
+  - title: 定义联合体
+    description: |
+      使用 `union` 关键字来定义一个新的联合体类型。联合体内部可以包含多个不同类型的成员。
+
+      **语法:**
+      ```objectivec
+      union UnionName {
+          DataType1 memberName1;
+          DataType2 memberName2;
+          // ... 更多成员
+      };
+      ```
+      - `union`: 定义联合体的关键字。
+      - `UnionName`: 你为这个联合体类型指定的名称。
+      - `DataTypeX`: 成员的数据类型。
+      - `memberNameX`: 成员的名称。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个可以存储整数、浮点数或字符的联合体
+      union DataValue {
+          int i;
+          float f;
+          char c;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"联合体 DataValue 定义完成。");
+              // 此处仅为定义，尚未创建实例
+          }
+          return 0;
+      }
+      ```
+  - title: 声明和初始化联合体变量
+    description: |
+      定义联合体类型后，可以声明该类型的变量。可以一次初始化联合体的第一个成员，或者在声明后单独给某个成员赋值。**关键在于：给一个成员赋值会覆盖其他成员存储的值，因为它们共享同一块内存。**
+
+      **语法:**
+      - 声明变量: `union UnionName variableName;`
+      - 初始化第一个成员: `union UnionName variableName = { valueForFirstMember };` (C99 及之后)
+      - 赋值给特定成员: `variableName.memberName = value;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      union DataValue {
+          int i;
+          float f;
+          char c;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 DataValue 联合体变量
+              union DataValue data;
+
+              // 给整型成员赋值
+              data.i = 10;
+              NSLog(@"赋值后 data.i = %d", data.i); // 输出: 赋值后 data.i = 10
+
+              // 给浮点型成员赋值 (这会覆盖之前存储的整数)
+              data.f = 3.14f;
+              NSLog(@"赋值后 data.f = %f", data.f); // 输出: 赋值后 data.f = 3.140000
+              // 此时访问 data.i 的值是未定义的，不应再依赖它
+
+              // 给字符成员赋值 (这会覆盖之前存储的浮点数)
+              data.c = 'A';
+              NSLog(@"赋值后 data.c = %c", data.c); // 输出: 赋值后 data.c = A
+              // 此时访问 data.i 和 data.f 的值是未定义的
+
+              // 使用 C99 初始化语法（初始化第一个成员 i）
+              union DataValue initialData = { 100 };
+              NSLog(@"初始化后 initialData.i = %d", initialData.i); // 输出: 初始化后 initialData.i = 100
+
+              // 使用指定初始化器（C99 及之后），更明确
+              union DataValue specificData = { .f = 2.718f };
+              NSLog(@"指定初始化后 specificData.f = %f", specificData.f); // 输出: 指定初始化后 specificData.f = 2.718000
+          }
+          return 0;
+      }
+      ```
+  - title: 访问联合体成员
+    description: |
+      使用点运算符 (`.`) 来访问联合体变量的成员。**非常重要：** 只能安全地访问最后被赋值的那个成员。访问其他成员会导致读取到无效或未定义的数据，因为内存已被覆盖。
+
+      **语法:**
+      `variableName.memberName`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      union DataValue {
+          int i;
+          float f;
+          char c;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              union DataValue data;
+
+              // 先给整型成员赋值
+              data.i = 99;
+              // 访问整型成员是安全的
+              NSLog(@"访问 data.i: %d", data.i); // 输出: 访问 data.i: 99
+
+              // 再给浮点型成员赋值
+              data.f = 123.45f;
+              // 现在访问浮点型成员是安全的
+              NSLog(@"访问 data.f: %f", data.f); // 输出: 访问 data.f: 123.450000
+
+              // 此时访问整型成员 data.i 是不安全的，结果未定义
+              // NSLog(@"不安全访问 data.i: %d", data.i); // 结果可能不是 99
+          }
+          return 0;
+      }
+      ```
+  - title: 联合体的大小
+    description: |
+      联合体变量所占用的内存大小取决于其内部**最大**成员的大小。所有成员共享这块内存区域。可以使用 `sizeof` 运算符来获取联合体类型或变量的大小。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <stdio.h> // 包含 stdio.h 以使用 printf
+
+      union DataValue {
+          int i;       // 通常 4 字节
+          double d;    // 通常 8 字节
+          char c[10];  // 10 字节
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 打印联合体类型的大小
+              // sizeof(union DataValue) 会是其最大成员的大小，这里是 char c[10] 的 10 字节
+              // 但实际大小可能因内存对齐而变大，例如对齐到 8 字节边界，可能变成 16
+              printf("Size of union DataValue: %zu bytes\n", sizeof(union DataValue));
+
+              // 打印各成员的大小以作比较
+              printf("Size of int: %zu bytes\n", sizeof(int));
+              printf("Size of double: %zu bytes\n", sizeof(double));
+              printf("Size of char[10]: %zu bytes\n", sizeof(char[10]));
+
+              // 结果会显示联合体的大小至少等于最大成员的大小，并可能因对齐规则而更大
+          }
+          return 0;
+      }
+      ```
+  - title: 在结构体中使用联合体
+    description: |
+      联合体可以作为结构体 (`struct`) 的成员。这允许创建一个更复杂的数据结构，其中一部分可以根据需要存储不同类型的数据。通常会结合一个额外的成员（枚举或整数）来标记当前联合体中存储的是哪种类型的数据。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <stdio.h>
+
+      // 定义数据类型枚举
+      typedef NS_ENUM(NSInteger, DataType) {
+          DataTypeInteger,
+          DataTypeFloat,
+          DataTypeString
+      };
+
+      // 定义联合体
+      union Value {
+          int i;
+          float f;
+          const char *s; // 存储 C 字符串指针
+      };
+
+      // 定义包含联合体和类型标记的结构体
+      struct DataPacket {
+          DataType type; // 标记联合体当前存储的数据类型
+          union Value value; // 联合体成员
+      };
+
+      // 辅助函数来打印 DataPacket 内容
+      void printDataPacket(struct DataPacket packet) {
+          switch (packet.type) {
+              case DataTypeInteger:
+                  printf("Data Type: Integer, Value: %d\n", packet.value.i);
+                  break;
+              case DataTypeFloat:
+                  printf("Data Type: Float, Value: %f\n", packet.value.f);
+                  break;
+              case DataTypeString:
+                  printf("Data Type: String, Value: %s\n", packet.value.s);
+                  break;
+              default:
+                  printf("Unknown data type.\n");
+                  break;
+          }
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个存储整数的 DataPacket
+              struct DataPacket intPacket;
+              intPacket.type = DataTypeInteger;
+              intPacket.value.i = 123;
+              printDataPacket(intPacket); // 输出: Data Type: Integer, Value: 123
+
+              // 创建一个存储浮点数的 DataPacket
+              struct DataPacket floatPacket;
+              floatPacket.type = DataTypeFloat;
+              floatPacket.value.f = 45.67f;
+              printDataPacket(floatPacket); // 输出: Data Type: Float, Value: 45.670002
+
+              // 创建一个存储字符串的 DataPacket
+              struct DataPacket stringPacket;
+              stringPacket.type = DataTypeString;
+              stringPacket.value.s = "Hello Union";
+              printDataPacket(stringPacket); // 输出: Data Type: String, Value: Hello Union
+          }
+          return 0;
+      }
+      ```
+  - title: 在 Objective-C 对象中使用联合体
+    description: |
+      联合体可以直接作为 Objective-C 类实例变量的一部分。可以通过属性（可能需要自定义 getter/setter）或方法来访问和管理联合体成员。与在结构体中使用类似，通常也需要一个额外的实例变量来跟踪联合体当前存储的数据类型。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义数据类型枚举
+      typedef NS_ENUM(NSInteger, MyDataType) {
+          MyDataTypeInteger,
+          MyDataTypeFloat,
+          MyDataTypeObject
+      };
+
+      // 定义联合体
+      union MyValue {
+          NSInteger i;
+          double d;
+          __unsafe_unretained id obj; // 存储对象指针 (使用 __unsafe_unretained 避免 ARC 问题，需手动管理生命周期或确保对象存活)
+                                     // 注意：在 ARC 下直接在联合体中存储强引用对象是不允许的。
+                                     // 如果需要存储对象，通常用 void* 或 __unsafe_unretained id，并谨慎处理。
+      };
+
+      // 定义 Objective-C 类
+      @interface DataContainer : NSObject {
+          // 实例变量，包含联合体和类型标记
+          @public // 为了示例简单设为 public，实际开发中应通过属性或方法访问
+          MyDataType _type;
+          union MyValue _value;
+      }
+
+      // 设置值的方法
+      - (void)setIntegerValue:(NSInteger)intValue;
+      - (void)setDoubleValue:(double)doubleValue;
+      - (void)setObjectValue:(id)objectValue; // 注意对象生命周期管理
+
+      // 获取值的方法（示例，实际应根据类型返回）
+      - (void)printValue;
+
+      @end
+
+      @implementation DataContainer
+
+      - (void)setIntegerValue:(NSInteger)intValue {
+          _type = MyDataTypeInteger;
+          _value.i = intValue;
+      }
+
+      - (void)setDoubleValue:(double)doubleValue {
+          _type = MyDataTypeFloat;
+          _value.d = doubleValue;
+      }
+
+      // 存储对象指针，需要调用者保证对象在访问期间有效
+      - (void)setObjectValue:(id)objectValue {
+          _type = MyDataTypeObject;
+          _value.obj = objectValue;
+      }
+
+      - (void)printValue {
+          switch (_type) {
+              case MyDataTypeInteger:
+                  NSLog(@"Type: Integer, Value: %ld", (long)_value.i);
+                  break;
+              case MyDataTypeFloat:
+                  NSLog(@"Type: Float, Value: %f", _value.d);
+                  break;
+              case MyDataTypeObject:
+                  // 访问对象前最好检查是否为 nil
+                  if (_value.obj) {
+                      NSLog(@"Type: Object, Value: %@", _value.obj);
+                  } else {
+                      NSLog(@"Type: Object, Value: nil");
+                  }
+                  break;
+              default:
+                 NSLog(@"Unknown type");
+          }
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataContainer *container = [[DataContainer alloc] init];
+
+              // 设置并打印整数值
+              [container setIntegerValue:500];
+              [container printValue]; // 输出: Type: Integer, Value: 500
+
+              // 设置并打印浮点数值
+              [container setDoubleValue:98.76];
+              [container printValue]; // 输出: Type: Float, Value: 98.760000
+
+              // 设置并打印对象值 (注意对象生命周期)
+              NSString *myString = @"Hello from Object";
+              [container setObjectValue:myString]; // 存储的是指针
+              [container printValue]; // 输出: Type: Object, Value: Hello from Object
+
+              // 如果 myString 被释放，再次访问 container 中的 obj 会有问题
+              // 在 ARC 下，需要特别小心 __unsafe_unretained 指针的管理
+          }
+          return 0;
+      }
+      ```
+  - title: 匿名联合体
+    description: |
+      匿名联合体是没有名称的联合体，通常直接定义在结构体或类的内部。它的成员可以像结构体或类的直接成员一样被访问，无需通过联合体变量名。这可以简化语法，使得访问更直接。
+
+      **注意:** 匿名联合体是 C11 和 C++ 的特性，在 Objective-C (基于 C) 中可以使用。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <stdio.h>
+
+      // 定义包含匿名联合体的结构体
+      struct Point {
+          char type; // 'i' for int coords, 'f' for float coords
+          union { // 匿名联合体开始
+              struct { int x; int y; } iCoords; // 整数坐标
+              struct { float x; float y; } fCoords; // 浮点数坐标
+          }; // 匿名联合体结束，注意这里没有名字
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              struct Point p1;
+              p1.type = 'i';
+              // 直接访问匿名联合体的成员 iCoords
+              p1.iCoords.x = 10;
+              p1.iCoords.y = 20;
+              printf("Point p1 (int): type=%c, x=%d, y=%d\n", p1.type, p1.iCoords.x, p1.iCoords.y);
+              // 输出: Point p1 (int): type=i, x=10, y=20
+
+              struct Point p2;
+              p2.type = 'f';
+              // 直接访问匿名联合体的成员 fCoords
+              p2.fCoords.x = 1.5f;
+              p2.fCoords.y = 2.5f;
+              printf("Point p2 (float): type=%c, x=%f, y=%f\n", p2.type, p2.fCoords.x, p2.fCoords.y);
+              // 输出: Point p2 (float): type=f, x=1.500000, y=2.500000
+
+              // 同样可以在 Objective-C 类的实例变量区域使用匿名联合体
+              // @interface MyClass : NSObject {
+              //     int typeFlag;
+              //     union {
+              //         int intValue;
+              //         float floatValue;
+              //     }; // 匿名联合体
+              // }
+              // @end
+              // 然后可以通过 myObject->intValue 或 myObject->floatValue 访问 (如果 ivar 是 public 或在 @implementation 内部)
+          }
+          return 0;
+      }
+      ```

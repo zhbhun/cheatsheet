@@ -1,0 +1,606 @@
+id: constructor
+title: 类构造函数
+description: 在 Objective-C 中，没有像 C++ 或 Java 那样的显式构造函数。相反，对象的创建分为两个步骤：内存分配（`alloc`）和初始化（`init`）。初始化是通过名为 `init` 或以 `initWith` 开头的实例方法来完成的。这些方法负责设置对象的初始状态。其核心目的是确保新创建的对象处于可用和有效的状态。
+usage:
+  - title: 基本初始化：alloc 和 init
+    description: |
+      创建 Objective-C 对象最基本的方式是先调用类方法 `alloc` 分配内存，然后调用实例方法 `init` 进行初始化。`init` 方法通常会调用其父类的 `init` 方法（`[super init]`），然后设置当前类的实例变量。
+
+      - `alloc`: 类方法，负责为新对象分配内存空间，并将所有实例变量初始化为零或 nil。
+      - `init`: 实例方法，负责对象的具体初始化逻辑。它通常返回 `self`（初始化后的对象实例）或者在初始化失败时返回 `nil`。`init` 的标准实现是先调用父类的 `init` 方法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的 Person 类
+      @interface Person : NSObject
+      @property NSString *name;
+      @property NSInteger age;
+      @end
+
+      @implementation Person
+      // 默认的 init 方法实现
+      - (instancetype)init {
+          self = [super init]; // 首先调用父类的 init 方法
+          if (self) {
+              // 初始化当前类的实例变量
+              _name = @"Unknown";
+              _age = 0;
+              NSLog(@"Person 对象已通过 init 初始化");
+          }
+          return self; // 返回初始化后的实例或 nil
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 1. 分配内存 (alloc)
+              Person *personAlloc = [Person alloc];
+              // 2. 初始化 (init)
+              Person *person = [personAlloc init];
+
+              // 或者链式调用
+              // Person *person = [[Person alloc] init];
+
+              if (person) {
+                  NSLog(@"成功创建 Person 对象: %@, 年龄: %ld", person.name, (long)person.age);
+                  // 输出: Person 对象已通过 init 初始化
+                  // 输出: 成功创建 Person 对象: Unknown, 年龄: 0
+              } else {
+                  NSLog(@"创建 Person 对象失败");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 自定义初始化方法：initWith...
+    description: |
+      通常需要创建带有参数的自定义初始化方法，以便在创建对象时就能提供初始值。这些方法的命名约定是以 `initWith` 开头，后面跟上描述参数的名称。自定义初始化方法也应该先调用父类的 `init`（或者父类的指定初始化方法），然后设置自己的实例变量。
+
+      - `initWith...`: 自定义的实例初始化方法，接受参数以设置对象的初始状态。同样需要调用 `[super init]`（或合适的父类初始化方法）并返回 `self` 或 `nil`。
+      - `instancetype`: 作为返回类型，表示方法返回的是当前类的实例。这是比 `id` 更推荐的做法，因为它提供了更强的类型检查。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Person : NSObject
+      @property NSString *name;
+      @property NSInteger age;
+
+      // 自定义初始化方法声明
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age;
+      @end
+
+      @implementation Person
+      // 默认 init 方法（可选，但通常最好提供一个）
+      - (instancetype)init {
+          // 调用自定义的初始化方法，并提供默认值
+          return [self initWithName:@"Default Name" age:0];
+      }
+
+      // 自定义初始化方法实现
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age {
+          self = [super init]; // 调用父类 init
+          if (self) {
+              // 使用传入的参数初始化实例变量
+              _name = [name copy]; // 对于对象类型，通常使用 copy 或 strong 引用
+              _age = age;
+              NSLog(@"Person 对象已通过 initWithName:age: 初始化");
+          }
+          return self;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用自定义初始化方法创建对象
+              Person *person1 = [[Person alloc] initWithName:@"Alice" age:30];
+              if (person1) {
+                  NSLog(@"创建 Person 1: %@, 年龄: %ld", person1.name, (long)person1.age);
+                  // 输出: Person 对象已通过 initWithName:age: 初始化
+                  // 输出: 创建 Person 1: Alice, 年龄: 30
+              }
+
+              // 使用默认 init 方法创建对象 (如果提供了)
+              Person *person2 = [[Person alloc] init];
+               if (person2) {
+                  NSLog(@"创建 Person 2: %@, 年龄: %ld", person2.name, (long)person2.age);
+                  // 输出: Person 对象已通过 initWithName:age: 初始化 (因为 init 调用了它)
+                  // 输出: 创建 Person 2: Default Name, 年龄: 0
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 便捷初始化：new 方法
+    description: |
+      Objective-C 提供了一个便捷的类方法 `new`，它等同于 `[[ClassName alloc] init]`。如果你的类只需要默认的 `init` 方法进行初始化，并且不需要传递参数，可以使用 `new` 来简化代码。如果类定义了自定义的 `init` 或 `initWith...` 方法，`new` 方法仍然只会调用默认的 `init` 方法。
+
+      - `new`: 类方法，是 `alloc` 和 `init` 的组合。它分配内存并调用默认的 `init` 方法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface MyObject : NSObject
+      @property NSString *message;
+      @end
+
+      @implementation MyObject
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _message = @"Initialized via init";
+              NSLog(@"MyObject instance initialized using init.");
+          }
+          return self;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用 new 方法创建对象
+              MyObject *obj = [MyObject new];
+
+              if (obj) {
+                  NSLog(@"Object created with new: %@", obj.message);
+                  // 输出: MyObject instance initialized using init.
+                  // 输出: Object created with new: Initialized via init
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 指定初始化方法 (Designated Initializer)
+    description: |
+      在一个类中，通常会有一个或多个“指定初始化方法”。这是主要的初始化方法，负责确保对象的所有必要属性都被正确初始化。其他初始化方法（便利初始化方法）最终都应该调用这个指定初始化方法（直接或间接）。
+
+      **规则：**
+      1.  子类必须重写父类的指定初始化方法，并在实现中调用父类的指定初始化方法 (`[super designatedInitializer...]`)。
+      2.  如果子类添加了自己的指定初始化方法，它也必须调用父类的某个指定初始化方法。
+      3.  便利初始化方法（非指定）必须调用同一个类中的其他初始化方法（最终导向指定初始化方法），而不能调用 `super` 的初始化方法。
+
+      明确指定初始化方法有助于维护清晰的初始化链，确保对象总是被完整地初始化。通常，参数最全的 `initWith...` 方法被选为指定初始化方法。在接口文件中使用 `NS_DESIGNATED_INITIALIZER` 宏来标记它（需要 Xcode 6 或更高版本）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 父类 ---
+      @interface Vehicle : NSObject
+      @property (readonly) NSInteger numberOfWheels;
+
+      // 指定初始化方法
+      - (instancetype)initWithNumberOfWheels:(NSInteger)wheels NS_DESIGNATED_INITIALIZER;
+      @end
+
+      @implementation Vehicle
+      // 实现指定初始化方法
+      - (instancetype)initWithNumberOfWheels:(NSInteger)wheels {
+          self = [super init]; // 调用 NSObject 的 init
+          if (self) {
+              _numberOfWheels = wheels;
+              NSLog(@"Vehicle initialized with %ld wheels", (long)wheels);
+          }
+          return self;
+      }
+
+      // 重写默认 init，让它调用指定初始化方法
+      - (instancetype)init {
+          return [self initWithNumberOfWheels:4]; // 提供默认值
+      }
+      @end
+
+      // --- 子类 ---
+      @interface Car : Vehicle
+      @property NSString *model;
+
+      // 子类的指定初始化方法
+      - (instancetype)initWithModel:(NSString *)model numberOfWheels:(NSInteger)wheels NS_DESIGNATED_INITIALIZER;
+      // 便利初始化方法
+      - (instancetype)initWithModel:(NSString *)model;
+      @end
+
+      @implementation Car
+      // 实现子类的指定初始化方法
+      - (instancetype)initWithModel:(NSString *)model numberOfWheels:(NSInteger)wheels {
+          // 调用父类的指定初始化方法
+          self = [super initWithNumberOfWheels:wheels];
+          if (self) {
+              _model = [model copy];
+              NSLog(@"Car initialized with model: %@", model);
+          }
+          return self;
+      }
+
+      // 实现便利初始化方法
+      - (instancetype)initWithModel:(NSString *)model {
+          // 调用本类的指定初始化方法，提供默认轮子数
+          return [self initWithModel:model numberOfWheels:4];
+      }
+
+      // 重写父类的指定初始化方法 (必须!)
+      - (instancetype)initWithNumberOfWheels:(NSInteger)wheels {
+           // 调用本类的指定初始化方法，提供默认模型
+          return [self initWithModel:@"Unknown" numberOfWheels:wheels];
+      }
+
+       // 重写默认 init (可选，但推荐)
+      - (instancetype)init {
+          return [self initWithModel:@"Unknown" numberOfWheels:4];
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用子类的指定初始化方法
+              Car *myCar = [[Car alloc] initWithModel:@"Tesla Model 3" numberOfWheels:4];
+              NSLog(@"My car: %@, Wheels: %ld", myCar.model, (long)myCar.numberOfWheels);
+              // 输出:
+              // Vehicle initialized with 4 wheels
+              // Car initialized with model: Tesla Model 3
+              // My car: Tesla Model 3, Wheels: 4
+
+              // 使用便利初始化方法
+              Car *anotherCar = [[Car alloc] initWithModel:@"Toyota Camry"];
+              NSLog(@"Another car: %@, Wheels: %ld", anotherCar.model, (long)anotherCar.numberOfWheels);
+              // 输出:
+              // Vehicle initialized with 4 wheels
+              // Car initialized with model: Toyota Camry
+              // Another car: Toyota Camry, Wheels: 4
+          }
+          return 0;
+      }
+      ```
+  - title: 便利初始化方法 (Convenience Initializer)
+    description: |
+      便利初始化方法是类中次要的初始化方法。它们存在的目的是提供更方便的对象创建方式，例如使用默认值或接受不同类型的参数。便利初始化方法**必须**调用同一类中的其他初始化方法（最终会调用到指定初始化方法）。它们**不能**直接调用 `super` 的初始化方法。
+
+      便利初始化方法通常用于：
+      - 提供常用参数组合的快捷方式。
+      - 设置默认值。
+      - 接受一种类型的参数并将其转换为指定初始化方法所需的类型。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Book : NSObject
+      @property NSString *title;
+      @property NSString *author;
+      @property NSInteger year;
+
+      // 指定初始化方法
+      - (instancetype)initWithTitle:(NSString *)title author:(NSString *)author year:(NSInteger)year NS_DESIGNATED_INITIALIZER;
+
+      // 便利初始化方法 1: 只提供标题和作者，年份默认为当前年份
+      - (instancetype)initWithTitle:(NSString *)title author:(NSString *)author;
+
+      // 便利初始化方法 2: 只提供标题，作者默认为 "Anonymous"
+      - (instancetype)initWithTitle:(NSString *)title;
+      @end
+
+      @implementation Book
+      // 实现指定初始化方法
+      - (instancetype)initWithTitle:(NSString *)title author:(NSString *)author year:(NSInteger)year {
+          self = [super init];
+          if (self) {
+              _title = [title copy];
+              _author = [author copy];
+              _year = year;
+              NSLog(@"Book initialized (Designated): %@ by %@ (%ld)", _title, _author, (long)_year);
+          }
+          return self;
+      }
+
+      // 实现便利初始化方法 1
+      - (instancetype)initWithTitle:(NSString *)title author:(NSString *)author {
+          // 获取当前年份
+          NSCalendar *calendar = [NSCalendar currentCalendar];
+          NSDateComponents *components = [calendar components:NSCalendarUnitYear fromDate:[NSDate date]];
+          NSInteger currentYear = [components year];
+          // 调用本类的指定初始化方法
+          return [self initWithTitle:title author:author year:currentYear];
+      }
+
+      // 实现便利初始化方法 2
+      - (instancetype)initWithTitle:(NSString *)title {
+          // 调用本类的另一个便利初始化方法 (最终会调用指定初始化方法)
+          return [self initWithTitle:title author:@"Anonymous"];
+      }
+
+      // 重写默认 init，让它调用指定初始化方法（或便利方法）
+      - (instancetype)init {
+          return [self initWithTitle:@"Untitled" author:@"Unknown" year:0];
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用指定初始化方法
+              Book *book1 = [[Book alloc] initWithTitle:@"1984" author:@"George Orwell" year:1949];
+
+              // 使用便利初始化方法 1
+              Book *book2 = [[Book alloc] initWithTitle:@"The Hitchhiker's Guide" author:@"Douglas Adams"];
+
+              // 使用便利初始化方法 2
+              Book *book3 = [[Book alloc] initWithTitle:@"Foundation"];
+
+              NSLog(@"Book 1: %@ (%ld)", book1.title, (long)book1.year);
+              NSLog(@"Book 2: %@ by %@ (%ld)", book2.title, book2.author, (long)book2.year); // 年份会自动设为当前年
+              NSLog(@"Book 3: %@ by %@ (%ld)", book3.title, book3.author, (long)book3.year); // 作者为 Anonymous, 年份为当前年
+          }
+          return 0;
+      }
+      ```
+  - title: 继承中的初始化
+    description: |
+      当创建子类时，子类的初始化方法必须确保父类的部分也被正确初始化。这是通过在子类的初始化方法中调用 `super` 的某个初始化方法来实现的。
+
+      **关键规则：**
+      1.  子类的**指定初始化方法**必须调用其直接父类的**指定初始化方法**。
+      2.  如果子类没有定义任何指定初始化方法，它会继承父类的指定初始化方法。
+      3.  如果子类重写了父类的指定初始化方法，它必须在实现中调用父类的对应方法 (`[super designatedInitializer...]`)。
+      4.  子类的便利初始化方法必须调用本类中的其他初始化方法（指定或便利），不能直接调用 `super` 的初始化方法。
+      5.  `[super init...]` 的调用通常是子类初始化方法中的第一步（在 `if (self)` 判断之前或之后都可以，但常见模式是 `self = [super init...]; if (self) { ... }`）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 父类 ---
+      @interface Animal : NSObject
+      @property NSString *species;
+      // 父类的指定初始化方法
+      - (instancetype)initWithSpecies:(NSString *)species NS_DESIGNATED_INITIALIZER;
+      @end
+      @implementation Animal
+      - (instancetype)initWithSpecies:(NSString *)species {
+          self = [super init]; // 调用 NSObject 的 init
+          if (self) {
+              _species = [species copy];
+              NSLog(@"Animal initialized with species: %@", _species);
+          }
+          return self;
+      }
+      - (instancetype)init { // 提供默认 init
+          return [self initWithSpecies:@"Unknown Species"];
+      }
+      @end
+
+      // --- 子类 ---
+      @interface Dog : Animal
+      @property NSString *breed;
+      // 子类的指定初始化方法
+      - (instancetype)initWithSpecies:(NSString *)species breed:(NSString *)breed NS_DESIGNATED_INITIALIZER;
+      // 便利初始化方法
+      - (instancetype)initWithBreed:(NSString *)breed;
+      @end
+      @implementation Dog
+      // 实现子类的指定初始化方法
+      - (instancetype)initWithSpecies:(NSString *)species breed:(NSString *)breed {
+          // 调用父类的指定初始化方法
+          self = [super initWithSpecies:species];
+          if (self) {
+              _breed = [breed copy];
+              NSLog(@"Dog initialized with breed: %@", _breed);
+          }
+          return self;
+      }
+
+      // 实现便利初始化方法
+      - (instancetype)initWithBreed:(NSString *)breed {
+          // 调用本类的指定初始化方法，物种固定为 "Canine"
+          return [self initWithSpecies:@"Canine" breed:breed];
+      }
+
+      // 重写父类的指定初始化方法 (必须!)
+      - (instancetype)initWithSpecies:(NSString *)species {
+          // 调用本类的指定初始化方法，提供默认品种
+          return [self initWithSpecies:species breed:@"Unknown Breed"];
+      }
+
+      // 重写 init (可选)
+      - (instancetype)init {
+           return [self initWithSpecies:@"Canine" breed:@"Unknown Breed"];
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用子类的指定初始化方法
+              Dog *dog1 = [[Dog alloc] initWithSpecies:@"Canine" breed:@"Labrador"];
+              NSLog(@"Dog 1: Species=%@, Breed=%@", dog1.species, dog1.breed);
+              // 输出:
+              // Animal initialized with species: Canine
+              // Dog initialized with breed: Labrador
+              // Dog 1: Species=Canine, Breed=Labrador
+
+              // 使用子类的便利初始化方法
+              Dog *dog2 = [[Dog alloc] initWithBreed:@"Poodle"];
+              NSLog(@"Dog 2: Species=%@, Breed=%@", dog2.species, dog2.breed);
+              // 输出:
+              // Animal initialized with species: Canine
+              // Dog initialized with breed: Poodle
+              // Dog 2: Species=Canine, Breed=Poodle
+
+              // 使用重写的父类指定初始化方法
+              Dog *dog3 = [[Dog alloc] initWithSpecies:@"Feline"]; // 品种会是 Unknown Breed
+              NSLog(@"Dog 3: Species=%@, Breed=%@", dog3.species, dog3.breed);
+               // 输出:
+              // Animal initialized with species: Feline
+              // Dog initialized with breed: Unknown Breed
+              // Dog 3: Species=Feline, Breed=Unknown Breed
+          }
+          return 0;
+      }
+      ```
+  - title: 初始化失败：返回 nil
+    description: |
+      初始化方法并不总是能成功创建有效的对象。例如，如果传入了无效的参数，或者依赖的资源不可用，初始化就可能失败。在这种情况下，初始化方法应该返回 `nil` 来表示失败。
+
+      实现方法：
+      1.  在调用 `[super init...]` 后，检查返回的 `self` 是否已经是 `nil`。如果是，则父类初始化失败，直接返回 `nil`。
+      2.  在执行子类的初始化逻辑时，如果遇到无法满足的条件，将 `self` 设置为 `nil`（或者直接 `return nil;`），并可能需要释放已分配的资源（在 ARC 环境下，编译器通常会处理内存管理）。
+      3.  调用者在收到初始化方法的返回值后，应检查其是否为 `nil`，以确保对象已成功创建。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface ResourceLoader : NSObject
+      @property NSData *data;
+      // 初始化方法，尝试从给定的 URL 加载数据
+      - (instancetype)initWithURL:(NSURL *)url;
+      @end
+
+      @implementation ResourceLoader
+      - (instancetype)initWithURL:(NSURL *)url {
+          self = [super init];
+          if (self) {
+              // 检查 URL 是否有效
+              if (!url) {
+                  NSLog(@"Initialization failed: URL is nil.");
+                  return nil; // 无效参数，返回 nil
+              }
+
+              // 尝试加载数据
+              NSError *error = nil;
+              NSData *loadedData = [NSData dataWithContentsOfURL:url options:NSDataReadingUncached error:&error];
+
+              // 检查加载是否成功
+              if (loadedData) {
+                  _data = loadedData;
+                  NSLog(@"Resource loaded successfully from %@", url);
+              } else {
+                  NSLog(@"Initialization failed: Could not load data from %@. Error: %@", url, error);
+                  // 加载失败，返回 nil
+                  // ARC 会自动处理 self 的释放
+                  return nil;
+              }
+          }
+          return self;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 尝试使用有效的 URL (假设存在此文件)
+              NSURL *validURL = [NSURL fileURLWithPath:@"/path/to/existing/file.txt"]; // 请替换为实际有效路径
+              ResourceLoader *loader1 = [[ResourceLoader alloc] initWithURL:validURL];
+              if (loader1) {
+                  NSLog(@"Loader 1 created successfully. Data size: %lu bytes", (unsigned long)[loader1.data length]);
+              } else {
+                  NSLog(@"Failed to create Loader 1.");
+              }
+
+              // 尝试使用无效的 URL
+              NSURL *invalidURL = [NSURL URLWithString:@"invalid-url-schema://some/path"];
+              ResourceLoader *loader2 = [[ResourceLoader alloc] initWithURL:invalidURL];
+              if (loader2) {
+                  NSLog(@"Loader 2 created successfully."); // 这行不会执行
+              } else {
+                  NSLog(@"Failed to create Loader 2 as expected.");
+                  // 输出: Initialization failed: Could not load data from invalid-url-schema://some/path. Error: ...
+                  // 输出: Failed to create Loader 2 as expected.
+              }
+
+              // 尝试使用 nil URL
+              ResourceLoader *loader3 = [[ResourceLoader alloc] initWithURL:nil];
+              if (loader3) {
+                   NSLog(@"Loader 3 created successfully."); // 这行不会执行
+              } else {
+                  NSLog(@"Failed to create Loader 3 with nil URL as expected.");
+                  // 输出: Initialization failed: URL is nil.
+                  // 输出: Failed to create Loader 3 with nil URL as expected.
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 类工厂方法 (Class Factory Methods)
+    description: |
+      除了 `alloc/init` 模式，Objective-C 还常用类工厂方法来创建对象实例。这是一种类方法（以 `+` 开头），其名称通常以创建的类名（小写开头）或相关描述开头，例如 `+ (instancetype)personWithName:(NSString *)name;` 或 `+ (UIColor *)redColor;`。
+
+      工厂方法内部会处理 `alloc` 和 `init`（或 `initWith...`）的调用，并将初始化好的对象返回给调用者。
+
+      **优点：**
+      - 封装了对象的创建过程，调用者无需关心 `alloc` 和 `init` 的细节。
+      - 可以返回共享的实例（单例）或进行其他复杂的设置。
+      - 方法名可以更具描述性。
+      - 有时可以返回不同类型的子类实例（类簇模式）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Circle : NSObject
+      @property double radius;
+      // 指定初始化方法
+      - (instancetype)initWithRadius:(double)radius NS_DESIGNATED_INITIALIZER;
+      // 类工厂方法
+      + (instancetype)circleWithRadius:(double)radius;
+      + (instancetype)unitCircle; // 创建半径为 1 的圆
+      @end
+
+      @implementation Circle
+      // 实现指定初始化方法
+      - (instancetype)initWithRadius:(double)radius {
+          self = [super init];
+          if (self) {
+              if (radius < 0) {
+                  NSLog(@"Radius cannot be negative. Initialization failed.");
+                  return nil; // 初始化失败
+              }
+              _radius = radius;
+              NSLog(@"Circle initialized with radius: %.2f", _radius);
+          }
+          return self;
+      }
+      // 默认 init (调用指定初始化方法)
+      - (instancetype)init {
+          return [self initWithRadius:0.0];
+      }
+
+      // 实现类工厂方法 1
+      + (instancetype)circleWithRadius:(double)radius {
+          // 在内部调用 alloc 和指定的 initWithRadius: 方法
+          return [[self alloc] initWithRadius:radius];
+      }
+
+      // 实现类工厂方法 2 (创建单位圆)
+      + (instancetype)unitCircle {
+           // 调用另一个工厂方法或直接 alloc/init
+          return [self circleWithRadius:1.0];
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用类工厂方法创建对象
+              Circle *circle1 = [Circle circleWithRadius:5.0];
+              if (circle1) {
+                  NSLog(@"Created circle 1 with radius: %.2f", circle1.radius);
+                  // 输出:
+                  // Circle initialized with radius: 5.00
+                  // Created circle 1 with radius: 5.00
+              }
+
+              // 使用另一个类工厂方法
+              Circle *unitCircle = [Circle unitCircle];
+              if (unitCircle) {
+                  NSLog(@"Created unit circle with radius: %.2f", unitCircle.radius);
+                   // 输出:
+                  // Circle initialized with radius: 1.00
+                  // Created unit circle with radius: 1.00
+              }
+
+              // 尝试创建半径为负数的圆 (会失败)
+              Circle *invalidCircle = [Circle circleWithRadius:-2.0];
+              if (invalidCircle) {
+                   NSLog(@"Invalid circle created?"); // 不会执行
+              } else {
+                   NSLog(@"Failed to create circle with negative radius, as expected.");
+                   // 输出:
+                   // Radius cannot be negative. Initialization failed.
+                   // Failed to create circle with negative radius, as expected.
+              }
+          }
+          return 0;
+      }
+      ```

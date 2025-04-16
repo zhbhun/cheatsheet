@@ -1,0 +1,588 @@
+id: string
+title: 字符串
+query: Objective-C 字符串类型
+description: Objective-C 中的字符串用于表示文本数据。核心类是 `NSString` (不可变字符串) 和 `NSMutableString` (可变字符串)。`NSString` 对象一旦创建，其内容就不能更改，而 `NSMutableString` 对象允许在创建后修改其内容，如添加、删除或替换字符。
+usage:
+  - title: 创建不可变字符串 (NSString)
+    description: |
+      创建不可变字符串 `NSString` 的常用方法包括：
+      - 使用 `@""` 字面量语法：最简单快捷的方式。
+      - `stringWithFormat:`: 类方法，类似于 C 语言的 `sprintf`，用于创建格式化字符串。
+      - `stringWithString:`: 类方法，用另一个字符串的内容创建新字符串。
+      - `initWithFormat:`: 实例方法，功能同 `stringWithFormat:`，但需要先 `alloc`。
+      - `initWithString:`: 实例方法，功能同 `stringWithString:`，但需要先 `alloc`。
+      - `stringWithContentsOfFile:encoding:error:`: 从文件读取内容创建字符串。
+      - `stringWithContentsOfURL:encoding:error:`: 从 URL 读取内容创建字符串。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 1. 使用 @"" 字面量创建
+              NSString *literalString = @"Hello, Objective-C!";
+              NSLog(@"Literal String: %@", literalString); // 输出: Literal String: Hello, Objective-C!
+
+              // 2. 使用 stringWithFormat: 创建格式化字符串
+              NSString *name = @"World";
+              NSInteger year = 2023;
+              NSString *formattedString = [NSString stringWithFormat:@"Hello, %@! Year: %ld", name, (long)year];
+              NSLog(@"Formatted String: %@", formattedString); // 输出: Formatted String: Hello, World! Year: 2023
+
+              // 3. 使用 stringWithString: 从现有字符串创建
+              NSString *baseString = @"Base String";
+              NSString *copiedString = [NSString stringWithString:baseString];
+              NSLog(@"Copied String: %@", copiedString); // 输出: Copied String: Base String
+
+              // 4. 使用 initWithFormat: (需要 alloc)
+              NSString *instanceFormatted = [[NSString alloc] initWithFormat:@"Value: %.2f", 3.14159];
+              NSLog(@"Instance Formatted String: %@", instanceFormatted); // 输出: Instance Formatted String: Value: 3.14
+
+              // 5. 使用 initWithString: (需要 alloc)
+              NSString *instanceCopied = [[NSString alloc] initWithString:@"Another String"];
+              NSLog(@"Instance Copied String: %@", instanceCopied); // 输出: Instance Copied String: Another String
+
+              // 注意：initWith... 方法创建的对象需要手动管理内存 (在非 ARC 环境下) 或由 ARC 自动管理。
+              // stringWith... 类方法创建的对象通常是 autoreleased 的。
+          }
+          return 0;
+      }
+      ```
+  - title: 获取字符串长度
+    description: 使用 `length` 属性获取字符串中的字符数 (Unicode 字符的数量)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *myString = @"Objective-C";
+              // 使用 length 属性获取字符串长度
+              NSUInteger len = [myString length];
+              NSLog(@"The length of '%@' is %lu", myString, (unsigned long)len); // 输出: The length of 'Objective-C' is 11
+          }
+          return 0;
+      }
+      ```
+  - title: 访问单个字符
+    description: 使用 `characterAtIndex:` 方法获取指定索引位置的字符。索引从 0 开始。返回的是 `unichar` 类型 (UTF-16 码元)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *myString = @"Objective-C";
+              // 获取索引为 0 的字符
+              unichar firstChar = [myString characterAtIndex:0];
+              // 获取索引为 10 的字符
+              unichar lastChar = [myString characterAtIndex:[myString length] - 1];
+
+              NSLog(@"First character: %C", firstChar); // 输出: First character: O
+              NSLog(@"Last character: %C", lastChar);   // 输出: Last character: C
+
+              // 注意：访问超出范围的索引会导致运行时异常 (NSRangeException)。
+              // unichar charAtIndex = [myString characterAtIndex:11]; // 这会引发异常
+          }
+          return 0;
+      }
+      ```
+  - title: 提取子字符串
+    description: |
+      从现有字符串中提取一部分内容创建新的 `NSString` 对象。常用方法：
+      - `substringFromIndex:`: 从指定索引开始到字符串末尾的子串。
+      - `substringToIndex:`: 从字符串开头到指定索引（不包含该索引）的子串。
+      - `substringWithRange:`: 提取指定范围 (`NSRange`) 内的子串。`NSRange` 包含 `location` (起始位置) 和 `length` (长度)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *myString = @"Hello, Objective-C World!";
+
+              // 1. 从索引 7 开始提取子串 ("Objective-C World!")
+              NSString *subFrom = [myString substringFromIndex:7];
+              NSLog(@"Substring from index 7: %@", subFrom); // 输出: Substring from index 7: Objective-C World!
+
+              // 2. 提取从开头到索引 5 的子串 ("Hello")
+              NSString *subTo = [myString substringToIndex:5];
+              NSLog(@"Substring to index 5: %@", subTo); // 输出: Substring to index 5: Hello
+
+              // 3. 提取指定范围的子串 (从索引 7 开始，长度为 11, "Objective-C")
+              NSRange range = NSMakeRange(7, 11); // 创建一个 NSRange 结构体
+              NSString *subRange = [myString substringWithRange:range];
+              NSLog(@"Substring with range (7, 11): %@", subRange); // 输出: Substring with range (7, 11): Objective-C
+
+              // 注意：提供的索引或范围必须在字符串的有效边界内，否则会引发 NSRangeException。
+          }
+          return 0;
+      }
+      ```
+  - title: 拼接字符串 (不可变)
+    description: |
+      将两个或多个 `NSString` 对象连接起来创建新的 `NSString` 对象。
+      - `stringByAppendingString:`: 将一个字符串附加到另一个字符串的末尾。
+      - `stringByAppendingFormat:`: 将格式化字符串附加到另一个字符串的末尾。
+      这些方法返回一个新的字符串，原字符串保持不变。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *str1 = @"Hello, ";
+              NSString *str2 = @"Objective-C!";
+
+              // 1. 使用 stringByAppendingString: 拼接
+              NSString *combined1 = [str1 stringByAppendingString:str2];
+              NSLog(@"Combined with stringByAppendingString:: %@", combined1); // 输出: Combined with stringByAppendingString:: Hello, Objective-C!
+
+              // 2. 使用 stringByAppendingFormat: 拼接
+              NSString *firstName = @"John";
+              NSInteger age = 30;
+              NSString *base = @"User: ";
+              NSString *combined2 = [base stringByAppendingFormat:@"%@, Age: %ld", firstName, (long)age];
+              NSLog(@"Combined with stringByAppendingFormat:: %@", combined2); // 输出: Combined with stringByAppendingFormat:: User: John, Age: 30
+
+              // 原始字符串 str1 和 base 保持不变
+              NSLog(@"Original str1: %@", str1); // 输出: Original str1: Hello,
+          }
+          return 0;
+      }
+      ```
+  - title: 比较字符串
+    description: |
+      比较两个 `NSString` 对象的内容是否相同或判断它们的顺序。
+      - `isEqualToString:`: 判断两个字符串的内容是否完全相等（区分大小写）。这是推荐的字符串相等性比较方法。
+      - `compare:`: 比较两个字符串的字典顺序（区分大小写）。返回 `NSComparisonResult` 枚举 (`NSOrderedAscending`, `NSOrderedSame`, `NSOrderedDescending`)。
+      - `compare:options:`: 提供更多比较选项，如不区分大小写 (`NSCaseInsensitiveSearch`)、数字比较 (`NSNumericSearch`) 等。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *str1 = @"Apple";
+              NSString *str2 = @"Apple";
+              NSString *str3 = @"Banana";
+              NSString *str4 = @"apple";
+
+              // 1. 使用 isEqualToString: 比较相等性
+              if ([str1 isEqualToString:str2]) {
+                  NSLog(@"'%@' is equal to '%@'", str1, str2); // 输出: 'Apple' is equal to 'Apple'
+              }
+
+              if (![str1 isEqualToString:str4]) {
+                  NSLog(@"'%@' is NOT equal to '%@' (case-sensitive)", str1, str4); // 输出: 'Apple' is NOT equal to 'apple' (case-sensitive)
+              }
+
+              // 2. 使用 compare: 比较顺序
+              NSComparisonResult result = [str1 compare:str3];
+              if (result == NSOrderedAscending) {
+                  NSLog(@"'%@' comes before '%@'", str1, str3); // 输出: 'Apple' comes before 'Banana'
+              }
+
+              // 3. 使用 compare:options: 进行不区分大小写比较
+              if ([str1 compare:str4 options:NSCaseInsensitiveSearch] == NSOrderedSame) {
+                  NSLog(@"'%@' is equal to '%@' (case-insensitive)", str1, str4); // 输出: 'Apple' is equal to 'apple' (case-insensitive)
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 查找子串或字符
+    description: |
+      在字符串中搜索指定的子串或字符集。
+      - `rangeOfString:`: 查找子串第一次出现的位置，返回包含其位置和长度的 `NSRange`。如果未找到，返回的 `NSRange` 的 `location` 成员是 `NSNotFound`。
+      - `rangeOfString:options:`: 提供更多搜索选项，如反向搜索 (`NSBackwardsSearch`)、不区分大小写 (`NSCaseInsensitiveSearch`)。
+      - `rangeOfCharacterFromSet:`: 查找第一个属于指定字符集 (`NSCharacterSet`) 的字符的位置。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *text = @"This is a test string. This test is simple.";
+              NSString *search = @"test";
+
+              // 1. 查找子串 "test" 第一次出现的位置
+              NSRange range = [text rangeOfString:search];
+              if (range.location != NSNotFound) {
+                  NSLog(@"Found '%@' at location %lu, length %lu", search, (unsigned long)range.location, (unsigned long)range.length);
+                  // 输出: Found 'test' at location 10, length 4
+              } else {
+                  NSLog(@"'%@' not found.", search);
+              }
+
+              // 2. 查找子串 "test" 最后一次出现的位置 (反向搜索)
+              NSRange lastRange = [text rangeOfString:search options:NSBackwardsSearch];
+              if (lastRange.location != NSNotFound) {
+                  NSLog(@"Last occurrence of '%@' found at location %lu", search, (unsigned long)lastRange.location);
+                  // 输出: Last occurrence of 'test' found at location 27
+              }
+
+              // 3. 查找第一个数字字符的位置
+              NSCharacterSet *digits = [NSCharacterSet decimalDigitCharacterSet];
+              NSString *textWithNumber = @"Version 2.0 released";
+              NSRange digitRange = [textWithNumber rangeOfCharacterFromSet:digits];
+              if (digitRange.location != NSNotFound) {
+                  NSLog(@"First digit found at location %lu", (unsigned long)digitRange.location);
+                  // 输出: First digit found at location 8
+              } else {
+                   NSLog(@"No digits found.");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 检查前缀和后缀
+    description: |
+      判断字符串是否以指定的前缀开始或以指定的后缀结束。
+      - `hasPrefix:`: 检查字符串是否以某个子串开头。
+      - `hasSuffix:`: 检查字符串是否以某个子串结尾。
+      这两个方法都是大小写敏感的。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *filename = @"document.pdf";
+
+              // 1. 检查前缀
+              if ([filename hasPrefix:@"doc"]) {
+                  NSLog(@"'%@' starts with 'doc'", filename); // 输出: 'document.pdf' starts with 'doc'
+              } else {
+                  NSLog(@"'%@' does not start with 'doc'", filename);
+              }
+
+              // 2. 检查后缀
+              if ([filename hasSuffix:@".pdf"]) {
+                  NSLog(@"'%@' ends with '.pdf'", filename); // 输出: 'document.pdf' ends with '.pdf'
+              } else {
+                  NSLog(@"'%@' does not end with '.pdf'", filename);
+              }
+
+              // 检查大小写敏感性
+              if (![filename hasPrefix:@"Document"]) {
+                   NSLog(@"'%@' does not start with 'Document' (case-sensitive)", filename); // 输出: 'document.pdf' does not start with 'Document' (case-sensitive)
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 大小写转换
+    description: |
+      创建字符串的大小写转换版本。
+      - `uppercaseString`: 返回一个新的全大写字符串。
+      - `lowercaseString`: 返回一个新的全小写字符串。
+      - `capitalizedString`: 返回一个新的字符串，其中每个单词的首字母大写，其余字母小写（基于 Unicode 的单词边界规则）。
+      这些方法返回新的字符串，原字符串不变。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *mixedCase = @"hELLo wORLd";
+
+              // 1. 转换为大写
+              NSString *upper = [mixedCase uppercaseString];
+              NSLog(@"Uppercase: %@", upper); // 输出: Uppercase: HELLO WORLD
+
+              // 2. 转换为小写
+              NSString *lower = [mixedCase lowercaseString];
+              NSLog(@"Lowercase: %@", lower); // 输出: Lowercase: hello world
+
+              // 3. 转换为首字母大写
+              NSString *capitalized = [mixedCase capitalizedString];
+              NSLog(@"Capitalized: %@", capitalized); // 输出: Capitalized: Hello World
+
+              // 原字符串不变
+              NSLog(@"Original: %@", mixedCase); // 输出: Original: hELLo wORLd
+          }
+          return 0;
+      }
+      ```
+  - title: 分割字符串
+    description: 使用 `componentsSeparatedByString:` 方法将字符串按照指定的分隔符分割成一个 `NSArray` 数组，数组中的元素是分割后的子字符串。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *csvLine = @"apple,banana,orange,grape";
+              NSString *separator = @",";
+
+              // 使用 "," 分割字符串
+              NSArray *items = [csvLine componentsSeparatedByString:separator];
+
+              NSLog(@"Split items:"); // 输出: Split items:
+              for (NSString *item in items) {
+                  NSLog(@"- %@", item);
+                  // 输出:
+                  // - apple
+                  // - banana
+                  // - orange
+                  // - grape
+              }
+
+              // 如果分隔符在字符串开头或结尾，会产生空字符串元素
+              NSString *spacedString = @" one two three ";
+              NSArray *words = [spacedString componentsSeparatedByString:@" "];
+              NSLog(@"Words: %@", words); // 输出: Words: ( "", one, two, three, "" )
+          }
+          return 0;
+      }
+      ```
+  - title: 替换子串 (不可变)
+    description: |
+      使用 `stringByReplacingOccurrencesOfString:withString:` 方法创建一个新的字符串，其中所有出现的目标子串都被替换为指定的替换字符串。原字符串不变。
+      - `stringByReplacingOccurrencesOfString:withString:options:range:`: 提供更多选项，如大小写不敏感替换、限定替换范围等。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *original = @"The quick brown fox jumps over the lazy dog.";
+              NSString *toReplace = @"fox";
+              NSString *replacement = @"cat";
+
+              // 替换所有出现的 "fox" 为 "cat"
+              NSString *replaced = [original stringByReplacingOccurrencesOfString:toReplace withString:replacement];
+
+              NSLog(@"Original: %@", original);      // 输出: Original: The quick brown fox jumps over the lazy dog.
+              NSLog(@"Replaced: %@", replaced);      // 输出: Replaced: The quick brown cat jumps over the lazy dog.
+
+              // 不区分大小写替换
+              NSString *caseInsensitive = @"Case TEST case test";
+              NSString *replacedCaseInsensitive = [caseInsensitive stringByReplacingOccurrencesOfString:@"test"
+                                                                                           withString:@"REPLACED"
+                                                                                              options:NSCaseInsensitiveSearch
+                                                                                                range:NSMakeRange(0, [caseInsensitive length])];
+              NSLog(@"Case Insensitive Replace: %@", replacedCaseInsensitive); // 输出: Case Insensitive Replace: Case REPLACED case REPLACED
+          }
+          return 0;
+      }
+      ```
+  - title: 移除首尾字符
+    description: |
+      使用 `stringByTrimmingCharactersInSet:` 方法创建一个新的字符串，移除了原字符串首尾部包含在指定字符集 (`NSCharacterSet`) 中的字符。
+      常用的字符集包括：
+      - `[NSCharacterSet whitespaceCharacterSet]`: 移除标准空格。
+      - `[NSCharacterSet whitespaceAndNewlineCharacterSet]`: 移除空格和换行符。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *paddedString = @"   \n  Some Content \t\n ";
+
+              // 移除首尾的空白字符和换行符
+              NSCharacterSet *whitespaceAndNewlines = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+              NSString *trimmedString = [paddedString stringByTrimmingCharactersInSet:whitespaceAndNewlines];
+
+              NSLog(@"Original: '[%@]", paddedString);    // 输出: Original: '[   \n  Some Content \t\n ]
+              NSLog(@"Trimmed:  '[%@]'", trimmedString); // 输出: Trimmed:  '[Some Content]'
+          }
+          return 0;
+      }
+      ```
+  - title: 创建可变字符串 (NSMutableString)
+    description: |
+      `NSMutableString` 是 `NSString` 的子类，允许在创建后修改其内容。创建方法：
+      - `mutableStringWithCapacity:`: 类方法，创建一个具有初始容量的可变字符串（容量会自动增长）。
+      - `stringWithCapacity:`: 功能同上。
+      - `initWithCapacity:`: 实例方法，需要先 `alloc`。
+      - 从 `NSString` 创建：使用 `mutableCopy` 方法复制一个 `NSString` 得到 `NSMutableString`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 1. 使用 mutableStringWithCapacity: 创建
+              NSMutableString *mutableStr1 = [NSMutableString stringWithCapacity:50];
+              [mutableStr1 appendString:@"Initial content."]; // 可以添加内容
+              NSLog(@"Mutable String 1: %@", mutableStr1); // 输出: Mutable String 1: Initial content.
+
+              // 2. 使用 initWithCapacity: 创建 (需要 alloc)
+              NSMutableString *mutableStr2 = [[NSMutableString alloc] initWithCapacity:10];
+              [mutableStr2 setString:@"Another mutable string"]; // 可以设置内容
+              NSLog(@"Mutable String 2: %@", mutableStr2); // 输出: Mutable String 2: Another mutable string
+
+              // 3. 从 NSString 创建 (使用 mutableCopy)
+              NSString *immutableSource = @"Source String";
+              NSMutableString *mutableStr3 = [immutableSource mutableCopy]; // 创建可变副本
+              [mutableStr3 appendString:@" - Copied and Mutable"];
+              NSLog(@"Mutable String 3 from copy: %@", mutableStr3); // 输出: Mutable String 3 from copy: Source String - Copied and Mutable
+              NSLog(@"Original immutable source: %@", immutableSource); // 输出: Original immutable source: Source String (原字符串不变)
+          }
+          return 0;
+      }
+      ```
+  - title: 追加内容到可变字符串
+    description: |
+      使用 `NSMutableString` 的方法在字符串末尾添加内容。
+      - `appendString:`: 追加一个 `NSString`。
+      - `appendFormat:`: 追加一个格式化字符串。
+      这些方法直接修改原始的 `NSMutableString` 对象。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSMutableString *builder = [NSMutableString stringWithString:@"Log: "];
+
+              // 1. 使用 appendString: 追加
+              [builder appendString:@"User logged in. "];
+              NSLog(@"After appendString: %@", builder); // 输出: After appendString: Log: User logged in.
+
+              // 2. 使用 appendFormat: 追加
+              NSString *userName = @"Alice";
+              NSDate *now = [NSDate date];
+              [builder appendFormat:@"User: %@, Time: %@", userName, now];
+              NSLog(@"After appendFormat: %@", builder); // 输出: After appendFormat: Log: User logged in. User: Alice, Time: <当前日期时间>
+          }
+          return 0;
+      }
+      ```
+  - title: 插入内容到可变字符串
+    description: 使用 `insertString:atIndex:` 方法在 `NSMutableString` 的指定索引位置插入一个字符串。索引从 0 开始，插入点之后的所有字符会向后移动。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSMutableString *myString = [NSMutableString stringWithString:@"Hello World!"];
+
+              // 在索引 6 的位置 (W 前面) 插入 ", Cruel"
+              [myString insertString:@", Cruel" atIndex:6];
+
+              NSLog(@"After insertion: %@", myString); // 输出: After insertion: Hello, Cruel World!
+
+              // 注意：插入索引必须在 [0, length] 范围内，否则会引发 NSRangeException。
+              // [myString insertString:@"!" atIndex:100]; // 索引超出范围，会异常
+          }
+          return 0;
+      }
+      ```
+  - title: 删除可变字符串中的字符
+    description: 使用 `deleteCharactersInRange:` 方法从 `NSMutableString` 中删除指定范围 (`NSRange`) 内的字符。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSMutableString *myString = [NSMutableString stringWithString:@"This is some deletable text."];
+
+              // 删除从索引 5 开始，长度为 5 的子串 ("is so")
+              NSRange rangeToDelete = NSMakeRange(5, 5);
+              [myString deleteCharactersInRange:rangeToDelete];
+
+              NSLog(@"After deletion: %@", myString); // 输出: After deletion: This me deletable text.
+
+              // 注意：删除范围必须在字符串的有效边界内，否则会引发 NSRangeException。
+          }
+          return 0;
+      }
+      ```
+  - title: 替换可变字符串中的内容
+    description: |
+      使用 `NSMutableString` 的方法替换指定范围内的字符或所有出现的子串。
+      - `replaceCharactersInRange:withString:`: 用指定的字符串替换 `NSRange` 范围内的字符。替换字符串的长度可以与被替换范围的长度不同。
+      - `replaceOccurrencesOfString:withString:options:range:`: 替换字符串中所有（或在指定范围内）出现的某个子串。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSMutableString *myString = [NSMutableString stringWithString:@"Objective-C is fun, Objective-C is powerful."];
+
+              // 1. 使用 replaceCharactersInRange:withString: 替换范围
+              // 替换从索引 0 开始，长度为 11 的子串 ("Objective-C") 为 "Swift"
+              NSRange rangeToReplace = NSMakeRange(0, 11);
+              [myString replaceCharactersInRange:rangeToReplace withString:@"Swift"];
+              NSLog(@"After replacing range: %@", myString); // 输出: After replacing range: Swift is fun, Objective-C is powerful.
+
+              // 2. 使用 replaceOccurrencesOfString:... 替换所有出现
+              // 替换所有出现的 "Objective-C" (现在只剩一个) 为 "ObjC"
+              NSString *target = @"Objective-C";
+              NSString *replacement = @"ObjC";
+              NSRange searchRange = NSMakeRange(0, [myString length]); // 搜索整个字符串
+              NSUInteger occurrences = [myString replaceOccurrencesOfString:target
+                                                                 withString:replacement
+                                                                    options:0 // 默认选项 (区分大小写)
+                                                                      range:searchRange];
+
+              NSLog(@"After replacing all occurrences (%lu): %@", (unsigned long)occurrences, myString);
+              // 输出: After replacing all occurrences (1): Swift is fun, ObjC is powerful.
+          }
+          return 0;
+      }
+      ```
+  - title: 设置可变字符串的内容
+    description: 使用 `setString:` 方法完全替换 `NSMutableString` 的当前内容为一个新的 `NSString` 的内容。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSMutableString *mutableStr = [NSMutableString stringWithString:@"Initial value"];
+              NSLog(@"Before setString: %@", mutableStr); // 输出: Before setString: Initial value
+
+              // 使用 setString: 替换整个内容
+              [mutableStr setString:@"Completely new content"];
+
+              NSLog(@"After setString: %@", mutableStr); // 输出: After setString: Completely new content
+          }
+          return 0;
+      }
+      ```
+  - title: 不可变与可变字符串转换
+    description: |
+      可以在 `NSString` 和 `NSMutableString` 之间进行转换：
+      - `NSString` -> `NSMutableString`: 使用 `mutableCopy` 方法创建一个可变副本。
+      - `NSMutableString` -> `NSString`:
+        - 直接赋值：因为 `NSMutableString` 是 `NSString` 的子类，可以直接将其赋值给 `NSString` 类型的指针。此时得到的是一个指向可变对象的不可变引用，但对象本身仍可变。
+        - 使用 `copy` 或 `stringWithString:`: 创建一个真正的不可变副本。推荐使用 `copy` 来获取不可变版本，确保内容不会意外改变。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 1. NSString -> NSMutableString
+              NSString *immutable = @"Immutable";
+              NSMutableString *mutableCopy = [immutable mutableCopy];
+              [mutableCopy appendString:@" - Now Mutable"];
+              NSLog(@"Mutable from immutable: %@", mutableCopy); // 输出: Mutable from immutable: Immutable - Now Mutable
+
+              // 2. NSMutableString -> NSString
+              NSMutableString *mutableSource = [NSMutableString stringWithString:@"Mutable Source"];
+
+              // a) 直接赋值 (引用仍然指向可变对象)
+              NSString *immutableRef = mutableSource;
+              // 修改原始可变字符串会影响通过不可变引用访问的内容
+              [mutableSource appendString:@" (Modified)"];
+              NSLog(@"Immutable reference to mutable: %@", immutableRef); // 输出: Immutable reference to mutable: Mutable Source (Modified)
+
+              // b) 使用 copy 创建真正的不可变副本
+              NSString *immutableCopy = [mutableSource copy];
+              // 修改原始可变字符串不会影响不可变副本
+              [mutableSource appendString:@" (Further Modified)"];
+              NSLog(@"Immutable copy: %@", immutableCopy); // 输出: Immutable copy: Mutable Source (Modified)
+              NSLog(@"Original mutable after copy: %@", mutableSource); // 输出: Original mutable after copy: Mutable Source (Modified) (Further Modified)
+          }
+          return 0;
+      }
+      ```

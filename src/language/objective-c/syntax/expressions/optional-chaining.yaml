@@ -1,0 +1,217 @@
+id: optional-chaining
+title: 可选链表达式
+description: 在 Objective-C 中，并没有像 Swift 那样的 `?.` 可选链语法。然而，Objective-C 有一个核心特性，即向 `nil` 对象发送消息是完全合法的，并且不会导致程序崩溃。这在实践中起到了类似可选链的效果，允许你安全地调用方法或访问属性，即使对象可能是 `nil`。当向 `nil` 发送消息时，方法调用会返回一个“零”值（如 `nil`、`0`、`NO`、`0.0` 或空的 `struct`），属性访问也会返回零值。这使得代码在处理可能为空的对象时更加健壮。
+usage:
+  - title: 向 nil 对象发送消息
+    description: |
+      Objective-C 的核心机制允许向 `nil` 指针发送任何消息（调用方法或访问属性）。这不会引发异常或崩溃。这是实现类似“可选链”行为的基础。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 NSString 指针并将其设置为 nil
+              NSString *myString = nil;
+
+              // 尝试向 nil 对象发送 length 消息 (访问属性)
+              // 这在 Objective-C 中是安全的，不会崩溃
+              NSUInteger len = [myString length];
+
+              // 打印结果，len 将会是 0
+              NSLog(@"Length: %lu", (unsigned long)len); // 输出: Length: 0
+
+              // 尝试向 nil 对象发送 uppercaseString 消息 (调用方法)
+              // 这也是安全的
+              NSString *upper = [myString uppercaseString];
+
+              // 打印结果，upper 将会是 nil
+              NSLog(@"Uppercase string: %@", upper); // 输出: Uppercase string: (null)
+          }
+          return 0;
+      }
+      ```
+  - title: 安全地访问属性
+    description: |
+      利用向 `nil` 发送消息的特性，你可以直接访问一个可能为 `nil` 的对象的属性，而无需显式检查对象是否为 `nil`。如果对象是 `nil`，访问属性将返回一个零值（例如，对于对象类型是 `nil`，对于数值类型是 `0`，对于 `BOOL` 是 `NO`）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Person : NSObject
+      @property (nonatomic, strong) NSString *name;
+      @property (nonatomic, assign) NSInteger age;
+      @end
+
+      @implementation Person
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Person *person1 = [[Person alloc] init];
+              person1.name = @"Alice";
+              person1.age = 30;
+
+              Person *person2 = nil; // person2 是 nil
+
+              // 访问非 nil 对象的属性
+              NSString *name1 = person1.name; // 或者 [person1 name]
+              NSInteger age1 = person1.age;   // 或者 [person1 age]
+              NSLog(@"Person 1 Name: %@, Age: %ld", name1, (long)age1);
+              // 输出: Person 1 Name: Alice, Age: 30
+
+              // 安全地访问 nil 对象的属性
+              NSString *name2 = person2.name; // 或者 [person2 name]
+              NSInteger age2 = person2.age;   // 或者 [person2 age]
+
+              // name2 将是 nil, age2 将是 0
+              NSLog(@"Person 2 Name: %@, Age: %ld", name2, (long)age2);
+              // 输出: Person 2 Name: (null), Age: 0
+          }
+          return 0;
+      }
+      ```
+  - title: 安全地调用方法
+    description: |
+      同样，你可以调用一个可能为 `nil` 的对象的方法。如果对象是 `nil`，方法调用不会执行，并且会返回一个适当的零值（对于返回对象的方法是 `nil`，对于返回基本数据类型的方法是 `0` 或 `NO` 等）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Greeter : NSObject
+      - (NSString *)generateGreeting:(NSString *)name;
+      - (BOOL)isReady;
+      @end
+
+      @implementation Greeter
+      - (NSString *)generateGreeting:(NSString *)name {
+          return [NSString stringWithFormat:@"Hello, %@!", name];
+      }
+      - (BOOL)isReady {
+          return YES;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Greeter *greeter1 = [[Greeter alloc] init];
+              Greeter *greeter2 = nil; // greeter2 是 nil
+
+              // 调用非 nil 对象的方法
+              NSString *greeting1 = [greeter1 generateGreeting:@"Bob"];
+              BOOL ready1 = [greeter1 isReady];
+              NSLog(@"Greeter 1 Greeting: %@, Ready: %d", greeting1, ready1);
+              // 输出: Greeter 1 Greeting: Hello, Bob!, Ready: 1 (YES)
+
+              // 安全地调用 nil 对象的方法
+              NSString *greeting2 = [greeter2 generateGreeting:@"Charlie"];
+              BOOL ready2 = [greeter2 isReady];
+
+              // greeting2 将是 nil, ready2 将是 NO (0)
+              NSLog(@"Greeter 2 Greeting: %@, Ready: %d", greeting2, ready2);
+              // 输出: Greeter 2 Greeting: (null), Ready: 0 (NO)
+          }
+          return 0;
+      }
+      ```
+  - title: 链式调用（访问嵌套属性/方法）
+    description: |
+      由于向 `nil` 发送消息返回 `nil`（对于对象类型），你可以将属性访问和方法调用链接起来。如果链中的任何一个环节的对象是 `nil`，整个链就会安全地“短路”，最终结果是 `nil` 或零值，而不会导致崩溃。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Address : NSObject
+      @property (nonatomic, strong) NSString *street;
+      @end
+      @implementation Address
+      @end
+
+      @interface Person : NSObject
+      @property (nonatomic, strong) NSString *name;
+      @property (nonatomic, strong) Address *address; // Person 可能有关联的 Address
+      @end
+      @implementation Person
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // Case 1: Person 和 Address 都存在
+              Person *person1 = [[Person alloc] init];
+              person1.name = @"Alice";
+              person1.address = [[Address alloc] init];
+              person1.address.street = @"123 Main St";
+
+              // 链式访问: person1.address.street (等价于 [[person1 address] street])
+              NSString *street1 = person1.address.street;
+              NSLog(@"Person 1 Street: %@", street1); // 输出: Person 1 Street: 123 Main St
+
+              // Case 2: Person 存在，但 Address 是 nil
+              Person *person2 = [[Person alloc] init];
+              person2.name = @"Bob";
+              person2.address = nil; // 地址为 nil
+
+              // 链式访问: person2.address 是 nil, 所以访问 .street 会安全地返回 nil
+              NSString *street2 = person2.address.street;
+              NSLog(@"Person 2 Street: %@", street2); // 输出: Person 2 Street: (null)
+
+              // Case 3: Person 本身就是 nil
+              Person *person3 = nil;
+
+              // 链式访问: person3 是 nil, 访问 .address 返回 nil, 接着访问 .street 仍然是 nil
+              NSString *street3 = person3.address.street;
+              NSLog(@"Person 3 Street: %@", street3); // 输出: Person 3 Street: (null)
+          }
+          return 0;
+      }
+      ```
+  - title: 返回值处理
+    description: |
+      当向 `nil` 对象发送消息时，返回值的类型决定了具体返回什么：
+      - **对象类型指针** (id, NSString*, NSArray*, etc.): 返回 `nil`。
+      - **基本数据类型** (int, float, double, NSInteger, CGFloat, etc.): 返回 `0`。
+      - **BOOL**: 返回 `NO` (也就是 `0`)。
+      - **结构体 (struct)**: 返回一个所有成员都为零的结构体。例如，`CGRectZero`、`CGPointZero`、`CGSizeZero`。
+      - **void**: 方法不执行，无返回值。
+
+      了解这些规则对于处理链式调用的结果至关重要。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // For CGRect
+
+      @interface MyObject : NSObject
+      - (NSString *)getString;
+      - (NSInteger)getInt;
+      - (BOOL)getBool;
+      - (CGRect)getRect;
+      @end
+
+      @implementation MyObject
+      // 假设有这些方法的实现...
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyObject *obj = nil; // 对象为 nil
+
+              // 调用返回对象的方法
+              NSString *strResult = [obj getString];
+              NSLog(@"String result: %@", strResult); // 输出: String result: (null)
+
+              // 调用返回整型的方法
+              NSInteger intResult = [obj getInt];
+              NSLog(@"Integer result: %ld", (long)intResult); // 输出: Integer result: 0
+
+              // 调用返回布尔值的方法
+              BOOL boolResult = [obj getBool];
+              NSLog(@"BOOL result: %d", boolResult); // 输出: BOOL result: 0 (NO)
+
+              // 调用返回结构体的方法
+              CGRect rectResult = [obj getRect];
+              NSLog(@"CGRect result: %@", NSStringFromCGRect(rectResult)); // 输出: CGRect result: {{0, 0}, {0, 0}}
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,333 @@
+id: definition
+title: 函数定义
+description: 在 Objective-C 中，“函数”通常指 C 语言风格的函数，而面向对象的方法（Method）是其核心。本教程主要关注 Objective-C 方法的定义。方法是与类或对象关联的行为。实例方法 (-) 由类的实例调用，类方法 (+) 由类本身调用。方法定义包含返回类型、方法签名（名称和参数）以及实现代码块。
+usage:
+  - title: 定义无参数的实例方法
+    description: |
+      实例方法使用减号 `-` 前缀，属于类的对象。它们可以访问实例变量。定义包含返回类型和方法名。
+
+      **语法:**
+      ```objc
+      // 声明 (通常在 .h 文件中)
+      - (返回类型)方法名;
+
+      // 实现 (通常在 .m 文件中)
+      - (返回类型)方法名 {
+          // 方法体
+          return 返回值; // 如果返回类型不是 void
+      }
+      ```
+      - `-`: 表示这是一个实例方法。
+      - `(返回类型)`: 指定方法执行后返回的数据类型（如 `void`, `NSString *`, `int` 等）。`void` 表示不返回任何值。
+      - `方法名`: 方法的名称，遵循驼峰命名法。
+    example: |
+      ```objc
+      // MyClass.h (声明)
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+
+      // 声明一个无参数、无返回值的实例方法
+      - (void)sayHello;
+
+      @end
+
+      // MyClass.m (实现)
+      #import "MyClass.h"
+
+      @implementation MyClass
+
+      // 实现 sayHello 方法
+      - (void)sayHello {
+          NSLog(@"Hello, World!"); // 在控制台输出问候语
+      }
+
+      @end
+
+      // main.m (使用)
+      #import <Foundation/Foundation.h>
+      #import "MyClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyClass *myObject = [[MyClass alloc] init]; // 创建 MyClass 的实例
+              [myObject sayHello]; // 调用实例方法 sayHello
+          }
+          return 0;
+      }
+      ```
+  - title: 定义带单个参数的实例方法
+    description: |
+      带参数的方法允许在调用时传递数据。方法名后面紧跟冒号 `:` 和参数定义。
+
+      **语法:**
+      ```objc
+      // 声明
+      - (返回类型)方法名:(参数类型)参数名;
+
+      // 实现
+      - (返回类型)方法名:(参数类型)参数名 {
+          // 方法体，可以使用 '参数名'
+      }
+      ```
+      - `:(参数类型)参数名`: 定义一个参数。冒号是方法名的一部分。`参数类型` 指定了期望传入的数据类型，`参数名` 是在方法内部使用的变量名。
+    example: |
+      ```objc
+      // MyClass.h
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+
+      // 声明一个带 NSString 类型参数的实例方法
+      - (void)greet:(NSString *)name;
+
+      @end
+
+      // MyClass.m
+      #import "MyClass.h"
+
+      @implementation MyClass
+
+      // 实现 greet 方法
+      - (void)greet:(NSString *)name {
+          NSLog(@"Hello, %@!", name); // 输出带有名字的问候语
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "MyClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyClass *myObject = [[MyClass alloc] init];
+              [myObject greet:@"Alice"]; // 调用 greet 方法并传递参数 "Alice"
+          }
+          return 0;
+      }
+      ```
+  - title: 定义带多个参数的实例方法
+    description: |
+      Objective-C 使用具名参数（Named Parameters）来定义带多个参数的方法。方法名由多个部分组成，每个部分后面跟一个参数。
+
+      **语法:**
+      ```objc
+      // 声明
+      - (返回类型)方法名第一部分:(参数类型1)参数名1 方法名第二部分:(参数类型2)参数名2 ... ;
+
+      // 实现
+      - (返回类型)方法名第一部分:(参数类型1)参数名1 方法名第二部分:(参数类型2)参数名2 ... {
+          // 方法体，可以使用 参数名1, 参数名2, ...
+      }
+      ```
+      - 完整的方法签名是 `方法名第一部分:方法名第二部分:...`。
+      - 每个参数前都有一个描述性的标签（方法名的一部分）和冒号。
+    example: |
+      ```objc
+      // Calculator.h
+      #import <Foundation/Foundation.h>
+
+      @interface Calculator : NSObject
+
+      // 声明一个带两个 int 参数并返回 int 的实例方法
+      - (int)addNumber:(int)num1 toNumber:(int)num2;
+
+      @end
+
+      // Calculator.m
+      #import "Calculator.h"
+
+      @implementation Calculator
+
+      // 实现 addNumber:toNumber: 方法
+      - (int)addNumber:(int)num1 toNumber:(int)num2 {
+          int sum = num1 + num2; // 计算两个数的和
+          NSLog(@"%d + %d = %d", num1, num2, sum); // 输出计算过程
+          return sum; // 返回计算结果
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "Calculator.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init];
+              // 调用 addNumber:toNumber: 方法
+              int result = [calc addNumber:5 toNumber:3];
+              NSLog(@"The result is: %d", result); // 输出最终结果
+          }
+          return 0;
+      }
+      ```
+  - title: 定义类方法
+    description: |
+      类方法使用加号 `+` 前缀，由类本身调用，而不是类的实例。它们通常用于工厂方法（创建类的实例）或执行与特定实例无关的操作。类方法不能直接访问实例变量。
+
+      **语法:**
+      ```objc
+      // 声明
+      + (返回类型)方法名:(参数类型)参数名 ... ;
+
+      // 实现
+      + (返回类型)方法名:(参数类型)参数名 ... {
+          // 方法体
+      }
+      ```
+      - `+`: 表示这是一个类方法。
+      - 其他部分（返回类型、方法名、参数）与实例方法类似。
+    example: |
+      ```objc
+      // UtilityManager.h
+      #import <Foundation/Foundation.h>
+
+      @interface UtilityManager : NSObject
+
+      // 声明一个类方法，用于获取共享实例（单例模式常用）
+      + (UtilityManager *)sharedManager;
+
+      // 声明一个类方法，用于执行通用操作
+      + (NSString *)getAppName;
+
+      // 实例方法，用于演示区别
+      - (void)doSomethingInstanceSpecific;
+
+      @end
+
+      // UtilityManager.m
+      #import "UtilityManager.h"
+
+      static UtilityManager *sharedInstance = nil; // 静态变量存储单例
+
+      @implementation UtilityManager
+
+      // 实现类方法 sharedManager
+      + (UtilityManager *)sharedManager {
+          // 使用 dispatch_once 保证线程安全地初始化单例
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              sharedInstance = [[self alloc] init]; // 注意这里用 self 而不是 UtilityManager
+          });
+          return sharedInstance; // 返回共享实例
+      }
+
+      // 实现类方法 getAppName
+      + (NSString *)getAppName {
+          return @"MyApp"; // 返回应用程序名称
+      }
+
+      // 实现实例方法
+      - (void)doSomethingInstanceSpecific {
+          NSLog(@"Doing something specific to this instance.");
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "UtilityManager.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用类方法 getAppName
+              NSString *appName = [UtilityManager getAppName];
+              NSLog(@"App Name: %@", appName);
+
+              // 调用类方法获取共享实例
+              UtilityManager *manager1 = [UtilityManager sharedManager];
+              [manager1 doSomethingInstanceSpecific]; // 通过获取到的实例调用实例方法
+
+              UtilityManager *manager2 = [UtilityManager sharedManager];
+              // 验证 manager1 和 manager2 是同一个实例
+              if (manager1 == manager2) {
+                  NSLog(@"Both managers point to the same shared instance.");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 区分方法声明与实现
+    description: |
+      Objective-C 代码通常分离为接口（`.h` 文件）和实现（`.m` 文件）。
+      - **声明 (Interface):** 在头文件 (`.h`) 中使用 `@interface` 块定义类的公共接口，包括属性和方法的声明。这告诉其他类如何与该类交互。
+      - **实现 (Implementation):** 在实现文件 (`.m`) 中使用 `@implementation` 块提供方法的具体实现代码。`.m` 文件通常会导入对应的 `.h` 文件。
+
+      这种分离有助于代码组织、编译优化和接口与实现的分离。
+    example: |
+      ```objc
+      // Person.h (接口/声明文件)
+      #import <Foundation/Foundation.h>
+
+      // 使用 @interface 定义类的接口
+      @interface Person : NSObject
+
+      // 属性声明 (后续教程会涉及)
+      @property (nonatomic, strong) NSString *name;
+      @property (nonatomic, assign) NSInteger age;
+
+      // 方法声明 (公共接口的一部分)
+      // 初始化方法
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age;
+
+      // 实例方法声明
+      - (void)displayInfo;
+
+      // 类方法声明
+      + (NSInteger)maxAge;
+
+      @end // 结束接口定义
+
+
+      // Person.m (实现文件)
+      #import "Person.h" // 导入对应的头文件以获取声明信息
+
+      // 使用 @implementation 定义类的实现
+      @implementation Person
+
+      // 实现初始化方法
+      - (instancetype)initWithName:(NSString *)name age:(NSInteger)age {
+          self = [super init]; // 调用父类的初始化方法
+          if (self) {
+              // 初始化属性
+              _name = [name copy]; // 使用 _name 访问实例变量 (属性的底层存储)
+              _age = age;         // 使用 _age 访问实例变量
+          }
+          return self; // 返回初始化后的实例
+      }
+
+      // 实现实例方法 displayInfo
+      - (void)displayInfo {
+          // 访问属性 (可以通过 self. 或直接访问 _)
+          NSLog(@"Name: %@, Age: %ld", self.name, (long)self.age);
+      }
+
+      // 实现类方法 maxAge
+      + (NSInteger)maxAge {
+          return 120; // 返回一个常量值
+      }
+
+      @end // 结束实现定义
+
+
+      // main.m (使用 Person 类)
+      #import <Foundation/Foundation.h>
+      #import "Person.h" // 只需要导入 .h 文件即可使用 Person 类
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用初始化方法创建 Person 实例
+              Person *person1 = [[Person alloc] initWithName:@"Bob" age:30];
+
+              // 调用实例方法
+              [person1 displayInfo]; // 输出: Name: Bob, Age: 30
+
+              // 调用类方法
+              NSInteger maxAllowedAge = [Person maxAge];
+              NSLog(@"Maximum allowed age: %ld", (long)maxAllowedAge); // 输出: Maximum allowed age: 120
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,203 @@
+id: implicit
+title: 隐式类型转换
+description: Objective-C 中的隐式类型转换是指编译器在不需要显式强制类型转换操作符的情况下，自动将一种数据类型转换为另一种兼容的数据类型。这通常发生在赋值、方法参数传递、返回值以及算术运算等场景。它主要利用了 C 语言的类型转换规则以及 Objective-C 的动态类型特性（如 `id` 类型）和面向对象特性（如继承和协议）。隐式转换可以简化代码，但也可能隐藏类型不匹配的风险。
+usage:
+  - title: 基本数据类型间的隐式转换（算术转换）
+    description: |
+      Objective-C 继承了 C 语言的基本数据类型及其转换规则。在混合类型的算术运算或赋值时，较“小”的类型通常会被隐式提升为较“大”的类型以保证精度或避免数据丢失。
+      - **整数提升**: `char`, `short` 在运算中通常提升为 `int`。
+      - **浮点数转换**: 整数类型与浮点数类型运算时，整数会转换为浮点数。`float` 会在需要时提升为 `double`。
+      - **赋值转换**: 将一个类型的值赋给另一个类型的变量时，如果目标类型能容纳源类型的值，可能会发生隐式转换（例如 `int` 赋给 `float`）。如果目标类型范围更小，可能导致截断或未定义行为。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int integerVar = 10;
+              float floatVar = 5.5f;
+              double doubleVar;
+
+              // 隐式转换：int (integerVar) 提升为 float 进行加法运算
+              float sumFloat = integerVar + floatVar; // integerVar 被隐式转换为 10.0f
+              NSLog(@"int + float = %f", sumFloat); // 输出: int + float = 15.500000
+
+              // 隐式转换：int (integerVar) 赋给 double 变量
+              doubleVar = integerVar; // integerVar (10) 被隐式转换为 double (10.0)
+              NSLog(@"int assigned to double = %f", doubleVar); // 输出: int assigned to double = 10.000000
+
+              char charVar = 'A'; // ASCII 值为 65
+              // 隐式转换：char (charVar) 提升为 int 进行加法运算
+              int resultInt = charVar + 1; // charVar (65) 被隐式转换为 int (65)
+              NSLog(@"char + int = %d", resultInt); // 输出: char + int = 66
+          }
+          return 0;
+      }
+      ```
+  - title: 任意对象指针隐式转换为 `id` 类型
+    description: |
+      `id` 是 Objective-C 中的一个特殊类型，代表“任意类型的 Objective-C 对象指针”。任何 Objective-C 对象指针（如 `NSString *`, `NSArray *`, 或自定义类的实例指针）都可以被隐式地转换为 `id` 类型。这使得编写通用代码成为可能，例如将不同类型的对象存入同一个集合 `NSArray` 或 `NSDictionary` 中。
+      - **语法**: 直接将任何对象指针赋值给 `id` 类型的变量即可。
+      - **注意**: 虽然 `id` 类型提供了灵活性，但编译器在编译时无法检查发送给 `id` 类型对象的消息是否真的被该对象实现，错误只会在运行时暴露。将 `id` 类型变量赋值回特定对象指针类型时，虽然有时编译器不报错，但为了类型安全，通常建议进行显式转换或使用 `isKindOfClass:` / `respondsToSelector:` 进行检查。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *myString = @"Hello, World!";
+              NSNumber *myNumber = @123;
+              NSObject *myObject = [[NSObject alloc] init];
+
+              // 隐式转换：将 NSString *, NSNumber *, NSObject * 转换为 id
+              id genericObject1 = myString;
+              id genericObject2 = myNumber;
+              id genericObject3 = myObject;
+
+              NSLog(@"String as id: %@", genericObject1); // 输出: String as id: Hello, World!
+              NSLog(@"Number as id: %@", genericObject2); // 输出: Number as id: 123
+
+              // 可以将不同类型的对象放入同一个数组，因为数组接受 id 类型
+              NSArray *mixedArray = @[genericObject1, genericObject2, genericObject3];
+              NSLog(@"Array with mixed types: %@", mixedArray);
+              // 输出: Array with mixed types: (
+              //     "Hello, World!",
+              //     123,
+              //     "<NSObject: 0x...>" // 地址会变化
+              // )
+          }
+          return 0;
+      }
+      ```
+  - title: 子类对象指针隐式转换为父类指针（向上转型）
+    description: |
+      在面向对象编程中，子类是父类的一种特殊化。因此，一个指向子类对象的指针可以被安全地、隐式地转换为指向其父类（或祖先类）的指针。这被称为“向上转型”（Upcasting）。这允许你将子类对象当作父类对象来处理，调用父类中定义的方法。
+      - **语法**: 直接将子类指针赋值给父类指针类型的变量。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个父类
+      @interface Vehicle : NSObject
+      - (void)move;
+      @end
+      @implementation Vehicle
+      - (void)move { NSLog(@"Vehicle is moving"); }
+      @end
+
+      // 定义一个子类
+      @interface Car : Vehicle
+      - (void)drift;
+      @end
+      @implementation Car
+      - (void)move { NSLog(@"Car is driving on the road"); } // 重写父类方法
+      - (void)drift { NSLog(@"Car is drifting"); }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Car *myCar = [[Car alloc] init];
+
+              // 隐式转换：将 Car * (子类指针) 转换为 Vehicle * (父类指针)
+              Vehicle *genericVehicle = myCar;
+
+              // 调用父类中定义的方法，实际执行的是子类重写后的版本（多态）
+              [genericVehicle move]; // 输出: Car is driving on the road
+
+              // 注意：不能通过父类指针调用子类特有的方法
+              // [genericVehicle drift]; // 编译错误：Vehicle 类没有 drift 方法
+          }
+          return 0;
+      }
+      ```
+  - title: 对象指针隐式转换为协议类型 (`id<协议名>`)
+    description: |
+      如果一个类声明并遵循了某个协议（`@protocol`），那么指向该类实例的指针可以被隐式地转换为 `id` 类型并附加上该协议的约束，即 `id<协议名>`。这表示“任何遵循该协议的对象指针”。这种转换允许你编写依赖于接口（协议）而非具体实现的代码。
+      - **语法**: 将遵循协议的对象指针赋值给 `id<协议名>` 类型的变量。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个协议
+      @protocol Logging <NSObject>
+      - (void)logMessage:(NSString *)message;
+      @end
+
+      // 定义一个遵循协议的类
+      @interface MyLogger : NSObject <Logging>
+      @end
+      @implementation MyLogger
+      - (void)logMessage:(NSString *)message {
+          NSLog(@"MyLogger logs: %@", message);
+      }
+      @end
+
+      // 定义另一个遵循协议的类
+      @interface NetworkLogger : NSObject <Logging>
+      @end
+      @implementation NetworkLogger
+      - (void)logMessage:(NSString *)message {
+          NSLog(@"NetworkLogger sends: %@", message);
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyLogger *fileLogger = [[MyLogger alloc] init];
+              NetworkLogger *networkLogger = [[NetworkLogger alloc] init];
+
+              // 隐式转换：将 MyLogger * 转换为 id<Logging>
+              id<Logging> logger1 = fileLogger;
+
+              // 隐式转换：将 NetworkLogger * 转换为 id<Logging>
+              id<Logging> logger2 = networkLogger;
+
+              // 可以通过协议类型指针调用协议中定义的方法
+              [logger1 logMessage:@"System started"]; // 输出: MyLogger logs: System started
+              [logger2 logMessage:@"User logged in"]; // 输出: NetworkLogger sends: User logged in
+
+              // 可以将不同实现类但遵循相同协议的对象放入数组
+              NSArray<id<Logging>> *loggers = @[logger1, logger2];
+              for (id<Logging> logger in loggers) {
+                  [logger logMessage:@"Processing event"];
+              }
+              // 输出会包含 MyLogger 和 NetworkLogger 的日志信息
+          }
+          return 0;
+      }
+      ```
+  - title: 对象指针隐式转换为 `void*`
+    description: |
+      在与 C 代码或者需要通用指针类型的底层 API（如 Core Foundation）交互时，Objective-C 对象指针（如 `NSObject *` 或其子类指针）可以被隐式地转换为 C 的通用指针类型 `void *`。反之，将 `void *` 转换回 Objective-C 对象指针通常需要显式转换，并且需要开发者保证 `void *` 确实指向一个有效的 Objective-C 对象。
+      - **语法**: 将 Objective-C 对象指针直接赋值给 `void *` 变量或传递给接受 `void *` 参数的函数。
+      - **内存管理**: 当将 Objective-C 对象指针转换为 `void *` 时，特别是在涉及 Core Foundation 等 C API 时，需要注意内存管理问题。可能需要使用 `(__bridge T)obj`, `(__bridge_transfer T)obj`, 或 `(__bridge_retained T)obj` 等 ARC 桥接转换来明确所有权的转移。不过，单纯的赋值给 `void *` 变量是隐式的。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 一个模拟 C 函数，接受 void* 参数
+      void processData(void *data) {
+          // 在 C 函数中，通常需要知道这个 void* 实际指向什么类型
+          // 这里我们假设它是一个 NSObject 指针，并进行桥接转换回 NSObject*
+          // 注意：在实际应用中，需要确保类型安全
+          NSObject *object = (__bridge NSObject *)data;
+          NSLog(@"Processing data with description: %@", [object description]);
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSString *myString = @"Objective-C Object";
+
+              // 隐式转换：将 NSString * 转换为 void *
+              void *genericPointer = (__bridge void *)myString; // 使用 __bridge 告知 ARC 不转移所有权
+
+              NSLog(@"Pointer address: %p", genericPointer); // 输出指针地址
+
+              // 将 Objective-C 对象指针传递给接受 void* 的 C 函数
+              // 这里也需要桥接转换来管理内存
+              processData((__bridge void *)myString);
+              // 输出: Processing data with description: Objective-C Object
+          }
+          return 0;
+      }
+      ```

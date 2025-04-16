@@ -5,11 +5,11 @@ children:
   - boolean
   - character
   - string
-  - tuple
   - enum
+  - union
   - struct
+  - pointer
   - 'null'
-  - optional
   - alias
   - void
   - any

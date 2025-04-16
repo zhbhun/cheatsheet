@@ -1,0 +1,200 @@
+id: label
+title: 标签
+query: Objective-C 标签语句
+description: 在 Objective-C 中，标签（Label）是一个标识符，后跟一个冒号（:）。它为程序中的某个语句提供一个名称，主要用作 `goto` 语句的跳转目标。虽然 `goto` 语句在现代编程实践中通常不被推荐使用，因为它可能导致代码难以理解和维护（所谓的“面条代码”），但在某些特定场景下，如跳出深层嵌套循环或进行集中的错误处理和清理时，它可能被视为一种可选方案。
+usage:
+  - title: 定义标签
+    description: |
+      标签通过一个标识符后跟冒号来定义，并放置在任何可执行语句之前。这个标签为该语句提供了一个入口点，可以被 `goto` 语句引用。
+
+      **语法:**
+      ```objectivec
+      labelName: statement;
+      ```
+      - `labelName`: 你为标签选择的标识符。
+      - `statement`: 标签所标记的可执行语句。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"程序开始");
+
+              // 定义一个名为 'myLabel' 的标签
+              myLabel:
+              NSLog(@"这是一个标签标记的语句");
+
+              // ... 其他代码 ...
+
+              NSLog(@"程序结束");
+          }
+          return 0;
+      }
+      // 输出:
+      // 程序开始
+      // 这是一个标签标记的语句
+      // 程序结束
+      ```
+  - title: 使用 goto 跳转到标签
+    description: |
+      `goto` 语句用于无条件地将程序的控制流转移到同一函数内由指定标签标识的语句。使用 `goto` 应谨慎，因为它会破坏代码的结构化流程。
+
+      **语法:**
+      ```objectivec
+      goto labelName;
+      ```
+      - `goto`: 关键字，用于执行跳转。
+      - `labelName`: 要跳转到的目标标签的名称。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int count = 0;
+
+              startLoop: // 定义标签 'startLoop'
+              count++;
+              NSLog(@"当前计数: %d", count);
+
+              if (count < 3) {
+                  // 如果 count 小于 3，跳转回 'startLoop' 标签
+                  goto startLoop;
+              }
+
+              NSLog(@"循环结束");
+
+              goto endPoint; // 跳转到 'endPoint' 标签
+
+              // 这行代码将被跳过
+              NSLog(@"这行不会被执行");
+
+              endPoint: // 定义标签 'endPoint'
+              NSLog(@"程序到达终点");
+          }
+          return 0;
+      }
+      // 输出:
+      // 当前计数: 1
+      // 当前计数: 2
+      // 当前计数: 3
+      // 循环结束
+      // 程序到达终点
+      ```
+  - title: 跳出嵌套循环
+    description: |
+      `goto` 和标签的一个相对常见的（尽管仍需谨慎使用）场景是从深层嵌套循环中直接跳出。这可以避免使用复杂的布尔标志或多次 `break`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              for (int i = 0; i < 5; i++) {
+                  NSLog(@"外层循环 i = %d", i);
+                  for (int j = 0; j < 5; j++) {
+                      NSLog(@"  内层循环 j = %d", j);
+                      if (i == 2 && j == 1) {
+                          NSLog(@"  找到特定条件，跳出所有循环");
+                          // 跳转到 'loopExit' 标签，直接结束两层循环
+                          goto loopExit;
+                      }
+                  }
+              }
+
+              // 标签定义在循环之后
+              loopExit:
+              NSLog(@"已退出循环");
+          }
+          return 0;
+      }
+      // 输出:
+      // 外层循环 i = 0
+      //   内层循环 j = 0
+      //   内层循环 j = 1
+      //   内层循环 j = 2
+      //   内层循环 j = 3
+      //   内层循环 j = 4
+      // 外层循环 i = 1
+      //   内层循环 j = 0
+      //   内层循环 j = 1
+      //   内层循环 j = 2
+      //   内层循环 j = 3
+      //   内层循环 j = 4
+      // 外层循环 i = 2
+      //   内层循环 j = 0
+      //   内层循环 j = 1
+      //   找到特定条件，跳出所有循环
+      // 已退出循环
+      ```
+  - title: 错误处理与清理
+    description: |
+      在某些情况下（尤其是在 C 风格的代码中），`goto` 可以用于将错误处理和资源清理代码集中在一个地方。如果在多个位置发生错误，都可以跳转到同一个清理标签。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      BOOL performTask1() {
+          NSLog(@"执行任务 1...");
+          // 模拟任务失败
+          BOOL success = NO;
+          if (!success) {
+              NSLog(@"任务 1 失败");
+          }
+          return success;
+      }
+
+      BOOL performTask2() {
+          NSLog(@"执行任务 2...");
+          // 模拟任务成功
+          BOOL success = YES;
+          NSLog(@"任务 2 成功");
+          return success;
+      }
+
+      void cleanupResources() {
+          NSLog(@"清理资源...");
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL success = NO;
+
+              if (!performTask1()) {
+                  // 如果任务 1 失败，跳转到 cleanup 标签
+                  goto cleanup;
+              }
+
+              if (!performTask2()) {
+                  // 如果任务 2 失败，跳转到 cleanup 标签
+                  goto cleanup;
+              }
+
+              // 如果所有任务都成功
+              success = YES;
+              NSLog(@"所有任务成功完成");
+
+              // 正常流程也需要清理（或者根据逻辑决定）
+              // 在这个例子中，我们假设只有失败才需要特殊清理，
+              // 但也可以设计成总是在最后跳转到 cleanup
+
+          cleanup: // 清理标签
+              NSLog(@"进入清理阶段");
+              cleanupResources();
+              if (!success) {
+                  NSLog(@"操作因错误而中止");
+              }
+
+              NSLog(@"程序结束");
+          }
+          return 0;
+      }
+      // 输出:
+      // 执行任务 1...
+      // 任务 1 失败
+      // 进入清理阶段
+      // 清理资源...
+      // 操作因错误而中止
+      // 程序结束
+      ```

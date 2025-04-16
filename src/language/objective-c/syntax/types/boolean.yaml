@@ -1,0 +1,279 @@
+id: boolean
+title: 布尔值
+description: 在 Objective-C 中，布尔值用于表示真（true）或假（false）的逻辑状态。它通常用于控制流程（如 `if` 语句、`while` 循环）和表示对象或操作的状态。Objective-C 使用 `BOOL` 类型来表示布尔值，并定义了 `YES` 和 `NO` 两个常量分别代表真和假。
+usage:
+  - title: 声明和初始化布尔变量
+    description: |
+      使用 `BOOL` 关键字声明布尔变量。使用 `YES` (代表真) 或 `NO` (代表假) 来初始化或赋值。
+      - `BOOL`: 用于声明布尔变量的类型。
+      - `YES`: 表示真的常量，通常定义为 `(BOOL)1`。
+      - `NO`: 表示假的常量，通常定义为 `(BOOL)0`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明并初始化一个布尔变量为 YES (真)
+              BOOL isAvailable = YES;
+
+              // 声明并初始化一个布尔变量为 NO (假)
+              BOOL isCompleted = NO;
+
+              // 打印布尔变量的值 (YES 会打印为 1, NO 会打印为 0)
+              NSLog(@"isAvailable: %d", isAvailable); // 输出: isAvailable: 1
+              NSLog(@"isCompleted: %d", isCompleted); // 输出: isCompleted: 0
+
+              // 修改布尔变量的值
+              isAvailable = NO;
+              NSLog(@"isAvailable after change: %d", isAvailable); // 输出: isAvailable after change: 0
+          }
+          return 0;
+      }
+      ```
+  - title: 在条件语句中使用布尔值
+    description: '`BOOL` 变量常用于 `if`、`else if`、`else` 等条件控制语句中，根据其真假值决定执行哪个代码块。'
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL userIsLoggedIn = YES;
+              BOOL hasAdminRights = NO;
+
+              // 检查用户是否登录
+              if (userIsLoggedIn) {
+                  NSLog(@"用户已登录."); // 输出: 用户已登录.
+
+                  // 进一步检查用户是否有管理员权限
+                  if (hasAdminRights) {
+                      NSLog(@"用户拥有管理员权限.");
+                  } else {
+                      NSLog(@"用户没有管理员权限."); // 输出: 用户没有管理员权限.
+                  }
+              } else {
+                  NSLog(@"用户未登录.");
+              }
+
+              BOOL shouldProceed = NO;
+              // 可以直接在条件中使用 BOOL 变量
+              if (shouldProceed) {
+                 NSLog(@"正在处理...");
+              } else {
+                 NSLog(@"不处理."); // 输出: 不处理.
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 执行逻辑运算
+    description: |
+      可以使用逻辑运算符对 `BOOL` 值进行组合或取反：
+      - `!` (逻辑非 NOT): 反转布尔值 (`!YES` 结果是 `NO`, `!NO` 结果是 `YES`)。
+      - `&&` (逻辑与 AND): 两个布尔值都为 `YES` 时结果为 `YES`，否则为 `NO`。
+      - `||` (逻辑或 OR): 两个布尔值至少有一个为 `YES` 时结果为 `YES`，都为 `NO` 时结果为 `NO`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL conditionA = YES;
+              BOOL conditionB = NO;
+
+              // 逻辑非 (!)
+              BOOL notConditionA = !conditionA; // notConditionA 会是 NO (0)
+              NSLog(@"!conditionA: %d", notConditionA); // 输出: !conditionA: 0
+
+              // 逻辑与 (&&)
+              BOOL resultAnd = conditionA && conditionB; // resultAnd 会是 NO (0)
+              NSLog(@"conditionA && conditionB: %d", resultAnd); // 输出: conditionA && conditionB: 0
+
+              BOOL bothTrue = conditionA && YES; // bothTrue 会是 YES (1)
+               NSLog(@"conditionA && YES: %d", bothTrue); // 输出: conditionA && YES: 1
+
+              // 逻辑或 (||)
+              BOOL resultOr = conditionA || conditionB; // resultOr 会是 YES (1)
+              NSLog(@"conditionA || conditionB: %d", resultOr); // 输出: conditionA || conditionB: 1
+
+              BOOL bothFalse = NO || conditionB; // bothFalse 会是 NO (0)
+               NSLog(@"NO || conditionB: %d", bothFalse); // 输出: NO || conditionB: 0
+
+              // 组合使用
+              BOOL complexCondition = (conditionA && !conditionB) || (!conditionA && conditionB); // (YES && YES) || (NO && NO) -> YES || NO -> YES
+              NSLog(@"Complex Condition: %d", complexCondition); // 输出: Complex Condition: 1
+          }
+          return 0;
+      }
+      ```
+  - title: 比较布尔值
+    description: |
+      可以使用比较运算符 `==` (等于) 和 `!=` (不等于) 来比较两个 `BOOL` 值。虽然可以直接在 `if` 语句中使用 `BOOL` 变量（如 `if (isEnabled)`），但显式比较（如 `if (isEnabled == YES)`）有时可以提高代码的可读性，尤其是在复杂的逻辑中。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL flag1 = YES;
+              BOOL flag2 = NO;
+
+              // 使用 == 比较
+              if (flag1 == YES) {
+                  NSLog(@"flag1 等于 YES."); // 输出: flag1 等于 YES.
+              }
+
+              if (flag2 == NO) {
+                  NSLog(@"flag2 等于 NO."); // 输出: flag2 等于 NO.
+              }
+
+              // 使用 != 比较
+              if (flag1 != flag2) {
+                  NSLog(@"flag1 不等于 flag2."); // 输出: flag1 不等于 flag2.
+              }
+
+              if (flag1 != YES) {
+                  NSLog(@"flag1 不等于 YES. (这条不会执行)");
+              } else {
+                  NSLog(@"flag1 等于 YES (使用 != 判断)."); // 输出: flag1 等于 YES (使用 != 判断).
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 作为方法的返回值
+    description: 方法可以返回 `BOOL` 类型，以指示操作是否成功、某个条件是否满足或对象的某个状态。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 示例类
+      @interface MyObject : NSObject
+      - (BOOL)isDataValid:(NSString *)data;
+      @end
+
+      @implementation MyObject
+      // 实现方法，检查数据是否有效 (简单示例)
+      - (BOOL)isDataValid:(NSString *)data {
+          if (data != nil && data.length > 0) {
+              return YES; // 数据非空，返回 YES
+          } else {
+              return NO;  // 数据为空，返回 NO
+          }
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyObject *obj = [[MyObject alloc] init];
+              NSString *validData = @"Some data";
+              NSString *invalidData = @"";
+
+              // 调用方法并接收 BOOL 返回值
+              BOOL isValid1 = [obj isDataValid:validData];
+              BOOL isValid2 = [obj isDataValid:invalidData];
+              BOOL isValid3 = [obj isDataValid:nil];
+
+              NSLog(@"'%@' is valid: %d", validData, isValid1);   // 输出: 'Some data' is valid: 1
+              NSLog(@"'%@' is valid: %d", invalidData, isValid2); // 输出: '' is valid: 0
+              NSLog(@"nil is valid: %d", isValid3);             // 输出: nil is valid: 0
+
+              // 在条件语句中使用返回的 BOOL 值
+              if ([obj isDataValid:validData]) {
+                  NSLog(@"处理有效数据..."); // 输出: 处理有效数据...
+              } else {
+                  NSLog(@"处理无效数据...");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 作为对象属性
+    description: '`BOOL` 类型常用于定义类的属性，以表示对象的状态（例如，是否启用、是否可见、是否完成等）。属性通常使用 `assign` 内存管理语义（因为 `BOOL` 是基本类型），并可能是 `nonatomic` 或 `atomic`。'
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 声明一个带有 BOOL 属性的类
+      @interface Task : NSObject
+      // 声明一个名为 isFinished 的 BOOL 属性
+      // nonatomic: 非原子操作，性能较高，适用于非多线程环境或已自行处理线程安全的情况
+      // assign: 用于基本数据类型 (如 BOOL, int, float)
+      @property (nonatomic, assign) BOOL isFinished;
+      @property (nonatomic, strong) NSString *name; // 任务名称
+      @end
+
+      @implementation Task
+      // 可以在这里添加其他方法或初始化逻辑
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Task *task1 = [[Task alloc] init];
+              task1.name = @"学习 Objective-C";
+              // 设置 BOOL 属性的值
+              task1.isFinished = NO;
+
+              Task *task2 = [[Task alloc] init];
+              task2.name = @"编写代码";
+              task2.isFinished = YES;
+
+              // 读取 BOOL 属性的值
+              NSLog(@"任务 '%@' 是否完成: %d", task1.name, task1.isFinished); // 输出: 任务 '学习 Objective-C' 是否完成: 0
+              NSLog(@"任务 '%@' 是否完成: %d", task2.name, task2.isFinished); // 输出: 任务 '编写代码' 是否完成: 1
+
+              // 根据属性值执行逻辑
+              if (task1.isFinished) {
+                  NSLog(@"任务 '%@' 已完成。", task1.name);
+              } else {
+                  NSLog(@"任务 '%@' 尚未完成。", task1.name); // 输出: 任务 '学习 Objective-C' 尚未完成。
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 布尔值的底层表示和隐式转换
+    description: |
+      在 Objective-C 中，`BOOL` 通常被定义为 `signed char`。`YES` 定义为 `(BOOL)1`，`NO` 定义为 `(BOOL)0`。在条件语句（如 `if`）中，任何非零值都会被当作“真”，而零值会被当作“假”。
+      **重要提示：** 虽然 `if(someNonZeroValue)` 会执行 `if` 块，但在处理 `BOOL` 类型时，最佳实践是始终使用 `YES` 和 `NO` 进行赋值和比较，以确保代码的清晰性和准确性。避免依赖其他整数值到布尔值的隐式转换，因为这可能导致意外行为或降低代码可读性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // YES 和 NO 的实际值
+              NSLog(@"YES = %d", YES); // 输出: YES = 1
+              NSLog(@"NO = %d", NO);   // 输出: NO = 0
+
+              // 隐式转换示例 (不推荐用于 BOOL 逻辑)
+              int nonZeroValue = -5;
+              int zeroValue = 0;
+
+              if (nonZeroValue) {
+                  NSLog(@"非零值 (%d) 在条件中被视为真。", nonZeroValue); // 输出: 非零值 (-5) 在条件中被视为真。
+              } else {
+                   NSLog(@"非零值 (%d) 在条件中被视为假。", nonZeroValue);
+              }
+
+              if (zeroValue) {
+                  NSLog(@"零值 (%d) 在条件中被视为真。", zeroValue);
+              } else {
+                  NSLog(@"零值 (%d) 在条件中被视为假。", zeroValue); // 输出: 零值 (0) 在条件中被视为假。
+              }
+
+              // 处理 BOOL 时的推荐方式
+              BOOL myFlag = YES;
+              // 直接使用 BOOL 变量
+              if (myFlag) {
+                 NSLog(@"myFlag 为真 (直接使用)"); // 输出: myFlag 为真 (直接使用)
+              }
+              // 或显式比较
+              if (myFlag == YES) {
+                 NSLog(@"myFlag 为真 (显式比较)"); // 输出: myFlag 为真 (显式比较)
+              }
+          }
+          return 0;
+      }
+      ```

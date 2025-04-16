@@ -1,0 +1,310 @@
+id: logic
+title: 逻辑表达式
+description: Objective-C 中的逻辑表达式用于基于一个或多个条件来做决策。它们结合布尔值（`YES` 或 `NO`）或计算结果为布尔值的表达式，通常用于控制流语句（如 `if`, `while`）中。主要通过逻辑运算符 `&&` (与), `||` (或), `!` (非) 来实现。
+usage:
+  - title: 使用逻辑与 (&&)
+    description: |
+      逻辑与 `&&` 运算符连接两个布尔表达式。只有当**两个**操作数都为真 (`YES`) 时，整个表达式的结果才为真 (`YES`)。如果第一个操作数为假 (`NO`)，则第二个操作数不会被求值（这被称为**短路求值**）。
+
+      **语法:** `expression1 && expression2`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL hasLicense = YES;
+              int age = 20;
+
+              // 检查是否同时满足两个条件：有驾照并且年龄大于等于 18
+              if (hasLicense && (age >= 18)) {
+                  // 两个条件都为 YES，执行这里的代码
+                  NSLog(@"可以合法驾驶。"); // 输出: 可以合法驾驶。
+              } else {
+                  NSLog(@"不满足驾驶条件。");
+              }
+
+              BOOL condition1 = YES;
+              BOOL condition2 = NO;
+
+              // 检查 condition1 和 condition2 是否都为 YES
+              if (condition1 && condition2) {
+                  NSLog(@"Condition1 和 Condition2 都为 YES"); // 不会执行
+              } else {
+                  // 因为 condition2 是 NO，所以整个表达式为 NO
+                  NSLog(@"Condition1 和 Condition2 不都为 YES"); // 输出: Condition1 和 Condition2 不都为 YES
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用逻辑或 (||)
+    description: |
+      逻辑或 `||` 运算符连接两个布尔表达式。只要**至少一个**操作数为真 (`YES`)，整个表达式的结果就为真 (`YES`)。只有当两个操作数都为假 (`NO`) 时，结果才为假 (`NO`)。如果第一个操作数为真 (`YES`)，则第二个操作数不会被求值（**短路求值**）。
+
+      **语法:** `expression1 || expression2`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL isWeekend = YES;
+              BOOL isHoliday = NO;
+
+              // 检查是否是周末或者假日
+              if (isWeekend || isHoliday) {
+                  // isWeekend 为 YES，整个表达式为 YES，执行这里的代码
+                  NSLog(@"今天是休息日。"); // 输出: 今天是休息日。
+              } else {
+                  NSLog(@"今天需要工作。");
+              }
+
+              BOOL condition1 = NO;
+              BOOL condition2 = NO;
+
+              // 检查 condition1 和 condition2 是否至少有一个为 YES
+              if (condition1 || condition2) {
+                   NSLog(@"Condition1 或 Condition2 至少一个为 YES"); // 不会执行
+              } else {
+                  // 因为两个条件都为 NO，所以整个表达式为 NO
+                  NSLog(@"Condition1 和 Condition2 都为 NO"); // 输出: Condition1 和 Condition2 都为 NO
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用逻辑非 (!)
+    description: |
+      逻辑非 `!` 运算符用于反转一个布尔表达式的值。如果操作数为真 (`YES`)，结果为假 (`NO`)；如果操作数为假 (`NO`)，结果为真 (`YES`)。
+
+      **语法:** `!expression`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL isLoggedIn = NO;
+
+              // 检查用户是否未登录
+              // !isLoggedIn 将 NO 反转为 YES
+              if (!isLoggedIn) {
+                  NSLog(@"用户未登录，请先登录。"); // 输出: 用户未登录，请先登录。
+              } else {
+                  NSLog(@"用户已登录。");
+              }
+
+              BOOL condition = YES;
+              // !condition 将 YES 反转为 NO
+              if (!condition) {
+                  NSLog(@"条件为假"); // 不会执行
+              } else {
+                  NSLog(@"条件为真，但被 ! 反转了判断"); // 不会执行 (if 分支已匹配)
+              }
+
+              NSLog(@"!condition 的值是: %d", !condition); // 输出: !condition 的值是: 0 (NO)
+          }
+          return 0;
+      }
+      ```
+  - title: 组合逻辑运算符
+    description: |
+      可以将多个逻辑运算符组合在一起，构建更复杂的条件判断。运算优先级通常是 `!` > `&&` > `||`。可以使用括号 `()` 来明确指定运算顺序，提高代码可读性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int age = 25;
+              BOOL hasTicket = YES;
+              BOOL isVIP = NO;
+
+              // 条件：年龄大于 18 并且 (有票 或者 是 VIP)
+              // 首先计算括号内的 ||，然后计算 &&
+              if ((age > 18) && (hasTicket || isVIP)) {
+                  // age > 18 为 YES
+                  // hasTicket || isVIP => YES || NO => YES
+                  // YES && YES => YES
+                  NSLog(@"允许入场。"); // 输出: 允许入场。
+              } else {
+                  NSLog(@"不允许入场。");
+              }
+
+              BOOL conditionA = YES;
+              BOOL conditionB = NO;
+              BOOL conditionC = YES;
+
+              // 条件：(A 为真且 B 为假) 或 C 为真
+              // !conditionB => !NO => YES
+              // conditionA && !conditionB => YES && YES => YES
+              // (conditionA && !conditionB) || conditionC => YES || YES => YES
+              if ((conditionA && !conditionB) || conditionC) {
+                  NSLog(@"复杂条件满足。"); // 输出: 复杂条件满足。
+              } else {
+                   NSLog(@"复杂条件不满足。");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 在 if 语句中使用逻辑表达式
+    description: |
+      逻辑表达式最常见的用途是在 `if`、`else if` 和 `else` 语句中，根据条件的真假来决定执行哪段代码块。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int score = 75;
+              BOOL completedAssignment = YES;
+
+              // if: 分数大于等于 90
+              if (score >= 90) {
+                  NSLog(@"优秀");
+              }
+              // else if: 分数在 70 到 89 之间 并且 完成了作业
+              else if ((score >= 70) && completedAssignment) {
+                  // score >= 70 (YES) && completedAssignment (YES) => YES
+                  NSLog(@"良好，且完成了作业。"); // 输出: 良好，且完成了作业。
+              }
+              // else if: 分数在 60 到 69 之间
+              else if (score >= 60) {
+                  NSLog(@"及格");
+              }
+              // else: 其他情况
+              else {
+                  NSLog(@"不及格");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 逻辑表达式的短路求值 (Short-Circuit Evaluation)
+    description: |
+      Objective-C 的逻辑运算符 `&&` 和 `||` 遵循短路求值规则：
+      - 对于 `&&`：如果左侧表达式为 `NO`，则右侧表达式**不会**被求值，整个表达式的结果直接为 `NO`。
+      - 对于 `||`：如果左侧表达式为 `YES`，则右侧表达式**不会**被求值，整个表达式的结果直接为 `YES`。
+      这在某些情况下可以避免不必要的计算或潜在的错误（例如，在检查对象是否为 `nil` 后再访问其属性）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 一个可能返回 YES/NO 并打印信息的函数
+      BOOL checkCondition(NSString *name, BOOL result) {
+          NSLog(@"检查条件: %@", name);
+          return result;
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSLog(@"--- && 短路测试 ---");
+              // 因为 checkCondition(@"A", NO) 返回 NO，所以 checkCondition(@"B", YES) 不会被调用
+              if (checkCondition(@"A", NO) && checkCondition(@"B", YES)) {
+                   NSLog(@"&& 条件满足");
+              } else {
+                   NSLog(@"&& 条件不满足");
+              }
+              // 输出:
+              // 检查条件: A
+              // && 条件不满足
+
+              NSLog(@"\n--- || 短路测试 ---");
+              // 因为 checkCondition(@"C", YES) 返回 YES，所以 checkCondition(@"D", NO) 不会被调用
+              if (checkCondition(@"C", YES) || checkCondition(@"D", NO)) {
+                   NSLog(@"|| 条件满足");
+              } else {
+                   NSLog(@"|| 条件不满足");
+              }
+              // 输出:
+              // 检查条件: C
+              // || 条件满足
+
+              NSLog(@"\n--- 避免 nil 错误示例 ---");
+              NSString *myString = nil;
+              // 如果 myString 为 nil，则 myString.length 不会被调用，避免崩溃
+              if (myString != nil && myString.length > 0) {
+                  NSLog(@"字符串不为空且长度大于0");
+              } else {
+                  NSLog(@"字符串为 nil 或为空"); // 输出: 字符串为 nil 或为空
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 BOOL 变量
+    description: |
+      逻辑表达式可以直接使用 `BOOL` 类型的变量（其值为 `YES` 或 `NO`）作为操作数。也可以将逻辑表达式的结果赋值给 `BOOL` 变量。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              BOOL isAvailable = YES;
+              BOOL needsConfirmation = NO;
+
+              // 直接在 if 语句中使用 BOOL 变量
+              if (isAvailable) {
+                  NSLog(@"资源可用。"); // 输出: 资源可用。
+              }
+
+              // 使用逻辑运算符结合 BOOL 变量
+              BOOL canProceed = isAvailable && !needsConfirmation; // YES && !NO => YES && YES => YES
+
+              if (canProceed) {
+                  NSLog(@"可以继续处理。"); // 输出: 可以继续处理。
+              } else {
+                   NSLog(@"无法继续处理。");
+              }
+
+              NSLog(@"canProceed 的值是: %d", canProceed); // 输出: canProceed 的值是: 1 (YES)
+          }
+          return 0;
+      }
+      ```
+  - title: 结合比较运算符
+    description: |
+      逻辑表达式的操作数常常是比较运算符（`==`, `!=`, `>`, `<`, `>=`, `<=`）的结果。这些比较运算会产生 `BOOL` 值（`YES` 或 `NO`），然后作为逻辑运算的输入。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int temperature = 15;
+              double humidity = 0.6; // 60%
+
+              // 条件：温度在 10 到 25 度之间 (包含边界) 并且 湿度小于 0.7
+              BOOL isComfortable = (temperature >= 10) && (temperature <= 25) && (humidity < 0.7);
+              // (15 >= 10) => YES
+              // (15 <= 25) => YES
+              // (0.6 < 0.7) => YES
+              // YES && YES && YES => YES
+
+              if (isComfortable) {
+                  NSLog(@"环境舒适。"); // 输出: 环境舒适。
+              } else {
+                  NSLog(@"环境不太舒适。");
+              }
+
+              NSString *status = @"active";
+              int level = 5;
+
+              // 条件：状态不是 "inactive" 或者 等级大于等于 10
+              BOOL isActiveOrHighLevel = (![status isEqualToString:@"inactive"]) || (level >= 10);
+              // ![status isEqualToString:@"inactive"] => !NO => YES
+              // level >= 10 => 5 >= 10 => NO
+              // YES || NO => YES
+
+              if (isActiveOrHighLevel) {
+                  NSLog(@"用户活跃或等级较高。"); // 输出: 用户活跃或等级较高。
+              } else {
+                  NSLog(@"用户不活跃且等级较低。");
+              }
+          }
+          return 0;
+      }
+      ```

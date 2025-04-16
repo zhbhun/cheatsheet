@@ -1,0 +1,274 @@
+id: branch
+title: 条件语句
+description: Objective-C 中的条件语句用于根据特定条件是否为真（`YES`）或假（`NO`）来控制程序的执行流程。这使得程序能够根据不同的输入或状态做出决策。主要通过 `if`、`else if`、`else` 和 `switch` 语句来实现。
+usage:
+  - title: 使用 `if` 语句进行基本条件判断
+    description: |
+      `if` 语句是最基本的条件控制结构。它检查一个条件表达式，如果该表达式的值为 `YES`（或任何非零值），则执行紧跟在 `if` 语句后面的代码块。如果条件为 `NO`（或零），则跳过该代码块。
+
+      **语法:**
+      ```objc
+      if (条件表达式) {
+          // 条件为 YES 时执行的代码
+      }
+      ```
+      - `条件表达式`: 通常是一个返回 `BOOL` 值的表达式，但也可以是任何数值类型（非零视为 `YES`，零视为 `NO`）或指针类型（非 `nil` 视为 `YES`，`nil` 视为 `NO`）。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int score = 85;
+              BOOL isPass = (score >= 60); // 条件表达式：检查分数是否及格
+
+              // 使用 if 语句判断是否及格
+              if (isPass) {
+                  // 条件 isPass 为 YES 时，执行这里的代码
+                  NSLog(@"恭喜，你及格了！");
+              }
+
+              NSLog(@"程序继续执行...");
+          }
+          return 0;
+      }
+      // 输出：
+      // 恭喜，你及格了！
+      // 程序继续执行...
+      ```
+  - title: 使用 `if-else` 语句处理两种情况
+    description: |
+      `if-else` 语句提供了一种在条件为 `YES` 时执行一段代码，在条件为 `NO` 时执行另一段代码的机制。这适用于需要处理两种互斥情况的场景。
+
+      **语法:**
+      ```objc
+      if (条件表达式) {
+          // 条件为 YES 时执行的代码
+      } else {
+          // 条件为 NO 时执行的代码
+      }
+      ```
+      - `else` 块是可选的，但它必须紧跟在 `if` 块之后。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int temperature = 15;
+              BOOL isWarm = (temperature > 20); // 条件表达式：检查温度是否温暖
+
+              // 使用 if-else 语句判断天气
+              if (isWarm) {
+                  // 条件 isWarm 为 YES 时执行
+                  NSLog(@"天气很暖和，适合出门。");
+              } else {
+                  // 条件 isWarm 为 NO 时执行
+                  NSLog(@"天气有点冷，记得多穿衣服。");
+              }
+          }
+          return 0;
+      }
+      // 输出：
+      // 天气有点冷，记得多穿衣服。
+      ```
+  - title: 使用 `if-else if-else` 处理多个条件
+    description: |
+      当需要检查多个互斥的条件时，可以使用 `if-else if-else` 结构。它按顺序评估每个条件：
+      1. 如果第一个 `if` 条件为 `YES`，执行其代码块，然后跳过整个 `else if-else` 结构。
+      2. 如果第一个 `if` 条件为 `NO`，则检查第一个 `else if` 的条件。如果为 `YES`，执行其代码块，然后跳过剩余部分。
+      3. 这个过程会持续到找到一个为 `YES` 的 `else if` 条件，或者检查完所有的 `else if` 条件。
+      4. 如果所有 `if` 和 `else if` 条件都为 `NO`，则执行最后的 `else` 块（如果存在）。
+
+      **语法:**
+      ```objc
+      if (条件1) {
+          // 条件1 为 YES 时执行的代码
+      } else if (条件2) {
+          // 条件1 为 NO 且 条件2 为 YES 时执行的代码
+      } else if (条件3) {
+          // 条件1 和 条件2 都为 NO 且 条件3 为 YES 时执行的代码
+      } else {
+          // 以上所有条件都为 NO 时执行的代码 (可选)
+      }
+      ```
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int score = 78;
+              char grade;
+
+              // 使用 if-else if-else 结构根据分数评定等级
+              if (score >= 90) {
+                  grade = 'A';
+              } else if (score >= 80) { // score < 90 且 score >= 80
+                  grade = 'B';
+              } else if (score >= 70) { // score < 80 且 score >= 70
+                  grade = 'C';
+              } else if (score >= 60) { // score < 70 且 score >= 60
+                  grade = 'D';
+              } else { // score < 60
+                  grade = 'F';
+              }
+
+              NSLog(@"你的分数是 %d，等级是 %c", score, grade);
+          }
+          return 0;
+      }
+      // 输出：
+      // 你的分数是 78，等级是 C
+      ```
+  - title: 使用 `switch` 语句处理离散值
+    description: |
+      `switch` 语句提供了一种更清晰的方式来处理一个表达式等于多个离散常量值的情况。它比一系列嵌套的 `if-else if` 语句更易读、效率可能更高。
+
+      **语法:**
+      ```objc
+      switch (整型或枚举表达式) {
+          case 常量值1:
+              // 表达式的值等于 常量值1 时执行的代码
+              break; // 通常需要 break 来跳出 switch 语句
+          case 常量值2:
+              // 表达式的值等于 常量值2 时执行的代码
+              break;
+          // ... 可以有更多的 case
+          default:
+              // 表达式的值不匹配任何 case 时执行的代码 (可选)
+              break; // default 中的 break 也是可选的，但通常建议加上
+      }
+      ```
+      - **`switch (表达式)`**: 括号中的表达式必须是整型（`int`, `char`, `enum` 等）或可以隐式转换为整型的值。
+      - **`case 常量值:`**: 每个 `case` 后面跟着一个常量值和一个冒号。代码会从匹配的 `case` 开始执行。
+      - **`break;`**: `break` 语句用于跳出 `switch` 结构。**如果没有 `break`，代码会继续执行下一个 `case` 的代码块（称为“贯穿”或 "fall-through"），这通常不是期望的行为。**
+      - **`default:`**: `default` 子句是可选的。如果表达式的值与所有 `case` 的常量值都不匹配，则执行 `default` 块中的代码。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的枚举类型
+      typedef NS_ENUM(NSInteger, DayOfWeek) {
+          DayOfWeekSunday = 1,
+          DayOfWeekMonday,
+          DayOfWeekTuesday,
+          DayOfWeekWednesday,
+          DayOfWeekThursday,
+          DayOfWeekFriday,
+          DayOfWeekSaturday
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DayOfWeek today = DayOfWeekWednesday; // 获取星期几
+              NSString *activity;
+
+              // 使用 switch 语句根据星期几决定活动
+              switch (today) {
+                  case DayOfWeekMonday:
+                      activity = @"开始新的一周工作";
+                      break; // 执行完后跳出 switch
+                  case DayOfWeekTuesday:
+                  case DayOfWeekWednesday: // 周二和周三共用一个处理
+                  case DayOfWeekThursday:
+                      activity = @"努力工作";
+                      break;
+                  case DayOfWeekFriday:
+                      activity = @"准备迎接周末";
+                      break;
+                  case DayOfWeekSaturday:
+                  case DayOfWeekSunday:
+                      activity = @"周末休息";
+                      break;
+                  default: // 如果 today 的值不在 1-7 范围内
+                      activity = @"无效的日期";
+                      break;
+              }
+
+              NSLog(@"今天是 %@，活动是：%@", @(today), activity);
+          }
+          return 0;
+      }
+      // 输出:
+      // 今天是 4，活动是：努力工作
+      ```
+  - title: 在 `switch` 中使用贯穿（Fall-through）
+    description: |
+      默认情况下，`switch` 语句在执行完一个 `case` 块后，如果遇到 `break` 就会退出。但如果你**故意省略 `break`**，执行流就会“贯穿”到下一个 `case` 块，并执行其中的代码，直到遇到 `break` 或 `switch` 语句结束。
+
+      贯穿（Fall-through）通常用于多个 `case` 需要执行相同或部分相同代码的场景。但要小心使用，因为它可能导致逻辑错误，建议在需要贯穿的地方添加注释说明意图。
+
+      **注意:** 在 Swift 等现代语言中，默认不贯穿，需要显式使用 `fallthrough` 关键字。Objective-C 继承了 C 的行为，默认贯穿。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              char command = 's'; // 假设用户输入了 's'
+
+              NSLog(@"处理命令: %c", command);
+
+              // 使用 switch 语句处理命令，利用 fall-through
+              switch (command) {
+                  case 'a': // 添加操作
+                      NSLog(@"执行添加前置操作...");
+                      // 注意：这里没有 break，会贯穿到 's'
+                  case 's': // 保存操作（也执行添加前置操作）
+                      NSLog(@"执行保存操作...");
+                      // 注意：这里没有 break，会贯穿到 'p'
+                  case 'p': // 打印操作（也执行保存操作）
+                      NSLog(@"执行打印操作...");
+                      break; // 跳出 switch
+                  case 'd': // 删除操作
+                      NSLog(@"执行删除操作...");
+                      break;
+                  default:
+                      NSLog(@"未知命令");
+                      break;
+              }
+          }
+          return 0;
+      }
+      // 输出：
+      // 处理命令: s
+      // 执行保存操作...
+      // 执行打印操作...
+      ```
+  - title: 使用三元条件运算符（?:）
+    description: |
+      三元条件运算符（`?:`）是 `if-else` 语句的一种简洁形式，特别适用于根据条件为变量赋值或在表达式中选择值。
+
+      **语法:**
+      ```objc
+      条件表达式 ? 表达式1 : 表达式2
+      ```
+      - 如果 `条件表达式` 为 `YES`，整个运算符的结果是 `表达式1` 的值。
+      - 如果 `条件表达式` 为 `NO`，整个运算符的结果是 `表达式2` 的值。
+      - `表达式1` 和 `表达式2` 的类型应该兼容，或者可以转换为赋值目标或上下文所需的类型。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              int score = 75;
+              BOOL isPass = (score >= 60);
+
+              // 使用三元运算符根据 isPass 的值给 status 赋值
+              NSString *status = isPass ? @"及格" : @"不及格";
+              NSLog(@"考试状态: %@", status); // 输出：考试状态: 及格
+
+              // 也可以直接在表达式中使用
+              int bonus = 100;
+              int totalScore = score + (isPass ? bonus : 0); // 及格则加 bonus 分
+              NSLog(@"最终得分: %d", totalScore); // 输出：最终得分: 175
+
+              int age = 18;
+              // 示例：根据年龄判断是否成年
+              NSLog(@"用户是否成年: %@", (age >= 18) ? @"是" : @"否"); // 输出：用户是否成年: 是
+          }
+          return 0;
+      }
+      ```

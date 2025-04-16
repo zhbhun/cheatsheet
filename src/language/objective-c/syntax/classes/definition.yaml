@@ -1,0 +1,1137 @@
+id: definition
+title: 类定义
+description: Objective-C 中的类是对象的蓝图，用于封装数据（属性）和行为（方法）。它通过 `@interface` 声明公共接口，通过 `@implementation` 提供具体实现，是构建 Objective-C 应用的基础模块。类定义了对象的状态（实例变量）和可以执行的操作（方法），支持继承、协议等面向对象特性。
+usage:
+  - title: 定义基本类
+    description: |
+      定义一个 Objective-C 类需要两个主要部分：接口（Interface）和实现（Implementation），通常分别放在 `.h` 和 `.m` 文件中。
+      - **接口 (`.h` 文件):** 使用 `@interface ClassName : SuperclassName ... @end` 语法声明。它定义了类的公共 API，包括继承的父类、遵循的协议、公开的属性和方法声明。所有 Objective-C 类通常都直接或间接继承自 `NSObject` 基类。
+      - **实现 (`.m` 文件):** 使用 `@implementation ClassName ... @end` 语法。它包含了接口中声明的方法的具体代码实现。在实现文件中，需要导入对应的头文件 (`#import "ClassName.h"`）。
+    example: |
+      ```objc
+      // Person.h - 接口文件
+      #import <Foundation/Foundation.h> // 导入 Foundation 框架，NSObject 在此定义
+
+      // @interface 声明 Person 类的开始，继承自 NSObject
+      @interface Person : NSObject
+
+      // 此处将声明类的属性和方法（见后续用法）
+
+      @end // @end 标记接口声明结束
+
+      // Person.m - 实现文件
+      #import "Person.h" // 导入自定义类的头文件
+
+      // @implementation 标记 Person 类实现的开始
+      @implementation Person
+
+      // 此处将实现接口中声明的方法（见后续用法）
+
+      @end // @end 标记实现结束
+      ```
+  - title: 声明和使用属性
+    description: |
+      属性 (`@property`) 是用于封装类实例变量的便捷方式。在 `@interface` 中声明属性后，编译器会自动合成（synthesize）对应的实例变量（通常以下划线 `_` 开头，如 `_propertyName`）以及访问该实例变量的 getter 和 setter 方法。
+
+      **常用属性修饰符:**
+      属性声明时可以带有修饰符，用于控制内存管理、原子性、读写权限等。
+
+      - **内存管理 (ARC - Automatic Reference Counting):**
+        - `strong` (默认): 表示对持有对象的强引用。只要至少有一个强引用指向对象，该对象就不会被 ARC 销毁。这是对象类型属性最常用的修饰符。
+        - `weak`: 表示弱引用，不增加对象的引用计数。当所引用的对象被销毁时，`weak` 指针会自动被置为 `nil`。主要用于避免循环引用（例如 delegate 模式，或父对象持有子对象，子对象反向引用父对象）。
+        - `assign` (基本数据类型默认): 用于基本数据类型（如 `NSInteger`, `CGFloat`, `BOOL`, `int`, `float`）或 C 指针。对于 Objective-C 对象，`assign` 不会增加引用计数，且在对象销毁时不会自动置 `nil`，可能导致悬垂指针（访问已释放内存）。**ARC 下，对于对象类型应避免使用 `assign`，改用 `weak` 或 `strong`。**
+        - `copy`: 主要用于修饰那些具有可变（Mutable）子类的不可变（Immutable）对象，如 `NSString`, `NSArray`, `NSDictionary`。当通过 setter 赋值时，会调用对象的 `copyWithZone:` 方法创建一个对象的副本并持有副本，而不是直接持有传入的对象。这可以防止外部对可变对象的修改影响到属性内部的状态。
+
+      - **原子性:**
+        - `atomic` (默认): 保证属性的 setter 和 getter 操作是原子性的。系统会通过加锁来保证读写操作在多线程环境下的完整性（但不能保证线程安全，例如先读后写）。性能开销较大。
+        - `nonatomic`: 非原子性。不保证 setter 和 getter 的原子性，多线程下直接访问可能导致数据竞争。但性能更好。在 iOS/macOS 开发中，如果不需要跨线程访问属性，通常推荐使用 `nonatomic`。
+
+      - **读写权限:**
+        - `readwrite` (默认): 同时生成 getter 和 setter 方法。
+        - `readonly`: 只生成 getter 方法。如果希望属性对外部只读，但在类内部可写，通常结合类扩展（Class Extension）将其重新声明为 `readwrite`。
+    example: |
+      ```objc
+      // Person.h
+      #import <Foundation/Foundation.h>
+      #import "SomeDelegateProtocol.h" // 假设定义了一个委托协议
+
+      @interface Person : NSObject
+
+      // 姓名属性：非原子性，使用 copy 策略
+      @property (nonatomic, copy) NSString *name;
+
+      // 年龄属性：非原子性，使用 assign (因为是基本数据类型)
+      @property (nonatomic, assign) NSInteger age;
+
+      // 委托属性：非原子性，使用 weak 避免循环引用
+      @property (nonatomic, weak) id<SomeDelegateProtocol> delegate;
+
+      // 唯一标识符：非原子性，强引用，外部只读
+      @property (nonatomic, strong, readonly) NSString *identifier;
+
+      // 朋友列表：非原子性，强引用 (持有数组对象)
+      @property (nonatomic, strong) NSArray *friends;
+
+      @end
+
+      // Person.m
+      #import "Person.h"
+
+      // 类扩展，用于内部修改只读属性 identifier
+      @interface Person ()
+      @property (nonatomic, strong, readwrite) NSString *identifier;
+      @end
+
+      @implementation Person
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              // 在初始化时设置只读属性的值
+              self.identifier = [[NSUUID UUID] UUIDString];
+              _friends = @[]; // 初始化为空数组
+          }
+          return self;
+      }
+
+      // 可以自定义 setter/getter，例如对 name 做些处理
+      - (void)setName:(NSString *)name {
+          // 在赋值前检查，并确保 copy 行为
+          _name = [name copy];
+          NSLog(@"Set name to: %@", _name);
+      }
+
+      @end
+
+      // main.m (或使用 Person 类的其他地方)
+      #import "Person.h"
+      // 假设 SomeDelegateProtocol 和其实现类 MyDelegate 已定义
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Person *person = [[Person alloc] init];
+
+              // 使用点语法访问属性 (调用 getter/setter)
+              person.name = @"Alice"; // 调用 setName:
+              person.age = 30;      // 调用 setAge:
+              // person.identifier = @"newID"; // 编译错误，identifier 对外是 readonly
+
+              // MyDelegate *delegateObj = [[MyDelegate alloc] init];
+              // person.delegate = delegateObj; // 设置委托
+
+              // 获取属性值
+              NSString *personName = person.name;       // 调用 name getter
+              NSInteger personAge = person.age;         // 调用 age getter
+              NSString *personId = person.identifier; // 调用 identifier getter
+
+              NSLog(@"Person Info - Name: %@, Age: %ld, ID: %@", personName, (long)personAge, personId);
+              // 输出可能包括:
+              // Set name to: Alice
+              // Person Info - Name: Alice, Age: 30, ID: <生成的UUID>
+          }
+          return 0;
+      }
+      ```
+      ```objc
+      // SomeDelegateProtocol.h
+      #import <Foundation/Foundation.h>
+      @protocol SomeDelegateProtocol <NSObject>
+      - (void)somethingHappened;
+      @end
+
+      // MyDelegate.h
+      #import <Foundation/Foundation.h>
+      #import "SomeDelegateProtocol.h"
+      @interface MyDelegate : NSObject <SomeDelegateProtocol>
+      @end
+
+      // MyDelegate.m
+      #import "MyDelegate.h"
+      @implementation MyDelegate
+      - (void)somethingHappened {
+          NSLog(@"MyDelegate was notified that something happened.");
+      }
+      @end
+      ```
+  - title: 声明和实现实例方法
+    description: |
+      实例方法是属于类实例（对象）的行为或操作。它们使用 `-` (减号) 前缀来声明和定义。实例方法可以访问和操作对象的实例变量（通过属性或直接访问 `_ivar`）。
+
+      - **声明 (接口 `.h`):** 在 `@interface` 块中声明方法的签名。签名包括返回类型、方法名以及参数（如果有的话）。Objective-C 的方法名可以包含多个部分，每个部分对应一个参数，用冒号 `:` 分隔。
+        ```objc
+        // 无参数方法
+        - (void)doSomething;
+
+        // 带一个参数的方法
+        - (id)processValue:(NSObject *)value;
+
+        // 带多个参数的方法 (方法名为 processValue:withOptions:)
+        - (BOOL)processValue:(NSObject *)value withOptions:(NSDictionary *)options;
+        ```
+      - **实现 (实现 `.m`):** 在 `@implementation` 块中提供方法的具体代码。实现的方法签名必须与接口中的声明完全匹配。在方法内部，可以使用 `self` 关键字引用当前对象实例。
+    example: |
+      ```objc
+      // Calculator.h
+      #import <Foundation/Foundation.h>
+
+      @interface Calculator : NSObject
+
+      // 实例变量，可以通过方法访问和修改
+      @property (nonatomic, assign) double currentValue;
+
+      // 实例方法声明
+      - (void)clear; // 清零
+      - (void)addToValue:(double)numberToAdd; // 加法
+      - (double)multiplyBy:(double)multiplier; // 乘法并返回结果
+      - (NSString *)displayValueWithLabel:(NSString *)label; // 带标签显示当前值
+
+      @end
+
+      // Calculator.m
+      #import "Calculator.h"
+
+      @implementation Calculator
+
+      // 初始化方法
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _currentValue = 0.0; // 初始化实例变量
+          }
+          return self;
+      }
+
+      // 实现 clear 方法
+      - (void)clear {
+          self.currentValue = 0.0; // 使用 self.property 访问 setter
+          NSLog(@"Calculator cleared. Current value: %.2f", self.currentValue);
+      }
+
+      // 实现 addToValue: 方法
+      - (void)addToValue:(double)numberToAdd {
+          // 直接访问实例变量 _currentValue
+          _currentValue += numberToAdd;
+          NSLog(@"Added %.2f. Current value: %.2f", numberToAdd, _currentValue);
+      }
+
+      // 实现 multiplyBy: 方法
+      - (double)multiplyBy:(double)multiplier {
+          self.currentValue *= multiplier;
+          NSLog(@"Multiplied by %.2f. Current value: %.2f", multiplier, self.currentValue);
+          return self.currentValue; // 返回当前值
+      }
+
+      // 实现 displayValueWithLabel: 方法
+      - (NSString *)displayValueWithLabel:(NSString *)label {
+          // 调用 self 的另一个属性（getter）
+          return [NSString stringWithFormat:@"%@: %.2f", label, self.currentValue];
+      }
+
+      @end
+
+      // main.m
+      #import "Calculator.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Calculator *calc = [[Calculator alloc] init]; // 创建实例
+
+              // 调用实例方法
+              [calc addToValue:10.5];       // 输出: Added 10.50. Current value: 10.50
+              [calc multiplyBy:2.0];       // 输出: Multiplied by 2.00. Current value: 21.00
+
+              NSString *display = [calc displayValueWithLabel:@"Result"];
+              NSLog(@"%@", display);       // 输出: Result: 21.00
+
+              [calc clear];                // 输出: Calculator cleared. Current value: 0.00
+          }
+          return 0;
+      }
+      ```
+  - title: 声明和实现类方法
+    description: |
+      类方法是属于类本身而不是特定实例的方法。它们使用 `+` (加号) 前缀来声明和定义。类方法不能直接访问实例变量（因为它们不与任何实例关联），但可以访问类的静态变量或调用其他类方法。
+
+      **常见用途:**
+      - **工厂方法 (Factory Methods):** 创建并返回类的实例。通常以类名或相关词开头，例如 `[NSString stringWithFormat:]` 或自定义的 `[MyClass instanceWithType:]`。推荐返回 `instancetype` 以获得更好的类型检查。
+      - **工具方法/实用方法:** 提供与类相关的、但不需要实例状态的功能，如计算、转换、配置等。例如 `[UIColor redColor]`。
+      - **单例模式 (Singleton Pattern):** 提供一个全局唯一的实例访问点，通常通过一个名为 `sharedInstance` 或类似的类方法实现。
+
+      - **声明 (接口 `.h`):** 在 `@interface` 中使用 `+` 声明。
+      - **实现 (实现 `.m`):** 在 `@implementation` 中使用 `+` 定义。在类方法内部，`self` 指向类对象本身。
+    example: |
+      ```objc
+      // AppSettings.h
+      #import <Foundation/Foundation.h>
+      #import <UIKit/UIKit.h> // For UIColor example
+
+      @interface AppSettings : NSObject
+
+      // 类方法：获取共享的单例实例
+      + (instancetype)sharedSettings;
+
+      // 类方法：获取默认主题颜色
+      + (UIColor *)defaultThemeColor;
+
+      // 类方法：检查某个特性是否启用 (假设配置从某处读取)
+      + (BOOL)isFeatureEnabled:(NSString *)featureName;
+
+      // 实例方法：设置特定用户的偏好 (单例对象可以有状态)
+      - (void)setUserPreference:(id)value forKey:(NSString *)key;
+      - (id)getUserPreferenceKey:(NSString *)key;
+
+      @end
+
+      // AppSettings.m
+      #import "AppSettings.h"
+
+      // 静态变量用于存储单例实例
+      static AppSettings *sharedInstance = nil;
+      // 静态变量用于存储用户偏好 (示例)
+      static NSMutableDictionary *userPreferences = nil;
+
+      @implementation AppSettings
+
+      // 实现单例方法
+      + (instancetype)sharedSettings {
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              sharedInstance = [[self alloc] init]; // 在类方法中，self 指向类本身
+              userPreferences = [[NSMutableDictionary alloc] init]; // 初始化用户偏好存储
+          });
+          return sharedInstance;
+      }
+
+      // 实现获取默认颜色类方法
+      + (UIColor *)defaultThemeColor {
+          // 返回一个预定义的颜色
+          return [UIColor colorWithRed:0.1 green:0.4 blue:0.8 alpha:1.0]; // 示例蓝色
+      }
+
+      // 实现特性检查类方法
+      + (BOOL)isFeatureEnabled:(NSString *)featureName {
+          // 实际应用中会从配置文件、服务器等读取
+          NSLog(@"Checking if feature '%@' is enabled (class method)", featureName);
+          if ([featureName isEqualToString:@"NewUI"]) {
+              return YES; // 示例：假设 NewUI 特性已启用
+          }
+          return NO;
+      }
+
+      // 实例方法：设置用户偏好 (操作单例对象的状态)
+      - (void)setUserPreference:(id)value forKey:(NSString *)key {
+          if (value && key) {
+              [userPreferences setObject:value forKey:key];
+              NSLog(@"User preference set: %@ = %@", key, value);
+          }
+      }
+      // 实例方法：获取用户偏好
+      - (id)getUserPreferenceKey:(NSString *)key {
+          return [userPreferences objectForKey:key];
+      }
+
+      @end
+
+      // main.m (或应用中其他地方)
+      #import "AppSettings.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用类方法获取默认颜色
+              UIColor *themeColor = [AppSettings defaultThemeColor];
+              NSLog(@"Default theme color: %@", themeColor);
+
+              // 调用类方法检查特性
+              BOOL isNewUIEnabled = [AppSettings isFeatureEnabled:@"NewUI"];
+              NSLog(@"Is NewUI feature enabled? %@", isNewUIEnabled ? @"YES" : @"NO");
+              // 输出: Checking if feature 'NewUI' is enabled (class method)
+              // 输出: Is NewUI feature enabled? YES
+
+              // 获取单例实例
+              AppSettings *settings1 = [AppSettings sharedSettings];
+              AppSettings *settings2 = [AppSettings sharedSettings];
+              NSLog(@"Are settings1 and settings2 the same instance? %@", (settings1 == settings2) ? @"YES" : @"NO"); // 输出: YES
+
+              // 通过单例实例调用实例方法
+              [settings1 setUserPreference:@"dark" forKey:@"themeMode"]; // 输出: User preference set: themeMode = dark
+              NSString *mode = [settings1 getUserPreferenceKey:@"themeMode"];
+              NSLog(@"Current theme mode: %@", mode); // 输出: Current theme mode: dark
+          }
+          return 0;
+      }
+      ```
+  - title: 定义初始化方法
+    description: |
+      初始化方法 (Initializers) 是在对象通过 `alloc` 分配内存后，用于设置其初始状态的特殊实例方法。遵循正确的初始化模式对于确保对象处于有效状态至关重要。
+
+      - **命名约定:** 初始化方法名通常以 `init` 开头。最基本的是 `init`，带参数的通常是 `initWith...`。
+      - **返回值类型:** 推荐使用 `instancetype`。它表示方法返回调用该方法的类的实例类型，比 `id` 提供更好的类型安全。
+      - **指定初始化方法 (Designated Initializer):**
+        - 一个类应该有一个或多个“指定”初始化方法，它们负责完整地初始化对象的所有核心状态，包括调用父类的指定初始化方法。
+        - 通常是参数最全的那个 `initWith...` 方法。
+        - **规则:**
+          1. 子类的指定初始化方法**必须**调用其直接父类的某个指定初始化方法。
+          2. 便利初始化方法 (Convenience Initializer) 只能调用同一类中的其他初始化方法（最终必须调用到本类的指定初始化方法）。便利初始化方法不应被子类调用或覆盖。
+          3. 如果一个类提供了新的指定初始化方法，它必须覆盖父类的所有指定初始化方法（要么调用新的指定初始化方法，要么标记为不可用）。
+      - **`NS_DESIGNATED_INITIALIZER` 宏:** 在接口中标记指定初始化方法，让编译器帮助检查上述规则。
+      - **初始化实现模式:**
+        ```objc
+        - (instancetype)initWithParameter:(Type)param NS_DESIGNATED_INITIALIZER {
+            // 1. 调用父类的指定初始化方法
+            self = [super designatedInitializerOfSuperclass...];
+            // 2. 检查父类初始化是否成功 (返回非 nil)
+            if (self) {
+                // 3. 初始化当前类定义的实例变量
+                //    推荐直接访问 ivar (_ivarName = ...) 而不是属性 (self.propertyName = ...)
+                //    以避免在对象尚未完全构建时触发 setter 的副作用。
+                _myIvar = initialValue;
+            }
+            // 4. 返回 self (成功则为实例指针，失败则为 nil)
+            return self;
+        }
+        ```
+      - **便利初始化方法:** 提供更方便的对象创建方式，通常带有较少参数或提供默认值。它们内部必须调用本类的指定初始化方法。
+        ```objc
+        - (instancetype)init {
+            // 调用本类的指定初始化方法，并提供默认值
+            return [self initWithParameter:defaultValue];
+        }
+        ```
+      - **`NS_UNAVAILABLE` 宏:** 用于标记某个继承来的初始化方法在本类中不再适用或被禁止调用。
+    example: |
+      ```objc
+      // Rectangle.h
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // For CGPoint, CGSize
+
+      @interface Rectangle : NSObject
+
+      @property (nonatomic, assign, readonly) CGPoint origin;
+      @property (nonatomic, assign, readonly) CGSize size;
+
+      // 指定初始化方法
+      - (instancetype)initWithOrigin:(CGPoint)origin size:(CGSize)size NS_DESIGNATED_INITIALIZER;
+
+      // 便利初始化方法：创建原点在 (0,0) 的矩形
+      - (instancetype)initWithSize:(CGSize)size;
+
+      // 便利初始化方法：创建单位正方形
+      - (instancetype)initUnitSquare;
+
+      // 禁用 NSObject 的默认 init
+      - (instancetype)init NS_UNAVAILABLE;
+
+      // 实例方法：计算面积
+      - (CGFloat)area;
+
+      @end
+
+      // Rectangle.m
+      #import "Rectangle.h"
+
+      @implementation Rectangle
+
+      // 实现指定初始化方法
+      - (instancetype)initWithOrigin:(CGPoint)origin size:(CGSize)size {
+          // 调用父类 (NSObject) 的指定初始化方法 (init)
+          self = [super init];
+          if (self) {
+              // 初始化当前类的实例变量
+              _origin = origin;
+              _size = size;
+              // 可以添加验证逻辑，如果无效则 return nil
+              if (size.width < 0 || size.height < 0) {
+                  NSLog(@"Error: Rectangle size cannot be negative.");
+                  return nil; // 初始化失败
+              }
+          }
+          return self;
+      }
+
+      // 实现便利初始化方法 (调用本类的指定初始化方法)
+      - (instancetype)initWithSize:(CGSize)size {
+          // 调用 self 的指定初始化方法
+          return [self initWithOrigin:CGPointZero size:size];
+      }
+
+      // 实现另一个便利初始化方法 (调用其他便利初始化方法或指定初始化方法)
+      - (instancetype)initUnitSquare {
+          // 调用 self 的另一个便利初始化方法
+          return [self initWithSize:CGSizeMake(1.0, 1.0)];
+          // 或者直接调用指定初始化方法:
+          // return [self initWithOrigin:CGPointZero size:CGSizeMake(1.0, 1.0)];
+      }
+
+      // 实现面积计算方法
+      - (CGFloat)area {
+          return self.size.width * self.size.height; // 使用 getter 访问 size
+      }
+
+      @end
+
+      // main.m
+      #import "Rectangle.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用指定初始化方法
+              Rectangle *rect1 = [[Rectangle alloc] initWithOrigin:CGPointMake(10, 20) size:CGSizeMake(100, 50)];
+              if (rect1) {
+                  NSLog(@"Rect1 created at (%.f, %.f) with size (%.f, %.f), Area: %.f",
+                        rect1.origin.x, rect1.origin.y, rect1.size.width, rect1.size.height, [rect1 area]);
+                  // 输出: Rect1 created at (10, 20) with size (100, 50), Area: 5000
+              }
+
+              // 使用便利初始化方法
+              Rectangle *rect2 = [[Rectangle alloc] initWithSize:CGSizeMake(80, 80)];
+              if (rect2) {
+                   NSLog(@"Rect2 created with size (%.f, %.f), Area: %.f", rect2.size.width, rect2.size.height, [rect2 area]);
+                   // 输出: Rect2 created with size (80, 80), Area: 6400
+              }
+
+              Rectangle *unitSquare = [[Rectangle alloc] initUnitSquare];
+               if (unitSquare) {
+                   NSLog(@"Unit Square Area: %.f", [unitSquare area]); // 输出: Unit Square Area: 1
+               }
+
+              // 尝试使用禁用的 init 会导致编译错误
+              // Rectangle *rect3 = [[Rectangle alloc] init]; // Compile Error: 'init' is unavailable
+
+              // 尝试创建无效矩形
+              Rectangle *invalidRect = [[Rectangle alloc] initWithOrigin:CGPointZero size:CGSizeMake(-10, 10)];
+              if (!invalidRect) {
+                  NSLog(@"Failed to create invalid rectangle, as expected."); // 输出: Failed to create...
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 类的继承
+    description: |
+      继承 (Inheritance) 是面向对象编程的基本原则之一，允许一个类（子类/派生类）继承另一个类（父类/基类）的属性和方法。子类可以重用父类的代码，并可以添加新的特性或修改（覆盖）继承来的行为。
+
+      - **语法:** 在子类的 `@interface` 声明中，使用冒号 `:` 后跟父类的名称来指定继承关系。
+        ```objc
+        @interface ChildClass : ParentClass
+        // ... 子类的声明 ...
+        @end
+        ```
+      - **继承的内容:** 子类自动拥有父类所有非私有的 `@property` 声明（包括其实例变量和访问方法）以及所有非私有的实例方法和类方法。父类中在类扩展里声明的“私有”成员不会被直接继承（虽然内存布局中可能存在）。
+      - **方法覆盖 (Overriding):** 子类可以提供与父类某个方法具有相同签名（名称、参数、返回类型）的新实现。当通过子类对象调用该方法时，将执行子类的版本。
+      - **调用父类实现 (`super`):** 在子类覆盖的方法内部，可以使用 `super` 关键字来调用父类被覆盖的那个方法的实现。这对于在扩展父类行为而不是完全替换它时非常有用。`[super methodName]`。
+      - **初始化方法的继承:** 子类继承父类的初始化方法，但需要特别注意遵循指定初始化方法的规则（见“定义初始化方法”用法）。子类的指定初始化方法必须调用父类的指定初始化方法。
+      - **`NSObject` 基类:** 在 Cocoa/Cocoa Touch 中，几乎所有类最终都继承自 `NSObject`，它提供了对象生命周期管理、运行时特性（如内省）、比较等基础功能。
+    example: |
+      ```objc
+      // Animal.h - 父类
+      #import <Foundation/Foundation.h>
+      @interface Animal : NSObject
+      @property (nonatomic, copy) NSString *species;
+      - (void)makeSound; // 动物发出声音
+      - (void)eat;       // 动物吃东西
+      @end
+
+      // Animal.m
+      #import "Animal.h"
+      @implementation Animal
+      - (instancetype)init {
+          self = [super init];
+          if (self) { _species = @"Unknown"; } // 默认物种
+          return self;
+      }
+      - (void)makeSound { NSLog(@"The %@ makes a generic sound.", self.species); }
+      - (void)eat { NSLog(@"The %@ is eating.", self.species); }
+      @end
+
+      // Dog.h - 子类，继承自 Animal
+      #import "Animal.h"
+      @interface Dog : Animal
+      @property (nonatomic, copy) NSString *breed; // Dog 特有的属性：品种
+      - (void)fetch; // Dog 特有的方法：捡东西
+      // Dog 将覆盖 makeSound 和 eat 方法
+      @end
+
+      // Dog.m
+      #import "Dog.h"
+      @implementation Dog
+      // 子类的指定初始化方法（如果需要添加自己的初始化逻辑）
+      - (instancetype)initWithBreed:(NSString *)breed {
+          // 调用父类的指定初始化方法 (这里假设父类是 init)
+          self = [super init];
+          if (self) {
+              self.species = @"Canine"; // 设置继承来的属性
+              self.breed = breed;      // 设置自己的属性
+          }
+          return self;
+      }
+      // 实现 Dog 特有的方法
+      - (void)fetch { NSLog(@"The %@ %@ is fetching.", self.breed, self.species); }
+
+      // 覆盖父类的 makeSound 方法
+      - (void)makeSound {
+          // 可以选择不调用父类实现，完全替换行为
+          NSLog(@"The %@ %@ barks: Woof woof!", self.breed, self.species);
+      }
+
+      // 覆盖父类的 eat 方法
+      - (void)eat {
+          // 调用父类的 eat 实现
+          [super eat]; // 输出: The Canine is eating.
+          // 添加子类特有的行为
+          NSLog(@"Specifically, the %@ is enjoying some dog food.", self.breed);
+      }
+      @end
+
+      // main.m
+      #import "Dog.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建子类实例
+              Dog *myDog = [[Dog alloc] initWithBreed:@"Labrador"];
+
+              // 访问继承和自有的属性
+              NSLog(@"My dog is a %@ of species %@", myDog.breed, myDog.species);
+              // 输出: My dog is a Labrador of species Canine
+
+              // 调用子类覆盖的方法
+              [myDog makeSound]; // 输出: The Labrador Canine barks: Woof woof!
+
+              // 调用子类覆盖的方法 (其中调用了 super)
+              [myDog eat];
+              // 输出:
+              // The Canine is eating.
+              // Specifically, the Labrador is enjoying some dog food.
+
+              // 调用子类特有的方法
+              [myDog fetch]; // 输出: The Labrador Canine is fetching.
+
+              // 多态：父类指针指向子类对象
+              Animal *anotherAnimal = [[Dog alloc] initWithBreed:@"Poodle"];
+              [anotherAnimal makeSound]; // 运行时调用的是 Dog 的 makeSound 实现
+              // 输出: The Poodle Canine barks: Woof woof!
+              // [anotherAnimal fetch]; // 编译错误！Animal 类型没有 fetch 方法
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 self 和 super
+    description: |
+      `self` 和 `super` 是 Objective-C 方法实现中用于发送消息（调用方法）的两个关键接收者。
+
+      - **`self`:**
+        - 代表“当前对象”，即正在执行该方法的那个实例。
+        - **用途:**
+          - 调用当前对象的其他实例方法: `[self anotherInstanceMethod]`。
+          - 访问当前对象的属性: `self.propertyName` (通过 getter/setter) 或 `_propertyName` (直接访问实例变量)。
+          - 在类方法中，`self` 代表类对象本身。可以用于调用其他类方法 `[self anotherClassMethod]` 或创建实例 `[[self alloc] init]`。
+
+      - **`super`:**
+        - 不是一个指向父类对象的指针（对象实例只有一个，就是 `self`）。
+        - `super` 是一个编译器指令，它改变消息发送时**方法查找的起点**。当你写 `[super methodName]` 时，运行时系统会跳过当前类，从当前类的**父类**开始查找 `methodName` 的实现来执行。
+        - **主要用途:** 在子类覆盖父类方法时，如果需要在子类的实现中执行父类版本的逻辑，就使用 `[super methodName]`。
+        - **重要细节:** 即使是通过 `super` 调用的父类方法，该方法内部如果再使用 `self` 发送消息（例如 `[self someOtherMethod]`），那么这个 `someOtherMethod` 的查找**仍然会从 `self` 的实际类（即子类）开始**，而不是从父类开始。这意味着 `super` 只影响紧随其后的那一次方法调用查找的起点。
+    example: |
+      ```objc
+      // SuperClass.h
+      #import <Foundation/Foundation.h>
+      @interface SuperClass : NSObject
+      - (void)methodOne;
+      - (void)methodTwo;
+      @end
+
+      // SuperClass.m
+      #import "SuperClass.h"
+      @implementation SuperClass
+      - (void)methodOne {
+          NSLog(@"SuperClass: methodOne executing for object %@", self);
+      }
+      - (void)methodTwo {
+          NSLog(@"SuperClass: methodTwo executing. Calling methodOne using self...");
+          [self methodOne]; // 调用 methodOne，查找从 self 的实际类开始
+      }
+      @end
+
+      // SubClass.h
+      #import "SuperClass.h"
+      @interface SubClass : SuperClass
+      - (void)methodOne; // 覆盖 methodOne
+      - (void)testSuper;
+      @end
+
+      // SubClass.m
+      #import "SubClass.h"
+      @implementation SubClass
+      // 覆盖 methodOne
+      - (void)methodOne {
+          NSLog(@"SubClass: methodOne executing.");
+          // 调用父类的 methodOne 实现
+          NSLog(@"SubClass: Now calling super's methodOne...");
+          [super methodOne];
+      }
+
+      - (void)testSuper {
+          NSLog(@"SubClass: testSuper executing.");
+          // 调用父类的 methodTwo 实现
+          NSLog(@"SubClass: Calling super's methodTwo...");
+          [super methodTwo]; // 查找从 SuperClass 开始执行 methodTwo
+      }
+      @end
+
+      // main.m
+      #import "SubClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              SubClass *subObject = [[SubClass alloc] init];
+              NSLog(@"Created object: %@", subObject);
+
+              NSLog(@"\n--- Calling subObject methodOne ---");
+              [subObject methodOne]; // 调用子类覆盖的 methodOne
+              // 输出:
+              // SubClass: methodOne executing.
+              // SubClass: Now calling super's methodOne...
+              // SuperClass: methodOne executing for object <SubClass: 0x...>
+
+              NSLog(@"\n--- Calling subObject testSuper ---");
+              [subObject testSuper]; // 调用子类的 testSuper，内部调用 [super methodTwo]
+              // 输出:
+              // SubClass: testSuper executing.
+              // SubClass: Calling super's methodTwo...
+              // SuperClass: methodTwo executing. Calling methodOne using self... (执行 SuperClass 的 methodTwo)
+              // SubClass: methodOne executing. (因为 SuperClass 的 methodTwo 里调用 [self methodOne]，self 是 SubClass 对象，所以调用了 SubClass 的 methodOne)
+              // SubClass: Now calling super's methodOne... (SubClass 的 methodOne 又调用了 super)
+              // SuperClass: methodOne executing for object <SubClass: 0x...>
+          }
+          return 0;
+      }
+      ```
+  - title: 定义私有成员 (类扩展)
+    description: |
+      Objective-C 没有严格意义上的 `private` 或 `protected` 访问控制修饰符。但通过 **类扩展 (Class Extension)**，可以有效地隐藏类的内部实现细节，模拟私有成员。
+
+      - **语法:** 类扩展定义在实现文件 (`.m`) 的顶部，使用 `@interface ClassName () ... @end` 语法。注意接口名后的空括号 `()` 是类扩展的标志。
+      - **功能:**
+        - **声明私有属性:** 在类扩展中声明的 `@property`，其访问器方法（getter/setter）和实例变量只在类的实现文件内部可见和可用。
+        - **声明私有方法:** 在类扩展中声明的方法签名只在 `.m` 文件内有效，外部代码无法直接调用这些方法。
+        - **使只读属性内部可写:** 如果一个属性在公共接口 (`.h`) 中声明为 `readonly`，可以在类扩展中将其重新声明为 `readwrite`，这样类的内部实现就可以通过 setter 或直接访问实例变量来修改它。
+        - **声明私有协议遵循:** 类可以在其扩展中声明遵循某个协议，而外部代码不知道该类实现了此协议（除非协议本身是公开的）。
+      - **与实现的关系:** 类扩展中声明的所有属性和方法都必须在 `@implementation` 块中实现（或由编译器自动合成属性的实现）。类扩展是类接口的一部分，只是没有公开在头文件中。
+      - **与类别 (Category) 的区别:** 类扩展必须在编译时与类的主要实现一起存在（通常在同一 `.m` 文件），并且可以直接添加实例变量（通过 `@property`）。类别可以在没有类源码的情况下为类添加方法，但不能直接添加实例变量。
+    example: |
+      ```objc
+      // Counter.h - 公共接口
+      #import <Foundation/Foundation.h>
+
+      @interface Counter : NSObject
+
+      // 公开的计数值，只读
+      @property (nonatomic, assign, readonly) NSInteger count;
+
+      // 公开的操作方法
+      - (void)increment;
+      - (void)decrement;
+
+      @end
+
+      // Counter.m - 实现文件
+      #import "Counter.h"
+
+      // Counter 的类扩展
+      @interface Counter ()
+
+      // 将只读的 count 属性在内部重新声明为可读写
+      @property (nonatomic, assign, readwrite) NSInteger count;
+
+      // 声明一个私有属性，用于限制最大值
+      @property (nonatomic, assign) NSInteger maxValue;
+
+      // 声明一个私有方法，用于检查边界
+      - (BOOL)canIncrement;
+      - (BOOL)canDecrement;
+
+      // 声明一个私有方法，用于内部日志
+      - (void)logCurrentState:(NSString *)action;
+
+      @end
+
+
+      @implementation Counter
+
+      // 初始化方法
+      - (instancetype)init {
+          // 调用指定初始化方法（假设我们添加一个）
+          return [self initWithMaxValue:NSIntegerMax];
+      }
+
+      // 添加一个指定初始化方法（也在 .m 中实现，但可以在 .h 中声明或只在内部用）
+      - (instancetype)initWithMaxValue:(NSInteger)max {
+          self = [super init];
+          if (self) {
+              _count = 0; // 直接访问 ivar 初始化
+              _maxValue = max; // 初始化私有属性
+              [self logCurrentState:@"Initialized"]; // 调用私有方法
+          }
+          return self;
+      }
+
+      // 实现公共方法 increment
+      - (void)increment {
+          if ([self canIncrement]) { // 调用私有方法检查
+              self.count++; // 在内部修改 "只读" 属性
+              [self logCurrentState:@"Incremented"];
+          } else {
+              [self logCurrentState:@"Increment Failed (Max Reached)"];
+          }
+      }
+
+      // 实现公共方法 decrement
+      - (void)decrement {
+          if ([self canDecrement]) {
+              self.count--;
+              [self logCurrentState:@"Decremented"];
+          } else {
+               [self logCurrentState:@"Decrement Failed (Min Reached)"];
+          }
+      }
+
+      // 实现私有方法 canIncrement
+      - (BOOL)canIncrement {
+          return self.count < self.maxValue; // 使用私有属性 maxValue
+      }
+
+      // 实现私有方法 canDecrement
+      - (BOOL)canDecrement {
+          // 假设不允许负数
+          return self.count > 0;
+      }
+
+      // 实现私有方法 logCurrentState
+      - (void)logCurrentState:(NSString *)action {
+          NSLog(@"Counter State [%@]: Count = %ld, MaxValue = %ld", action, (long)self.count, (long)self.maxValue);
+      }
+
+      @end
+
+      // main.m
+      #import "Counter.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // Counter *counter = [[Counter alloc] init]; // 使用默认 init (内部调用了 initWithMaxValue)
+              Counter *counter = [[Counter alloc] initWithMaxValue:5]; // 假设 Counter 暴露了这个 init
+
+              // 读取公共只读属性
+              NSLog(@"Initial count: %ld", (long)counter.count); // 输出: Initial count: 0
+
+              // 调用公共方法
+              [counter increment];
+              [counter increment];
+              [counter decrement];
+              [counter increment];
+              [counter increment];
+              [counter increment]; // 到达最大值 5
+              [counter increment]; // 应该失败
+
+              // 尝试访问私有成员会导致编译错误
+              // counter.maxValue = 10; // Error: Property 'maxValue' not found
+              // [counter logCurrentState:@"Manual Check"]; // Error: Method 'logCurrentState:' not found
+
+              NSLog(@"Final count: %ld", (long)counter.count); // 输出: Final count: 5
+          }
+          return 0;
+      }
+      ```
+      *(Note: For the `initWithMaxValue:` to be usable from `main.m`, it would need to be declared in `Counter.h`. If it's intended purely for internal use or called only by other initializers, it can remain undeclared in the header.)*
+  - title: 遵循协议
+    description: |
+      协议 (`@protocol`) 定义了一组方法（必需或可选）的契约，任何类都可以声明遵循（conform to）该协议，并承诺实现其要求的方法。协议是实现抽象、委托模式（Delegation）和定义接口规范的关键机制。
+
+      - **定义协议:** 使用 `@protocol ProtocolName <OptionalSuperProtocol> ... @end` 语法。协议可以继承自其他协议（如常用的 `<NSObject>` 协议，它包含了一些基础对象方法）。方法可以用 `@required` (默认) 或 `@optional` 标记。
+        ```objc
+        @protocol DataProcessorDelegate <NSObject>
+        @required
+        - (void)processorDidFinishWithResult:(id)result;
+        @optional
+        - (void)processorDidUpdateProgress:(float)progress;
+        @end
+        ```
+      - **声明遵循:** 在类的 `@interface` 行，类名（和父类名）之后，使用尖括号 `<...>` 列出该类遵循的一个或多个协议，用逗号分隔。
+        ```objc
+        #import "DataProcessorDelegate.h"
+        @interface MyViewController : UIViewController <DataProcessorDelegate, UITableViewDataSource>
+        // ...
+        @end
+        ```
+      - **实现方法:** 遵循协议的类**必须**实现协议中所有 `@required` 的方法。实现 `@optional` 方法是可选的。编译器会警告未实现的必需方法。
+      - **类型限定 (`id<ProtocolName>`):** 可以声明一个变量，其类型为 `id`（任意对象指针）并限定它必须遵循某个或某些协议。这常用于 delegate 或 dataSource 属性。
+        ```objc
+        @property (nonatomic, weak) id<DataProcessorDelegate> delegate;
+        ```
+        这样可以向该变量发送协议中定义的消息，编译器会进行检查。
+      - **检查可选方法实现:** 在调用 `@optional` 方法前，应使用 `respondsToSelector:` 方法检查对象是否真的实现了该方法，以避免运行时因找不到方法而崩溃。
+        ```objc
+        if ([self.delegate respondsToSelector:@selector(processorDidUpdateProgress:)]) {
+            [self.delegate processorDidUpdateProgress:currentProgress];
+        }
+        ```
+    example: |
+      ```objc
+      // Logger.h - 定义日志记录协议
+      #import <Foundation/Foundation.h>
+
+      typedef NS_ENUM(NSInteger, LogLevel) {
+          LogLevelDebug,
+          LogLevelInfo,
+          LogLevelWarning,
+          LogLevelError
+      };
+
+      @protocol Logger <NSObject> // 遵循 NSObject 协议是个好习惯
+
+      @required // 必须实现的方法
+      - (void)log:(NSString *)message level:(LogLevel)level;
+
+      @optional // 可选的方法
+      - (void)setLogTag:(NSString *)tag;
+      - (NSString *)currentLogTag;
+
+      @end
+
+      // ConsoleLogger.h - 实现协议的类
+      #import <Foundation/Foundation.h>
+      #import "Logger.h" // 导入协议
+
+      // ConsoleLogger 声明遵循 Logger 协议
+      @interface ConsoleLogger : NSObject <Logger>
+      @end
+
+      // ConsoleLogger.m
+      #import "ConsoleLogger.h"
+      @implementation ConsoleLogger {
+          NSString *_logTag; // 用于可选方法的内部状态
+      }
+      // 实现必需方法
+      - (void)log:(NSString *)message level:(LogLevel)level {
+          NSString *levelStr;
+          switch (level) {
+              case LogLevelDebug: levelStr = @"DEBUG"; break;
+              case LogLevelInfo: levelStr = @"INFO"; break;
+              case LogLevelWarning: levelStr = @"WARNING"; break;
+              case LogLevelError: levelStr = @"ERROR"; break;
+          }
+          NSString *tagPrefix = _logTag ? [NSString stringWithFormat:@"[%@] ", _logTag] : @"";
+          NSLog(@"%@%@: %@", tagPrefix, levelStr, message);
+      }
+      // 实现可选方法
+      - (void)setLogTag:(NSString *)tag {
+          _logTag = [tag copy];
+      }
+      - (NSString *)currentLogTag {
+          return _logTag;
+      }
+      @end
+
+      // FileLogger.h - 另一个实现协议的类
+      #import <Foundation/Foundation.h>
+      #import "Logger.h"
+      @interface FileLogger : NSObject <Logger>
+      - (instancetype)initWithFilePath:(NSString *)path; // 自定义初始化
+      @end
+
+      // FileLogger.m
+      #import "FileLogger.h"
+      @implementation FileLogger {
+          NSFileHandle *_fileHandle; // 文件句柄
+      }
+      - (instancetype)initWithFilePath:(NSString *)path {
+          self = [super init];
+          if (self) {
+              // 打开或创建日志文件用于追加写入
+              _fileHandle = [NSFileHandle fileHandleForWritingAtPath:path];
+              if (!_fileHandle) {
+                  [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+                  _fileHandle = [NSFileHandle fileHandleForWritingAtPath:path];
+              }
+              [_fileHandle seekToEndOfFile]; // 移动到文件末尾
+              if (!_fileHandle) return nil; // 初始化失败
+          }
+          return self;
+      }
+      // 实现必需方法
+      - (void)log:(NSString *)message level:(LogLevel)level {
+          NSString *levelStr = [NSString stringWithFormat:@"%ld", (long)level]; // 简单示例
+          NSString *logLine = [NSString stringWithFormat:@"%@ [%@] %@\n", [NSDate date], levelStr, message];
+          [_fileHandle writeData:[logLine dataUsingEncoding:NSUTF8StringEncoding]];
+      }
+      // FileLogger 选择不实现可选方法 setLogTag 和 currentLogTag
+      - (void)dealloc {
+          [_fileHandle closeFile]; // 关闭文件
+      }
+      @end
+
+      // main.m - 使用遵循协议的对象
+      #import <Foundation/Foundation.h>
+      #import "Logger.h"
+      #import "ConsoleLogger.h"
+      #import "FileLogger.h"
+
+      // 一个函数，接受任何遵循 Logger 协议的对象
+      void processDataWithLogger(id<Logger> logger) {
+          // 可以安全调用必需方法
+          [logger log:@"Starting data processing." level:LogLevelInfo];
+
+          // 检查并调用可选方法
+          if ([logger respondsToSelector:@selector(setLogTag:)]) {
+              [logger setLogTag:@"Processor"];
+              NSLog(@"Set logger tag (if supported).");
+          }
+
+          // 模拟处理
+          [logger log:@"Processing step 1 complete." level:LogLevelDebug];
+          [logger log:@"Warning: Resource low." level:LogLevelWarning];
+
+          if ([logger respondsToSelector:@selector(currentLogTag)]) {
+               NSLog(@"Current tag from logger: %@", [logger currentLogTag]);
+          }
+
+          [logger log:@"Data processing finished." level:LogLevelInfo];
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建遵循协议的对象
+              ConsoleLogger *consoleLogger = [[ConsoleLogger alloc] init];
+              FileLogger *fileLogger = [[FileLogger alloc] initWithFilePath:@"./app.log"]; // 假设有写入权限
+
+              NSLog(@"--- Using ConsoleLogger ---");
+              processDataWithLogger(consoleLogger);
+              // ConsoleLogger 支持可选方法
+
+              if (fileLogger) {
+                  NSLog(@"\n--- Using FileLogger ---");
+                  processDataWithLogger(fileLogger);
+                  // FileLogger 不支持可选方法，检查会失败，不会调用
+              } else {
+                   NSLog(@"Failed to initialize FileLogger.");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用类别扩展功能
+    description: |
+      类别 (Category) 是一种允许你向**现有类**（包括你自己定义的类、系统框架类如 `NSString`、`NSArray` 等）添加新方法的机制，而**无需创建子类或修改原始类的源代码**。
+
+      - **语法:**
+        - **接口 (`.h` 文件):** 使用 `@interface ExistingClassName (CategoryName) ... @end` 声明类别。`CategoryName` 用于标识这个类别的功能集合。
+          ```objc
+          // NSString+Utils.h
+          #import <Foundation/Foundation.h>
+          @interface NSString (Utils) // 为 NSString 添加名为 Utils 的类别
+          - (BOOL)isBlank; // 声明一个新方法
+          @end
+          ```
+        - **实现 (`.m` 文件):** 使用 `@implementation ExistingClassName (CategoryName) ... @end` 提供类别中声明的方法的实现。
+          ```objc
+          // NSString+Utils.m
+          #import "NSString+Utils.h"
+          @implementation NSString (Utils)
+          - (BOOL)isBlank {
+              return [[self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0;
+          }
+          @end
+          ```
+      - **用途:**
+        - **添加便利方法:** 给类增加实用的辅助功能。
+        - **代码组织:** 将一个庞大类的实现按逻辑功能分散到不同的类别文件中，使代码结构更清晰。例如，可以把 `UIViewController` 的网络请求逻辑放在 `UIViewController+Networking` 类别中。
+        - **扩展系统类:** 为 Foundation 或 UIKit 等框架中的类添加自定义行为。
+      - **重要限制:**
+        - **不能添加实例变量:** 标准的类别不能直接为类添加新的实例变量。如果类别中的方法需要存储状态，通常需要借助“关联对象 (Associated Objects)”这一运行时特性来实现（这是一种更高级的技术）。
+        - **方法名冲突:** 如果类别中定义的方法与原始类或其他类别中的方法同名，运行时只会有一个实现生效（通常是最后被加载的那个），这可能导致难以预料的行为和 bug。为避免冲突，建议在类别方法名上加上特定前缀（例如，`myprefix_methodName`）。
+        - **谨慎覆盖:** 尽量避免在类别中覆盖原始类的方法，尤其是框架类的方法，因为这可能破坏原有功能或与其他代码产生冲突。如果需要修改行为，优先考虑子类化。
+      - **使用:** 只需将包含类别实现的 `.m` 文件添加到项目中编译，类别中定义的方法就会自动“附加”到对应的类上，所有该类的实例都可以直接调用这些新方法。
+    example: |
+      ```objc
+      // NSDate+Formatting.h - 为 NSDate 添加格式化方法的类别接口
+      #import <Foundation/Foundation.h>
+
+      // 为 NSDate 定义一个名为 "Formatting" 的类别
+      @interface NSDate (Formatting)
+
+      // 实例方法：将日期格式化为 "yyyy-MM-dd" 字符串
+      - (NSString *)app_formatToYYYYMMDD;
+
+      // 实例方法：将日期格式化为 "HH:mm:ss" 字符串
+      - (NSString *)app_formatToHHMMSS;
+
+      // 类方法：从 "yyyy-MM-dd" 字符串解析日期 (添加前缀避免潜在冲突)
+      + (NSDate *)app_dateFromYYYYMMDDString:(NSString *)dateString;
+
+      @end
+
+      // NSDate+Formatting.m - 类别实现
+      #import "NSDate+Formatting.h"
+
+      @implementation NSDate (Formatting)
+
+      // 使用静态变量存储 DateFormatter，提高效率，避免重复创建
+      static NSDateFormatter *app_yyyyMMddFormatter = nil;
+      static NSDateFormatter *app_hhmmssFormatter = nil;
+
+      + (void)load { // +load 方法在类加载时调用，适合初始化静态变量
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              app_yyyyMMddFormatter = [[NSDateFormatter alloc] init];
+              app_yyyyMMddFormatter.dateFormat = @"yyyy-MM-dd";
+
+              app_hhmmssFormatter = [[NSDateFormatter alloc] init];
+              app_hhmmssFormatter.dateFormat = @"HH:mm:ss";
+          });
+      }
+
+      // 实现实例方法
+      - (NSString *)app_formatToYYYYMMDD {
+          return [app_yyyyMMddFormatter stringFromDate:self];
+      }
+
+      - (NSString *)app_formatToHHMMSS {
+          return [app_hhmmssFormatter stringFromDate:self];
+      }
+
+      // 实现类方法
+      + (NSDate *)app_dateFromYYYYMMDDString:(NSString *)dateString {
+          return [app_yyyyMMddFormatter dateFromString:dateString];
+      }
+
+      @end
+
+      // main.m - 使用类别添加的方法
+      #import <Foundation/Foundation.h>
+      #import "NSDate+Formatting.h" // 导入类别头文件
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 获取当前日期时间
+              NSDate *now = [NSDate date];
+
+              // 调用类别中添加的实例方法
+              NSString *dateStr = [now app_formatToYYYYMMDD];
+              NSString *timeStr = [now app_formatToHHMMSS];
+              NSLog(@"Current Date: %@", dateStr); // 输出: Current Date: yyyy-MM-dd (当前日期)
+              NSLog(@"Current Time: %@", timeStr); // 输出: Current Time: HH:mm:ss (当前时间)
+
+              // 调用类别中添加的类方法
+              NSString *birthdayStr = @"1990-05-15";
+              NSDate *birthday = [NSDate app_dateFromYYYYMMDDString:birthdayStr];
+              if (birthday) {
+                   NSLog(@"Parsed Birthday: %@", birthday);
+                   // 可以再次使用格式化方法验证
+                   NSLog(@"Formatted Birthday: %@", [birthday app_formatToYYYYMMDD]); // 输出: Formatted Birthday: 1990-05-15
+              } else {
+                  NSLog(@"Failed to parse date string: %@", birthdayStr);
+              }
+          }
+          return 0;
+      }
+      ```

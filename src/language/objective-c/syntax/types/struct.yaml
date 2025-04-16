@@ -1,0 +1,597 @@
+id: struct
+title: 结构体
+description: Objective-C 中的结构体（Struct）是一种值类型数据结构，源于 C 语言。它允许将多个相关的数据项（成员）组合成一个单一的变量。结构体通常用于存储简单的数据集合，如坐标点 (CGPoint)、尺寸 (CGSize)、范围 (NSRange) 等。与类（Class）不同，结构体变量通常存储在栈内存中，并且在传递时进行值拷贝（而不是引用传递）。它们使用 `struct` 关键字来定义。
+usage:
+  - title: 定义结构体
+    description: |
+      使用 `struct` 关键字定义一个新的结构体类型。在大括号 `{}` 内声明结构体的成员变量及其类型。
+
+      **语法:**
+      ```c
+      struct 结构体名称 {
+          类型 成员名1;
+          类型 成员名2;
+          // ... 更多成员
+      };
+      ```
+      - `struct`: 定义结构体的关键字。
+      - `结构体名称`: 你为这个结构体类型起的名字。
+      - `成员名`: 结构体内部变量的名称。
+      - `类型`: 成员变量的数据类型（如 `int`, `float`, `char *` 或其他结构体）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个表示二维坐标点的结构体
+      struct Point {
+          double x; // x 坐标成员
+          double y; // y 坐标成员
+      };
+
+      // 定义一个表示颜色的结构体
+      struct Color {
+          int red;
+          int green;
+          int blue;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 结构体定义本身不产生任何输出，它只是定义了一种新的数据类型。
+              NSLog(@"结构体 Point 和 Color 已定义。");
+          }
+          return 0;
+      }
+      ```
+  - title: 声明结构体变量
+    description: |
+      定义了结构体类型后，可以使用 `struct 结构体名称` 来声明该类型的变量。
+
+      **语法:**
+      ```c
+      struct 结构体名称 变量名;
+      ```
+      - `变量名`: 你为这个结构体实例起的名字。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个表示二维坐标点的结构体
+      struct Point {
+          double x;
+          double y;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 Point 类型的结构体变量 p1
+              struct Point p1;
+              // 声明另一个 Point 类型的结构体变量 p2
+              struct Point p2;
+
+              // 此时 p1 和 p2 的成员变量值是未初始化的（随机值）
+              // 为了演示，我们给它们赋初值
+              p1.x = 10.0;
+              p1.y = 20.0;
+
+              NSLog(@"已声明结构体变量 p1 (x=%.1f, y=%.1f)", p1.x, p1.y);
+              // NSLog(@"p2 的值未初始化: x=%f, y=%f", p2.x, p2.y); // 访问未初始化变量是危险的
+          }
+          return 0;
+      }
+      ```
+  - title: 访问结构体成员
+    description: |
+      使用点运算符 (`.`) 来访问结构体变量的成员。
+
+      **语法:**
+      ```c
+      变量名.成员名
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      struct Point {
+          double x;
+          double y;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              struct Point myPoint;
+
+              // 使用点运算符为成员赋值
+              myPoint.x = 5.5;
+              myPoint.y = -3.2;
+
+              // 使用点运算符读取成员的值
+              double currentX = myPoint.x;
+              double currentY = myPoint.y;
+
+              NSLog(@"访问 myPoint 成员: x = %.1f", currentX); // 输出: 访问 myPoint 成员: x = 5.5
+              NSLog(@"访问 myPoint 成员: y = %.1f", currentY); // 输出: 访问 myPoint 成员: y = -3.2
+              NSLog(@"直接访问并打印: myPoint.x = %.1f, myPoint.y = %.1f", myPoint.x, myPoint.y); // 输出: 直接访问并打印: myPoint.x = 5.5, myPoint.y = -3.2
+          }
+          return 0;
+      }
+      ```
+  - title: 初始化结构体变量
+    description: |
+      可以在声明结构体变量时或之后对其成员进行初始化。有多种初始化方式：
+
+      - **逐个成员赋值:** 声明后，使用点运算符 (`.`) 分别给每个成员赋值。
+      - **聚合初始化 (C 风格):** 在声明时，使用花括号 `{}` 将初始值按成员定义的顺序依次列出。
+      - **指定初始化器 (C99 风格):** 在声明时，使用花括号 `{}` 和点运算符显式指定要初始化的成员及其值，顺序可以任意。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      struct Rectangle {
+          double width;
+          double height;
+          const char *name;
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 1. 逐个成员赋值
+              struct Rectangle rect1;
+              rect1.width = 10.0;
+              rect1.height = 5.0;
+              rect1.name = "Rect 1";
+              NSLog(@"逐个赋值: rect1 = { width: %.1f, height: %.1f, name: %s }", rect1.width, rect1.height, rect1.name);
+              // 输出: 逐个赋值: rect1 = { width: 10.0, height: 5.0, name: Rect 1 }
+
+              // 2. 聚合初始化 (按顺序)
+              struct Rectangle rect2 = { 20.0, 8.0, "Rect 2" }; // 值必须按 width, height, name 的顺序提供
+              NSLog(@"聚合初始化: rect2 = { width: %.1f, height: %.1f, name: %s }", rect2.width, rect2.height, rect2.name);
+              // 输出: 聚合初始化: rect2 = { width: 20.0, height: 8.0, name: Rect 2 }
+
+              // 3. 指定初始化器 (C99)
+              struct Rectangle rect3 = { .name = "Rect 3", .height = 12.0, .width = 15.0 }; // 可以按任意顺序指定成员
+              NSLog(@"指定初始化器: rect3 = { width: %.1f, height: %.1f, name: %s }", rect3.width, rect3.height, rect3.name);
+              // 输出: 指定初始化器: rect3 = { width: 15.0, height: 12.0, name: Rect 3 }
+
+              // 也可以只初始化部分成员 (未指定的会默认初始化为 0 或 NULL)
+              struct Rectangle rect4 = { .width = 7.0 };
+              NSLog(@"部分指定初始化: rect4 = { width: %.1f, height: %.1f, name: %s }", rect4.width, rect4.height, rect4.name ? rect4.name : "(null)");
+              // 输出: 部分指定初始化: rect4 = { width: 7.0, height: 0.0, name: (null) }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 `typedef` 简化结构体类型名
+    description: |
+      `typedef` 关键字可以为现有的类型创建一个新的别名。与结构体结合使用，可以省略每次声明变量时都需要写的 `struct` 关键字，使代码更简洁。
+
+      **两种常见方式:**
+      1.  **定义后 typedef:** 先定义结构体，再使用 `typedef` 创建别名。
+          ```c
+          struct Point { double x; double y; };
+          typedef struct Point PointT; // PointT 现在是 struct Point 的别名
+          ```
+      2.  **定义时 typedef:** 在定义结构体的同时使用 `typedef` 创建别名。
+          ```c
+          typedef struct {
+              double x;
+              double y;
+          } PointT; // PointT 直接是这个匿名结构体的别名
+          // 或者给结构体命名并在同时 typedef
+          typedef struct Point {
+              double x;
+              double y;
+          } PointT; // PointT 是 struct Point 的别名，struct Point 仍然可用
+          ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义时使用 typedef 创建别名 Vector
+      typedef struct {
+          float x;
+          float y;
+          float z;
+      } Vector;
+
+      // 先定义结构体，再 typedef 创建别名 Configuration
+      struct DeviceConfig {
+          int deviceID;
+          BOOL enabled;
+      };
+      typedef struct DeviceConfig Configuration;
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用别名 Vector 声明变量，不再需要写 struct
+              Vector v1 = {1.0, 2.0, 3.0};
+              NSLog(@"Vector v1: { x: %.1f, y: %.1f, z: %.1f }", v1.x, v1.y, v1.z);
+              // 输出: Vector v1: { x: 1.0, y: 2.0, z: 3.0 }
+
+              // 使用别名 Configuration 声明变量
+              Configuration config1 = { .deviceID = 101, .enabled = YES };
+              NSLog(@"Configuration config1: { deviceID: %d, enabled: %@ }", config1.deviceID, config1.enabled ? @"YES" : @"NO");
+              // 输出: Configuration config1: { deviceID: 101, enabled: YES }
+
+              // 如果结构体本身有名字，仍然可以使用 struct 关键字声明
+              struct DeviceConfig config2 = { .deviceID = 102, .enabled = NO };
+              NSLog(@"struct DeviceConfig config2: { deviceID: %d, enabled: %@ }", config2.deviceID, config2.enabled ? @"YES" : @"NO");
+              // 输出: struct DeviceConfig config2: { deviceID: 102, enabled: NO }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用结构体指针
+    description: |
+      可以声明指向结构体的指针。通过指针访问结构体成员时，需要使用箭头运算符 (`->`)，或者先解引用指针 (`*`) 再使用点运算符 (`.`)。
+
+      **语法:**
+      ```c
+      // 声明结构体指针
+      struct 结构体名称 *指针变量名;
+      // 或者使用 typedef 后的别名
+      // 类型别名 *指针变量名;
+
+      // 指向现有结构体变量
+      指针变量名 = &结构体变量;
+
+      // 通过指针访问成员
+      指针变量名->成员名;
+      // 或者
+      (*指针变量名).成员名;
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      typedef struct {
+          int id;
+          double value;
+      } DataItem;
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataItem item1 = { .id = 1, .value = 99.9 };
+
+              // 声明一个指向 DataItem 的指针 ptrItem
+              DataItem *ptrItem;
+
+              // 让指针指向 item1 的内存地址
+              ptrItem = &item1;
+
+              // 使用箭头运算符 -> 通过指针访问成员
+              NSLog(@"通过指针访问 (->): id = %d, value = %.1f", ptrItem->id, ptrItem->value);
+              // 输出: 通过指针访问 (->): id = 1, value = 99.9
+
+              // 使用解引用 (*) 和点运算符 (.) 访问成员
+              NSLog(@"通过指针访问 (*.): id = %d, value = %.1f", (*ptrItem).id, (*ptrItem).value);
+              // 输出: 通过指针访问 (*.): id = 1, value = 99.9
+
+              // 通过指针修改结构体成员的值
+              ptrItem->value = 101.1;
+              NSLog(@"修改后，item1 的值: id = %d, value = %.1f", item1.id, item1.value);
+              // 输出: 修改后，item1 的值: id = 1, value = 101.1
+          }
+          return 0;
+      }
+      ```
+  - title: 结构体作为函数参数（值传递）
+    description: |
+      当结构体变量作为参数传递给函数时，默认进行**值传递 (pass-by-value)**。这意味着函数接收的是结构体的一个副本，函数内部对该副本成员的修改不会影响到原始的结构体变量。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      typedef struct {
+          int x;
+          int y;
+      } Coordinate;
+
+      // 函数接收一个 Coordinate 结构体作为参数 (值传递)
+      void printCoordinate(Coordinate coord) {
+          NSLog(@"Inside function (before modify): x = %d, y = %d", coord.x, coord.y);
+          // 修改副本的值
+          coord.x = 100;
+          NSLog(@"Inside function (after modify): x = %d, y = %d", coord.x, coord.y);
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Coordinate point = {10, 20};
+              NSLog(@"Before calling function: x = %d, y = %d", point.x, point.y);
+              // 输出: Before calling function: x = 10, y = 20
+
+              // 调用函数，传递 point 结构体
+              printCoordinate(point);
+              // 输出: Inside function (before modify): x = 10, y = 20
+              // 输出: Inside function (after modify): x = 100, y = 20
+
+              // 检查原始 point 结构体的值，发现未被修改
+              NSLog(@"After calling function: x = %d, y = %d", point.x, point.y);
+              // 输出: After calling function: x = 10, y = 20
+          }
+          return 0;
+      }
+      ```
+  - title: 结构体指针作为函数参数（地址传递）
+    description: |
+      如果希望函数能够修改原始结构体变量，或者为了避免拷贝大型结构体带来的性能开销，可以将结构体的**指针 (地址)** 传递给函数。函数通过指针操作的就是原始的结构体数据。
+
+      **注意:** 在函数内部需要使用 `->` 操作符来访问通过指针传递的结构体成员。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      typedef struct {
+          int width;
+          int height;
+      } Size;
+
+      // 函数接收一个指向 Size 结构体的指针 (地址传递)
+      void scaleSize(Size *sizePtr, int factor) {
+          if (sizePtr != NULL) { // 检查指针是否有效
+              NSLog(@"Inside function (before modify): width = %d, height = %d", sizePtr->width, sizePtr->height);
+              // 通过指针修改原始结构体的值
+              sizePtr->width *= factor;
+              sizePtr->height *= factor;
+              NSLog(@"Inside function (after modify): width = %d, height = %d", sizePtr->width, sizePtr->height);
+          }
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Size box = {10, 5};
+              NSLog(@"Before calling function: width = %d, height = %d", box.width, box.height);
+              // 输出: Before calling function: width = 10, height = 5
+
+              // 调用函数，传递 box 结构体的地址 (&box)
+              scaleSize(&box, 2);
+              // 输出: Inside function (before modify): width = 10, height = 5
+              // 输出: Inside function (after modify): width = 20, height = 10
+
+              // 检查原始 box 结构体的值，发现已被修改
+              NSLog(@"After calling function: width = %d, height = %d", box.width, box.height);
+              // 输出: After calling function: width = 20, height = 10
+          }
+          return 0;
+      }
+      ```
+  - title: 结构体作为函数返回值
+    description: |
+      函数可以返回一个结构体类型的值。函数内部创建一个结构体实例，填充数据，然后将其返回。调用者接收这个返回的结构体（通常是一个副本）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      typedef struct {
+          float r, g, b, a; // Red, Green, Blue, Alpha
+      } ColorRGBA;
+
+      // 函数创建一个 ColorRGBA 结构体并返回
+      ColorRGBA createColor(float r, float g, float b, float a) {
+          ColorRGBA newColor;
+          newColor.r = r;
+          newColor.g = g;
+          newColor.b = b;
+          newColor.a = a;
+          NSLog(@"Creating color inside function: R=%.1f, G=%.1f, B=%.1f, A=%.1f", r, g, b, a);
+          return newColor; // 返回结构体
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 调用函数并接收返回的结构体
+              ColorRGBA myColor = createColor(0.5, 0.8, 0.2, 1.0);
+              // 输出: Creating color inside function: R=0.5, G=0.8, B=0.2, A=1.0
+
+              // 使用返回的结构体
+              NSLog(@"Received color: R=%.1f, G=%.1f, B=%.1f, A=%.1f", myColor.r, myColor.g, myColor.b, myColor.a);
+              // 输出: Received color: R=0.5, G=0.8, B=0.2, A=1.0
+          }
+          return 0;
+      }
+      ```
+  - title: 结构体嵌套
+    description: |
+      一个结构体可以包含另一个结构体类型的成员。这允许创建更复杂的数据结构。访问嵌套结构体的成员需要使用链式的点运算符 (`.`)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义点结构体
+      typedef struct {
+          double x;
+          double y;
+      } Point;
+
+      // 定义圆结构体，包含一个 Point 成员表示圆心，和一个 double 成员表示半径
+      typedef struct {
+          Point center; // 嵌套的 Point 结构体
+          double radius;
+      } Circle;
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 初始化一个 Circle 结构体
+              Circle myCircle;
+
+              // 访问并设置嵌套结构体的成员
+              myCircle.center.x = 10.0;
+              myCircle.center.y = 20.0;
+              myCircle.radius = 5.5;
+
+              // 访问嵌套成员
+              NSLog(@"Circle center: (%.1f, %.1f)", myCircle.center.x, myCircle.center.y); // 输出: Circle center: (10.0, 20.0)
+              NSLog(@"Circle radius: %.1f", myCircle.radius); // 输出: Circle radius: 5.5
+
+              // 也可以使用复合字面量进行初始化
+              Circle anotherCircle = { {3.0, 4.0}, 2.0 }; // { {center.x, center.y}, radius }
+              NSLog(@"Another circle: center(%.1f, %.1f), radius=%.1f",
+                    anotherCircle.center.x, anotherCircle.center.y, anotherCircle.radius);
+              // 输出: Another circle: center(3.0, 4.0), radius=2.0
+          }
+          return 0;
+      }
+      ```
+  - title: 在 Objective-C 类中使用结构体
+    description: |
+      结构体可以作为 Objective-C 类的实例变量或属性。因为结构体是值类型，将其声明为属性时，通常使用 `assign` 或直接赋值语义，而不是 `strong` 或 `copy`（除非结构体包含需要特殊内存管理的指针）。
+
+      **注意:** 如果将包含结构体的对象添加到 Foundation 集合（如 `NSArray`, `NSDictionary`）中，需要先将结构体包装在 `NSValue` 对象中。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的日期结构体
+      typedef struct {
+          int day;
+          int month;
+          int year;
+      } SimpleDate;
+
+      // 定义一个使用 SimpleDate 结构体的 Objective-C 类
+      @interface Event : NSObject
+
+      // 使用 assign 语义的属性存储结构体
+      @property (nonatomic, assign) SimpleDate eventDate;
+      @property (nonatomic, strong) NSString *eventName;
+
+      - (instancetype)initWithName:(NSString *)name date:(SimpleDate)date;
+      - (void)printEventInfo;
+
+      @end
+
+      @implementation Event
+
+      - (instancetype)initWithName:(NSString *)name date:(SimpleDate)date {
+          self = [super init];
+          if (self) {
+              _eventName = name;
+              _eventDate = date; // 直接赋值结构体
+          }
+          return self;
+      }
+
+      - (void)printEventInfo {
+          NSLog(@"Event: '%@', Date: %02d/%02d/%d", self.eventName, self.eventDate.day, self.eventDate.month, self.eventDate.year);
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 SimpleDate 结构体实例
+              SimpleDate birthdayDate = {15, 8, 1995};
+
+              // 创建 Event 对象，将结构体传递给初始化方法
+              Event *birthdayEvent = [[Event alloc] initWithName:@"My Birthday" date:birthdayDate];
+
+              // 调用方法打印信息，访问结构体属性
+              [birthdayEvent printEventInfo];
+              // 输出: Event: 'My Birthday', Date: 15/08/1995
+
+              // 修改属性中的结构体成员
+              SimpleDate newDate = birthdayEvent.eventDate; // 获取结构体副本
+              newDate.year = 2024;          // 修改副本
+              birthdayEvent.eventDate = newDate; // 将修改后的副本赋值回去
+
+              [birthdayEvent printEventInfo];
+              // 输出: Event: 'My Birthday', Date: 15/08/2024
+          }
+          return 0;
+      }
+      ```
+  - title: 将结构体封装到 NSValue 中
+    description: |
+      Objective-C 的 Foundation 集合类（如 `NSArray`, `NSDictionary`, `NSSet`）只能存储对象（继承自 `NSObject` 的实例）。因为结构体是值类型而非对象，不能直接放入这些集合。需要使用 `NSValue` 类将结构体包装成一个对象。
+
+      - **包装:** 使用 `+[NSValue valueWithBytes:objCType:]` 方法。需要提供结构体变量的地址 (`&structVar`) 和其类型的 C 字符串编码 (`@encode(StructType)`)。
+      - **解包:** 使用 `-[NSValue getValue:]` 方法。需要提供一个用于接收结构体值的变量的地址 (`&targetVar`)。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // 引入包含 CGPoint, CGSize, CGRect 的框架
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // Foundation 提供的常用结构体
+              CGPoint point = CGPointMake(10, 20);
+              CGSize size = CGSizeMake(100, 50);
+              CGRect rect = CGRectMake(0, 0, 80, 40);
+
+              // 将结构体包装成 NSValue 对象
+              NSValue *pointValue = [NSValue valueWithCGPoint:point]; // Foundation 为常用结构体提供了便捷方法
+              NSValue *sizeValue = [NSValue valueWithCGSize:size];
+              // 对于自定义或不常用的结构体，使用通用方法
+              NSRange range = NSMakeRange(5, 10);
+              NSValue *rangeValue = [NSValue valueWithBytes:&range objCType:@encode(NSRange)];
+
+              // 将 NSValue 对象存入 NSArray
+              NSArray *structValues = @[pointValue, sizeValue, rangeValue];
+              NSLog(@"Array contains %lu NSValue objects.", (unsigned long)structValues.count);
+              // 输出: Array contains 3 NSValue objects.
+
+              // 从 NSArray 中取出 NSValue 对象并解包回结构体
+              NSValue *retrievedPointValue = structValues[0];
+              CGPoint retrievedPoint = [retrievedPointValue CGPointValue]; // 使用便捷方法解包
+              NSLog(@"Retrieved CGPoint: (%.1f, %.1f)", retrievedPoint.x, retrievedPoint.y);
+              // 输出: Retrieved CGPoint: (10.0, 20.0)
+
+              NSValue *retrievedRangeValue = structValues[2];
+              NSRange retrievedRange;
+              [retrievedRangeValue getValue:&retrievedRange]; // 使用通用方法解包
+              NSLog(@"Retrieved NSRange: {location=%lu, length=%lu}", (unsigned long)retrievedRange.location, (unsigned long)retrievedRange.length);
+              // 输出: Retrieved NSRange: {location=5, length=10}
+          }
+          return 0;
+      }
+      ```
+  - title: Foundation 框架中的常用结构体
+    description: |
+      Objective-C 的 Foundation 和 CoreGraphics 框架预定义了许多常用的结构体，用于处理几何、范围等常见任务。熟悉这些结构体及其辅助函数可以极大地方便开发。
+
+      **常用结构体:**
+      - `NSRange`: 表示一个范围，通常用于字符串或数组的子序列。包含 `location` (起始位置) 和 `length` (长度) 两个 `NSUInteger` 成员。
+        - 创建: `NSMakeRange(location, length)`
+      - `CGPoint`: 表示二维坐标系中的一个点。包含 `x` 和 `y` 两个 `CGFloat` 成员。
+        - 创建: `CGPointMake(x, y)`
+      - `CGSize`: 表示一个尺寸（宽度和高度）。包含 `width` 和 `height` 两个 `CGFloat` 成员。
+        - 创建: `CGSizeMake(width, height)`
+      - `CGRect`: 表示一个矩形区域。包含一个 `CGPoint` 成员 `origin` (左上角坐标) 和一个 `CGSize` 成员 `size` (尺寸)。
+        - 创建: `CGRectMake(x, y, width, height)`
+
+      这些结构体通常有对应的辅助函数（如 `CGPointMake`, `NSMakeRange`, `CGRectContainsPoint` 等）来方便地创建和操作它们。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <CoreGraphics/CoreGraphics.h> // 包含 CGPoint, CGSize, CGRect
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用 NSRange
+              NSString *text = @"Hello Objective-C";
+              NSRange range = [text rangeOfString:@"Objective-C"]; // 查找子串范围
+              if (range.location != NSNotFound) {
+                  NSLog(@"'Objective-C' found at location %lu, length %lu", (unsigned long)range.location, (unsigned long)range.length);
+                  // 输出: 'Objective-C' found at location 6, length 11
+              }
+
+              // 使用 CGPoint, CGSize, CGRect
+              CGPoint origin = CGPointMake(10.0, 20.0);
+              CGSize size = CGSizeMake(100.0, 50.0);
+              CGRect frame = CGRectMake(origin.x, origin.y, size.width, size.height); // 使用 CGPoint 和 CGSize 创建 CGRect
+              // CGRect frame = CGRectMake(10.0, 20.0, 100.0, 50.0); // 或者直接用数值创建
+
+              NSLog(@"Rectangle: Origin=(%.1f, %.1f), Size=(%.1f, %.1f)",
+                    frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+              // 输出: Rectangle: Origin=(10.0, 20.0), Size=(100.0, 50.0)
+
+              // 检查一个点是否在矩形内
+              CGPoint testPoint = CGPointMake(50.0, 30.0);
+              BOOL contains = CGRectContainsPoint(frame, testPoint);
+              NSLog(@"Does the frame contain the point (%.1f, %.1f)? %@", testPoint.x, testPoint.y, contains ? @"YES" : @"NO");
+              // 输出: Does the frame contain the point (50.0, 30.0)? YES
+          }
+          return 0;
+      }
+      ```

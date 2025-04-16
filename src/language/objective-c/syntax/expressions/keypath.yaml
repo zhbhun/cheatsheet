@@ -1,0 +1,314 @@
+id: keypath
+title: valueForKeyPath
+description: '`valueForKeyPath:` 是 Objective-C 中 Key-Value Coding (KVC) 协议的一部分，由 `NSObject` 提供。它允许通过一个点分隔的字符串（称为“键路径”）来访问对象的属性，甚至是嵌套对象的属性或集合中的元素。这在需要动态访问深层数据结构或对集合进行聚合操作时非常有用，可以显著简化代码。'
+usage:
+  - title: 访问对象的直接属性
+    description: |
+      当键路径只包含一个键名时，`valueForKeyPath:` 的行为类似于 `valueForKey:`，用于获取对象的直接属性值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的 Person 类
+      @interface Person : NSObject
+      @property (nonatomic, copy) NSString *name;
+      @property (nonatomic, assign) NSInteger age;
+      @end
+
+      @implementation Person
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 Person 实例
+              Person *person = [[Person alloc] init];
+              person.name = @"Alice";
+              person.age = 30;
+
+              // 使用 valueForKeyPath: 访问直接属性 name
+              NSString *name = [person valueForKeyPath:@"name"];
+              NSLog(@"Name: %@", name); // 输出: Name: Alice
+
+              // 使用 valueForKeyPath: 访问直接属性 age
+              NSNumber *age = [person valueForKeyPath:@"age"];
+              NSLog(@"Age: %@", age); // 输出: Age: 30
+          }
+          return 0;
+      }
+      ```
+  - title: 访问嵌套对象的属性
+    description: |
+      使用点表示法 (`.`) 作为分隔符，可以访问嵌套对象的属性。例如，`address.street` 会先获取 `address` 属性的值（假定它是一个对象），然后获取该对象的 `street` 属性值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义地址类
+      @interface Address : NSObject
+      @property (nonatomic, copy) NSString *street;
+      @property (nonatomic, copy) NSString *city;
+      @end
+
+      @implementation Address
+      @end
+
+      // 定义包含地址的 Person 类
+      @interface Person : NSObject
+      @property (nonatomic, copy) NSString *name;
+      @property (nonatomic, strong) Address *address; // 嵌套对象
+      @end
+
+      @implementation Person
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 Address 实例
+              Address *addr = [[Address alloc] init];
+              addr.street = @"123 Main St";
+              addr.city = @"Anytown";
+
+              // 创建 Person 实例并设置地址
+              Person *person = [[Person alloc] init];
+              person.name = @"Bob";
+              person.address = addr;
+
+              // 使用 valueForKeyPath: 访问嵌套属性 address.street
+              NSString *street = [person valueForKeyPath:@"address.street"];
+              NSLog(@"Street: %@", street); // 输出: Street: 123 Main St
+
+              // 使用 valueForKeyPath: 访问嵌套属性 address.city
+              NSString *city = [person valueForKeyPath:@"address.city"];
+              NSLog(@"City: %@", city); // 输出: City: Anytown
+          }
+          return 0;
+      }
+      ```
+  - title: 对集合进行聚合运算
+    description: |
+      `valueForKeyPath:` 支持对集合（如 `NSArray`, `NSSet`）执行聚合操作。通过在键路径前加上 `@` 符号和操作符实现。
+      常用的聚合运算符包括：
+      - `@count`: 返回集合中的对象数量。
+      - `@sum`: 计算集合中指定数值属性的总和。
+      - `@avg`: 计算集合中指定数值属性的平均值。
+      - `@max`: 找出集合中指定数值属性的最大值。
+      - `@min`: 找出集合中指定数值属性的最小值。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义 Transaction 类
+      @interface Transaction : NSObject
+      @property (nonatomic, copy) NSString *itemName;
+      @property (nonatomic, strong) NSNumber *amount; // 使用 NSNumber 存储数值
+      @end
+
+      @implementation Transaction
+      + (instancetype)transactionWithName:(NSString *)name amount:(double)amount {
+          Transaction *tx = [[Transaction alloc] init];
+          tx.itemName = name;
+          tx.amount = @(amount); // 自动装箱为 NSNumber
+          return tx;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 Transaction 数组
+              NSArray<Transaction *> *transactions = @[
+                  [Transaction transactionWithName:@"Apple" amount:1.5],
+                  [Transaction transactionWithName:@"Banana" amount:0.8],
+                  [Transaction transactionWithName:@"Orange" amount:1.2],
+                  [Transaction transactionWithName:@"Apple" amount:1.6] // 另一个 Apple
+              ];
+
+              // 使用 @count 获取交易数量
+              NSNumber *count = [transactions valueForKeyPath:@"@count"];
+              NSLog(@"Total transactions: %@", count); // 输出: Total transactions: 4
+
+              // 使用 @sum 计算总金额
+              NSNumber *totalAmount = [transactions valueForKeyPath:@"@sum.amount"];
+              NSLog(@"Total amount: %@", totalAmount); // 输出: Total amount: 5.1
+
+              // 使用 @avg 计算平均金额
+              NSNumber *averageAmount = [transactions valueForKeyPath:@"@avg.amount"];
+              NSLog(@"Average amount: %@", averageAmount); // 输出: Average amount: 1.275
+
+              // 使用 @max 查找最高金额
+              NSNumber *maxAmount = [transactions valueForKeyPath:@"@max.amount"];
+              NSLog(@"Maximum amount: %@", maxAmount); // 输出: Maximum amount: 1.6
+
+              // 使用 @min 查找最低金额
+              NSNumber *minAmount = [transactions valueForKeyPath:@"@min.amount"];
+              NSLog(@"Minimum amount: %@", minAmount); // 输出: Minimum amount: 0.8
+          }
+          return 0;
+      }
+      ```
+  - title: 提取集合中对象的属性
+    description: |
+      可以使用集合运算符从集合中的每个对象提取特定属性的值，并将这些值收集到一个新的数组中。
+      - `@unionOfObjects`: 返回包含集合中所有对象指定属性值的数组（不去重）。
+      - `@distinctUnionOfObjects`: 返回包含集合中所有对象指定属性值的数组（去重）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 复用上一个示例的 Transaction 类
+      @interface Transaction : NSObject
+      @property (nonatomic, copy) NSString *itemName;
+      @property (nonatomic, strong) NSNumber *amount;
+      + (instancetype)transactionWithName:(NSString *)name amount:(double)amount;
+      @end
+      @implementation Transaction
+      + (instancetype)transactionWithName:(NSString *)name amount:(double)amount {
+          Transaction *tx = [[Transaction alloc] init];
+          tx.itemName = name;
+          tx.amount = @(amount);
+          return tx;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSArray<Transaction *> *transactions = @[
+                  [Transaction transactionWithName:@"Apple" amount:1.5],
+                  [Transaction transactionWithName:@"Banana" amount:0.8],
+                  [Transaction transactionWithName:@"Orange" amount:1.2],
+                  [Transaction transactionWithName:@"Apple" amount:1.6]
+              ];
+
+              // 使用 @unionOfObjects 获取所有交易的商品名称 (不去重)
+              NSArray *itemNames = [transactions valueForKeyPath:@"@unionOfObjects.itemName"];
+              NSLog(@"All item names: %@", itemNames);
+              // 输出: All item names: (
+              //     Apple,
+              //     Banana,
+              //     Orange,
+              //     Apple
+              // )
+
+              // 使用 @distinctUnionOfObjects 获取所有唯一的商品名称 (去重)
+              NSArray *distinctItemNames = [transactions valueForKeyPath:@"@distinctUnionOfObjects.itemName"];
+              NSLog(@"Distinct item names: %@", distinctItemNames);
+              // 输出: Distinct item names: (
+              //     Orange,
+              //     Banana,
+              //     Apple
+              // ) (顺序可能不同)
+          }
+          return 0;
+      }
+      ```
+  - title: 操作嵌套集合
+    description: |
+      对于包含集合属性的对象集合（例如，数组的数组），可以使用特定的运算符来处理嵌套的集合。
+      - `@unionOfArrays`: 将集合中所有对象的指定数组属性合并成一个单一数组（不去重）。
+      - `@distinctUnionOfArrays`: 将集合中所有对象的指定数组属性合并成一个单一数组（去重）。
+      - `@distinctUnionOfSets`: 类似于 `@distinctUnionOfArrays`，但用于 `NSSet`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义包含标签数组的 Item 类
+      @interface Item : NSObject
+      @property (nonatomic, copy) NSString *name;
+      @property (nonatomic, strong) NSArray<NSString *> *tags; // 包含标签的数组
+      @end
+
+      @implementation Item
+      + (instancetype)itemWithName:(NSString *)name tags:(NSArray<NSString *> *)tags {
+          Item *item = [[Item alloc] init];
+          item.name = name;
+          item.tags = tags;
+          return item;
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 Item 数组，每个 Item 有一个 tags 数组
+              NSArray<Item *> *items = @[
+                  [Item itemWithName:@"Book" tags:@[@"Reading", @"Education", @"Paper"]],
+                  [Item itemWithName:@"Laptop" tags:@[@"Electronics", @"Work", @"Computer"]],
+                  [Item itemWithName:@"Pen" tags:@[@"Writing", @"Office", @"Paper"]]
+              ];
+
+              // 使用 @unionOfArrays 合并所有 tags (不去重)
+              NSArray *allTags = [items valueForKeyPath:@"@unionOfArrays.tags"];
+              NSLog(@"All tags (union): %@", allTags);
+              // 输出: All tags (union): (
+              //     Reading,
+              //     Education,
+              //     Paper,
+              //     Electronics,
+              //     Work,
+              //     Computer,
+              //     Writing,
+              //     Office,
+              //     Paper
+              // )
+
+              // 使用 @distinctUnionOfArrays 合并所有唯一的 tags (去重)
+              NSArray *distinctTags = [items valueForKeyPath:@"@distinctUnionOfArrays.tags"];
+              NSLog(@"Distinct tags (distinct union): %@", distinctTags);
+              // 输出: Distinct tags (distinct union): (
+              //     Office,
+              //     Education,
+              //     Work,
+              //     Paper,
+              //     Reading,
+              //     Electronics,
+              //     Writing,
+              //     Computer
+              // ) (顺序可能不同)
+          }
+          return 0;
+      }
+      ```
+  - title: 使用 @self 引用集合元素本身
+    description: |
+      键路径 `@self` 用于引用集合中的元素本身。这在对简单值（如 `NSNumber` 或 `NSString`）的集合进行操作时特别有用，因为这些对象没有可供进一步导航的属性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 一个包含 NSNumber 的数组
+              NSArray<NSNumber *> *numbers = @[@10, @20, @30, @20, @40, @10];
+
+              // 使用 @sum.@self 计算数组中所有数字的总和
+              NSNumber *sum = [numbers valueForKeyPath:@"@sum.self"];
+              NSLog(@"Sum of numbers: %@", sum); // 输出: Sum of numbers: 130
+
+              // 使用 @avg.@self 计算数组中所有数字的平均值
+              NSNumber *average = [numbers valueForKeyPath:@"@avg.self"];
+              NSLog(@"Average of numbers: %@", average); // 输出: Average of numbers: 21.6666...
+
+              // 使用 @distinctUnionOfObjects.@self 获取数组中的唯一数字
+              NSArray *distinctNumbers = [numbers valueForKeyPath:@"@distinctUnionOfObjects.self"];
+              NSLog(@"Distinct numbers: %@", distinctNumbers);
+              // 输出: Distinct numbers: (
+              //     40,
+              //     30,
+              //     10,
+              //     20
+              // ) (顺序可能不同)
+
+              // 一个包含 NSString 的数组
+              NSArray<NSString *> *strings = @[@"A", @"B", @"C", @"A", @"D"];
+
+              // 使用 @distinctUnionOfObjects.@self 获取唯一的字符串
+              NSArray *distinctStrings = [strings valueForKeyPath:@"@distinctUnionOfObjects.self"];
+               NSLog(@"Distinct strings: %@", distinctStrings);
+              // 输出: Distinct strings: (
+              //     D,
+              //     C,
+              //     A,
+              //     B
+              // ) (顺序可能不同)
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,243 @@
+id: is
+title: 类型检查
+description: Objective-C 是一种动态类型语言，允许在运行时检查对象的实际类型。这通常通过 `id` 类型和 NSObject 协议中的方法（如 `isKindOfClass:` 和 `isMemberOfClass:`）来实现。当你处理不确定具体类型的对象（例如，从集合中取出的元素或通过反射获得的对象）时，类型检查非常有用，可以确保安全地调用对象的方法或访问其属性。
+usage:
+  - title: 理解 id 和动态类型
+    description: |
+      `id` 是 Objective-C 中的一个特殊类型，表示“指向任意 Objective-C 对象的指针”。它允许你在编译时不指定对象的具体类。然而，在运行时，你需要确定对象的实际类型才能安全地与其交互。这就是类型检查的作用所在。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量，它可以指向任何 Objective-C 对象
+              id myObject;
+
+              // 将一个 NSString 对象赋值给 myObject
+              myObject = @"Hello, World!";
+              NSLog(@"myObject 指向一个 NSString: %@", myObject);
+
+              // 将一个 NSNumber 对象赋值给 myObject
+              myObject = @42;
+              NSLog(@"myObject 现在指向一个 NSNumber: %@", myObject);
+
+              // 由于 myObject 是 id 类型，编译器不知道它的具体类，
+              // 直接调用特定类的方法可能不安全，除非进行类型检查。
+              // 例如，直接调用 NSString 的方法 length 可能在 myObject 是 NSNumber 时崩溃。
+              // if ([myObject length]) { ... } // 不安全，除非先检查类型
+
+          }
+          return 0;
+      }
+      ```
+  - title: '使用 isKindOfClass: 检查类及其子类'
+    description: |
+      `isKindOfClass:` 方法检查对象是否是指定类或其任何子类的实例。这是最常用的类型检查方法，因为它提供了灵活性，允许处理继承层次结构。
+
+      **方法:**
+      - `-(BOOL)isKindOfClass:(Class)aClass;`: 如果接收者是 `aClass` 类或其任何子类的实例，则返回 `YES`，否则返回 `NO`。参数 `aClass` 通常使用 `[ClassName class]` 的形式获取。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的基类
+      @interface Vehicle : NSObject
+      @end
+      @implementation Vehicle
+      @end
+
+      // 定义一个子类
+      @interface Car : Vehicle
+      @property NSString *model;
+      @end
+      @implementation Car
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建不同类的实例
+              id vehicleObject = [[Vehicle alloc] init];
+              id carObject = [[Car alloc] init];
+              id stringObject = @"This is a string";
+
+              // 使用 isKindOfClass: 进行检查
+              if ([carObject isKindOfClass:[Vehicle class]]) {
+                  // carObject 是 Car 类的实例，而 Car 是 Vehicle 的子类，所以返回 YES
+                  NSLog(@"carObject 是 Vehicle 类或其子类的实例");
+              } else {
+                  NSLog(@"carObject 不是 Vehicle 类或其子类的实例");
+              }
+
+              if ([vehicleObject isKindOfClass:[Car class]]) {
+                  // vehicleObject 是 Vehicle 类的实例，不是 Car 类或其子类，所以返回 NO
+                  NSLog(@"vehicleObject 是 Car 类或其子类的实例");
+              } else {
+                  NSLog(@"vehicleObject 不是 Car 类或其子类的实例");
+              }
+
+              if ([stringObject isKindOfClass:[NSString class]]) {
+                  // stringObject 是 NSString 类的实例，所以返回 YES
+                  NSLog(@"stringObject 是 NSString 类或其子类的实例");
+                  // 在确认类型后，可以安全地调用特定类的方法
+                  NSUInteger len = [(NSString *)stringObject length];
+                  NSLog(@"字符串长度: %lu", (unsigned long)len);
+              } else {
+                  NSLog(@"stringObject 不是 NSString 类或其子类的实例");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: '使用 isMemberOfClass: 精确检查类'
+    description: |
+      `isMemberOfClass:` 方法检查对象是否 *恰好* 是指定类的实例，而不考虑继承关系。如果对象是指定类的子类的实例，该方法将返回 `NO`。
+
+      **方法:**
+      - `-(BOOL)isMemberOfClass:(Class)aClass;`: 如果接收者 *正好* 是 `aClass` 类的实例（而不是其子类），则返回 `YES`，否则返回 `NO`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // (复用上面定义的 Vehicle 和 Car 类)
+      @interface Vehicle : NSObject
+      @end
+      @implementation Vehicle
+      @end
+      @interface Car : Vehicle
+      @property NSString *model;
+      @end
+      @implementation Car
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id vehicleObject = [[Vehicle alloc] init];
+              id carObject = [[Car alloc] init];
+
+              // --- 使用 isMemberOfClass: ---
+              if ([carObject isMemberOfClass:[Car class]]) {
+                  // carObject 正好是 Car 类的实例，返回 YES
+                  NSLog(@"carObject 正好是 Car 类的实例");
+              } else {
+                  NSLog(@"carObject 不是 Car 类的实例");
+              }
+
+              if ([carObject isMemberOfClass:[Vehicle class]]) {
+                  // carObject 是 Car 类的实例，是 Vehicle 的子类，但不是 Vehicle 本身，返回 NO
+                  NSLog(@"carObject 正好是 Vehicle 类的实例");
+              } else {
+                  NSLog(@"carObject 不是 Vehicle 类的实例");
+              }
+
+              // --- 对比 isKindOfClass: ---
+              if ([carObject isKindOfClass:[Vehicle class]]) {
+                   // carObject 是 Car 类的实例，Car 是 Vehicle 的子类，isKindOfClass 返回 YES
+                  NSLog(@"carObject (用 isKindOfClass) 是 Vehicle 类或其子类的实例");
+              } else {
+                  NSLog(@"carObject (用 isKindOfClass) 不是 Vehicle 类或其子类的实例");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 在集合中进行类型检查
+    description: |
+      当从 `NSArray`, `NSDictionary`, `NSSet` 等集合中取出元素时，由于集合可以存储不同类型的对象（通常存储为 `id`），在处理这些元素之前进行类型检查是一种常见的安全做法。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同类型对象的数组
+              NSArray *mixedArray = @[
+                  @"Apple",
+                  @42,
+                  [NSDate date],
+                  @"Banana",
+                  @3.14
+              ];
+
+              NSLog(@"遍历集合并检查类型:");
+              // 遍历数组中的每个元素
+              for (id item in mixedArray) {
+                  if ([item isKindOfClass:[NSString class]]) {
+                      // 如果元素是 NSString 或其子类
+                      NSString *str = (NSString *)item; // 安全地转换类型
+                      NSLog(@"发现一个字符串: %@ (长度: %lu)", str, (unsigned long)[str length]);
+                  } else if ([item isKindOfClass:[NSNumber class]]) {
+                      // 如果元素是 NSNumber 或其子类
+                      NSNumber *num = (NSNumber *)item; // 安全地转换类型
+                      NSLog(@"发现一个数字: %@", num);
+                  } else if ([item isKindOfClass:[NSDate class]]) {
+                      // 如果元素是 NSDate 或其子类
+                      NSDate *date = (NSDate *)item; // 安全地转换类型
+                      NSLog(@"发现一个日期: %@", date);
+                  } else {
+                      // 处理其他可能的类型
+                      NSLog(@"发现一个未知类型的对象: %@", [item class]);
+                  }
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 处理多种可能的类型
+    description: |
+      在实际应用中，一个 `id` 类型的变量可能指向多种不同类型的对象。可以使用 `if-else if` 结构结合 `isKindOfClass:` 来处理不同的情况，并根据对象的具体类型执行相应的逻辑。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个函数，接收 id 类型的参数并根据类型处理
+      void processObject(id object) {
+          if (object == nil) {
+              NSLog(@"传入的对象是 nil");
+              return;
+          }
+
+          NSLog(@"开始处理对象: %@", object);
+
+          // 检查是否是 NSString
+          if ([object isKindOfClass:[NSString class]]) {
+              NSString *str = (NSString *)object;
+              NSLog(@"处理字符串: %@, 首字母: %C", str, [str characterAtIndex:0]);
+          }
+          // 检查是否是 NSNumber
+          else if ([object isKindOfClass:[NSNumber class]]) {
+              NSNumber *num = (NSNumber *)object;
+              NSLog(@"处理数字: %@, 它的平方是: %f", num, [num doubleValue] * [num doubleValue]);
+          }
+          // 检查是否是 NSArray
+          else if ([object isKindOfClass:[NSArray class]]) {
+              NSArray *arr = (NSArray *)object;
+              NSLog(@"处理数组: 包含 %lu 个元素", (unsigned long)[arr count]);
+              // 可以进一步处理数组内容...
+          }
+          // 其他类型
+          else {
+              NSLog(@"处理未知类型: %@", [object class]);
+          }
+          NSLog(@"处理完成.");
+          NSLog(@"---");
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建不同类型的对象
+              NSString *myString = @"Objective-C";
+              NSNumber *myNumber = @100;
+              NSArray *myArray = @[@"one", @"two"];
+              NSObject *myObject = [[NSObject alloc] init]; // 普通 NSObject
+
+              // 调用函数处理不同类型的对象
+              processObject(myString);
+              processObject(myNumber);
+              processObject(myArray);
+              processObject(myObject);
+              processObject(nil); // 处理 nil 的情况
+          }
+          return 0;
+      }
+      ```

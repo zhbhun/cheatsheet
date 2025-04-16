@@ -1,0 +1,332 @@
+id: protocol
+title: 协议引用表达式
+description: Objective-C 中的协议引用表达式 (`id<ProtocolName>`) 是一种类型限定符，它允许你声明一个变量，该变量可以持有任何类的对象，只要该对象符合指定的协议。这种机制常用于实现委托（Delegation）、数据源（Data Source）模式以及其他需要定义一组行为接口而不关心具体实现类的场景，从而增强代码的灵活性和解耦性。通过 `id<ProtocolName>`，你可以确保赋给该变量的对象能够响应协议中定义的方法。
+usage:
+  - title: 声明协议引用类型变量
+    description: |
+      使用 `id<ProtocolName>` 语法来声明一个变量。这个变量可以指向任何类的实例，前提是该实例必须声明并实现了 `ProtocolName` 协议中定义的所有必需方法。
+
+      **语法：**
+      - `id<ProtocolName> variableName;`：声明一个通用对象指针，该指针指向的对象必须符合 `ProtocolName` 协议。这是最常用的形式。
+      - `NSObject<ProtocolName> *variableName;`：声明一个指向 `NSObject` 或其子类对象的指针，并且该对象必须符合 `ProtocolName` 协议。这提供了更强的类型检查，因为你可以调用 `NSObject` 的方法。
+      - `ClassName<ProtocolName> *variableName;`：声明一个指向 `ClassName` 或其子类对象的指针，并且该对象必须符合 `ProtocolName` 协议。这是最具体的类型，限制了对象的类和协议符合性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 1. 定义一个协议
+      @protocol MyProtocol <NSObject> // 通常建议协议继承自 NSObject 协议
+      - (void)requiredMethod; // 必需实现的方法
+      @optional
+      - (NSString *)optionalMethod; // 可选实现的方法
+      @end
+
+      // 2. 定义遵循协议的类 A
+      @interface ClassA : NSObject <MyProtocol>
+      @end
+
+      @implementation ClassA
+      - (void)requiredMethod {
+          NSLog(@"ClassA implemented requiredMethod");
+      }
+      // ClassA 没有实现 optionalMethod
+      @end
+
+      // 3. 定义遵循协议的类 B
+      @interface ClassB : NSObject <MyProtocol>
+      @end
+
+      @implementation ClassB
+      - (void)requiredMethod {
+          NSLog(@"ClassB implemented requiredMethod");
+      }
+      - (NSString *)optionalMethod {
+          return @"ClassB implemented optionalMethod";
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 4. 声明协议引用类型变量
+              id<MyProtocol> delegateObject; // 可以持有任何遵循 MyProtocol 的对象
+
+              // 声明更具体的协议引用类型变量
+              NSObject<MyProtocol> *nsObjectDelegate; // 必须是 NSObject 或其子类，且遵循 MyProtocol
+              ClassA<MyProtocol> *specificDelegate; // 必须是 ClassA 或其子类，且遵循 MyProtocol
+
+              // 变量声明后，初始值为 nil
+              NSLog(@"delegateObject: %@", delegateObject); // 输出: delegateObject: (null)
+          }
+          return 0;
+      }
+      ```
+  - title: 赋值符合协议的对象
+    description: |
+      可以将任何遵循指定协议的类的实例赋值给 `id<ProtocolName>` 类型的变量。如果尝试赋值一个不符合协议的对象，编译器通常会发出警告。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 前置代码：定义 MyProtocol, ClassA, ClassB (同上一个示例) ---
+      @protocol MyProtocol <NSObject>
+      - (void)requiredMethod;
+      @optional
+      - (NSString *)optionalMethod;
+      @end
+      @interface ClassA : NSObject <MyProtocol> @end
+      @implementation ClassA
+      - (void)requiredMethod { NSLog(@"ClassA requiredMethod"); }
+      @end
+      @interface ClassB : NSObject <MyProtocol> @end
+      @implementation ClassB
+      - (void)requiredMethod { NSLog(@"ClassB requiredMethod"); }
+      - (NSString *)optionalMethod { return @"ClassB optionalMethod"; }
+      @end
+      // --- 结束前置代码 ---
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建符合协议的对象实例
+              ClassA *objA = [[ClassA alloc] init];
+              ClassB *objB = [[ClassB alloc] init];
+              NSObject *plainObject = [[NSObject alloc] init]; // 不符合 MyProtocol
+
+              // 声明协议引用类型变量
+              id<MyProtocol> delegateObject;
+
+              // 1. 赋值符合协议的对象 ClassA 实例
+              delegateObject = objA;
+              NSLog(@"Assigned ClassA instance."); // 输出: Assigned ClassA instance.
+              [delegateObject requiredMethod]; // 输出: ClassA requiredMethod
+
+              // 2. 赋值符合协议的对象 ClassB 实例
+              delegateObject = objB;
+              NSLog(@"Assigned ClassB instance."); // 输出: Assigned ClassB instance.
+              [delegateObject requiredMethod]; // 输出: ClassB requiredMethod
+
+              // 3. 尝试赋值不符合协议的对象 (编译器会产生警告)
+              // warning: assigning to 'id<MyProtocol>' from incompatible type 'NSObject *'
+              // delegateObject = plainObject;
+
+              // 使用更具体的类型
+              NSObject<MyProtocol> *nsObjectDelegate = objA; // OK，ClassA 是 NSObject 子类且符合协议
+              // ClassA<MyProtocol> *specificDelegate = objB; // 错误，objB 不是 ClassA 或其子类的实例
+
+              ClassA<MyProtocol> *specificDelegateA = objA; // OK
+              NSLog(@"Assigned objA to specificDelegateA"); // 输出: Assigned objA to specificDelegateA
+          }
+          return 0;
+      }
+      ```
+  - title: 调用协议方法
+    description: |
+      通过 `id<ProtocolName>` 类型的变量，可以直接调用该协议中声明的方法（包括必需和可选方法）。编译器知道这个变量指向的对象一定实现了协议中的必需方法。对于可选方法，调用前最好使用 `respondsToSelector:` 进行检查，以避免运行时错误。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 前置代码：定义 MyProtocol, ClassA, ClassB (同上一个示例) ---
+      @protocol MyProtocol <NSObject>
+      - (void)requiredMethod;
+      @optional
+      - (NSString *)optionalMethod;
+      @end
+      @interface ClassA : NSObject <MyProtocol> @end
+      @implementation ClassA
+      - (void)requiredMethod { NSLog(@"ClassA implemented requiredMethod"); }
+      @end
+      @interface ClassB : NSObject <MyProtocol> @end
+      @implementation ClassB
+      - (void)requiredMethod { NSLog(@"ClassB implemented requiredMethod"); }
+      - (NSString *)optionalMethod { return @"ClassB implemented optionalMethod"; }
+      @end
+      // --- 结束前置代码 ---
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id<MyProtocol> delegateObject;
+              ClassA *objA = [[ClassA alloc] init];
+              ClassB *objB = [[ClassB alloc] init];
+
+              // === 使用 ClassA 实例 ===
+              delegateObject = objA;
+
+              // 1. 调用必需方法 (安全)
+              [delegateObject requiredMethod]; // 输出: ClassA implemented requiredMethod
+
+              // 2. 调用可选方法 (需要检查)
+              if ([delegateObject respondsToSelector:@selector(optionalMethod)]) {
+                  NSString *result = [delegateObject optionalMethod]; // 不会执行，因为 ClassA 未实现
+                  NSLog(@"Optional method result: %@", result);
+              } else {
+                  NSLog(@"Object does not respond to optionalMethod"); // 输出: Object does not respond to optionalMethod
+              }
+
+              // === 使用 ClassB 实例 ===
+              delegateObject = objB;
+
+              // 3. 调用必需方法 (安全)
+              [delegateObject requiredMethod]; // 输出: ClassB implemented requiredMethod
+
+              // 4. 调用可选方法 (需要检查)
+              if ([delegateObject respondsToSelector:@selector(optionalMethod)]) {
+                  NSString *result = [delegateObject optionalMethod]; // 会执行
+                  NSLog(@"Optional method result: %@", result); // 输出: Optional method result: ClassB implemented optionalMethod
+              } else {
+                  NSLog(@"Object does not respond to optionalMethod");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 在方法参数和属性中使用
+    description: |
+      `id<ProtocolName>` 常用于定义方法参数或类的属性，特别是在委托模式中。这允许方法或类接受任何符合特定协议的对象，实现松耦合。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 前置代码：定义 MyProtocol, ClassA, ClassB (同上一个示例) ---
+      @protocol MyProtocol <NSObject>
+      - (void)requiredMethod;
+      @end
+      @interface ClassA : NSObject <MyProtocol> @end
+      @implementation ClassA
+      - (void)requiredMethod { NSLog(@"ClassA performing action"); }
+      @end
+      @interface ClassB : NSObject <MyProtocol> @end
+      @implementation ClassB
+      - (void)requiredMethod { NSLog(@"ClassB performing action"); }
+      @end
+      // --- 结束前置代码 ---
+
+      // 定义一个使用协议引用作为属性和方法参数的类
+      @interface ServiceProvider : NSObject
+
+      // 1. 使用协议引用类型定义属性 (通常用 weak 避免循环引用)
+      @property (nonatomic, weak) id<MyProtocol> delegate;
+
+      // 2. 使用协议引用类型定义方法参数
+      - (void)performActionWithHelper:(id<MyProtocol>)helperObject;
+
+      @end
+
+      @implementation ServiceProvider
+
+      - (void)performActionWithHelper:(id<MyProtocol>)helperObject {
+          NSLog(@"ServiceProvider asking helper to perform action:");
+          // 调用协议方法
+          [helperObject requiredMethod];
+      }
+
+      - (void)doWorkWithDelegate {
+          NSLog(@"ServiceProvider asking delegate to perform action:");
+          if (self.delegate && [self.delegate respondsToSelector:@selector(requiredMethod)]) {
+              [self.delegate requiredMethod]; // 调用代理的协议方法
+          } else {
+              NSLog(@"No delegate or delegate doesn't respond.");
+          }
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              ServiceProvider *service = [[ServiceProvider alloc] init];
+              ClassA *helperA = [[ClassA alloc] init];
+              ClassB *delegateB = [[ClassB alloc] init];
+
+              // 3. 将符合协议的对象作为参数传递
+              [service performActionWithHelper:helperA];
+              // 输出:
+              // ServiceProvider asking helper to perform action:
+              // ClassA performing action
+
+              [service performActionWithHelper:delegateB];
+              // 输出:
+              // ServiceProvider asking helper to perform action:
+              // ClassB performing action
+
+              // 4. 设置 delegate 属性
+              service.delegate = delegateB;
+              [service doWorkWithDelegate];
+              // 输出:
+              // ServiceProvider asking delegate to perform action:
+              // ClassB performing action
+
+              // 清除 delegate
+              service.delegate = nil;
+              [service doWorkWithDelegate];
+              // 输出:
+              // ServiceProvider asking delegate to perform action:
+              // No delegate or delegate doesn't respond.
+          }
+          return 0;
+      }
+      ```
+  - title: 检查对象是否符合协议
+    description: |
+      在运行时，可以使用 `conformsToProtocol:` 方法来检查一个未知类型的对象（例如 `id` 类型）是否符合某个特定的协议。这在你需要动态处理对象并确保它们能执行某些操作时非常有用。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // --- 前置代码：定义 MyProtocol, ClassA, ClassB (同上一个示例) ---
+      @protocol MyProtocol <NSObject>
+      - (void)requiredMethod;
+      @end
+      @interface ClassA : NSObject <MyProtocol> @end
+      @implementation ClassA
+      - (void)requiredMethod { NSLog(@"ClassA action"); }
+      @end
+      @interface ClassB : NSObject <MyProtocol> @end
+      @implementation ClassB
+      - (void)requiredMethod { NSLog(@"ClassB action"); }
+      @end
+      // --- 结束前置代码 ---
+
+      // 一个处理通用对象的函数
+      void processObject(id anyObject) {
+          NSLog(@"Processing object of class: %@", [anyObject class]);
+
+          // 1. 检查对象是否符合 MyProtocol 协议
+          if ([anyObject conformsToProtocol:@protocol(MyProtocol)]) {
+              NSLog(@"Object conforms to MyProtocol.");
+              // 2. 如果符合，可以安全地将其视为 id<MyProtocol> 类型并调用协议方法
+              id<MyProtocol> conformingObject = anyObject;
+              [conformingObject requiredMethod];
+          } else {
+              NSLog(@"Object does NOT conform to MyProtocol.");
+          }
+          NSLog(@"---");
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              ClassA *objA = [[ClassA alloc] init];
+              ClassB *objB = [[ClassB alloc] init];
+              NSString *stringObj = @"Hello"; // NSString 不符合 MyProtocol
+
+              processObject(objA);
+              // 输出:
+              // Processing object of class: ClassA
+              // Object conforms to MyProtocol.
+              // ClassA action
+              // ---
+
+              processObject(objB);
+              // 输出:
+              // Processing object of class: ClassB
+              // Object conforms to MyProtocol.
+              // ClassB action
+              // ---
+
+              processObject(stringObj);
+              // 输出:
+              // Processing object of class: __NSCFConstantString
+              // Object does NOT conform to MyProtocol.
+              // ---
+          }
+          return 0;
+      }
+      ```

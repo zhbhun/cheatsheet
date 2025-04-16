@@ -1,0 +1,356 @@
+id: number
+title: 数值
+query: Objective-C 数值类型
+description: Objective-C 提供了多种处理数值的方式。它继承了 C 语言的基本数值类型（如 `int`, `float`, `double`, `BOOL`），这些类型在内存和性能上效率很高。同时，为了在面向对象的环境（如 Foundation 框架的集合类 `NSArray`, `NSDictionary`）中使用数值，Objective-C 提供了 `NSNumber` 类，它可以将基本数值类型包装成对象。此外，对于需要高精度计算（如金融计算）的场景，Objective-C 提供了 `NSDecimalNumber` 类。
+usage:
+  - title: 使用基本数值类型
+    description: |
+      Objective-C 直接支持 C 语言的基本数值类型，用于存储整数、浮点数和布尔值。
+
+      - **`int`**: 标准整数。
+      - **`float`**: 单精度浮点数。
+      - **`double`**: 双精度浮点数（精度高于 `float`）。
+      - **`BOOL`**: 布尔类型，通常存储 `YES` (等价于 1) 或 `NO` (等价于 0)。实际上在 64 位架构下是 `bool`，早期是 `signed char`。
+      - 其他 C 类型: 如 `long`, `short`, `unsigned int`, `char` 等也可用。
+
+      这些类型直接存储数值，适用于性能敏感或不需要对象特性的计算。
+    example: |
+      ```objectivec
+      // 声明并初始化基本数值类型变量
+      int score = 100;
+      float percentage = 95.5f; // 注意 'f' 后缀表示 float 类型
+      double preciseValue = 12345.6789;
+      BOOL isActive = YES; // 或 NO
+
+      // 基本算术运算
+      int totalScore = score + 50;
+      double area = 3.14 * 10.0 * 10.0;
+
+      // 输出结果
+      NSLog(@"Score: %d", totalScore); // 输出: Score: 150
+      NSLog(@"Area: %f", area);       // 输出: Area: 314.000000
+      NSLog(@"Is Active: %d", isActive); // 输出: Is Active: 1 (YES 被视为 1)
+      ```
+  - title: 创建 NSNumber 对象
+    description: |
+      `NSNumber` 是一个类簇，用于将 C 的基本数值类型封装成 Objective-C 对象，使其可以存储在集合类中或通过需要对象的方法传递。
+
+      **创建方式:**
+      1.  **类工厂方法**: 如 `numberWithInt:`, `numberWithFloat:`, `numberWithBool:` 等。
+      2.  **字面量语法 (Modern Objective-C)**: 使用 `@()` 包装基本类型值，或直接使用 `@YES`/`@NO`。这是推荐的现代方式，更简洁。
+
+      `NSNumber` 对象是不可变的，一旦创建，其内部存储的数值不能更改。
+    example: |
+      ```objectivec
+      // --- 使用类工厂方法创建 NSNumber ---
+
+      // 从 int 创建
+      NSNumber *intNumber = [NSNumber numberWithInt:123];
+
+      // 从 float 创建
+      NSNumber *floatNumber = [NSNumber numberWithFloat:45.67f];
+
+      // 从 double 创建
+      NSNumber *doubleNumber = [NSNumber numberWithDouble:12345.6789];
+
+      // 从 BOOL 创建
+      NSNumber *boolNumber = [NSNumber numberWithBool:YES];
+
+
+      // --- 使用字面量语法创建 NSNumber ---
+
+      // 从 int 创建 (推荐)
+      NSNumber *intLiteral = @(123);
+
+      // 从 float 创建 (推荐)
+      NSNumber *floatLiteral = @(45.67f);
+
+      // 从 double 创建 (推荐)
+      NSNumber *doubleLiteral = @(12345.6789);
+
+      // 从 BOOL 创建 (推荐)
+      NSNumber *boolLiteralYes = @YES;
+      NSNumber *boolLiteralNo = @NO;
+
+      // 也可以使用表达式
+      int x = 10;
+      int y = 20;
+      NSNumber *sumLiteral = @(x + y); // sumLiteral 包含 30
+
+      // 输出验证
+      NSLog(@"Int Number (Factory): %@", intNumber);     // 输出: Int Number (Factory): 123
+      NSLog(@"Int Number (Literal): %@", intLiteral);   // 输出: Int Number (Literal): 123
+      NSLog(@"Bool Number (Literal Yes): %@", boolLiteralYes); // 输出: Bool Number (Literal Yes): 1
+      NSLog(@"Sum Literal: %@", sumLiteral);          // 输出: Sum Literal: 30
+      ```
+  - title: 从 NSNumber 获取基本值
+    description: |
+      要从 `NSNumber` 对象中取回其包装的基本数值，需要调用相应的 `*Value` 方法。
+
+      **常用方法:**
+      - `intValue`: 返回 `int` 类型的值。
+      - `floatValue`: 返回 `float` 类型的值。
+      - `doubleValue`: 返回 `double` 类型的值。
+      - `boolValue`: 返回 `BOOL` 类型的值 (`YES` 或 `NO`)。
+      - `integerValue`: 返回 `NSInteger` 类型的值（在 32/64 位系统上自动适应 `int` 或 `long`）。
+      - `longValue`, `longLongValue`, `unsignedIntValue`, 等等，用于获取其他特定 C 类型的值。
+      - `stringValue`: 将数值转换为 `NSString` 对象。
+
+      注意：从 `NSNumber` 获取值时可能会发生类型转换和精度损失（例如，将一个大的 `double` 值用 `intValue` 取出）。
+    example: |
+      ```objectivec
+      // 创建一个 NSNumber 对象
+      NSNumber *myNumber = @(99.99);
+      NSNumber *activeStatus = @YES;
+
+      // 从 NSNumber 获取基本类型值
+      int intVal = [myNumber intValue];         // intVal 将是 99 (小数部分被截断)
+      float floatVal = [myNumber floatValue];     // floatVal 将是 99.99
+      double doubleVal = [myNumber doubleValue]; // doubleVal 将是 99.99
+      BOOL boolVal = [activeStatus boolValue];   // boolVal 将是 YES
+
+      // 获取 NSInteger (推荐用于跨平台整数)
+      NSInteger integerVal = [myNumber integerValue]; // integerVal 将是 99
+
+      // 获取字符串表示
+      NSString *stringValue = [myNumber stringValue]; // stringValue 将是 @"99.99"
+
+      // 输出结果
+      NSLog(@"Int Value: %d", intVal);         // 输出: Int Value: 99
+      NSLog(@"Float Value: %f", floatVal);     // 输出: Float Value: 99.990000
+      NSLog(@"Double Value: %f", doubleVal);   // 输出: Double Value: 99.990000
+      NSLog(@"Bool Value: %d", boolVal);       // 输出: Bool Value: 1
+      NSLog(@"Integer Value: %ld", (long)integerVal); // 输出: Integer Value: 99
+      NSLog(@"String Value: %@", stringValue); // 输出: String Value: 99.99
+      ```
+  - title: 比较 NSNumber 对象
+    description: |
+      比较两个 `NSNumber` 对象的值是否相等或判断大小关系。
+
+      **方法:**
+      - `isEqualToNumber:(NSNumber *)number`: 判断两个 `NSNumber` 对象内部的数值是否相等。这是推荐的相等性比较方法。**不要**使用 `==` 比较 `NSNumber` 对象，因为 `==` 比较的是指针地址，而不是它们所代表的数值。
+      - `compare:(NSNumber *)otherNumber`: 比较两个 `NSNumber` 对象的数值大小。返回 `NSComparisonResult` 枚举：
+        - `NSOrderedAscending`: 调用者小于 `otherNumber`。
+        - `NSOrderedSame`: 调用者等于 `otherNumber`。
+        - `NSOrderedDescending`: 调用者大于 `otherNumber`。
+    example: |
+      ```objectivec
+      NSNumber *num1 = @(100);
+      NSNumber *num2 = @(200);
+      NSNumber *num3 = @(100); // 与 num1 数值相同，但对象不同
+
+      // 1. 相等性比较 (正确方式)
+      if ([num1 isEqualToNumber:num3]) {
+          NSLog(@"num1 is equal to num3 (value)"); // 会执行这里
+      } else {
+          NSLog(@"num1 is NOT equal to num3 (value)");
+      }
+
+      // 2. 相等性比较 (错误方式 - 比较指针)
+      if (num1 == num3) {
+          NSLog(@"num1 == num3 (pointer - likely false)");
+      } else {
+          NSLog(@"num1 != num3 (pointer - likely true)"); // 通常会执行这里，因为它们是不同对象
+      }
+
+      // 3. 大小比较
+      NSComparisonResult result = [num1 compare:num2];
+      if (result == NSOrderedAscending) {
+          NSLog(@"num1 is less than num2"); // 会执行这里
+      } else if (result == NSOrderedSame) {
+          NSLog(@"num1 is equal to num2");
+      } else { // NSOrderedDescending
+          NSLog(@"num1 is greater than num2");
+      }
+
+      NSComparisonResult sameResult = [num1 compare:num3];
+      if (sameResult == NSOrderedSame) {
+          NSLog(@"num1 is equal to num3 (comparison)"); // 会执行这里
+      }
+      ```
+  - title: 在集合中使用 NSNumber
+    description: |
+      Foundation 框架的集合类，如 `NSArray`, `NSMutableArray`, `NSDictionary`, `NSMutableDictionary`, `NSSet`, `NSMutableSet`，只能存储 Objective-C 对象，不能直接存储基本数值类型。因此，需要将基本数值类型包装在 `NSNumber` 对象中才能添加到这些集合里。
+    example: |
+      ```objectivec
+      // 创建一些 NSNumber 对象
+      NSNumber *score1 = @(95);
+      NSNumber *score2 = @(88);
+      NSNumber *score3 = @(100);
+
+      // 1. 将 NSNumber 添加到 NSArray
+      NSArray *scoresArray = @[score1, score2, score3, @(75)]; // 可以直接使用字面量
+      NSLog(@"Scores Array: %@", scoresArray);
+      // 输出: Scores Array: (
+      //     95,
+      //     88,
+      //     100,
+      //     75
+      // )
+
+      // 从数组中取出 NSNumber 并获取其值
+      NSNumber *firstScore = scoresArray[0];
+      int firstScoreValue = [firstScore intValue];
+      NSLog(@"First score: %d", firstScoreValue); // 输出: First score: 95
+
+      // 2. 将 NSNumber 作为值添加到 NSDictionary
+      NSDictionary *studentScores = @{
+          @"Alice": @(92),
+          @"Bob": score2, // 可以使用已创建的 NSNumber
+          @"Charlie": @85.5 // 可以是浮点数
+      };
+      NSLog(@"Student Scores Dictionary: %@", studentScores);
+      // 输出: Student Scores Dictionary: {
+      //     Alice = 92;
+      //     Bob = 88;
+      //     Charlie = "85.5"; // 注意输出格式可能不同
+      // }
+
+      // 从字典中获取 NSNumber
+      NSNumber *bobScore = studentScores[@"Bob"];
+      int bobScoreValue = [bobScore intValue];
+      NSLog(@"Bob's score: %d", bobScoreValue); // 输出: Bob's score: 88
+      ```
+  - title: 使用 NSDecimalNumber 进行精确计算
+    description: |
+      当进行需要高精度的计算时（特别是涉及货币或要求避免二进制浮点数误差的场景），应使用 `NSDecimalNumber`。`NSDecimalNumber` 是 `NSNumber` 的子类，提供了精确的十进制算术运算。
+
+      **创建方式:**
+      - `decimalNumberWithString:`: 从字符串创建，这是最常用的方式，可以避免浮点数转换带来的精度问题。
+      - 其他方法如 `decimalNumberWithMantissa:exponent:isNegative:` 等。
+
+      **算术运算:**
+      - `decimalNumberByAdding:`, `decimalNumberBySubtracting:`, `decimalNumberByMultiplyingBy:`, `decimalNumberByDividingBy:`: 执行基本的加减乘除运算，返回一个新的 `NSDecimalNumber` 实例。
+      - 还可以指定 `NSDecimalNumberBehaviors` 来控制舍入模式、精度和错误处理。
+
+      `NSDecimalNumber` 对象也是不可变的。
+    example: |
+      ```objectivec
+      // 使用字符串创建 NSDecimalNumber 以保证精度
+      NSDecimalNumber *price = [NSDecimalNumber decimalNumberWithString:@"19.99"];
+      NSDecimalNumber *taxRate = [NSDecimalNumber decimalNumberWithString:@"0.0825"];
+      NSDecimalNumber *quantity = [NSDecimalNumber decimalNumberWithString:@"3"];
+
+      // 计算税额: price * taxRate
+      NSDecimalNumber *taxAmount = [price decimalNumberByMultiplyingBy:taxRate];
+
+      // 计算总价: (price * quantity) + (taxAmount * quantity)
+      // 或者 price * (1 + taxRate) * quantity
+      NSDecimalNumber *totalPricePerItem = [price decimalNumberByAdding:[price decimalNumberByMultiplyingBy:taxRate]];
+      NSDecimalNumber *totalCost = [totalPricePerItem decimalNumberByMultiplyingBy:quantity];
+
+      // 为了显示，通常需要格式化 NSDecimalNumber，例如定义舍入行为
+      NSDecimalNumberHandler *roundingBehavior = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain // 四舍五入
+                                                                                                         scale:2 // 保留两位小数
+                                                                                              raiseOnExactness:NO
+                                                                                               raiseOnOverflow:NO
+                                                                                              raiseOnUnderflow:NO
+                                                                                           raiseOnDivideByZero:NO];
+
+      NSDecimalNumber *roundedTaxAmount = [taxAmount decimalNumberByRoundingAccordingToBehavior:roundingBehavior];
+      NSDecimalNumber *roundedTotalCost = [totalCost decimalNumberByRoundingAccordingToBehavior:roundingBehavior];
+
+      // 输出结果
+      NSLog(@"Price: %@", price);                     // 输出: Price: 19.99
+      NSLog(@"Tax Rate: %@", taxRate);               // 输出: Tax Rate: 0.0825
+      NSLog(@"Quantity: %@", quantity);                 // 输出: Quantity: 3
+      NSLog(@"Calculated Tax Amount: %@", taxAmount); // 输出: Calculated Tax Amount: 1.649175
+      NSLog(@"Rounded Tax Amount: %@", roundedTaxAmount); // 输出: Rounded Tax Amount: 1.65
+      NSLog(@"Calculated Total Cost: %@", totalCost); // 输出: Calculated Total Cost: 64.92525
+      NSLog(@"Rounded Total Cost: %@", roundedTotalCost); // 输出: Rounded Total Cost: 64.93
+      ```
+  - title: 处理浮点数精度问题
+    description: |
+      基本浮点类型 `float` 和 `double` 使用二进制表示法，这可能导致无法精确表示某些十进制小数（例如 0.1）。这在进行连续计算或比较时可能导致微小的误差累积。
+
+      **场景:**
+      - **比较浮点数**: 直接使用 `==` 比较两个 `float` 或 `double` 可能因为微小的精度差异而失败。通常需要检查两个数的差值是否在一个很小的容差范围内。
+      - **金融计算**: 涉及货币时，即使是很小的误差也是不可接受的。
+
+      **解决方案:**
+      - 对于比较，检查差值的绝对值是否小于一个极小值 (epsilon)。
+      - 对于需要精确计算的场景（特别是金融），**强烈推荐使用 `NSDecimalNumber`**，因为它基于十进制运算，可以精确表示和计算十进制小数。
+    example: |
+      ```objectivec
+      // 1. 浮点数比较问题示例
+      double a = 0.1;
+      double b = 0.2;
+      double sum = a + b; // 理论上是 0.3
+
+      double c = 0.3;
+
+      // 直接比较可能失败
+      if (sum == c) {
+          NSLog(@"Double comparison: sum == c (Maybe unexpected)");
+      } else {
+          NSLog(@"Double comparison: sum != c (Often happens due to precision: %.17f vs %.17f)", sum, c);
+          // 输出: Double comparison: sum != c (Often happens due to precision: 0.30000000000000004 vs 0.30000000000000000)
+      }
+
+      // 使用容差比较
+      double epsilon = 1e-10; // 定义一个很小的容差
+      if (fabs(sum - c) < epsilon) {
+          NSLog(@"Double comparison with tolerance: sum is close enough to c"); // 会执行这里
+      } else {
+          NSLog(@"Double comparison with tolerance: sum is still not close enough to c");
+      }
+
+      // 2. 使用 NSDecimalNumber 避免问题
+      NSDecimalNumber *dA = [NSDecimalNumber decimalNumberWithString:@"0.1"];
+      NSDecimalNumber *dB = [NSDecimalNumber decimalNumberWithString:@"0.2"];
+      NSDecimalNumber *dSum = [dA decimalNumberByAdding:dB]; // 精确计算结果为 0.3
+
+      NSDecimalNumber *dC = [NSDecimalNumber decimalNumberWithString:@"0.3"];
+
+      // 使用 compare 方法进行精确比较
+      if ([dSum compare:dC] == NSOrderedSame) {
+          NSLog(@"NSDecimalNumber comparison: dSum is equal to dC"); // 会执行这里
+      } else {
+          NSLog(@"NSDecimalNumber comparison: dSum is NOT equal to dC");
+      }
+      NSLog(@"NSDecimalNumber Sum: %@", dSum); // 输出: NSDecimalNumber Sum: 0.3
+      ```
+  - title: 使用数值字面量简化 NSNumber 创建
+    description: |
+      Objective-C 的现代语法提供了数值字面量，极大地简化了从基本数值类型创建 `NSNumber` 对象的过程。
+
+      **语法:**
+      - `@(expression)`: 将括号内的 C 数值表达式（可以是变量、常量或计算结果）转换成 `NSNumber` 对象。编译器会自动选择合适的 `NSNumber` 子类来存储该值。
+      - `@YES` / `@NO`: 直接代表 `[NSNumber numberWithBool:YES]` 和 `[NSNumber numberWithBool:NO]`。
+
+      这种语法不仅代码更短，可读性也更好，是目前创建 `NSNumber` 的首选方式。
+    example: |
+      ```objectivec
+      // 使用数值字面量创建各种类型的 NSNumber
+
+      // 整数
+      int count = 5;
+      NSNumber *countNumber = @(count); // 从 int 变量创建
+      NSNumber *inlineInt = @(100);     // 直接使用 int 字面量
+
+      // 浮点数
+      float price = 19.99f;
+      NSNumber *priceNumber = @(price); // 从 float 变量创建
+      NSNumber *inlineDouble = @(123.456); // 直接使用 double 字面量 (默认)
+
+      // 布尔值
+      BOOL isValid = NO;
+      NSNumber *validNumber = @(isValid); // 从 BOOL 变量创建
+      NSNumber *inlineYes = @YES;       // 直接使用 @YES
+      NSNumber *inlineNo = @NO;         // 直接使用 @NO
+
+      // 表达式
+      double radius = 5.0;
+      NSNumber *areaNumber = @(M_PI * radius * radius); // 计算结果包装成 NSNumber
+
+      // 在集合中使用字面量
+      NSArray *mixedNumbers = @[@1, @2.5f, @YES, areaNumber];
+
+      // 输出验证
+      NSLog(@"Count Number: %@", countNumber);     // 输出: Count Number: 5
+      NSLog(@"Price Number: %@", priceNumber);     // 输出: Price Number: 19.99
+      NSLog(@"Valid Number: %@", validNumber);     // 输出: Valid Number: 0
+      NSLog(@"Inline Yes: %@", inlineYes);         // 输出: Inline Yes: 1
+      NSLog(@"Area Number: %@", areaNumber);       // 输出: Area Number: 78.539816...
+      NSLog(@"Mixed Array: %@", mixedNumbers);     // 输出: Mixed Array: (1, "2.5", 1, "78.5398...")
+      ```

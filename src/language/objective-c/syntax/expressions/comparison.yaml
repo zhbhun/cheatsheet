@@ -1,0 +1,319 @@
+id: comparison
+title: 比较表达式
+description: Objective-C 中的比较表达式用于比较两个值的大小或是否相等。它们通常用在条件语句（如 `if`、`while`）中，以控制程序的流程。比较基本数据类型（如 `int`, `float`）使用标准的比较运算符，而比较对象则通常使用 `isEqual:` 方法判断内容是否相等，或使用 `==` 判断指针是否指向同一内存地址。
+usage:
+  - title: 比较基本数据类型
+    description: |
+      使用标准比较运算符比较基本数据类型（如 `int`, `float`, `double`, `BOOL`, `char` 等）。
+
+      **常用运算符:**
+      - `==`：等于
+      - `!=`：不等于
+      - `>`：大于
+      - `<`：小于
+      - `>=`：大于或等于
+      - `<=`：小于或等于
+
+      比较结果是一个 `BOOL` 值 (`YES` 或 `NO`)。
+    example: |
+      ```objectivec
+      int a = 10;
+      int b = 5;
+      float c = 10.0;
+      float d = 10.5;
+
+      // 等于比较 (==)
+      BOOL isEqual = (a == c); // YES, 因为 10 == 10.0
+      NSLog(@"a == c: %s", isEqual ? "YES" : "NO");
+
+      // 不等于比较 (!=)
+      BOOL isNotEqual = (a != b); // YES, 因为 10 != 5
+      NSLog(@"a != b: %s", isNotEqual ? "YES" : "NO");
+
+      // 大于比较 (>)
+      BOOL isGreater = (a > b); // YES, 因为 10 > 5
+      NSLog(@"a > b: %s", isGreater ? "YES" : "NO");
+
+      // 小于比较 (<)
+      BOOL isLess = (b < d); // YES, 因为 5 < 10.5
+      NSLog(@"b < d: %s", isLess ? "YES" : "NO");
+
+      // 大于或等于比较 (>=)
+      BOOL isGreaterOrEqual = (a >= c); // YES, 因为 10 >= 10.0
+      NSLog(@"a >= c: %s", isGreaterOrEqual ? "YES" : "NO");
+
+      // 小于或等于比较 (<=)
+      BOOL isLessOrEqual = (a <= b); // NO, 因为 10 不小于或等于 5
+      NSLog(@"a <= b: %s", isLessOrEqual ? "YES" : "NO");
+
+      BOOL flag = YES;
+      if (flag == YES) { // 比较 BOOL 值
+          NSLog(@"Flag is YES");
+      }
+      // 更简洁的写法
+      if (flag) {
+          NSLog(@"Flag is true");
+      }
+      ```
+  - title: 比较对象的指针地址 (Identity)
+    description: |
+      使用 `==` 和 `!=` 运算符比较两个对象指针。这种比较检查的是两个指针是否指向内存中的**同一个对象实例**，而不是它们的内容是否相等。
+    example: |
+      ```objectivec
+      NSString *str1 = @"Hello";
+      NSString *str2 = @"Hello"; // 编译器优化，可能指向同一常量字符串
+      NSString *str3 = [NSString stringWithFormat:@"Hello"]; // 创建新对象
+      NSString *str4 = str1; // 指向同一对象
+
+      // 比较 str1 和 str2
+      // 对于编译时常量字符串，编译器通常会优化，使它们指向同一内存地址
+      BOOL compare1and2 = (str1 == str2);
+      NSLog(@"str1 == str2 (Identity): %s", compare1and2 ? "YES" : "NO"); // 通常是 YES
+
+      // 比较 str1 和 str3
+      // str3 是运行时创建的新对象，地址不同
+      BOOL compare1and3 = (str1 == str3);
+      NSLog(@"str1 == str3 (Identity): %s", compare1and3 ? "YES" : "NO"); // 通常是 NO
+
+      // 比较 str1 和 str4
+      // str4 被赋值为 str1 的地址
+      BOOL compare1and4 = (str1 == str4);
+      NSLog(@"str1 == str4 (Identity): %s", compare1and4 ? "YES" : "NO"); // YES
+
+      // 比较 str1 和 nil
+      BOOL isNil = (str1 == nil); // 检查指针是否为空
+      NSLog(@"str1 == nil: %s", isNil ? "YES" : "NO"); // NO
+
+      BOOL isNotNil = (str1 != nil); // 检查指针是否不为空
+      NSLog(@"str1 != nil: %s", isNotNil ? "YES" : "NO"); // YES
+      ```
+  - title: 比较对象的内容 (Equality)
+    description: |
+      使用 `isEqual:` 方法比较两个对象的内容是否相等。这是判断两个对象（例如字符串、数字、日期、自定义对象等）在逻辑上是否等价的标准方式。你需要确保比较的类正确实现了 `isEqual:` 方法。Foundation 框架中的许多类（如 `NSString`, `NSNumber`, `NSDate`, `NSArray`, `NSDictionary`）已经提供了正确的实现。
+    example: |
+      ```objectivec
+      NSString *str1 = @"Hello";
+      NSString *str2 = [NSString stringWithFormat:@"Hello"]; // 内容相同，但地址不同
+      NSString *str3 = @"World";
+      NSNumber *num1 = @10; // 使用字面量创建 NSNumber
+      NSNumber *num2 = [NSNumber numberWithInt:10]; // 使用构造方法创建 NSNumber
+      NSNumber *num3 = @20;
+
+      // 比较字符串内容
+      BOOL stringsAreEqual = [str1 isEqual:str2]; // 比较内容 "Hello" 和 "Hello"
+      NSLog(@"[str1 isEqual:str2] (Equality): %s", stringsAreEqual ? "YES" : "NO"); // YES
+
+      BOOL stringsAreDifferent = [str1 isEqual:str3]; // 比较内容 "Hello" 和 "World"
+      NSLog(@"[str1 isEqual:str3] (Equality): %s", stringsAreDifferent ? "YES" : "NO"); // NO
+
+      // 比较 NSNumber 内容
+      BOOL numbersAreEqual = [num1 isEqual:num2]; // 比较数值 10 和 10
+      NSLog(@"[num1 isEqual:num2] (Equality): %s", numbersAreEqual ? "YES" : "NO"); // YES
+
+      BOOL numbersAreDifferent = [num1 isEqual:num3]; // 比较数值 10 和 20
+      NSLog(@"[num1 isEqual:num3] (Equality): %s", numbersAreDifferent ? "YES" : "NO"); // NO
+
+      // 注意：对 nil 调用方法是安全的，结果为 NO / nil / 0
+      BOOL compareWithNil = [str1 isEqual:nil];
+      NSLog(@"[str1 isEqual:nil]: %s", compareWithNil ? "YES" : "NO"); // NO
+      ```
+  - title: 比较字符串 (Specific)
+    description: |
+      比较字符串时，应始终使用 `isEqualToString:` 方法，它专门为字符串比较设计，通常比通用的 `isEqual:` 更高效。也可以使用 `compare:` 方法进行更复杂的比较（如区分大小写、本地化比较等）。
+
+      **常用方法:**
+      - `isEqualToString:`: 判断两个字符串内容是否完全相同（区分大小写）。
+      - `compare:`: 比较两个字符串的顺序，返回 `NSComparisonResult` (`NSOrderedAscending`, `NSOrderedSame`, `NSOrderedDescending`)。
+      - `compare:options:`: 提供更多选项的比较，如不区分大小写 (`NSCaseInsensitiveSearch`)。
+    example: |
+      ```objectivec
+      NSString *s1 = @"apple";
+      NSString *s2 = @"Apple";
+      NSString *s3 = @"apple";
+      NSString *s4 = @"banana";
+
+      // 使用 isEqualToString: (区分大小写)
+      BOOL isEqualCaseSensitive = [s1 isEqualToString:s3]; // "apple" vs "apple"
+      NSLog(@"[s1 isEqualToString:s3]: %s", isEqualCaseSensitive ? "YES" : "NO"); // YES
+
+      BOOL isNotEqualCaseSensitive = [s1 isEqualToString:s2]; // "apple" vs "Apple"
+      NSLog(@"[s1 isEqualToString:s2]: %s", isNotEqualCaseSensitive ? "YES" : "NO"); // NO
+
+      // 使用 compare:options: (不区分大小写)
+      NSComparisonResult resultCaseInsensitive = [s1 compare:s2 options:NSCaseInsensitiveSearch];
+      if (resultCaseInsensitive == NSOrderedSame) {
+          NSLog(@"s1 and s2 are equal (case-insensitive)"); // 这会执行
+      }
+
+      // 使用 compare: 进行排序比较 (区分大小写)
+      NSComparisonResult orderResult = [s1 compare:s4]; // "apple" vs "banana"
+      if (orderResult == NSOrderedAscending) {
+          NSLog(@"s1 comes before s4"); // 这会执行，因为 'a' < 'b'
+      } else if (orderResult == NSOrderedDescending) {
+          NSLog(@"s1 comes after s4");
+      } else {
+          NSLog(@"s1 is the same as s4");
+      }
+      ```
+  - title: 比较 NSNumber 对象
+    description: |
+      比较 `NSNumber` 对象时，可以使用 `isEqualToNumber:` 方法判断数值是否相等，或者使用 `compare:` 方法比较数值的大小。直接使用 `==` 比较的是指针地址，通常不是想要的结果（除非比较的是同一个实例）。
+
+      **常用方法:**
+      - `isEqualToNumber:`: 判断两个 `NSNumber` 对象的数值是否相等。
+      - `compare:`: 比较两个 `NSNumber` 对象的数值大小，返回 `NSComparisonResult`。
+    example: |
+      ```objectivec
+      NSNumber *n1 = @100;
+      NSNumber *n2 = [NSNumber numberWithInt:100];
+      NSNumber *n3 = @200.5;
+      NSNumber *n4 = @100.0; // 内部表示可能不同，但数值相同
+
+      // 使用 isEqualToNumber: 比较数值
+      BOOL numsAreEqual12 = [n1 isEqualToNumber:n2]; // 100 vs 100
+      NSLog(@"[n1 isEqualToNumber:n2]: %s", numsAreEqual12 ? "YES" : "NO"); // YES
+
+      BOOL numsAreEqual14 = [n1 isEqualToNumber:n4]; // 100 vs 100.0
+      NSLog(@"[n1 isEqualToNumber:n4]: %s", numsAreEqual14 ? "YES" : "NO"); // YES
+
+      BOOL numsAreDifferent13 = [n1 isEqualToNumber:n3]; // 100 vs 200.5
+      NSLog(@"[n1 isEqualToNumber:n3]: %s", numsAreDifferent13 ? "YES" : "NO"); // NO
+
+      // 使用 compare: 比较大小
+      NSComparisonResult comparisonResult = [n1 compare:n3]; // 100 vs 200.5
+      if (comparisonResult == NSOrderedAscending) {
+          NSLog(@"n1 is less than n3"); // 这会执行
+      } else if (comparisonResult == NSOrderedDescending) {
+          NSLog(@"n1 is greater than n3");
+      } else {
+          NSLog(@"n1 is equal to n3");
+      }
+
+      // 比较 n1 和 n4 的大小
+      NSComparisonResult comparisonResult14 = [n1 compare:n4]; // 100 vs 100.0
+      if (comparisonResult14 == NSOrderedSame) {
+          NSLog(@"n1 is equal to n4 (using compare:)"); // 这会执行
+      }
+      ```
+  - title: 比较 NSDate 对象
+    description: |
+      比较 `NSDate` 对象时，可以使用 `isEqualToDate:` 判断两个日期是否精确到毫秒级别相等，或使用 `compare:` 方法判断两个日期的先后顺序。
+
+      **常用方法:**
+      - `isEqualToDate:`: 判断两个日期时间是否完全相同。
+      - `compare:`: 比较两个日期的先后，返回 `NSComparisonResult`。
+      - `earlierDate:`: 返回两个日期中较早的那个。
+      - `laterDate:`: 返回两个日期中较晚的那个。
+    example: |
+      ```objectivec
+      NSDate *date1 = [NSDate date]; // 当前时间
+      // 稍微延迟一点点创建第二个日期
+      [NSThread sleepForTimeInterval:0.1];
+      NSDate *date2 = [NSDate date];
+      NSDate *date3 = [date1 copy]; // 创建一个内容相同的副本
+      NSDate *pastDate = [NSDate distantPast]; // 很久以前的日期
+
+      // 使用 isEqualToDate: 比较精确时间
+      BOOL datesAreEqual13 = [date1 isEqualToDate:date3]; // 精确时间相同
+      NSLog(@"[date1 isEqualToDate:date3]: %s", datesAreEqual13 ? "YES" : "NO"); // YES
+
+      BOOL datesAreEqual12 = [date1 isEqualToDate:date2]; // 通常时间不同（除非间隔极小）
+      NSLog(@"[date1 isEqualToDate:date2]: %s", datesAreEqual12 ? "YES" : "NO"); // 通常是 NO
+
+      // 使用 compare: 比较先后
+      NSComparisonResult dateComparison = [date1 compare:date2]; // date1 早于 date2
+      if (dateComparison == NSOrderedAscending) {
+          NSLog(@"date1 is earlier than date2"); // 这会执行
+      } else if (dateComparison == NSOrderedDescending) {
+          NSLog(@"date1 is later than date2");
+      } else {
+          NSLog(@"date1 is the same time as date2");
+      }
+
+      NSComparisonResult pastComparison = [date1 compare:pastDate]; // date1 晚于 pastDate
+      if (pastComparison == NSOrderedDescending) {
+           NSLog(@"date1 is later than distantPast"); // 这会执行
+      }
+
+      // 使用 earlierDate / laterDate
+      NSDate *earlier = [date1 earlierDate:date2];
+      NSLog(@"Earlier date: %@", earlier); // 输出 date1
+
+      NSDate *later = [date1 laterDate:pastDate];
+      NSLog(@"Later date: %@", later); // 输出 date1
+      ```
+  - title: 在条件语句中使用比较表达式
+    description: |
+      比较表达式最常见的用途是在 `if`, `else if`, `else` 语句中，根据比较结果执行不同的代码块。
+    example: |
+      ```objectivec
+      int score = 85;
+      NSString *studentName = @"Alice";
+      NSNumber *threshold = @60;
+
+      // 比较基本类型
+      if (score >= 90) {
+          NSLog(@"Excellent!");
+      } else if (score >= 60) {
+          NSLog(@"Passed."); // 这会执行
+      } else {
+          NSLog(@"Failed.");
+      }
+
+      // 比较对象内容 (字符串)
+      if ([studentName isEqualToString:@"Alice"]) {
+          NSLog(@"Hello, Alice!"); // 这会执行
+      } else {
+          NSLog(@"Hello, stranger!");
+      }
+
+      // 比较对象内容 (NSNumber)
+      NSNumber *currentScore = @(score); // 将 int 包装成 NSNumber
+      if ([currentScore compare:threshold] == NSOrderedAscending) {
+          NSLog(@"Score is below threshold.");
+      } else {
+          NSLog(@"Score is at or above threshold."); // 这会执行
+      }
+
+      // 检查对象是否为 nil
+      NSString *optionalMessage = nil;
+      if (optionalMessage == nil) { // 或者 if (!optionalMessage)
+          NSLog(@"No optional message provided."); // 这会执行
+      } else {
+          NSLog(@"Optional message: %@", optionalMessage);
+      }
+      ```
+  - title: 在循环语句中使用比较表达式
+    description: |
+      比较表达式也常用于控制 `while` 和 `for` 循环的执行条件。
+    example: |
+      ```objectivec
+      // 使用 while 循环
+      int counter = 0;
+      while (counter < 5) { // 当 counter 小于 5 时继续循环
+          NSLog(@"While loop counter: %d", counter);
+          counter++; // 增加 counter
+      }
+      // 输出: While loop counter: 0, 1, 2, 3, 4
+
+      // 使用 for 循环
+      for (int i = 0; i < 3; i++) { // 当 i 小于 3 时继续循环
+          NSLog(@"For loop index: %d", i);
+      }
+      // 输出: For loop index: 0, 1, 2
+
+      // 结合对象比较
+      NSArray *items = @[@"A", @"B", @"C", @"D"];
+      NSString *target = @"C";
+      int index = 0;
+      while (index < items.count) {
+          NSString *currentItem = items[index];
+          NSLog(@"Checking item: %@", currentItem);
+          if ([currentItem isEqualToString:target]) { // 比较字符串内容
+              NSLog(@"Found target '%@' at index %d", target, index);
+              break; // 找到目标，退出循环
+          }
+          index++;
+      }
+      // 输出: Checking item: A, Checking item: B, Checking item: C, Found target 'C' at index 2
+      ```

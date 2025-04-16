@@ -1,0 +1,470 @@
+id: enum
+title: 枚举
+query: Objective-C 枚举类型
+description: Objective-C 中的枚举 (enum) 是一种定义一组相关命名整数常量的方式，常用于表示一组有限的状态、选项或类型，以提高代码的可读性和可维护性。可以使用传统的 C 风格 `enum`，或推荐使用更现代、类型安全的 `NS_ENUM` (用于互斥选项) 和 `NS_OPTIONS` (用于可组合的位掩码选项) 宏来定义。
+usage:
+  - title: 创建基本的 C 风格枚举
+    description: |
+      使用 `enum` 关键字定义一个简单的枚举类型。枚举器默认从 0 开始，并依次递增。这是最基础的枚举定义方式，但在现代 Objective-C 中，推荐使用 `NS_ENUM` 以获得更好的类型安全。
+
+      **语法:**
+      ```objc
+      enum EnumName {
+          Enumerator1, // 默认值为 0
+          Enumerator2, // 默认值为 1
+          Enumerator3  // 默认值为 2
+          // ...
+      };
+      ```
+      也可以在定义的同时声明变量，或使用 `typedef` 为枚举类型创建别名。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义一个表示方向的 C 风格枚举
+      enum Direction {
+          North, // 值为 0
+          South, // 值为 1
+          East,  // 值为 2
+          West   // 值为 3
+      };
+
+      // 使用 typedef 为枚举类型创建别名 (常见做法)
+      typedef enum Direction Direction;
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个枚举变量并赋值
+              Direction myDirection = North;
+
+              // 使用枚举值
+              if (myDirection == North) {
+                  NSLog(@"Heading North"); // 输出：Heading North
+              }
+
+              // C 风格枚举本质上是整数，可以直接比较整数值，但不推荐依赖具体数值
+              if (myDirection == 0) {
+                 NSLog(@"Direction value is 0"); // 输出：Direction value is 0
+              }
+
+              // 遍历 C 风格枚举（需要知道枚举范围）
+              NSLog(@"Iterating through C-style enum:");
+              for (int i = North; i <= West; i++) {
+                 // 将整数转换回枚举类型（需要强制转换）
+                 Direction currentDir = (Direction)i;
+                 switch (currentDir) {
+                    case North: NSLog(@"- North (%d)", currentDir); break;
+                    case South: NSLog(@"- South (%d)", currentDir); break;
+                    case East:  NSLog(@"- East (%d)", currentDir); break;
+                    case West:  NSLog(@"- West (%d)", currentDir); break;
+                 }
+              }
+              // 输出:
+              // Iterating through C-style enum:
+              // - North (0)
+              // - South (1)
+              // - East (2)
+              // - West (3)
+          }
+          return 0;
+      }
+      ```
+  - title: 创建类型安全的枚举 (NS_ENUM)
+    description: |
+      使用 `NS_ENUM` 宏定义枚举可以提供更好的类型安全和 Xcode 代码提示。它强制指定枚举的底层数据类型（如 `NSInteger`, `NSUInteger` 等），使类型意图更明确，并且在 Swift 中有更好的桥接表现。这是定义互斥选项枚举（即一次只能取一个值）的推荐方式。
+
+      **语法:**
+      ```objc
+      typedef NS_ENUM(UnderlyingType, EnumName) {
+          EnumeratorName1,
+          EnumeratorName2 = value, // 可以显式指定值
+          EnumeratorName3
+          // ...
+      };
+      ```
+      - `UnderlyingType`: 枚举的底层整数类型，例如 `NSInteger`（常用，有符号整数）、`NSUInteger`（常用，无符号整数）、`int`、`uint` 等。选择合适的类型可以优化内存或表示特定范围的值。
+      - `EnumName`: 枚举类型的名称。
+      - `EnumeratorName`: 枚举成员的名称，遵循驼峰命名法，通常以枚举类型名作为前缀。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义一个表示网络状态的 NS_ENUM
+      // 使用 NSInteger 作为底层类型
+      typedef NS_ENUM(NSInteger, NetworkStatus) {
+          NetworkStatusNotReachable, // 默认值为 0
+          NetworkStatusReachableViaWiFi, // 值为 1
+          NetworkStatusReachableViaWWAN  // 值为 2
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明枚举变量并赋值
+              NetworkStatus currentStatus = NetworkStatusReachableViaWiFi;
+
+              // 使用枚举值
+              switch (currentStatus) {
+                  case NetworkStatusNotReachable:
+                      NSLog(@"Network is not reachable.");
+                      break;
+                  case NetworkStatusReachableViaWiFi:
+                      NSLog(@"Network is reachable via WiFi."); // 输出：Network is reachable via WiFi.
+                      break;
+                  case NetworkStatusReachableViaWWAN:
+                      NSLog(@"Network is reachable via WWAN.");
+                      break;
+                  // 使用 NS_ENUM，编译器可以更好地检查 switch 语句是否覆盖所有 case
+                  // 如果缺少 case 且没有 default，编译器会发出警告
+              }
+
+              // 打印枚举值（其底层类型是 NSInteger）
+              NSLog(@"Current status code: %ld", (long)currentStatus); // 输出: Current status code: 1
+
+              // 类型安全示例：尝试将不相关的整数赋值给 NS_ENUM 变量会产生警告
+              // NetworkStatus anotherStatus = 100; // 编译器警告: Incompatible integer to pointer conversion assigning to 'NetworkStatus' from 'int'
+          }
+          return 0;
+      }
+      ```
+  - title: 指定枚举器的值
+    description: |
+      在定义枚举（包括 C 风格、`NS_ENUM` 和 `NS_OPTIONS`）时，可以显式地为枚举器指定整数值。如果某个枚举器未指定值，它的值将是前一个枚举器的值加 1。如果第一个枚举器未指定值，则默认为 0。这对于需要将枚举值映射到特定数字（例如，与服务器 API 返回的状态码对应）或者需要创建非连续值的枚举非常有用。
+
+      **语法:**
+      ```objc
+      // C 风格
+      enum CustomValueEnum {
+          ValueA = 1,  // 值是 1
+          ValueB,      // 值是 2 (1 + 1)
+          ValueC = 10, // 值是 10
+          ValueD       // 值是 11 (10 + 1)
+      };
+
+      // NS_ENUM
+      typedef NS_ENUM(NSUInteger, HTTPStatusCode) {
+          HTTPStatusCodeOK = 200,
+          HTTPStatusCodeCreated = 201,
+          HTTPStatusCodeBadRequest = 400,
+          HTTPStatusCodeNotFound = 404, // 值是 404
+          HTTPStatusCodeServerError = 500 // 值是 500
+          // 注意：这里的值不是连续递增的
+      };
+      ```
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义一个带有指定值的错误码枚举 (NS_ENUM)
+      typedef NS_ENUM(NSInteger, FileErrorCode) {
+          FileErrorNone = 0,          // 明确指定为 0
+          FileErrorReadFailed = 101,  // 指定为 101
+          FileErrorWriteFailed,       // 值为 102 (101 + 1)
+          FileErrorDiskFull = 205     // 指定为 205
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              FileErrorCode readError = FileErrorReadFailed;
+              FileErrorCode writeError = FileErrorWriteFailed;
+              FileErrorCode diskError = FileErrorDiskFull;
+
+              NSLog(@"Read Error Code: %ld", (long)readError);   // 输出: Read Error Code: 101
+              NSLog(@"Write Error Code: %ld", (long)writeError); // 输出: Write Error Code: 102
+              NSLog(@"Disk Error Code: %ld", (long)diskError);   // 输出: Disk Error Code: 205
+
+              // 检查特定错误码
+              if (diskError == FileErrorDiskFull) {
+                  NSLog(@"Disk is full!"); // 输出: Disk is full!
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 使用枚举类型
+    description: |
+      一旦定义了枚举类型（特别是使用 `typedef` 或 `NS_ENUM`/`NS_OPTIONS` 定义了类型名之后），就可以像使用其他数据类型（如 `int`, `NSString*`）一样使用它：
+      - **声明变量**: 使用枚举类型名来声明变量。
+      - **赋值**: 将枚举定义的常量（枚举器）赋给对应类型的枚举变量。
+      - **比较**: 使用 `==` 或 `!=` 来比较两个枚举变量或一个枚举变量与一个枚举常量的值。
+      - **函数/方法参数与返回值**: 可以将枚举类型用作函数或方法的参数类型或返回值类型。这极大地提高了代码的清晰度和类型安全性，因为参数或返回值的意图变得非常明确。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义任务状态枚举
+      typedef NS_ENUM(NSInteger, TaskStatus) {
+          TaskStatusPending,
+          TaskStatusRunning,
+          TaskStatusCompleted,
+          TaskStatusFailed
+      };
+
+      // 函数接受枚举作为参数，并根据状态打印信息
+      void printTaskStatusMessage(TaskStatus status) {
+          switch (status) {
+              case TaskStatusPending:   NSLog(@"Status: Task is pending execution."); break;
+              case TaskStatusRunning:   NSLog(@"Status: Task is currently running."); break;
+              case TaskStatusCompleted: NSLog(@"Status: Task completed successfully."); break;
+              case TaskStatusFailed:    NSLog(@"Status: Task failed to complete."); break;
+          }
+      }
+
+      // 函数返回一个默认的枚举状态
+      TaskStatus getDefaultTaskStatus() {
+          return TaskStatusPending; // 返回初始状态
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 TaskStatus 类型的变量
+              TaskStatus myTaskStatus;
+
+              // 从函数获取初始值并赋值给变量
+              myTaskStatus = getDefaultTaskStatus();
+
+              // 调用函数，将枚举变量作为参数传递
+              printTaskStatusMessage(myTaskStatus); // 输出: Status: Task is pending execution.
+
+              // 修改枚举变量的值
+              myTaskStatus = TaskStatusRunning;
+
+              // 比较枚举变量的值
+              if (myTaskStatus == TaskStatusRunning) {
+                  NSLog(@"Task is confirmed to be running."); // 输出: Task is confirmed to be running.
+                  printTaskStatusMessage(myTaskStatus); // 输出: Status: Task is currently running.
+              }
+
+              // 模拟任务完成
+              myTaskStatus = TaskStatusCompleted;
+              printTaskStatusMessage(myTaskStatus); // 输出: Status: Task completed successfully.
+          }
+          return 0;
+      }
+      ```
+  - title: 在 Switch 语句中使用枚举
+    description: |
+      `switch` 语句是处理枚举值的最常用且最清晰的方式。它允许你根据枚举变量当前的值执行不同的代码块。当对 `NS_ENUM` 类型的变量使用 `switch` 时，Xcode 编译器会提供一个有用的特性：如果 `switch` 语句没有处理所有定义的枚举常量，并且没有提供 `default` 分支，编译器会发出警告。这有助于确保你考虑了所有可能的状态或选项。
+
+      **语法:**
+      ```objc
+      // enumVariable 是一个枚举类型的变量
+      switch (enumVariable) {
+          case Enumerator1:
+              // 当 enumVariable 等于 Enumerator1 时执行的代码
+              NSLog(@"Case 1");
+              break; // 使用 break 跳出 switch 语句
+          case Enumerator2:
+              // 当 enumVariable 等于 Enumerator2 时执行的代码
+              NSLog(@"Case 2");
+              break;
+          // ... 可以有任意数量的 case
+          // 可选的 default 分支
+          default:
+              // 如果 enumVariable 的值不匹配任何 case，则执行这里的代码
+              NSLog(@"Default case");
+              break;
+      }
+      ```
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义交通信号灯颜色枚举
+      typedef NS_ENUM(NSInteger, TrafficLightColor) {
+          TrafficLightColorRed,
+          TrafficLightColorYellow,
+          TrafficLightColorGreen
+      };
+
+      // 函数根据交通灯颜色返回相应的动作描述
+      NSString* getActionForTrafficLight(TrafficLightColor color) {
+          NSString *actionDescription;
+          switch (color) {
+              case TrafficLightColorRed:
+                  actionDescription = @"Stop";
+                  break; // break 语句确保执行完当前 case 后退出 switch
+              case TrafficLightColorYellow:
+                  actionDescription = @"Prepare to stop or proceed with caution";
+                  break;
+              case TrafficLightColorGreen:
+                  actionDescription = @"Go";
+                  break;
+              // 注意：如果我们注释掉任何一个 case (例如 Green)，并且没有 default 分支，
+              // 编译器会警告 "Enumeration value 'TrafficLightColorGreen' not handled in switch"
+              // default:
+              //     actionDescription = @"Unknown state";
+              //     break;
+          }
+          return actionDescription;
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              TrafficLightColor currentLight = TrafficLightColorGreen;
+              NSString *action = getActionForTrafficLight(currentLight);
+              NSLog(@"The light is Green. Action: %@", action); // 输出: The light is Green. Action: Go
+
+              currentLight = TrafficLightColorRed;
+              action = getActionForTrafficLight(currentLight);
+              NSLog(@"The light is Red. Action: %@", action);   // 输出: The light is Red. Action: Stop
+
+              currentLight = TrafficLightColorYellow;
+              action = getActionForTrafficLight(currentLight);
+              NSLog(@"The light is Yellow. Action: %@", action); // 输出: The light is Yellow. Action: Prepare to stop or proceed with caution
+          }
+          return 0;
+      }
+      ```
+  - title: 创建位掩码选项 (NS_OPTIONS)
+    description: |
+      当需要表示一组可以同时存在的状态或配置选项时（例如，文件权限：可读、可写、可执行），应使用 `NS_OPTIONS` 宏。与 `NS_ENUM` 不同，`NS_OPTIONS` 用于定义位掩码（bitmask）。每个选项的值通常设置为 2 的不同幂次方（如 `1 << 0`, `1 << 1`, `1 << 2`, ...），这使得可以通过位运算符（如按位或 `|`）将多个选项组合到一个变量中。
+
+      **语法:**
+      ```objc
+      typedef NS_OPTIONS(UnderlyingType, EnumName) {
+          OptionNone = 0,          // 通常定义一个值为 0 的选项，表示没有设置任何选项。
+          Option1 = 1 << 0,       // 值是 1 (二进制 ...0001)
+          Option2 = 1 << 1,       // 值是 2 (二进制 ...0010)
+          Option3 = 1 << 2,       // 值是 4 (二进制 ...0100)
+          // ... 继续使用 1 << n
+          // 也可以定义常用组合
+          OptionReadWrite = Option1 | Option2 // 例如组合 Option1 和 Option2
+      };
+      ```
+      - `UnderlyingType`: 对于位掩码，通常使用无符号整数类型，如 `NSUInteger`。
+      - `OptionName`: 选项名称，同样建议以类型名作为前缀。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 定义文本样式选项 (NS_OPTIONS)
+      typedef NS_OPTIONS(NSUInteger, TextFormattingOptions) {
+          TextFormattingOptionNone    = 0,      // 无样式 (0000)
+          TextFormattingOptionBold    = 1 << 0, // 加粗 (0001)
+          TextFormattingOptionItalic  = 1 << 1, // 斜体 (0010)
+          TextFormattingOptionUnderline = 1 << 2, // 下划线 (0100)
+          TextFormattingOptionStrikethrough = 1 << 3 // 删除线 (1000)
+      };
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 组合多个选项：加粗和下划线
+              TextFormattingOptions myStyle = TextFormattingOptionBold | TextFormattingOptionUnderline;
+              // myStyle 的值是 1 | 4 = 5 (二进制 0101)
+              NSLog(@"Style (Bold | Underline): %lu", (unsigned long)myStyle); // 输出: Style (Bold | Underline): 5
+
+              // 只有斜体样式
+              TextFormattingOptions italicStyle = TextFormattingOptionItalic;
+              NSLog(@"Style (Italic): %lu", (unsigned long)italicStyle); // 输出: Style (Italic): 2
+
+              // 无样式
+              TextFormattingOptions noStyle = TextFormattingOptionNone;
+              NSLog(@"Style (None): %lu", (unsigned long)noStyle); // 输出: Style (None): 0
+
+              // 包含所有定义的样式
+              TextFormattingOptions allStyles = TextFormattingOptionBold | TextFormattingOptionItalic | TextFormattingOptionUnderline | TextFormattingOptionStrikethrough;
+              // allStyles 的值是 1 | 2 | 4 | 8 = 15 (二进制 1111)
+              NSLog(@"Style (All): %lu", (unsigned long)allStyles); // 输出: Style (All): 15
+          }
+          return 0;
+      }
+      ```
+  - title: 使用位掩码选项
+    description: |
+      对于使用 `NS_OPTIONS` 定义的枚举（位掩码），需要使用位运算符来有效地操作：
+      - **组合选项 (Setting flags)**: 使用按位或 `|` 运算符。`options | NewOption` 会在 `options` 中添加 `NewOption`（如果尚未存在）。
+      - **检查是否包含某个选项 (Checking flags)**: 使用按位与 `&` 运算符。如果 `(options & SpecificOption) == SpecificOption` 或者更简洁地写成 `(options & SpecificOption) != 0`，则表示 `options` 变量中设置了 `SpecificOption` 位。检查 `OptionNone` (0) 除外，应该直接用 `==` 比较。
+      - **移除某个选项 (Clearing flags)**: 使用按位与 `&` 和按位取反 `~`。`options & ~SpecificOption` 会创建一个新值，其中 `SpecificOption` 对应的位已被清除（设置为 0）。
+      - **切换某个选项 (Toggling flags)**: 使用按位异或 `^`。`options ^ SpecificOption` 会反转 `options` 中 `SpecificOption` 对应的位：如果该位已设置，则清除它；如果未设置，则设置它。
+    example: |
+      ```objc
+      #import <Foundation/Foundation.h>
+
+      // 使用上一个示例定义的 TextFormattingOptions
+      typedef NS_OPTIONS(NSUInteger, TextFormattingOptions) {
+          TextFormattingOptionNone    = 0,
+          TextFormattingOptionBold    = 1 << 0,
+          TextFormattingOptionItalic  = 1 << 1,
+          TextFormattingOptionUnderline = 1 << 2,
+          TextFormattingOptionStrikethrough = 1 << 3
+      };
+
+      // 函数用于检查并打印当前设置的样式
+      void printCurrentStyles(TextFormattingOptions options) {
+          NSMutableString *styles = [NSMutableString stringWithString:@"Current styles: "];
+          if (options == TextFormattingOptionNone) {
+              [styles appendString:@"None"];
+          } else {
+              if ((options & TextFormattingOptionBold) != 0) { // 检查是否包含 Bold
+                  [styles appendString:@"Bold "];
+              }
+              if (options & TextFormattingOptionItalic) { // 检查 Italic (简写)
+                  [styles appendString:@"Italic "];
+              }
+              if ((options & TextFormattingOptionUnderline) == TextFormattingOptionUnderline) { // 检查 Underline (严格比较)
+                  [styles appendString:@"Underline "];
+              }
+              if (options & TextFormattingOptionStrikethrough) { // 检查 Strikethrough
+                  [styles appendString:@"Strikethrough "];
+              }
+          }
+          NSLog(@"%@", styles);
+          NSLog(@"Options value: %lu\n", (unsigned long)options);
+      }
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 初始样式：无
+              TextFormattingOptions currentOptions = TextFormattingOptionNone;
+              printCurrentStyles(currentOptions);
+              // 输出: Current styles: None
+              // Options value: 0
+
+              // 1. 添加 Bold 样式 (组合)
+              currentOptions = currentOptions | TextFormattingOptionBold; // 0 | 1 = 1
+              NSLog(@"--- Added Bold ---");
+              printCurrentStyles(currentOptions);
+              // 输出: Current styles: Bold
+              // Options value: 1
+
+              // 2. 添加 Italic 样式
+              currentOptions |= TextFormattingOptionItalic; // 1 | 2 = 3 (|= 是复合赋值)
+              NSLog(@"--- Added Italic ---");
+              printCurrentStyles(currentOptions);
+              // 输出: Current styles: Bold Italic
+              // Options value: 3
+
+              // 3. 检查是否包含 Bold (包含)
+              if (currentOptions & TextFormattingOptionBold) {
+                  NSLog(@"Check: Style contains Bold. (Value: %lu)", (unsigned long)(currentOptions & TextFormattingOptionBold)); // 输出: Check: Style contains Bold. (Value: 1)
+              }
+
+              // 4. 检查是否包含 Underline (不包含)
+              if (!(currentOptions & TextFormattingOptionUnderline)) {
+                   NSLog(@"Check: Style does not contain Underline."); // 输出: Check: Style does not contain Underline.
+              }
+
+              // 5. 移除 Bold 样式
+              currentOptions = currentOptions & ~TextFormattingOptionBold; // 3 & (~1) = 3 & (...1110) = 2
+              NSLog(@"--- Removed Bold ---");
+              printCurrentStyles(currentOptions);
+              // 输出: Current styles: Italic
+              // Options value: 2
+
+              // 6. 切换 Italic 样式 (当前包含，切换后移除)
+              currentOptions ^= TextFormattingOptionItalic; // 2 ^ 2 = 0
+              NSLog(@"--- Toggled Italic (was on) ---");
+              printCurrentStyles(currentOptions);
+              // 输出: Current styles: None
+              // Options value: 0
+
+              // 7. 切换 Bold 样式 (当前不包含，切换后添加)
+              currentOptions ^= TextFormattingOptionBold; // 0 ^ 1 = 1
+              NSLog(@"--- Toggled Bold (was off) ---");
+              printCurrentStyles(currentOptions);
+               // 输出: Current styles: Bold
+              // Options value: 1
+          }
+          return 0;
+      }
+      ```

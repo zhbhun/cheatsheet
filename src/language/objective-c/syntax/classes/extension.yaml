@@ -1,0 +1,629 @@
+id: extension
+title: 类扩展
+description: Objective-C 的类扩展（Extension）是一种向现有类添加私有接口（方法、属性、实例变量）的机制。它通常在类的 `.m` 实现文件中定义，并且必须在编译时和类的主 `@implementation` 一起编译。类扩展主要用于隐藏类的内部实现细节，使公共头文件 (`.h`) 更简洁，同时允许类内部访问这些私有成员。
+usage:
+  - title: 定义类扩展
+    description: |
+      类扩展使用 `@interface ClassName ()` 语法定义，通常放在对应类的实现文件 (`.m`) 的顶部，在 `@implementation` 之前。这使得扩展中声明的内容对于该类的实现是可见的，但对外部代码是隐藏的。
+
+      **语法:**
+      ```objc
+      // 在 ClassName.m 文件中
+      #import "ClassName.h"
+
+      // 类扩展定义
+      @interface ClassName () {
+          // 可选：声明私有实例变量 (现代 Objective-C 更推荐使用属性)
+          // 类型 变量名;
+      }
+
+      // 声明私有属性
+      // @property (attributes) 类型 属性名;
+
+      // 声明私有方法
+      // - (返回类型)方法名:(参数类型)参数名 ...;
+
+      @end
+
+      // 类的主要实现
+      @implementation ClassName
+      // ... 实现代码 ...
+      @end
+      ```
+    example: |
+      ```objc
+      // MyClass.h (公共头文件)
+      #import <Foundation/Foundation.h>
+
+      // 公开接口，只暴露必要的方法和属性
+      @interface MyClass : NSObject
+
+      @property (nonatomic, copy, readonly) NSString *publicName; // 公共只读属性
+
+      - (void)publicMethod; // 公共方法
+
+      - (instancetype)initWithName:(NSString *)name; // 初始化方法
+
+      @end
+
+
+      // MyClass.m (实现文件)
+      #import "MyClass.h"
+
+      // --- 类扩展定义开始 ---
+      // 在这里声明私有成员
+      @interface MyClass () {
+          // 声明一个私有实例变量 (较少直接使用，通常通过属性)
+          NSInteger _internalCounter;
+      }
+
+      // 声明私有、可读写的属性，用于支持公共只读属性
+      @property (nonatomic, copy, readwrite) NSString *publicName;
+      // 声明一个完全私有的属性
+      @property (nonatomic, strong) NSDate *creationDate;
+      // 声明一个私有的工作队列
+      @property (nonatomic, strong) dispatch_queue_t privateWorkQueue;
+
+      // 声明私有方法
+      - (void)performBackgroundTask;
+      - (void)updateInternalState;
+
+      @end
+      // --- 类扩展定义结束 ---
+
+
+      @implementation MyClass
+
+      // 实现初始化方法
+      - (instancetype)initWithName:(NSString *)name {
+          self = [super init];
+          if (self) {
+              // 初始化属性 (包括私有的)
+              _publicName = [name copy]; // 设置在扩展中声明为 readwrite 的属性
+              _creationDate = [NSDate date]; // 设置私有属性
+              _internalCounter = 0;        // 初始化私有实例变量
+              _privateWorkQueue = dispatch_queue_create("com.example.myclass.privatequeue", DISPATCH_QUEUE_SERIAL); // 创建私有队列
+              NSLog(@"MyClass instance '%@' created at %@", _publicName, _creationDate);
+          }
+          return self;
+      }
+
+      // 实现公共方法
+      - (void)publicMethod {
+          NSLog(@"Executing public method for '%@'.", self.publicName);
+          // 调用私有方法
+          [self updateInternalState];
+          // 使用私有队列执行后台任务
+          dispatch_async(self.privateWorkQueue, ^{
+              [self performBackgroundTask];
+          });
+      }
+
+      // --- 实现私有方法 ---
+      - (void)performBackgroundTask {
+          // 在私有队列上执行
+          NSLog(@"Executing private background task on thread: %@", [NSThread currentThread]);
+          // 模拟耗时操作
+          [NSThread sleepForTimeInterval:0.5];
+          _internalCounter++; // 操作私有实例变量
+          NSLog(@"Private background task finished. Counter: %ld", (long)_internalCounter);
+      }
+
+      - (void)updateInternalState {
+          NSLog(@"Executing private method 'updateInternalState'. Internal counter: %ld", (long)_internalCounter);
+          // 在这里可以访问和修改所有私有成员
+          self.publicName = [NSString stringWithFormat:@"%@ (Updated)", self.publicName]; // 修改属性
+          NSLog(@"Public name updated to: %@", self.publicName);
+      }
+
+      @end
+
+      // main.m (如何使用 MyClass)
+      #import <Foundation/Foundation.h>
+      #import "MyClass.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyClass *myObject = [[MyClass alloc] initWithName:@"TestObject"];
+              [myObject publicMethod];
+
+              // 尝试访问公共属性 (只读)
+              NSLog(@"Accessing public property: %@", myObject.publicName);
+
+              // 以下代码会产生编译错误，因为这些成员是私有的
+              // myObject->_internalCounter = 5; // 错误: Instance variable '_internalCounter' is private
+              // myObject.creationDate = [NSDate date]; // 错误: Property 'creationDate' not found
+              // [myObject performBackgroundTask];     // 错误: No visible @interface for 'MyClass' declares the selector 'performBackgroundTask'
+              // myObject.publicName = @"New Name";    // 错误: Assignment to readonly property
+
+              // 等待后台任务完成（简单示例）
+              [NSThread sleepForTimeInterval:1.0];
+              NSLog(@"Main thread finished.");
+          }
+          return 0;
+      }
+      ```
+  - title: 声明私有属性
+    description: |
+      类扩展是声明**私有属性** (`@property`) 的标准方式。这些属性只在类的实现文件 (`.m`) 中可见和访问，对外部代码隐藏了实现细节。
+
+      这常用于：
+      - 存储内部状态。
+      - 持有内部使用的对象（如辅助对象、缓存、工作队列）。
+      - 为公共的 `readonly` 属性提供 `readwrite` 的内部访问权限。
+    example: |
+      ```objc
+      // ConfigurationManager.h
+      #import <Foundation/Foundation.h>
+
+      // 公共接口只暴露加载配置的方法
+      @interface ConfigurationManager : NSObject
+
+      + (instancetype)sharedManager; // 单例访问
+      - (BOOL)loadConfigurationFromFile:(NSString *)filePath;
+      - (id)settingForKey:(NSString *)key; // 获取配置项
+
+      @end
+
+      // ConfigurationManager.m
+      #import "ConfigurationManager.h"
+
+      // 类扩展：声明私有属性
+      @interface ConfigurationManager ()
+
+      // 私有属性：存储已加载的配置数据
+      @property (nonatomic, strong) NSDictionary *configurationData;
+      // 私有属性：记录最后加载时间
+      @property (nonatomic, strong) NSDate *lastLoadTime;
+      // 私有属性：用于文件读写的锁，保证线程安全
+      @property (nonatomic, strong) NSLock *configLock;
+
+      @end
+
+      @implementation ConfigurationManager
+
+      // 单例实现
+      + (instancetype)sharedManager {
+          static ConfigurationManager *sharedInstance = nil;
+          static dispatch_once_t onceToken;
+          dispatch_once(&onceToken, ^{
+              sharedInstance = [[self alloc] init];
+          });
+          return sharedInstance;
+      }
+
+      // 初始化私有属性
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _configurationData = @{}; // 初始化为空字典
+              _configLock = [[NSLock alloc] init]; // 初始化锁
+              NSLog(@"ConfigurationManager initialized.");
+          }
+          return self;
+      }
+
+      // 实现公共方法：加载配置
+      - (BOOL)loadConfigurationFromFile:(NSString *)filePath {
+          NSLog(@"Attempting to load configuration from: %@", filePath);
+          // 使用私有锁确保线程安全
+          [self.configLock lock];
+          @try {
+              NSError *error = nil;
+              NSData *jsonData = [NSData dataWithContentsOfFile:filePath options:0 error:&error];
+              if (error || !jsonData) {
+                  NSLog(@"Error loading configuration file: %@", error.localizedDescription ?: @"Unknown error");
+                  return NO;
+              }
+
+              NSDictionary *loadedConfig = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+              if (error || ![loadedConfig isKindOfClass:[NSDictionary class]]) {
+                  NSLog(@"Error parsing configuration JSON: %@", error.localizedDescription ?: @"Invalid format");
+                  return NO;
+              }
+
+              // 更新私有属性
+              self.configurationData = loadedConfig;
+              self.lastLoadTime = [NSDate date]; // 更新私有属性
+              NSLog(@"Configuration loaded successfully at %@", self.lastLoadTime);
+              return YES;
+
+          } @finally {
+              // 确保锁被释放
+              [self.configLock unlock];
+          }
+      }
+
+      // 实现公共方法：获取配置项
+      - (id)settingForKey:(NSString *)key {
+          // 使用私有锁保护对私有属性的访问
+          [self.configLock lock];
+          id value = self.configurationData[key]; // 访问私有属性
+          [self.configLock unlock];
+
+          if (value) {
+              NSLog(@"Retrieved setting for key '%@'", key);
+          } else {
+              NSLog(@"Setting for key '%@' not found.", key);
+          }
+          return value;
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "ConfigurationManager.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个临时的配置文件 (JSON 格式)
+              NSString *tempFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"config.json"];
+              NSString *jsonString = @"{\"apiKey\": \"12345-abcdef\", \"timeout\": 30, \"enabled\": true}";
+              [jsonString writeToFile:tempFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+
+              // 使用 ConfigurationManager
+              ConfigurationManager *manager = [ConfigurationManager sharedManager];
+              BOOL success = [manager loadConfigurationFromFile:tempFilePath];
+
+              if (success) {
+                  // 通过公共方法获取配置
+                  NSString *apiKey = [manager settingForKey:@"apiKey"];
+                  NSNumber *timeout = [manager settingForKey:@"timeout"];
+                  NSLog(@"API Key: %@, Timeout: %@", apiKey, timeout);
+              }
+
+              // 无法直接访问私有属性
+              // manager.configurationData = nil; // 编译错误
+              // manager.lastLoadTime = [NSDate date]; // 编译错误
+              // manager.configLock = nil; // 编译错误
+
+              // 清理临时文件
+              [[NSFileManager defaultManager] removeItemAtPath:tempFilePath error:nil];
+          }
+          return 0;
+      }
+      ```
+  - title: 声明私有方法
+    description: |
+      类扩展允许你声明只在类的实现内部调用的**私有方法**。这些方法对外部使用者是不可见的，有助于：
+      - **封装实现细节:** 将复杂的逻辑分解为更小的、可管理的内部步骤。
+      - **代码重用:** 定义一些只在类内部多个地方使用的辅助函数。
+      - **保持公共接口简洁:** 避免用不必要的内部实现方法污染公共头文件。
+    example: |
+      ```objc
+      // TextProcessor.h
+      #import <Foundation/Foundation.h>
+
+      // 公共接口只提供一个处理文本的方法
+      @interface TextProcessor : NSObject
+      - (NSString *)processText:(NSString *)inputText;
+      @end
+
+      // TextProcessor.m
+      #import "TextProcessor.h"
+      #import <CommonCrypto/CommonDigest.h> // 用于 MD5 示例
+
+      // 类扩展：声明私有方法
+      @interface TextProcessor ()
+
+      // 私有方法：移除文本中的多余空格
+      - (NSString *)stripExcessWhitespace:(NSString *)text;
+      // 私有方法：将文本转换为小写
+      - (NSString *)convertToLowerCase:(NSString *)text;
+      // 私有方法：计算文本的 MD5 哈希值 (示例)
+      - (NSString *)calculateMD5:(NSString *)text;
+
+      @end
+
+      @implementation TextProcessor
+
+      // 实现公共方法
+      - (NSString *)processText:(NSString *)inputText {
+          NSLog(@"Starting text processing for input: \"%@\"", inputText);
+          if (!inputText || inputText.length == 0) {
+              return @"";
+          }
+
+          // 按顺序调用私有方法进行处理
+          NSString *processedText = inputText;
+          processedText = [self stripExcessWhitespace:processedText]; // 调用私有方法
+          processedText = [self convertToLowerCase:processedText];    // 调用私有方法
+          NSString *md5Hash = [self calculateMD5:processedText];      // 调用私有方法
+
+          NSLog(@"Processing complete. Result MD5: %@", md5Hash);
+          // 返回处理后的文本或其摘要等
+          return [NSString stringWithFormat:@"Processed '%@', MD5: %@", processedText, md5Hash];
+      }
+
+      // --- 实现私有方法 ---
+
+      - (NSString *)stripExcessWhitespace:(NSString *)text {
+          NSLog(@"Private method: Stripping whitespace.");
+          NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+          // 按空格分割，过滤空字符串，再用单个空格连接
+          NSArray *components = [text componentsSeparatedByCharactersInSet:whitespace];
+          components = [components filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self <> ''"]];
+          return [components componentsJoinedByString:@" "];
+      }
+
+      - (NSString *)convertToLowerCase:(NSString *)text {
+          NSLog(@"Private method: Converting to lower case.");
+          return [text lowercaseString];
+      }
+
+      - (NSString *)calculateMD5:(NSString *)text {
+          NSLog(@"Private method: Calculating MD5 hash.");
+          const char *cStr = [text UTF8String];
+          unsigned char digest[CC_MD5_DIGEST_LENGTH];
+          CC_MD5(cStr, (CC_LONG)strlen(cStr), digest);
+
+          NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+          for(int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+              [output appendFormat:@"%02x", digest[i]];
+          }
+          return [output copy]; // 返回不可变副本
+      }
+
+      @end
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "TextProcessor.h"
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              TextProcessor *processor = [[TextProcessor alloc] init];
+              NSString *rawText = @"  This is   Some TEXT with   Extra Spaces.  ";
+              NSString *result = [processor processText:rawText];
+
+              NSLog(@"Final result from main: %@", result);
+
+              // 无法直接调用私有方法
+              // [processor stripExcessWhitespace:rawText]; // 编译错误
+              // [processor convertToLowerCase:rawText];   // 编译错误
+              // [processor calculateMD5:rawText];      // 编译错误
+          }
+          return 0;
+      }
+      ```
+  - title: 符合私有协议
+    description: |
+      当一个类需要实现某个协议，但你不想将该协议的符合性暴露在公共头文件 `.h` 中时（例如，该协议是内部委托或实现细节），可以在类扩展中声明该类符合此协议 (`<MyPrivateProtocol>`)。
+
+      这样做的好处是：
+      - **隐藏实现细节:** 外部代码不知道该类实现了这个特定的内部协议。
+      - **编译时检查:** 编译器仍然会检查你是否在 `.m` 文件中正确实现了协议要求的方法。
+      - **组织代码:** 将协议符合性声明和实现都保留在实现文件中。
+    example: |
+      ```objc
+      // InternalDataSource.h (定义一个内部数据源协议)
+      #import <Foundation/Foundation.h>
+
+      @protocol InternalDataSource <NSObject>
+      @required // 必须实现的方法
+      - (NSInteger)numberOfInternalItems;
+      - (NSString *)internalItemAtIndex:(NSInteger)index;
+      @optional // 可选实现的方法
+      - (void)prepareInternalData;
+      @end
+
+
+      // DataManager.h (公共接口)
+      #import <Foundation/Foundation.h>
+
+      @interface DataManager : NSObject
+      - (void)loadData; // 公共加载方法
+      - (void)displayDataSummary; // 公共显示摘要方法
+      @end
+
+
+      // DataManager.m (实现文件)
+      #import "DataManager.h"
+      #import "InternalDataSource.h" // 导入私有协议头文件
+
+      // 类扩展：声明 DataManager 符合 InternalDataSource 协议
+      @interface DataManager () <InternalDataSource>
+
+      // 私有属性来存储数据
+      @property (nonatomic, strong) NSArray<NSString *> *internalItems;
+
+      @end
+
+      @implementation DataManager
+
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _internalItems = @[]; // 初始化为空数组
+              NSLog(@"DataManager initialized.");
+              // 调用可选的协议方法 (如果实现了)
+              if ([self respondsToSelector:@selector(prepareInternalData)]) {
+                  [self prepareInternalData]; // 调用在本类中实现的协议方法
+              }
+          }
+          return self;
+      }
+
+      // 实现公共方法
+      - (void)loadData {
+          NSLog(@"Public method: Loading data...");
+          // 模拟从某个源加载数据，这里直接使用协议方法获取
+          NSInteger count = [self numberOfInternalItems]; // 调用在本类中实现的协议方法
+          NSMutableArray *loadedItems = [NSMutableArray arrayWithCapacity:count];
+          for (NSInteger i = 0; i < count; ++i) {
+              [loadedItems addObject:[self internalItemAtIndex:i]]; // 调用在本类中实现的协议方法
+          }
+          self.internalItems = [loadedItems copy]; // 更新内部数据
+          NSLog(@"Data loaded. Item count: %ld", (long)self.internalItems.count);
+      }
+
+      - (void)displayDataSummary {
+          NSLog(@"Public method: Displaying data summary:");
+          if (self.internalItems.count == 0) {
+              NSLog(@" - No data available.");
+          } else {
+              for (NSString *item in self.internalItems) {
+                  NSLog(@" - Item: %@", item);
+              }
+          }
+      }
+
+      // --- 实现 InternalDataSource 协议方法 ---
+      // 这些方法因为协议在类扩展中声明符合，所以必须在这里实现 (对于 @required)
+
+      - (NSInteger)numberOfInternalItems {
+          NSLog(@"Protocol method: numberOfInternalItems called.");
+          // 实际应用中可能是从数据库、网络等获取
+          return 3; // 假设有3个内部项目
+      }
+
+      - (NSString *)internalItemAtIndex:(NSInteger)index {
+          NSLog(@"Protocol method: internalItemAtIndex:%ld called.", (long)index);
+          NSArray *sourceData = @[@"Internal Item A", @"Internal Item B", @"Internal Item C"];
+          if (index >= 0 && index < sourceData.count) {
+              return sourceData[index];
+          }
+          return @"Invalid Index";
+      }
+
+      // 实现可选的协议方法
+      - (void)prepareInternalData {
+          NSLog(@"Optional protocol method: prepareInternalData called.");
+          // 执行一些初始化的准备工作
+      }
+
+      @end
+
+
+      // main.m
+      #import <Foundation/Foundation.h>
+      #import "DataManager.h" // 只需要包含公共头文件
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              DataManager *manager = [[DataManager alloc] init];
+              [manager loadData];
+              [manager displayDataSummary];
+
+              // 外部代码不知道 DataManager 实现了 InternalDataSource 协议
+              // 也无法直接调用协议方法，因为它们没有在公共头文件中声明
+              // [manager numberOfInternalItems]; // 编译错误
+              // [manager internalItemAtIndex:0]; // 编译错误
+
+              // 使用运行时可以检查，但通常不这样做，因为协议是内部的
+              // if ([manager conformsToProtocol:@protocol(InternalDataSource)]) {
+              //     NSLog(@"Manager conforms to InternalDataSource (checked via runtime).");
+              // }
+          }
+          return 0;
+      }
+      ```
+  - title: 类扩展与分类的区别
+    description: |
+      类扩展（Extension）和分类（Category）虽然都允许向现有类添加功能，但它们的设计目标和能力有显著不同，理解这些区别对于正确使用它们至关重要。
+
+      **类扩展 (Extension):**
+      - **核心目的:** 定义类的**私有**接口（方法、属性、实例变量），封装实现细节。
+      - **定义位置:** 通常在类的实现文件 (`.m`) 中，紧随 `#import` 之后，`@implementation` 之前。
+      - **编译时绑定:** 扩展中声明的所有内容（包括属性及其支持的实例变量）**必须**在类的主实现编译时可知并一同编译。编译器会检查扩展中声明的方法是否在 `@implementation` 中实现。
+      - **实例变量:** **可以**添加实例变量（通常通过 `@property` 自动合成）。这是类扩展独有的能力。
+      - **限制:**
+        - 只能为**拥有源代码**的类创建扩展（因为需要一起编译）。
+        - 一个类只能有一个“匿名”类扩展（`@interface ClassName ()`），虽然技术上可以有多个，但不常见且没有必要。
+
+      **分类 (Category):**
+      - **核心目的:** 向现有类（包括没有源代码的系统类）**添加方法**，或者将一个大类的实现分散到多个逻辑相关的模块文件中。
+      - **定义位置:** 通常有单独的头文件 (`.h`) 和实现文件 (`.m`)，命名约定为 `ClassName+CategoryName.h` 和 `ClassName+CategoryName.m`。
+      - **运行时加载:** 分类中实现的方法在运行时动态添加到类的方法列表中。编译器只检查方法签名是否存在。
+      - **实例变量:** **不能**直接添加实例变量。如果需要存储与分类相关的状态，必须使用关联对象（Associated Objects）这一运行时特性，相对复杂且需要小心管理内存。
+      - **限制:**
+        - 如果分类中的方法与原始类或其他分类中的方法同名，行为是未定义的（运行时只有一个实现会生效，可能覆盖原始实现或其他分类的实现），应避免这种情况。
+        - 加载顺序不确定，不应依赖分类的加载顺序。
+
+      **何时使用:**
+      - **类扩展:** 当你需要为自己的类添加**私有**属性、私有实例变量或私有方法时，或者需要让公共的 `readonly` 属性在内部 `readwrite` 时，或者需要私下符合某个协议时。
+      - **分类:** 当你需要为**已有的类**（包括系统类如 `NSString`, `UIView` 等）添加新的**方法**时，或者想把一个庞大类的实现按功能拆分到不同文件时。
+    example: |
+      ```objc
+      // --- 类扩展示例 (MyService.h/.m) ---
+      // MyService.h (公共接口)
+      @interface MyService : NSObject
+      @property (nonatomic, copy, readonly) NSString *serviceID; // 公共只读属性
+      - (void)startService;
+      @end
+
+      // MyService.m (实现与类扩展)
+      #import "MyService.h"
+      // 类扩展: 定义私有成员
+      @interface MyService ()
+      @property (nonatomic, copy, readwrite) NSString *serviceID; // 使 serviceID 在内部可写
+      @property (nonatomic, strong) NSTimer *internalTimer;     // 私有属性
+      - (void)performHeartbeat; // 私有方法
+      @end
+
+      @implementation MyService
+      - (instancetype)init { self = [super init]; if (self) { _serviceID = [[NSUUID UUID] UUIDString]; } return self; }
+      - (void)startService { NSLog(@"Service %@ starting...", self.serviceID); self.internalTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(performHeartbeat) userInfo:nil repeats:YES]; }
+      - (void)performHeartbeat { NSLog(@"Service %@ heartbeat.", self.serviceID); /* 访问私有属性 serviceID */ }
+      - (void)dealloc { [self.internalTimer invalidate]; NSLog(@"Service %@ stopping.", self.serviceID); } // 清理私有属性
+      @end
+
+
+      // --- 分类示例 (NSString+Validation.h/.m) ---
+      // NSString+Validation.h (为 NSString 添加验证方法的分类)
+      #import <Foundation/Foundation.h>
+      @interface NSString (Validation)
+      - (BOOL)isValidEmailFormat; // 添加新的方法到 NSString
+      @end
+
+      // NSString+Validation.m (分类的实现)
+      #import "NSString+Validation.h"
+      @implementation NSString (Validation)
+      - (BOOL)isValidEmailFormat {
+          // 简单的邮件格式检查 (示例)
+          NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}";
+          NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+          return [emailTest evaluateWithObject:self];
+      }
+      @end
+
+
+      // main.m (使用示例)
+      #import <Foundation/Foundation.h>
+      #import "MyService.h"         // 导入类扩展所在的类
+      #import "NSString+Validation.h" // 导入分类
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // --- 使用带有类扩展的 MyService ---
+              MyService *service = [[MyService alloc] init];
+              [service startService];
+              NSLog(@"Service ID (public access): %@", service.serviceID);
+              // service.serviceID = @"newID"; // 编译错误, 公共接口是 readonly
+              // [service performHeartbeat]; // 编译错误, 私有方法
+
+              NSLog(@"---");
+
+              // --- 使用为 NSString 添加的分类方法 ---
+              NSString *email1 = @"test@example.com";
+              NSString *email2 = @"invalid-email";
+              // 直接在 NSString 实例上调用分类添加的方法
+              NSLog(@"'%@' is valid email? %d", email1, [email1 isValidEmailFormat]);
+              NSLog(@"'%@' is valid email? %d", email2, [email2 isValidEmailFormat]);
+
+              // 让服务运行一小段时间以看到心跳
+              [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:6.0]];
+              // service 对象在这里超出作用域，会调用 dealloc
+          }
+          return 0;
+      }
+      // 预期输出类似:
+      // Service <UUID> starting...
+      // Service ID (public access): <UUID>
+      // ---
+      // 'test@example.com' is valid email? 1
+      // 'invalid-email' is valid email? 0
+      // Service <UUID> heartbeat.
+      // Service <UUID> stopping.
+      ```

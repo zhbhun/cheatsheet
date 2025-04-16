@@ -1,0 +1,230 @@
+id: static
+title: 类静态属性
+description: Objective-C 类静态属性是与类本身关联的属性，而非类的实例。这意味着无论创建多少个对象实例，静态属性在内存中只有一份副本。常用于定义类常量、共享配置、管理单例实例或跟踪类级别的状态。Objective-C 没有直接的 `static` 关键字用于属性声明，通常通过在实现文件（.m）中使用 C 的 `static` 变量结合类方法（以 `+` 开头）来实现。
+usage:
+  - title: 定义类常量 (只读静态属性)
+    description: |
+      最常见的静态属性是类常量，它们的值在编译时确定且不可更改。通常使用 `static const` 在实现文件（`.m`）中定义，并通过一个类方法（getter）来访问。这确保了常量值封装在类内部，并通过统一的接口访问。
+
+      **实现方式:**
+      1.  在 `.m` 文件中使用 `static const` 定义一个静态常量。`static` 限制其作用域仅在此文件，`const` 确保其值不可修改。
+      2.  在 `.h` 文件中声明一个类方法（getter），用于返回该常量的值。
+      3.  在 `.m` 文件中实现该类方法。
+    example: |
+      ```objc
+      // MyClass.h
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+
+      // 声明一个类方法用于获取默认名称常量
+      + (NSString *)defaultName;
+
+      @end
+
+      // MyClass.m
+      #import "MyClass.h"
+
+      // 在实现文件中定义静态常量
+      // static 确保作用域仅限此文件，const 确保值不可变
+      static NSString * const MyClassDefaultName = @"Default Name";
+
+      @implementation MyClass
+
+      // 实现类方法，返回静态常量的值
+      + (NSString *)defaultName {
+          return MyClassDefaultName; // 返回定义的静态常量
+      }
+
+      @end
+
+      // 如何使用:
+      // NSString *name = [MyClass defaultName];
+      // NSLog(@"%@", name); // 输出: Default Name
+      ```
+  - title: 创建可读写静态属性
+    description: |
+      对于需要在类级别共享且可能被修改的状态，可以创建可读写的静态属性。这同样通过在 `.m` 文件中定义 `static` 变量实现，但需要提供对应的 getter 和 setter 类方法来访问和修改这个变量。
+
+      **实现方式:**
+      1.  在 `.m` 文件中使用 `static` 关键字定义一个静态变量来存储属性值。
+      2.  在 `.h` 文件中声明 getter 和 setter 类方法。
+      3.  在 `.m` 文件中实现 getter 和 setter 方法，用于读取和写入该静态变量。为了线程安全，对共享可变状态的访问通常需要加锁或其他同步机制（如下一个用法所示）。
+    example: |
+      ```objc
+      // AppConfig.h
+      #import <Foundation/Foundation.h>
+
+      @interface AppConfig : NSObject
+
+      // 声明用于获取和设置共享配置的类方法
+      + (NSInteger)sharedCounter;
+      + (void)setSharedCounter:(NSInteger)counter;
+
+      @end
+
+      // AppConfig.m
+      #import "AppConfig.h"
+
+      // 定义一个静态变量来存储共享计数器
+      static NSInteger _sharedCounter = 0;
+      // 注意：在多线程环境下直接访问和修改静态变量可能不安全
+      // 实际应用中可能需要加锁，参考下一个用法
+
+      @implementation AppConfig
+
+      // 实现 getter 类方法
+      + (NSInteger)sharedCounter {
+          return _sharedCounter; // 返回静态变量的值
+      }
+
+      // 实现 setter 类方法
+      + (void)setSharedCounter:(NSInteger)counter {
+          _sharedCounter = counter; // 修改静态变量的值
+      }
+
+      @end
+
+      // 如何使用:
+      // [AppConfig setSharedCounter:10];
+      // NSInteger currentCounter = [AppConfig sharedCounter];
+      // NSLog(@"%ld", (long)currentCounter); // 输出: 10
+      //
+      // // 另一个地方访问
+      // [AppConfig setSharedCounter:[AppConfig sharedCounter] + 5];
+      // NSLog(@"%ld", (long)[AppConfig sharedCounter]); // 输出: 15
+      ```
+  - title: 实现线程安全的静态属性初始化与访问
+    description: |
+      当静态属性需要在首次访问时进行初始化（例如单例模式中的共享实例），或者当可读写静态属性在多线程环境中被访问时，必须确保线程安全。`dispatch_once` 是一个常用的 GCD 机制，用于保证某段代码（通常是初始化代码）在应用的生命周期内只执行一次，即使在多线程环境下也是安全的。对于可变静态属性的读写，可以使用 `@synchronized` 或其他锁机制来保护。
+
+      **关键技术:**
+      - **`dispatch_once`**: 用于确保初始化代码只执行一次，常用于单例或懒加载的静态变量。
+      - **`@synchronized`**: 一个简单的 Objective-C 指令，用于创建一个互斥锁，保护代码块在同一时间只有一个线程可以执行。通常用 `self`（对于实例方法）或类对象（对于类方法）作为锁对象。
+    example: |
+      ```objc
+      // SharedManager.h
+      #import <Foundation/Foundation.h>
+
+      @interface SharedManager : NSObject
+
+      @property (nonatomic, strong) NSString *configValue;
+
+      // 获取共享的单例实例 (线程安全的初始化)
+      + (instancetype)sharedInstance;
+
+      // 线程安全地读写一个静态配置项
+      + (NSString *)sharedConfig;
+      + (void)setSharedConfig:(NSString *)config;
+
+      @end
+
+      // SharedManager.m
+      #import "SharedManager.h"
+
+      // 定义静态变量存储单例实例和共享配置
+      static SharedManager *_sharedInstance = nil;
+      static NSString *_sharedConfig = @"Default Config";
+      static dispatch_once_t onceToken; // 用于 dispatch_once
+
+      @implementation SharedManager
+
+      // 线程安全地获取单例实例
+      + (instancetype)sharedInstance {
+          // 使用 dispatch_once 确保初始化代码只执行一次
+          dispatch_once(&onceToken, ^{
+              _sharedInstance = [[self alloc] init]; // 创建实例
+              _sharedInstance.configValue = @"Initial Instance Value";
+          });
+          return _sharedInstance; // 返回已初始化的实例
+      }
+
+      // 线程安全地读取共享配置
+      + (NSString *)sharedConfig {
+          NSString *config;
+          // 使用 @synchronized 保护读取操作
+          @synchronized(self) { // 使用类对象作为锁
+              config = _sharedConfig;
+          }
+          return config;
+      }
+
+      // 线程安全地写入共享配置
+      + (void)setSharedConfig:(NSString *)config {
+          // 使用 @synchronized 保护写入操作
+          @synchronized(self) { // 使用类对象作为锁
+              if (_sharedConfig != config) { // 避免不必要的赋值和潜在的内存管理问题
+                   _sharedConfig = [config copy]; // 存储副本以确保值独立
+              }
+          }
+      }
+
+      @end
+
+      // 如何使用:
+      // SharedManager *manager1 = [SharedManager sharedInstance];
+      // SharedManager *manager2 = [SharedManager sharedInstance];
+      // NSLog(@"Manager instances are the same: %d", manager1 == manager2); // 输出: Manager instances are the same: 1
+
+      // [SharedManager setSharedConfig:@"New Config Value"];
+      // NSString *config = [SharedManager sharedConfig];
+      // NSLog(@"Shared config: %@", config); // 输出: Shared config: New Config Value
+      ```
+  - title: 使用 @property(class) 声明类属性 (现代方式)
+    description: |
+      较新版本的 Objective-C (配合 Clang 编译器特性) 允许使用 `@property (class)` 语法在接口（.h 文件）中直接声明类属性。这提供了一种更接近 Swift 等现代语言的语法。然而，这本质上是语法糖，你仍然需要在实现文件（.m）中手动提供对应的类 getter (`+ (Type)propertyName`) 和可选的类 setter (`+ (void)setPropertyName:(Type)value`) 方法，这些方法内部通常还是依赖于一个 C `static` 变量来存储状态。
+
+      **注意**: `@property (class)` 的支持和行为可能依赖于具体的 Xcode 和 Clang 版本。它主要用于提升与 Swift 的互操作性或在特定框架中使用。
+
+      **实现方式:**
+      1.  在 `.h` 文件的 `@interface` 中使用 `@property (class, ...)` 声明类属性。
+      2.  在 `.m` 文件中定义一个底层的 `static` 变量来存储属性值。
+      3.  在 `.m` 文件中实现对应的类 getter (`+`) 和 setter (`+`) 方法。
+    example: |
+      ```objc
+      // StyleManager.h
+      #import <Foundation/Foundation.h>
+      #import <UIKit/UIKit.h> // 假设需要 UIKit 类型
+
+      @interface StyleManager : NSObject
+
+      // 使用 @property (class) 声明一个类属性
+      // strong/nonatomic 等属性修饰符同样适用
+      @property (class, nonatomic, strong) UIColor *sharedTintColor;
+
+      @end
+
+      // StyleManager.m
+      #import "StyleManager.h"
+
+      // 定义一个静态变量来存储类属性的值
+      static UIColor *_sharedTintColor = nil;
+
+      @implementation StyleManager
+
+      // 必须手动实现类属性的 getter 方法
+      + (UIColor *)sharedTintColor {
+          // 可以在 getter 中实现懒加载逻辑
+          if (_sharedTintColor == nil) {
+              _sharedTintColor = [UIColor blueColor]; // 默认颜色
+          }
+          return _sharedTintColor;
+      }
+
+      // 必须手动实现类属性的 setter 方法
+      + (void)setSharedTintColor:(UIColor *)tintColor {
+          // 可以添加线程安全保护，例如 @synchronized
+          @synchronized(self) {
+              if (_sharedTintColor != tintColor) {
+                  _sharedTintColor = tintColor;
+              }
+          }
+      }
+
+      @end
+
+      // 如何使用 (像访问普通属性一样，但作用于类):
+      // StyleManager.sharedTintColor = [UIColor redColor];
+      // UIColor *color = StyleManager.sharedTintColor;
+      // NSLog(@"Shared tint color: %@", color); // 输出: Shared tint color: UIExtendedSRGBColorSpace 1 0 0 1 (或类似表示)
+      ```

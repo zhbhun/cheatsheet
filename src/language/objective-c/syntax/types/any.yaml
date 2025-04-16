@@ -1,0 +1,355 @@
+id: any
+title: 任意
+query: Objective-C 任意类型(id)
+description: '`id` 是 Objective-C 中的一种通用对象指针类型，它可以指向任何继承自 `NSObject`（或其他根类）的类的实例。它类似于 C 语言中的 `void *`，但 `id` 专门用于对象。当你不确定对象的具体类型，或者需要编写能够处理多种不同类型对象的通用代码时，`id` 非常有用。Objective-C 的动态类型系统允许你在运行时确定对象的实际类型并向其发送消息。'
+usage:
+  - title: 声明和赋值任意类型变量 (id)
+    description: |
+      使用 `id` 关键字来声明一个可以指向任意 Objective-C 对象的变量。你可以将任何 Objective-C 对象（如 `NSString`, `NSNumber`, `NSArray` 或自定义类的实例）赋值给 `id` 类型的变量。编译器不会在编译时检查赋值的类型兼容性。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 声明一个 id 类型的变量
+              id anyObject;
+
+              // 将 NSString 对象赋值给 id 变量
+              anyObject = @"Hello, World!";
+              NSLog(@"String object: %@", anyObject); // 输出: String object: Hello, World!
+
+              // 将 NSNumber 对象赋值给 id 变量
+              anyObject = @42;
+              NSLog(@"Number object: %@", anyObject); // 输出: Number object: 42
+
+              // 将 NSArray 对象赋值给 id 变量
+              anyObject = @[@"Apple", @"Banana"];
+              NSLog(@"Array object: %@", anyObject); // 输出: Array object: (
+                                                    //     Apple,
+                                                    //     Banana
+                                                    // )
+
+              // 将自定义类的实例赋值给 id 变量 (假设 MyObject 类已定义)
+              // MyObject *myObj = [[MyObject alloc] init];
+              // anyObject = myObj;
+              // NSLog(@"Custom object: %@", anyObject);
+          }
+          return 0;
+      }
+      ```
+  - title: 向任意类型对象发送消息
+    description: |
+      你可以向 `id` 类型的变量发送任何消息（调用任何方法）。Objective-C 的运行时系统会在程序运行时检查该对象是否能够响应这个消息。如果对象能够响应，则执行对应的方法；如果不能，则会抛出异常（通常是 `unrecognized selector sent to instance`）。这就是 Objective-C 的动态绑定特性。编译器不会在编译时检查方法是否存在于 `id` 指向的对象的实际类中。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id anyObject;
+
+              // 指向 NSString
+              anyObject = @"Objective-C";
+              // 调用 NSString 的 length 方法
+              NSUInteger len = [anyObject length]; // 运行时检查 NSString 是否响应 length，是则调用
+              NSLog(@"Length of '%@' is %lu", anyObject, (unsigned long)len); // 输出: Length of 'Objective-C' is 11
+
+              // 指向 NSNumber
+              anyObject = @123.45;
+              // 调用 NSNumber 的 doubleValue 方法
+              double val = [anyObject doubleValue]; // 运行时检查 NSNumber 是否响应 doubleValue，是则调用
+              NSLog(@"Double value of %@ is %f", anyObject, val); // 输出: Double value of 123.45 is 123.450000
+
+              // 尝试调用 NSString 不存在的方法 (运行时会崩溃)
+              // anyObject = @"A String";
+              // [anyObject doubleValue]; // *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '-[__NSCFConstantString doubleValue]: unrecognized selector sent to instance 0x...'
+
+              // 尝试调用 NSNumber 不存在的方法 (运行时会崩溃)
+              // anyObject = @99;
+              // [anyObject length]; // *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: '-[__NSCFNumber length]: unrecognized selector sent to instance 0x...'
+          }
+          return 0;
+      }
+      ```
+  - title: 检查任意类型对象的实际类型
+    description: |
+      由于 `id` 在编译时不提供类型信息，因此在运行时检查对象的实际类型通常是必要的，以确保安全地调用方法或执行特定操作。常用的检查方法有：
+      - `isKindOfClass:`: 检查对象是否是指定类或其任何子类的实例。这是最常用的类型检查方法。
+      - `isMemberOfClass:`: 检查对象是否是指定类的实例（不包括子类）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id anyObject = @"This is a string";
+
+              // 使用 isKindOfClass: 检查类型 (常用)
+              if ([anyObject isKindOfClass:[NSString class]]) {
+                  NSLog(@"Object is a kind of NSString."); // 会执行
+                  // 安全地调用 NSString 的方法
+                  NSString *str = (NSString *)anyObject; // 可以进行类型转换
+                  NSLog(@"Uppercase: %@", [str uppercaseString]); // 输出: Uppercase: THIS IS A STRING
+              } else {
+                  NSLog(@"Object is not a kind of NSString.");
+              }
+
+              if ([anyObject isKindOfClass:[NSNumber class]]) {
+                   NSLog(@"Object is a kind of NSNumber.");
+              } else {
+                   NSLog(@"Object is not a kind of NSNumber."); // 会执行
+              }
+
+              // 使用 isMemberOfClass: 检查精确类型
+              if ([anyObject isMemberOfClass:[NSString class]]) { // 对于 __NSCFConstantString 可能返回 YES
+                  NSLog(@"Object is exactly an NSString (or a specific private subclass like __NSCFConstantString)."); // 可能会执行，取决于具体实现
+              } else {
+                  NSLog(@"Object is not exactly an NSString.");
+              }
+
+               // NSMutableString 继承自 NSString
+              id mutableStr = [NSMutableString stringWithString:@"Mutable"];
+              if ([mutableStr isKindOfClass:[NSString class]]) {
+                  NSLog(@"MutableString is a kind of NSString."); // 会执行
+              }
+              if ([mutableStr isMemberOfClass:[NSString class]]) {
+                  NSLog(@"MutableString is exactly an NSString.");
+              } else {
+                   NSLog(@"MutableString is not exactly an NSString."); // 会执行
+              }
+              if ([mutableStr isMemberOfClass:[NSMutableString class]]) {
+                   NSLog(@"MutableString is exactly an NSMutableString."); // 会执行
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 检查任意类型对象是否响应方法
+    description: |
+      在向 `id` 类型的对象发送消息之前，检查该对象是否能响应这个消息是一种更安全的做法，可以避免 `unrecognized selector` 运行时崩溃。使用 `respondsToSelector:` 方法进行检查。该方法需要一个 `SEL` 类型的参数，表示要检查的方法选择器（通常使用 `@selector(...)` 语法创建）。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              id anyObject = @[@"One", @"Two"]; // 一个 NSArray
+
+              // 检查对象是否响应 count 方法
+              if ([anyObject respondsToSelector:@selector(count)]) {
+                  NSLog(@"Object responds to count selector."); // 会执行
+                  // 安全地调用 count 方法
+                  NSUInteger count = [anyObject count];
+                  NSLog(@"Array count: %lu", (unsigned long)count); // 输出: Array count: 2
+              } else {
+                  NSLog(@"Object does not respond to count selector.");
+              }
+
+              // 检查对象是否响应 length 方法 (NSArray 没有 length 方法)
+              if ([anyObject respondsToSelector:@selector(length)]) {
+                  NSLog(@"Object responds to length selector.");
+              } else {
+                  NSLog(@"Object does not respond to length selector."); // 会执行
+              }
+
+              // 即使编译器可能因为知道 NSArray 没有 length 而发出警告，
+              // 但如果 anyObject 在运行时确实指向了 NSString，这段检查仍然有用。
+              // 例如，anyObject = @"A string";
+              // if ([anyObject respondsToSelector:@selector(length)]) { ... }
+          }
+          return 0;
+      }
+      ```
+  - title: 在集合中使用任意类型 (id)
+    description: |
+      Objective-C 的集合类（如 `NSArray`, `NSDictionary`, `NSSet`）被设计为可以存储 `id` 类型的对象，这意味着你可以在同一个集合中存储不同类型的对象。当你从集合中取出元素时，它们通常是 `id` 类型，你可能需要进行类型检查或响应性检查后再使用。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同类型对象的数组
+              NSArray *mixedArray = @[
+                  @"A string",
+                  @123,
+                  [NSDate date],
+                  @[@"Nested", @"Array"]
+              ];
+
+              // 遍历数组，处理不同类型的元素
+              for (id element in mixedArray) {
+                  NSLog(@"Processing element: %@", element);
+
+                  // 根据类型执行不同操作
+                  if ([element isKindOfClass:[NSString class]]) {
+                      NSLog(@"  It's a String with length: %lu", [(NSString *)element length]);
+                  } else if ([element isKindOfClass:[NSNumber class]]) {
+                      NSLog(@"  It's a Number with double value: %f", [(NSNumber *)element doubleValue]);
+                  } else if ([element isKindOfClass:[NSDate class]]) {
+                      NSLog(@"  It's a Date: %@", element);
+                  } else if ([element respondsToSelector:@selector(count)]) { // 检查是否响应 count (可能是 NSArray, NSDictionary, NSSet 等)
+                      NSLog(@"  It's a collection with count: %lu", [element count]);
+                  } else {
+                      NSLog(@"  It's some other type: %@", [element class]);
+                  }
+              }
+              /* 输出类似:
+              Processing element: A string
+                It's a String with length: 8
+              Processing element: 123
+                It's a Number with double value: 123.000000
+              Processing element: 2023-10-27 10:30:00 +0000 (示例日期)
+                It's a Date: 2023-10-27 10:30:00 +0000
+              Processing element: (
+                  Nested,
+                  Array
+              )
+                It's a collection with count: 2
+              */
+          }
+          return 0;
+      }
+      ```
+  - title: 使用任意类型 (id) 作为方法参数和返回值
+    description: |
+      你可以定义接受 `id` 类型参数的方法，使得该方法可以处理多种类型的输入对象。同样，方法也可以返回 `id` 类型，表示它可能返回不同类型的对象实例。在方法实现内部，通常需要对传入的 `id` 参数进行类型检查或响应性检查。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的类
+      @interface MyProcessor : NSObject
+      // 接受任意类型参数的方法
+      - (void)processObject:(id)inputObject;
+      // 返回任意类型对象的方法
+      - (id)createObjectBasedOnString:(NSString *)type;
+      @end
+
+      @implementation MyProcessor
+      - (void)processObject:(id)inputObject {
+          NSLog(@"Processing object of class: %@", [inputObject class]);
+          if ([inputObject respondsToSelector:@selector(description)]) {
+              NSLog(@"Description: %@", [inputObject description]);
+          } else {
+              NSLog(@"Object does not respond to description.");
+          }
+      }
+
+      - (id)createObjectBasedOnString:(NSString *)type {
+          if ([type isEqualToString:@"string"]) {
+              return @"Generated String";
+          } else if ([type isEqualToString:@"number"]) {
+              return @(arc4random_uniform(100)); // 返回一个随机 NSNumber
+          } else if ([type isEqualToString:@"date"]) {
+              return [NSDate date];
+          }
+          return nil; // 如果类型未知，返回 nil
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              MyProcessor *processor = [[MyProcessor alloc] init];
+
+              // 调用接受 id 参数的方法
+              [processor processObject:@"Hello"];      // 输出 Processing object of class: __NSCFConstantString ...
+              [processor processObject:@42];        // 输出 Processing object of class: __NSCFNumber ...
+              [processor processObject:[NSDate date]]; // 输出 Processing object of class: __NSTaggedDate ...
+
+              // 调用返回 id 类型的方法
+              id obj1 = [processor createObjectBasedOnString:@"string"];
+              id obj2 = [processor createObjectBasedOnString:@"number"];
+              id obj3 = [processor createObjectBasedOnString:@"unknown"];
+
+              // 检查返回对象的类型
+              if (obj1) {
+                  NSLog(@"Created object 1: %@ (Type: %@)", obj1, [obj1 class]); // 输出 Created object 1: Generated String (Type: __NSCFConstantString)
+              }
+               if (obj2) {
+                  NSLog(@"Created object 2: %@ (Type: %@)", obj2, [obj2 class]); // 输出 Created object 2: <随机数> (Type: __NSCFNumber)
+              }
+               if (obj3 == nil) {
+                   NSLog(@"Created object 3 is nil."); // 输出 Created object 3 is nil.
+               }
+          }
+          return 0;
+      }
+      ```
+  - title: id 与 instancetype 的区别
+    description: |
+      `instancetype` 是一个特殊的返回类型关键字，主要用在初始化方法 (`init...`) 和类工厂方法中。它表示方法返回的实例类型与接收消息的类（或其子类）的类型相同。
+      - **`id`**: 通用对象指针，编译器不进行类型检查。如果用 `id` 作为初始化方法的返回值，编译器不知道返回的具体类型，可能失去类型相关的静态分析和代码补全。
+      - **`instancetype`**: 告诉编译器返回的类型是当前类的实例类型。这提供了更强的类型检查。例如，如果 `[[NSString alloc] initWithFormat:@"..."]` 返回 `instancetype`，编译器就知道结果是 `NSString *` 类型，而不是泛泛的 `id`。
+      **最佳实践**: 在初始化方法和类工厂方法中，应优先使用 `instancetype` 作为返回类型，而不是 `id`。在其他需要表示任意对象类型的地方，继续使用 `id`。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface MyClass : NSObject
+      // 使用 instancetype 的初始化方法 (推荐)
+      - (instancetype)initWithName:(NSString *)name;
+      // 使用 id 的工厂方法 (可以使用 instancetype 替代)
+      + (id)createDefaultObject;
+      // 使用 instancetype 的工厂方法 (推荐)
+      + (instancetype)createSpecialObject;
+
+      @property (nonatomic, strong) NSString *name;
+      @end
+
+      @implementation MyClass
+      - (instancetype)initWithName:(NSString *)name {
+          self = [super init];
+          if (self) {
+              _name = name;
+          }
+          return self; // 返回类型是 MyClass * 或其子类 *
+      }
+
+      + (id)createDefaultObject {
+          return [[self alloc] initWithName:@"Default"]; // 返回类型是 id
+      }
+
+      + (instancetype)createSpecialObject {
+          return [[self alloc] initWithName:@"Special"]; // 返回类型是 MyClass * 或其子类 *
+      }
+      @end
+
+      // 子类
+      @interface MySubclass : MyClass
+      @property (nonatomic, assign) NSInteger value;
+      @end
+      @implementation MySubclass @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 使用 instancetype 返回值，编译器知道类型是 MyClass *
+              MyClass *obj1 = [[MyClass alloc] initWithName:@"Object1"];
+              NSLog(@"obj1 name: %@", obj1.name); // 代码补全和类型检查有效
+
+              // 使用 id 返回值，编译器认为是 id，需要转换或依赖动态性
+              id obj2 = [MyClass createDefaultObject];
+              // NSLog(@"obj2 name: %@", obj2.name); // 编译器可能会警告 id 没有 name 属性
+              if ([obj2 isKindOfClass:[MyClass class]]) {
+                 NSLog(@"obj2 name: %@", [(MyClass *)obj2 name]); // 需要转换
+              }
+
+              // 使用 instancetype 返回值，编译器知道类型是 MyClass *
+              MyClass *obj3 = [MyClass createSpecialObject];
+              NSLog(@"obj3 name: %@", obj3.name); // 代码补全和类型检查有效
+
+              // 在子类上调用返回 instancetype 的方法
+              // 编译器知道返回类型是 MySubclass *
+              MySubclass *subObj = [MySubclass createSpecialObject];
+              subObj.value = 100; // 可以直接访问子类属性
+              NSLog(@"subObj name: %@, value: %ld", subObj.name, (long)subObj.value);
+
+              // 如果 createDefaultObject 返回 id，则编译器不知道是 MySubclass *
+              id subObj2 = [MySubclass createDefaultObject];
+              // subObj2.value = 200; // 编译器会警告 id 没有 value 属性
+          }
+          return 0;
+      }
+      ```

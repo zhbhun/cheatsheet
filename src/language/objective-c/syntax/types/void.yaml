@@ -1,0 +1,169 @@
+id: void
+title: 无返回值
+description: '`void` 是 Objective-C 中的一个关键字，用于表示一个方法不返回任何值。当一个方法执行某个操作但不需要将结果传递回调用者时，通常将其返回类型声明为 `void`。它表明该方法的目的主要是执行副作用，例如修改对象状态、打印输出或更新 UI。'
+usage:
+  - title: 声明无返回值方法
+    description: |
+      在 Objective-C 中，要声明一个不返回任何值的方法，请将返回类型指定为 `void`。这告诉编译器和调用者，该方法执行完毕后不会有任何返回值。
+
+      **语法**：
+      ```objectivec
+      - (void)methodName; // 实例方法声明
+      + (void)methodName; // 类方法声明
+
+      - (void)methodName:(ParameterType)parameterName; // 带参数的实例方法
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个简单的类 MyClass
+      @interface MyClass : NSObject
+
+      // 声明一个无返回值的实例方法，用于打印消息
+      - (void)printMessage:(NSString *)message;
+
+      // 声明一个无返回值的类方法，用于显示通用问候语
+      + (void)showGreeting;
+
+      @end
+
+      @implementation MyClass
+
+      // 实现实例方法
+      - (void)printMessage:(NSString *)message {
+          // 方法体：打印传入的消息
+          NSLog(@"Message: %@", message);
+          // 没有 return 语句，或者可以有一个空的 return;
+          return; // 可选的空 return
+      }
+
+      // 实现类方法
+      + (void)showGreeting {
+          // 方法体：打印通用问候语
+          NSLog(@"Hello from MyClass!");
+      }
+
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建 MyClass 的实例
+              MyClass *myObject = [[MyClass alloc] init];
+
+              // 调用实例方法，该方法不返回任何值
+              [myObject printMessage:@"This is a test message."];
+              // 输出: Message: This is a test message.
+
+              // 调用类方法，该方法也不返回任何值
+              [MyClass showGreeting];
+              // 输出: Hello from MyClass!
+          }
+          return 0;
+      }
+      ```
+  - title: 调用无返回值方法
+    description: |
+      调用 `void` 方法与调用其他方法类似，但你不能将调用结果赋给变量，因为该方法没有返回值。调用的主要目的是执行方法体内的操作。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Logger : NSObject
+      - (void)log:(NSString *)text; // 声明一个记录日志的方法
+      @end
+
+      @implementation Logger
+      - (void)log:(NSString *)text {
+          // 实际的日志记录逻辑（这里简化为打印）
+          NSLog(@"LOG: %@", text);
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Logger *logger = [[Logger alloc] init];
+
+              // 直接调用 void 方法
+              [logger log:@"Application started."];
+              // 输出: LOG: Application started.
+
+              // 不能将 void 方法的调用结果赋给变量
+              // id result = [logger log:@"This will cause a compile error"]; // 编译错误！void 方法无返回值
+
+              NSString *status = @"Processing data...";
+              // 可以在其他表达式或语句中调用 void 方法
+              if (status) {
+                  [logger log:status]; // 调用 void 方法
+                  // 输出: LOG: Processing data...
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 无返回值方法的限制和用途
+    description: |
+      `void` 方法的主要限制是它们不能用于需要返回值的上下文中，例如：
+      - 不能将 `void` 方法的调用结果赋值给变量。
+      - 不能在期望有返回值的表达式中使用 `void` 方法的调用（例如，不能直接在 `if` 条件中使用其“结果”，因为它没有结果）。
+
+      常见用途：
+      - **执行操作**：修改对象的状态、更新 UI 元素、写入文件、发送网络请求等。
+      - **触发事件**：调用委托方法或发送通知。
+      - **日志记录**：打印调试信息或记录事件。
+      - **配置设置**：调用设置方法来配置对象。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 示例：一个简单的计数器类
+      @interface Counter : NSObject
+      @property (nonatomic, assign) NSInteger count;
+      - (void)increment; // 无返回值，增加计数
+      - (void)reset;     // 无返回值，重置计数
+      - (void)printCount; // 无返回值，打印当前计数
+      @end
+
+      @implementation Counter
+      - (instancetype)init {
+          self = [super init];
+          if (self) {
+              _count = 0;
+          }
+          return self;
+      }
+
+      - (void)increment {
+          self.count++; // 修改对象状态
+          NSLog(@"Counter incremented.");
+      }
+
+      - (void)reset {
+          self.count = 0; // 修改对象状态
+          NSLog(@"Counter reset.");
+      }
+
+      - (void)printCount {
+          NSLog(@"Current count: %ld", (long)self.count); // 执行输出操作
+      }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              Counter *myCounter = [[Counter alloc] init];
+
+              // 调用 void 方法执行操作
+              [myCounter printCount]; // 输出: Current count: 0
+              [myCounter increment];  // 输出: Counter incremented.
+              [myCounter printCount]; // 输出: Current count: 1
+              [myCounter increment];  // 输出: Counter incremented.
+              [myCounter printCount]; // 输出: Current count: 2
+              [myCounter reset];      // 输出: Counter reset.
+              [myCounter printCount]; // 输出: Current count: 0
+
+              // 错误示例：尝试使用 void 方法的“返回值”
+              // NSInteger currentCount = [myCounter printCount]; // 编译错误：void value not ignored as it ought to be
+          }
+          return 0;
+      }
+      ```

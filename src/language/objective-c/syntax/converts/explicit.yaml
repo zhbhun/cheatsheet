@@ -1,0 +1,300 @@
+id: explicit
+title: 显示类型转换
+description: Objective-C 中的显式类型转换允许程序员将一个对象或值的类型强制转换为另一个兼容的类型。这在处理泛型类型（如 `id`）或在类层次结构中向下转换（从父类转换为子类）以访问特定子类成员时非常有用。主要通过在变量或表达式前使用 `(目标类型)` 语法实现。
+usage:
+  - title: 向下转型：访问子类成员
+    description: |
+      当有一个指向父类对象的指针（例如 `NSObject *`），但你确定它实际上是一个特定子类的实例（例如 `NSString *`）时，可以将其显式“向下转型”为子类类型。这样做的目的是为了能够调用该子类特有的方法或访问其特有的属性，这些方法或属性在父类中是不存在的。
+
+      **语法:** `(目标子类类型 *)父类指针;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个 NSObject 指针，但实际指向一个 NSString 对象
+              NSObject *genericObject = @"This is a string literal";
+
+              // 为了调用 NSString 的方法（如 length），需要显式转换为 NSString *
+              // 语法：在对象指针前加上 (目标类型 *)
+              NSString *specificString = (NSString *)genericObject;
+
+              // 现在可以安全地调用 NSString 的方法了
+              NSUInteger len = [specificString length];
+
+              // 输出：String length is: 24
+              NSLog(@"String length is: %lu", len);
+
+              // 如果不转换，直接用 genericObject 调用 length 会产生编译警告或错误
+              // [genericObject length]; // 警告：NSObject 可能不响应 'length' 选择器
+          }
+          return 0;
+      }
+      ```
+  - title: 将 `id` 类型转换为特定对象类型
+    description: |
+      `id` 是 Objective-C 中的一个特殊类型，代表“任何对象类型的指针”。当你从不确定具体类型的来源（如集合 `NSArray`, `NSDictionary` 或某些 API 返回值）获取到一个 `id` 类型的对象，并且你知道或期望它是某个特定类的实例时，需要进行显式类型转换，以便编译器知道如何处理它，并允许你调用特定类的方法。
+
+      **语法:** `(目标类类型 *)id类型的变量;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同类型对象的数组
+              NSArray *mixedArray = @[@"Hello", [NSNumber numberWithInt:123], @"World"];
+
+              // 从数组中获取第一个元素，其静态类型是 id
+              id firstElement = mixedArray[0];
+
+              // 我们知道第一个元素是 NSString，所以进行显式转换
+              // 语法：在 id 变量前加上 (目标类型 *)
+              NSString *firstString = (NSString *)firstElement;
+
+              // 转换后，可以调用 NSString 的方法
+              NSString *upperCaseString = [firstString uppercaseString];
+
+              // 输出：First element uppercase: HELLO
+              NSLog(@"First element uppercase: %@", upperCaseString);
+
+              // 获取第二个元素
+              id secondElement = mixedArray[1];
+              // 确定它是 NSNumber，进行转换
+              NSNumber *secondNumber = (NSNumber *)secondElement;
+              int intValue = [secondNumber intValue];
+              // 输出：Second element value: 123
+              NSLog(@"Second element value: %d", intValue);
+          }
+          return 0;
+      }
+      ```
+  - title: 安全向下转型：使用 `isKindOfClass:` 检查
+    description: |
+      直接进行显式向下转型是有风险的。如果对象运行时的实际类型与你尝试转换的目标类型不兼容（例如，你尝试将一个 `NSNumber` 对象转换为 `NSString`），程序在运行时会抛出异常并崩溃。为了避免这种情况，应该在进行转换之前，使用 `isKindOfClass:` 方法来检查对象的实际类型是否是目标类或其子类。
+
+      **方法:**
+      - `isKindOfClass:`: 检查对象是否是指定类或其任何子类的实例。返回 `BOOL` 值。
+
+      **流程:**
+      1. 使用 `isKindOfClass:` 检查对象类型。
+      2. 如果检查结果为 `YES`，则安全地进行显式类型转换。
+      3. 如果检查结果为 `NO`，则不进行转换，并可以执行错误处理或备用逻辑。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个包含不同类型对象的数组
+              NSArray *items = @[@"Apple", [NSNumber numberWithDouble:3.14], @"Banana"];
+
+              // 遍历数组，尝试将元素作为 NSString 处理
+              for (id item in items) {
+                  // 在转换前检查 item 是否是 NSString 类或其子类的实例
+                  if ([item isKindOfClass:[NSString class]]) {
+                      // 检查通过，可以安全地进行显式转换
+                      NSString *strItem = (NSString *)item;
+                      // 调用 NSString 的方法
+                      NSLog(@"Found string: %@", [strItem capitalizedString]);
+                      // 输出 (第一次循环): Found string: Apple
+                      // 输出 (第三次循环): Found string: Banana
+                  } else {
+                      // 类型不匹配，不进行转换
+                      NSLog(@"Found an item that is not a string: %@", [item description]);
+                      // 输出 (第二次循环): Found an item that is not a string: 3.14
+                  }
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 转换为协议类型
+    description: |
+      当你有一个对象（类型可能是 `id`、`NSObject *` 或某个具体的类），并且你知道或期望它遵循（conform to）某个协议时，可以将其显式转换为 `id<协议名>` 类型。这种转换告诉编译器该对象应该响应协议中声明的方法，从而允许你直接调用这些协议方法，同时获得编译器的类型检查和代码提示。
+
+      **语法:** `(id<协议名>)对象指针;`
+
+      **前置检查 (可选但推荐):**
+      - `conformsToProtocol:`: 在转换前检查对象是否确实遵循指定的协议。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      // 定义一个协议
+      @protocol MyTaskDelegate <NSObject>
+      - (void)taskDidComplete:(NSString *)taskName;
+      @optional // 可选方法
+      - (void)taskDidFail:(NSError *)error;
+      @end
+
+      // 一个遵循协议的类
+      @interface MyWorker : NSObject <MyTaskDelegate>
+      @end
+      @implementation MyWorker
+      - (void)taskDidComplete:(NSString *)taskName {
+          NSLog(@"Worker confirmed: Task '%@' completed.", taskName);
+      }
+      @end
+
+      // 另一个普通类
+      @interface AnotherObject : NSObject
+      @end
+      @implementation AnotherObject
+      @end
+
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              // 创建一个遵循协议的对象和一个不遵循的对象
+              id workerObject = [[MyWorker alloc] init];
+              id plainObject = [[AnotherObject alloc] init];
+              NSArray *objects = @[workerObject, plainObject];
+
+              for (id obj in objects) {
+                  // 推荐：先检查对象是否遵循协议
+                  if ([obj conformsToProtocol:@protocol(MyTaskDelegate)]) {
+                      // 检查通过，可以安全地转换为协议类型
+                      // 语法：(id<协议名>)对象指针
+                      id<MyTaskDelegate> delegate = (id<MyTaskDelegate>)obj;
+
+                      // 调用协议方法
+                      [delegate taskDidComplete:@"Data Processing"];
+                      // 输出 (对于 workerObject): Worker confirmed: Task 'Data Processing' completed.
+
+                      // 也可以检查可选方法
+                      if ([delegate respondsToSelector:@selector(taskDidFail:)]) {
+                          // [delegate taskDidFail:nil]; // 如果实现了就调用
+                      }
+
+                  } else {
+                      NSLog(@"Object does not conform to MyTaskDelegate protocol.");
+                      // 输出 (对于 plainObject): Object does not conform to MyTaskDelegate protocol.
+                  }
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 安全调用方法：使用 `respondsToSelector:` 检查
+    description: |
+      在某些情况下，你可能不关心对象的具体类或它是否遵循某个特定协议，只关心它是否能响应（实现）某个特定的方法（selector）。这时，可以使用 `respondsToSelector:` 方法来检查。如果对象能响应指定的方法，你就可以安全地调用它，即使你只有一个 `id` 类型的指针，并且没有进行显式类型转换。这是一种比盲目转换更灵活、更健壮的方式，尤其在处理异构集合或可选协议方法时。
+
+      **方法:**
+      - `respondsToSelector:`: 检查对象是否能响应该选择器（方法）。接收一个 `SEL` 类型的参数（使用 `@selector(方法名)` 获取）。返回 `BOOL` 值。
+
+      **调用方式 (如果检查通过):**
+      - 直接调用: `[object method]` (如果编译器知道类型或进行了转换)
+      - 使用 `performSelector:`: `[object performSelector:@selector(method)]` (适用于 `id` 类型，但有局限性，如不能传递基本类型参数，ARC 下可能产生警告)
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      @interface Dog : NSObject
+      - (void)bark;
+      @end
+      @implementation Dog
+      - (void)bark { NSLog(@"Woof!"); }
+      @end
+
+      @interface Cat : NSObject
+      - (void)meow;
+      @end
+      @implementation Cat
+      - (void)meow { NSLog(@"Meow!"); }
+      @end
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              NSArray *animals = @[[[Dog alloc] init], [[Cat alloc] init], @"Just a string"];
+
+              // 定义我们想调用的方法选择器
+              SEL barkSelector = @selector(bark);
+              SEL meowSelector = @selector(meow);
+              SEL lengthSelector = @selector(length); // NSString 方法
+
+              for (id animal in animals) {
+                  NSLog(@"Checking object: %@", [animal description]);
+
+                  // 检查是否能响应 bark
+                  if ([animal respondsToSelector:barkSelector]) {
+                      NSLog(@"  It can bark!");
+                      // 安全调用，即使 animal 是 id 类型
+                      // 可以强转调用，也可以用 performSelector
+                      // Dog *dog = (Dog *)animal; [dog bark];
+                      [animal performSelector:barkSelector]; // 输出: Woof!
+                  }
+
+                  // 检查是否能响应 meow
+                  if ([animal respondsToSelector:meowSelector]) {
+                      NSLog(@"  It can meow!");
+                      [animal performSelector:meowSelector]; // 输出: Meow!
+                  }
+
+                  // 检查是否能响应 length (适用于 NSString)
+                  if ([animal respondsToSelector:lengthSelector]) {
+                       NSLog(@"  It has a length!");
+                       // 对于返回值的 performSelector，需要注意类型匹配
+                       // 如果确定是 NSString，可以转换后调用
+                       if ([animal isKindOfClass:[NSString class]]) {
+                           NSString *str = (NSString *)animal;
+                           NSLog(@"  Length is: %lu", [str length]); // 输出: Length is: 13
+                       }
+                  }
+
+                  if (![animal respondsToSelector:barkSelector] && ![animal respondsToSelector:meowSelector] && ![animal respondsToSelector:lengthSelector]) {
+                      NSLog(@"  It doesn't respond to bark, meow, or length.");
+                  }
+                  NSLog(@"---");
+              }
+          }
+          return 0;
+      }
+      ```
+  - title: 转换 C 基本数据类型
+    description: |
+      显式类型转换的 `(目标类型)` 语法不仅适用于 Objective-C 对象指针，也同样适用于 C 语言的基本数据类型，如 `int`, `float`, `double`, `char` 等。这允许你在不同的数值类型之间进行转换。进行这种转换时需要特别注意，因为可能会发生数据丢失（例如，将 `double` 转换为 `int` 会丢失小数部分）或溢出（将一个大的 `long` 值转换为 `short`）。
+
+      **语法:** `(目标基本类型)变量或表达式;`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      int main(int argc, const char * argv[]) {
+          @autoreleasepool {
+              double piDouble = 3.1415926535;
+              int scoreInt = 95;
+              float largeFloat = 3.4e+38; // 一个接近 float 上限的值
+
+              // 1. double 转换为 int (小数部分被截断)
+              // 语法：(目标类型)变量
+              int piInteger = (int)piDouble;
+              // 输出：Double: 3.141593, Int: 3
+              NSLog(@"Double: %f, Int: %d", piDouble, piInteger);
+
+              // 2. int 转换为 float (通常无损，除非 int 值极大)
+              float scoreFloat = (float)scoreInt;
+              // 输出：Int: 95, Float: 95.000000
+              NSLog(@"Int: %d, Float: %f", scoreInt, scoreFloat);
+
+              // 3. double 转换为 float (可能损失精度)
+              float piFloat = (float)piDouble;
+              // 输出：Double: 3.1415926535, Float: 3.141593
+              NSLog(@"Double: %f, Float: %f", piDouble, piFloat);
+
+              // 4. float 转换为 char (可能溢出或截断，取决于值)
+              // 转换规则：float 先转为 int，然后取 int 的低字节
+              // char charFromFloat = (char)largeFloat; // 结果可能无意义或依赖平台
+              char charFromSmallFloat = (char)65.7f; // 65.7f -> 65 -> 'A'
+              // 输出：Char from 65.7f: A (ASCII 65)
+              NSLog(@"Char from 65.7f: %c", charFromSmallFloat);
+
+              // 5. int 转换为 char (取低字节)
+              char initialChar = (char)scoreInt; // 95 对应 ASCII '_'
+              // 输出：Char from int 95: _
+              NSLog(@"Char from int %d: %c", scoreInt, initialChar);
+          }
+          return 0;
+      }
+      ```

@@ -1,0 +1,166 @@
+id: availability
+title: 可用性检查表达式
+description: Objective-C 中的 `@available` 是一种编译时指令，用于在运行时检查特定的 API 或操作系统版本是否可用。这允许开发者编写能够在不同版本的操作系统上安全运行的代码，为较新系统提供新功能，同时为较旧系统提供备选方案或优雅降级，避免因调用不可用 API 而导致应用崩溃。它通常用在 `if` 或 `guard` 语句中。
+usage:
+  - title: 检查单个平台版本的可用性
+    description: |
+      使用 `if @available` 语句检查代码运行的操作系统是否达到指定的最低版本。
+
+      **语法:**
+      - `if (@available(平台名称 版本号, *)) { ... }`
+
+      **参数:**
+      - `平台名称`: 如 `iOS`, `macOS`, `tvOS`, `watchOS`。
+      - `版本号`: 指定主版本号，或包含次版本号、修订版本号（例如 `13.0`, `10.15.1`）。
+      - `*`: 星号是必需的，作为最后一个参数，表示此代码块适用于所有其他未明确列出的平台或未来版本。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <UIKit/UIKit.h> // 引入 UIKit 以便使用 iOS 特有的类
+
+      - (void)configureUIForCurrentOS {
+          // 检查当前操作系统是否为 iOS 13.0 或更高版本
+          if (@available(iOS 13.0, *)) {
+              // 如果是 iOS 13.0 或更高版本，执行这里的代码
+              NSLog(@"Running on iOS 13.0 or later. Using modern APIs.");
+              // 例如，在这里可以使用仅在 iOS 13+ 上可用的 API
+              // self.view.backgroundColor = [UIColor systemBackgroundColor];
+          } else {
+              // 如果是 iOS 13.0 以下的版本，执行这里的代码
+              NSLog(@"Running on an older iOS version. Using fallback APIs.");
+              // 例如，使用旧版本也支持的 API
+              // self.view.backgroundColor = [UIColor whiteColor];
+          }
+      }
+
+      // 示例调用场景 (在一个视图控制器中)
+      // [self configureUIForCurrentOS];
+      ```
+  - title: 检查多个平台版本的可用性
+    description: |
+      可以在同一个 `@available` 检查中包含多个平台的版本要求，用逗号分隔。代码块将在满足 *任何一个* 平台版本要求时执行。
+
+      **语法:**
+      - `if (@available(平台名称1 版本号1, 平台名称2 版本号2, ..., *)) { ... }`
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+
+      - (void)setupFeatureBasedOnPlatform {
+          // 检查当前系统是否为 iOS 14.0+ 或 macOS 11.0+
+          if (@available(iOS 14.0, macOS 11.0, *)) {
+              // 如果是 iOS 14.0+ 或 macOS 11.0+，执行这里的代码
+              NSLog(@"Feature available on iOS 14+ or macOS 11+.");
+              // 在这里可以使用这些平台上共有的新 API 或实现特定逻辑
+          } else {
+              // 如果系统版本低于要求，执行这里的代码
+              NSLog(@"Feature requires newer OS version on iOS or macOS.");
+              // 提供备选方案或禁用该功能
+          }
+      }
+
+      // 示例调用
+      // [self setupFeatureBasedOnPlatform];
+      ```
+  - title: 使用 `if @available` 条件执行代码
+    description: |
+      `if @available` 结构用于根据操作系统版本条件性地执行代码块。如果当前运行环境满足 `@available` 中指定的任一平台版本要求，则执行 `if` 后面的代码块；否则，执行 `else` 代码块（如果存在）。这常用于为新旧系统提供不同的实现。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <AuthenticationServices/AuthenticationServices.h> // 需要引入对应框架
+
+      - (void)performAuthentication {
+          // 检查是否运行在 iOS 13.0 或 macOS 10.15 或更高版本
+          if (@available(iOS 13.0, macOS 10.15, *)) {
+              // 在支持的系统版本上，使用 ASWebAuthenticationSession
+              NSLog(@"Using ASWebAuthenticationSession for authentication.");
+              // ASWebAuthenticationSession *session = ...;
+              // [session start];
+          } else {
+              // 在旧版本系统上，可能需要使用不同的方法或提示用户更新
+              NSLog(@"ASWebAuthenticationSession not available. Using fallback or showing alert.");
+              // SFSafariViewController *safariVC = ...;
+              // [self presentViewController:safariVC animated:YES completion:nil];
+          }
+      }
+
+      // 示例调用
+      // [self performAuthentication];
+      ```
+  - title: 使用 `guard @available` 提前退出
+    description: |
+      `guard @available` 语句用于确保代码的后续部分只在满足特定操作系统版本要求时执行。如果不满足条件，则必须执行 `else` 块中的代码，该代码块通常包含 `return`, `break`, `continue` 或 `throw` 等控制转移语句，以退出当前作用域。这有助于保持主要代码路径的清晰性，将版本检查和不兼容处理放在函数或方法的开头。
+
+      **注意**: `guard` 语句是 Swift 的特性。在 Objective-C 中，没有直接对应的 `guard @available` 语法。实现类似“提前退出”逻辑的标准方式是使用 `if (!(@available(...))) { return; }`。
+
+      **Objective-C 实现提前退出的等效方式:**
+      ```objectivec
+      if (!(@available(platform version, *))) {
+          // 处理不满足条件的情况并退出
+          return; // 或 break, continue 等
+      }
+      // ... 后续代码只有在满足 @available 条件时才会执行 ...
+      ```
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <UIKit/UIKit.h> // 引入 UIKit 以便使用 iOS 特有的类
+
+      - (void)processDataWithNewAPI {
+          // 确保运行在 iOS 15.0 或更高版本，否则直接返回
+          if (!(@available(iOS 15.0, *))) {
+              NSLog(@"Required API not available on this iOS version. Exiting function.");
+              // 如果不满足版本要求，记录日志并提前退出该方法
+              return;
+          }
+
+          // 如果代码执行到这里，说明系统版本是 iOS 15.0 或更高
+          NSLog(@"Running on iOS 15.0 or later. Proceeding with new API.");
+          // 在这里安全地使用仅在 iOS 15+ 上可用的 API
+          // For example: use new UISheetPresentationController properties
+      }
+
+      // 示例调用
+      // [self processDataWithNewAPI];
+      ```
+  - title: 结合 API 调用进行可用性检查
+    description: |
+      当你在 `if @available` 或等效检查 (如 `if (!(@available(...)))`) 确认了操作系统版本后，编译器就能理解在该代码块内部调用对应版本的 API 是安全的。你不需要为块内的每个新 API 单独再做检查。这简化了针对特定系统版本编写代码的过程。
+    example: |
+      ```objectivec
+      #import <Foundation/Foundation.h>
+      #import <SceneKit/SceneKit.h> // 引入 SceneKit 框架
+
+      - (void)setupScene {
+          SCNScene *scene = [SCNScene scene];
+
+          // 检查是否为 macOS 10.13 或 iOS 11.0 或更高版本
+          if (@available(macOS 10.13, iOS 11.0, *)) {
+              // 在此代码块内，编译器知道 SCNCamera.fieldOfViewOrientation 是可用的
+              SCNCamera *camera = [SCNCamera camera];
+
+              // 直接使用 iOS 11.0 / macOS 10.13 引入的属性，无需额外检查
+              camera.fieldOfViewOrientation = SCNFieldOfViewOrientationHorizontal;
+              NSLog(@"Setting fieldOfViewOrientation (available on macOS 10.13+/iOS 11+).");
+
+              SCNNode *cameraNode = [SCNNode node];
+              cameraNode.camera = camera;
+              [scene.rootNode addChildNode:cameraNode];
+
+          } else {
+              // 对于旧版本系统，可能需要不同的设置或跳过此配置
+              NSLog(@"fieldOfViewOrientation not available. Using default camera settings.");
+              SCNNode *cameraNode = [SCNNode node];
+              cameraNode.camera = [SCNCamera camera]; // 使用默认相机
+              [scene.rootNode addChildNode:cameraNode];
+          }
+
+          // 其他场景设置...
+          // SCNView *scnView = ...;
+          // scnView.scene = scene;
+      }
+
+      // 示例调用
+      // [self setupScene];
+      ```
