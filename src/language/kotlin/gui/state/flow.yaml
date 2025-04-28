@@ -1,0 +1,1370 @@
+id: flow
+title: Flow
+query: Kotlin Flow
+comment: 详细介绍 Kotlin 中 Flow 的使用，涵盖基本概念、创建、操作符、热流、异常处理等。
+description: Kotlin Flow 是一个基于协程构建的异步数据流，它可以按顺序发出值。它用于处理异步操作序列，例如网络请求、数据库查询或用户输入事件。Flow 使用挂起函数 (`suspend`) 来异步生成和消费值，而不会阻塞线程。
+outline:
+  - title: 构建
+    description: '`flow {}`、`flowOf()`、`asFlow()`'
+  - title: 使用
+    description: Flow 是一个异步数据流，它是在协程上下文中发射数据的，可以在挂起函数中使用。
+    children:
+      - title: 收集
+        description: collect、collectLatest、single、first、last、toList、toSet
+      - title: 转换
+        description: map、mapLatest、transform、flatMapConcat、flatMapMerge、flatMapLatest、scan、runningReduce
+      - title: 过滤
+        description: filter、filterNotNull、take、drop、takeWhile、dropWhile、distinctUntilChanged
+      - title: 组合
+        description: combine、zip、merge、flattenMerge、flattenConcat、onEach
+      - title: 调度
+        description: flowOn、withContext
+      - title: 背压
+        description: buffer、conflate、collectLatest、debounce、sample
+      - title: 重试
+        description: retry、retryWhen
+      - title: 生命周期
+        description: onStart、onEach、onCompletion
+  - title: 冷流
+    children:
+      - title: flow
+      - title: emptyFlow
+      - title: channelFlow
+      - title: callbackFlow
+  - title: 热流
+    children:
+      - title: StateFlow
+      - title: SharedFlow
+      - title: MutableStateFlow
+      - title: MutableSharedFlow
+  - title: 转换
+    children:
+      - title: stateIn
+      - title: shareIn
+  - title: 异常处理
+    children:
+      - title: catch
+      - title: try-catch
+  - title: 最佳实践
+    children:
+      - title: 点击计数器
+      - title: 定时获取天气数据
+usage:
+  - title: 构建 Flow
+    description: 创建 Flow 有多种方式，常用的包括 `flow {}` 构建器、`flowOf()` 函数和 `asFlow()` 扩展函数。
+    children:
+      - title: flow {} 构建器
+        description: 使用 `flow {}` 构建器可以创建一个自定义的 Flow。在 `flow` 块内部，可以使用 `emit()` 函数来发射值。这是一个冷流构建器，只有在被收集时才会执行块内的代码。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun simpleFlow(): Flow<Int> = flow {
+              println("Flow started")
+              for (i in 1..3) {
+                  delay(100) // 模拟耗时操作
+                  emit(i) // 发射值
+              }
+          }
+
+          suspend fun main() {
+              println("Calling simpleFlow...")
+              val flow = simpleFlow()
+              println("Calling collect...")
+              flow.collect { value -> println(value) } // 收集 Flow
+              println("Flow completed")
+          }
+          // 输出:
+          // Calling simpleFlow...
+          // Calling collect...
+          // Flow started
+          // 1
+          // 2
+          // 3
+          // Flow completed
+          ```
+      - title: flowOf() 函数
+        description: 使用 `flowOf()` 函数可以从一组固定的值快速创建 Flow。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              // 从一系列参数创建 Flow
+              flowOf(1, 2, 3, 4, 5)
+                  .collect { value -> println(value) } // 收集并打印每个值
+          }
+          // 输出:
+          // 1
+          // 2
+          // 3
+          // 4
+          // 5
+          ```
+      - title: asFlow() 扩展函数
+        description: 各种集合类型（如 `List`, `Set`）、序列 (`Sequence`)、范围 (`IntRange`) 等可以通过 `asFlow()` 扩展函数转换为 Flow。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              // 将 List 转换为 Flow
+              listOf(1, 2, 3).asFlow()
+                  .collect { value -> println("From List: $value") }
+
+              // 将 IntRange 转换为 Flow
+              (1..3).asFlow()
+                  .collect { value -> println("From Range: $value") }
+
+              // 将 Sequence 转换为 Flow
+              sequenceOf("A", "B", "C").asFlow()
+                 .collect { value -> println("From Sequence: $value") }
+          }
+          // 输出:
+          // From List: 1
+          // From List: 2
+          // From List: 3
+          // From Range: 1
+          // From Range: 2
+          // From Range: 3
+          // From Sequence: A
+          // From Sequence: B
+          // From Sequence: C
+          ```
+  - title: 使用 Flow
+    description: Flow 是一个异步数据流，通过末端操作符（如 `collect`）来触发执行和收集数据。中间操作符（如 `map`, `filter`）可以对数据流进行转换和处理。
+    children:
+      - title: 收集 (Terminal Operators)
+        description: |
+          末端操作符是挂起函数，用于启动 Flow 的收集过程。它们会消费 Flow 发出的所有值。
+
+          **常用末端操作符:**
+          - `collect { ... }`: 最基本的末端操作符，接收一个 lambda 表达式，处理每一个发射的值。
+          - `collectLatest { ... }`: 当新的值发射时，取消前一个值的处理逻辑。适用于只需要处理最新数据的场景（例如 UI 更新）。
+          - `single()`: 期望 Flow 只发射一个值，如果发射多个或零个则抛出异常。
+          - `first()`: 只收集 Flow 发射的第一个值，然后取消 Flow。
+          - `last()`: 收集 Flow 发射的最后一个值。
+          - `toList()`, `toSet()`: 将 Flow 发射的所有值收集到一个 List 或 Set 中。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun numbers(): Flow<Int> = flow {
+              emit(1)
+              delay(50)
+              emit(2)
+              delay(50)
+              emit(3)
+          }
+
+          suspend fun main() {
+              println("--- collect ---")
+              numbers().collect { println("Collected: $it") }
+
+              println("--- collectLatest ---")
+              numbers().collectLatest {
+                  println("Collecting $it")
+                  delay(100) // 模拟耗时处理
+                  println("Finished $it")
+              }
+              // 注意：因为 delay(100) > delay(50)，所以 1 和 2 的处理会被取消
+
+              println("--- first ---")
+              val firstValue = numbers().first()
+              println("First value: $firstValue")
+
+              println("--- toList ---")
+              val list = numbers().toList()
+              println("List: $list")
+          }
+          // 输出:
+          // --- collect ---
+          // Collected: 1
+          // Collected: 2
+          // Collected: 3
+          // --- collectLatest ---
+          // Collecting 1
+          // Collecting 2
+          // Collecting 3
+          // Finished 3
+          // --- first ---
+          // First value: 1
+          // --- toList ---
+          // List: [1, 2, 3]
+          ```
+      - title: 转换 (Transformation Operators)
+        description: |
+          转换操作符用于修改 Flow 发射的数据。它们是中间操作符，返回一个新的 Flow。
+
+          **常用转换操作符:**
+          - `map { ... }`: 对 Flow 中的每个元素应用一个转换函数，发射转换后的结果。
+          - `mapLatest { ... }`: 类似于 `map`，但当新的上游值到达时，会取消前一个值的 `map` 操作。
+          - `transform { ... }`: 更通用的转换操作符，可以发射任意数量的值（包括零个），或者跳过值。
+          - `flatMapConcat { flow -> ... }`: 将每个元素映射到一个 Flow，然后按顺序连接（concat）这些内部 Flow。
+          - `flatMapMerge { flow -> ... }`: 将每个元素映射到一个 Flow，然后并发地合并（merge）这些内部 Flow。可以指定并发数。
+          - `flatMapLatest { flow -> ... }`: 将每个元素映射到一个 Flow，当新的上游值到达时，取消并重新启动内部 Flow 的收集。常用于监听用户输入变化后触发新的异步操作。
+          - `scan(initial) { acc, value -> ... }`: 对流进行累积操作，发射每次累积的结果（包括初始值）。
+          - `runningReduce { acc, value -> ... }`: 类似于 `scan`，但不带初始值，从第二个元素开始发射累积结果。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              println("--- map ---")
+              (1..3).asFlow()
+                  .map { it * it } // 每个元素平方
+                  .collect { println(it) }
+
+              println("--- transform ---")
+              (1..3).asFlow()
+                  .transform { value ->
+                      emit("Emitting value $value") // 发射一个字符串
+                      if (value % 2 == 0) {
+                          emit("Emitting doubled value ${value * 2}") // 如果是偶数，再发射一个
+                      }
+                  }
+                  .collect { println(it) }
+
+              println("--- flatMapConcat ---")
+              (1..2).asFlow()
+                  .flatMapConcat { value -> // 将每个数字映射到一个包含字符的 Flow
+                      flowOf("${value}a", "${value}b").onEach { delay(100) }
+                  }
+                  .collect { println(it) } // 按顺序输出 1a, 1b, 2a, 2b
+
+              println("--- scan ---")
+              (1..4).asFlow()
+                  .scan(0) { accumulator, value -> accumulator + value } // 从0开始累加
+                  .collect { println(it) } // 输出: 0, 1, 3, 6, 10
+          }
+          // 输出:
+          // --- map ---
+          // 1
+          // 4
+          // 9
+          // --- transform ---
+          // Emitting value 1
+          // Emitting value 2
+          // Emitting doubled value 4
+          // Emitting value 3
+          // --- flatMapConcat ---
+          // 1a
+          // 1b
+          // 2a
+          // 2b
+          // --- scan ---
+          // 0
+          // 1
+          // 3
+          // 6
+          // 10
+          ```
+      - title: 过滤 (Filtering Operators)
+        description: |
+          过滤操作符用于从 Flow 中选择满足特定条件的元素。
+
+          **常用过滤操作符:**
+          - `filter { ... }`: 只发射满足给定谓词条件的元素。
+          - `filterNotNull()`: 过滤掉 `null` 元素。
+          - `take(count)`: 只发射前 `count` 个元素。
+          - `drop(count)`: 跳过前 `count` 个元素，发射剩余的元素。
+          - `takeWhile { ... }`: 发射元素，直到某个元素不满足谓词条件为止（包含最后一个满足条件的元素）。
+          - `dropWhile { ... }`: 跳过元素，直到某个元素不满足谓词条件为止，然后发射所有剩余元素（包括第一个不满足条件的元素）。
+          - `distinctUntilChanged()`: 过滤掉连续重复的元素。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              println("--- filter ---")
+              (1..5).asFlow()
+                  .filter { it % 2 == 0 } // 只取偶数
+                  .collect { println(it) }
+
+              println("--- take ---")
+              flowOf("A", "B", "C", "D")
+                  .take(2) // 只取前两个
+                  .collect { println(it) }
+
+              println("--- distinctUntilChanged ---")
+              flowOf(1, 1, 2, 2, 2, 1, 3, 3)
+                  .distinctUntilChanged() // 过滤连续重复项
+                  .collect { println(it) }
+          }
+          // 输出:
+          // --- filter ---
+          // 2
+          // 4
+          // --- take ---
+          // A
+          // B
+          // --- distinctUntilChanged ---
+          // 1
+          // 2
+          // 1
+          // 3
+          ```
+      - title: 组合 (Combining Operators)
+        description: |
+          组合操作符用于将多个 Flow 合并成一个 Flow。
+
+          **常用组合操作符:**
+          - `combine(otherFlow) { v1, v2 -> ... }`: 当任意一个 Flow 发射新值时，结合两个 Flow 的最新值，并根据提供的转换函数发射结果。
+          - `zip(otherFlow) { v1, v2 -> ... }`: 将两个 Flow 的元素按顺序配对，如果一个 Flow 完成，则整个 `zip` 操作完成。
+          - `merge(flow1, flow2, ...)`: 并发地合并多个 Flow，发射来自任何一个 Flow 的值，不保证顺序。
+          - `flattenMerge()`: 将一个发射 Flow 的 Flow (`Flow<Flow<T>>`) 转换成一个扁平化的 Flow (`Flow<T>`)，并发地合并内部 Flow。
+          - `flattenConcat()`: 将一个发射 Flow 的 Flow (`Flow<Flow<T>>`) 转换成一个扁平化的 Flow (`Flow<T>`)，按顺序连接内部 Flow。
+          - `onEach { ... }`: 对 Flow 中的每个元素执行给定的操作（副作用），而不改变流本身。常用于日志记录或调试。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              val nums = (1..3).asFlow().onEach { delay(100) } // 数字流，每个间隔 100ms
+              val strs = flowOf("A", "B", "C").onEach { delay(200) } // 字符串流，每个间隔 200ms
+
+              println("--- combine ---")
+              nums.combine(strs) { n, s -> "$n -> $s" } // 结合最新值
+                  .collect { println(it) }
+              // 输出类似: 1 -> A, 2 -> A, 2 -> B, 3 -> B, 3 -> C
+
+              println("--- zip ---")
+              nums.zip(strs) { n, s -> "$n -> $s" } // 配对
+                  .collect { println(it) }
+              // 输出: 1 -> A, 2 -> B, 3 -> C
+
+              println("--- merge ---")
+              val flow1 = flowOf("X", "Y").onEach { delay(50) }
+              val flow2 = flowOf(10, 20).onEach { delay(150) }
+              merge(flow1, flow2) // 并发合并
+                  .collect { println(it) }
+              // 输出可能是: X, Y, 10, 20 (顺序不保证, 取决于延迟)
+
+              println("--- onEach ---")
+              (1..2).asFlow()
+                  .onEach { println("Processing $it") } // 打印副作用
+                  .map { it * it }
+                  .collect { println("Result $it") }
+          }
+          // 输出:
+          // --- combine ---
+          // 1 -> A
+          // 2 -> A
+          // 2 -> B
+          // 3 -> B
+          // 3 -> C
+          // --- zip ---
+          // 1 -> A
+          // 2 -> B
+          // 3 -> C
+          // --- merge ---
+          // X
+          // Y
+          // 10
+          // 20
+          // --- onEach ---
+          // Processing 1
+          // Result 1
+          // Processing 2
+          // Result 4
+          ```
+      - title: 调度 (Dispatching)
+        description: |
+          Flow 操作符默认在收集器的协程上下文中执行。`flowOn` 操作符可以改变上游（发射端）的执行上下文。
+
+          **常用调度操作符:**
+          - `flowOn(context)`: 改变其**上游**操作符（包括 `flow {}` 构建器）执行的 `CoroutineContext`（通常用于指定 `Dispatchers.IO` 来执行阻塞操作）。`flowOn` 不影响下游操作符的上下文。
+          - `withContext(context)`: 虽然不是 Flow 特有的操作符，但在 `collect` 内部或 `map` 等操作符的 lambda 中常用 `withContext` 来临时切换代码块的执行上下文，例如将 CPU 密集型计算切换到 `Dispatchers.Default`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
+          fun simpleFlowWithContext(): Flow<Int> = flow {
+              log("Started flow")
+              for (i in 1..3) {
+                  delay(100)
+                  emit(i)
+              }
+          }.flowOn(Dispatchers.IO) // 指定上游在 IO 线程池执行
+
+          suspend fun main() {
+              log("Starting main")
+              simpleFlowWithContext()
+                  .map { // map 运行在下游(收集器)的上下文中
+                      log("Mapping $it")
+                      it * 2
+                  }
+                  .flowOn(Dispatchers.Default) // map 操作符将在 Default 线程池执行
+                  .collect { // collect 运行在 main (或启动它的协程) 的上下文中
+                      log("Collected $it")
+                  }
+              log("Finished main")
+          }
+          // 输出 (线程名可能不同):
+          // [main @coroutine#1] Starting main
+          // [DefaultDispatcher-worker-1 @coroutine#2] Started flow
+          // [DefaultDispatcher-worker-2 @coroutine#2] Mapping 1
+          // [main @coroutine#1] Collected 2
+          // [DefaultDispatcher-worker-1 @coroutine#2] Mapping 2
+          // [main @coroutine#1] Collected 4
+          // [DefaultDispatcher-worker-1 @coroutine#2] Mapping 3
+          // [main @coroutine#1] Collected 6
+          // [main @coroutine#1] Finished main
+          ```
+      - title: 背压 (Backpressure)
+        description: |
+          当 Flow 的发射速度快于收集速度时，会产生背压。Flow 默认是顺序执行的，发射端会等待收集端处理完当前值后再发射下一个。可以使用一些策略来处理背压。
+
+          **常用背压策略操作符:**
+          - `buffer(capacity)`: 在发射端和收集端之间引入一个缓冲区。发射端可以将值放入缓冲区而不必等待收集端，直到缓冲区满。
+          - `conflate()`: 合并值。当收集端处理慢时，发射端会继续发射新值，但只有最新的值会被收集端处理，中间的值会被丢弃。等同于 `buffer(Channel.CONFLATED)`。
+          - `collectLatest { ... }`: 收集端策略。当新的值到达时，取消当前正在进行的收集处理逻辑，并开始处理新值。
+          - `debounce(timeoutMillis)`: 去抖动。只有当指定时间内没有新的值发射时，才将最后一个值发射出去。常用于处理快速的用户输入（如搜索框）。
+          - `sample(periodMillis)`: 采样。按固定的时间间隔发射最新的值。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun fastEmitter(): Flow<Int> = flow {
+              for (i in 1..5) {
+                  delay(100) // 发射快
+                  println("Emitting $i")
+                  emit(i)
+              }
+          }
+
+          suspend fun main() {
+              println("--- No backpressure (sequential) ---")
+              fastEmitter()
+                  .collect {
+                      println("Collecting $it")
+                      delay(300) // 收集慢
+                      println("Collected $it")
+                  }
+
+              println("--- buffer() ---")
+              fastEmitter()
+                  .buffer(2) // 引入容量为 2 的缓冲区
+                  .collect {
+                      println("Collecting $it with buffer")
+                      delay(300) // 收集慢
+                      println("Collected $it with buffer")
+                  }
+              // 注意: Emitting 会比 Collecting 更快完成 (部分并行)
+
+              println("--- conflate() ---")
+              fastEmitter()
+                  .conflate() // 只处理最新值
+                  .collect {
+                      println("Collecting $it with conflate")
+                      delay(300) // 收集慢
+                      println("Collected $it with conflate")
+                  }
+              // 注意: 中间的某些值可能不会被收集
+
+              println("--- debounce() ---")
+              flow { // 模拟输入
+                  emit("a")
+                  delay(50)
+                  emit("ab")
+                  delay(50)
+                  emit("abc")
+                  delay(200) // 暂停超过 100ms
+                  emit("abcd")
+                  delay(150) // 暂停超过 100ms
+              }.debounce(100) // 100ms 内无新输入才发射
+               .collect { println("Debounced: $it") }
+              // 输出: Debounced: abc, Debounced: abcd
+          }
+          // 部分输出示例:
+          // --- No backpressure (sequential) ---
+          // Emitting 1
+          // Collecting 1
+          // Collected 1
+          // Emitting 2
+          // Collecting 2
+          // Collected 2
+          // ...
+          // --- buffer() ---
+          // Emitting 1
+          // Emitting 2
+          // Collecting 1 with buffer
+          // Emitting 3
+          // Collected 1 with buffer
+          // Collecting 2 with buffer
+          // Emitting 4
+          // ... (发射和收集部分重叠)
+          // --- conflate() ---
+          // Emitting 1
+          // Collecting 1 with conflate
+          // Emitting 2
+          // Emitting 3
+          // Collected 1 with conflate // 处理完 1 时，3 是最新的
+          // Collecting 3 with conflate
+          // Emitting 4
+          // Emitting 5
+          // Collected 3 with conflate // 处理完 3 时，5 是最新的
+          // Collecting 5 with conflate
+          // Collected 5 with conflate
+          // --- debounce() ---
+          // Debounced: abc
+          // Debounced: abcd
+          ```
+      - title: 重试 (Retrying)
+        description: |
+          当 Flow 操作中发生异常时，可以使用重试操作符来尝试重新执行 Flow。
+
+          **常用重试操作符:**
+          - `retry(retries)`: 当上游 Flow 抛出异常时，重新订阅并执行它，最多重试 `retries` 次。可以指定一个谓词来决定哪些异常需要重试。
+          - `retryWhen { cause, attempt -> ... }`: 提供更灵活的重试逻辑。lambda 接收异常 `cause` 和尝试次数 `attempt` (从 0 开始)，返回 `true` 表示需要重试，`false` 表示停止重试并将异常向下游传递。可以在此实现延迟重试等逻辑。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+          import java.io.IOException
+
+          suspend fun main() {
+              var attempt = 0
+              val faultyFlow = flow {
+                  println("Attempt: ${++attempt}")
+                  emit(1)
+                  emit(2)
+                  if (attempt < 3) {
+                      throw IOException("Network Error on attempt $attempt")
+                  }
+                  emit(3)
+              }
+
+              println("--- retry(2) ---")
+              attempt = 0 // Reset attempt counter
+              try {
+                  faultyFlow
+                      .retry(2) { cause -> // 最多重试 2 次 (总共 3 次尝试)
+                          println("Retrying due to: ${cause.message}")
+                          cause is IOException // 只重试 IOException
+                      }
+                      .collect { println("Collected $it") }
+              } catch (e: Exception) {
+                  println("Caught after retries: ${e.message}")
+              }
+
+              println("--- retryWhen ---")
+              attempt = 0 // Reset attempt counter
+              try {
+                  faultyFlow
+                      .retryWhen { cause, attemptIndex ->
+                          println("Attempt $attemptIndex failed with ${cause.message}")
+                          if (cause is IOException && attemptIndex < 2) {
+                              delay(100L * (attemptIndex + 1)) // 指数退避延迟
+                              println("Delaying and retrying...")
+                              true // 需要重试
+                          } else {
+                              false // 不重试
+                          }
+                      }
+                      .collect { println("Collected $it") }
+              } catch (e: Exception) {
+                  println("Caught after retryWhen: ${e.message}")
+              }
+          }
+          // 输出:
+          // --- retry(2) ---
+          // Attempt: 1
+          // Collected 1
+          // Collected 2
+          // Retrying due to: Network Error on attempt 1
+          // Attempt: 2
+          // Collected 1
+          // Collected 2
+          // Retrying due to: Network Error on attempt 2
+          // Attempt: 3
+          // Collected 1
+          // Collected 2
+          // Collected 3
+          // --- retryWhen ---
+          // Attempt: 1
+          // Collected 1
+          // Collected 2
+          // Attempt 0 failed with Network Error on attempt 1
+          // Delaying and retrying...
+          // Attempt: 2
+          // Collected 1
+          // Collected 2
+          // Attempt 1 failed with Network Error on attempt 2
+          // Delaying and retrying...
+          // Attempt: 3
+          // Collected 1
+          // Collected 2
+          // Collected 3
+          ```
+      - title: 生命周期 (Lifecycle Operators)
+        description: |
+          生命周期操作符允许在 Flow 的不同阶段执行代码，通常用于执行副作用，如日志记录、资源管理或 UI 状态更新。
+
+          **常用生命周期操作符:**
+          - `onStart { ... }`: 在 Flow 开始收集（执行 `collect`）之前执行。可以发射初始值或执行设置代码。
+          - `onEach { ... }`: 在每个元素发射之后，但在下游处理它之前执行。不改变元素本身。
+          - `onCompletion { cause -> ... }`: 在 Flow 完成时执行，无论是因为正常完成 (`cause` 为 `null`) 还是因为异常 (`cause` 为异常对象)。常用于清理资源。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun lifecycleFlow(): Flow<Int> = (1..3).asFlow()
+              .onStart { println("Flow started") } // Flow 开始时执行
+              .onEach { value -> println("Emitting $value") } // 每个元素发射时执行
+              .onCompletion { cause -> // Flow 完成时执行
+                  if (cause == null) {
+                      println("Flow completed successfully")
+                  } else {
+                      println("Flow completed with error: ${cause.message}")
+                  }
+              }
+
+          suspend fun main() {
+              println("Collecting lifecycleFlow...")
+              lifecycleFlow().collect { value ->
+                  println("Collected $value")
+                  if (value == 2) throw RuntimeException("Error on 2") // 模拟错误
+              }
+          }
+          // 正常完成时的输出:
+          // Collecting lifecycleFlow...
+          // Flow started
+          // Emitting 1
+          // Collected 1
+          // Emitting 2
+          // Collected 2
+          // Emitting 3
+          // Collected 3
+          // Flow completed successfully
+
+          // 发生异常时的输出 (catch 需要在 collect 外部):
+          // Collecting lifecycleFlow...
+          // Flow started
+          // Emitting 1
+          // Collected 1
+          // Emitting 2
+          // Flow completed with error: Error on 2
+          // (然后异常会传播到 collect 调用处)
+          ```
+  - title: 冷流 (Cold Flows)
+    description: 冷流是指只有当存在收集器（调用末端操作符如 `collect`）时才开始执行发射数据的代码。每个收集器都会触发一次新的执行。标准的 `flow {}` 构建器创建的就是冷流。
+    children:
+      - title: flow
+        description: 最基本的冷流构建器。代码块在每次 `collect` 调用时执行。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          val coldFlow = flow {
+              println("Flow execution started")
+              emit(System.currentTimeMillis()) // 发射当前时间戳
+          }
+
+          suspend fun main() {
+              println("Collector 1 collecting...")
+              coldFlow.collect { println("Collector 1: $it") }
+              delay(100)
+              println("Collector 2 collecting...")
+              coldFlow.collect { println("Collector 2: $it") } // 重新执行 flow 块
+          }
+          // 输出 (时间戳会不同):
+          // Collector 1 collecting...
+          // Flow execution started
+          // Collector 1: 1678886400100
+          // Collector 2 collecting...
+          // Flow execution started
+          // Collector 2: 1678886400200
+          ```
+      - title: emptyFlow
+        description: 创建一个不发射任何值并立即完成的 Flow。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          suspend fun main() {
+              emptyFlow<Int>()
+                  .onCompletion { println("Empty flow completed") }
+                  .collect { println("Value: $it") } // 不会打印任何 Value
+          }
+          // 输出:
+          // Empty flow completed
+          ```
+      - title: channelFlow
+        description: '`channelFlow` 构建器创建一个基于 Channel 的 Flow。它允许在不同的 Coroutine 中发射值，并且提供了内置的缓冲。`emit` 在 `channelFlow` 中是非法的，应该使用 `send`。适合需要将回调或其他并发工作桥接到 Flow 的场景。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.channels.*
+          import kotlinx.coroutines.flow.*
+
+          // 模拟一个基于回调的 API
+          interface EventListener {
+              fun onEvent(event: String)
+              fun onCompleted()
+          }
+
+          fun eventsFlow(): Flow<String> = channelFlow {
+              val listener = object : EventListener {
+                  override fun onEvent(event: String) {
+                      // 尝试发送，如果 channel 关闭或满 (取决于策略) 会挂起或失败
+                      trySendBlocking(event)
+                  }
+                  override fun onCompleted() {
+                      close() // 关闭 channel 表示 Flow 结束
+                  }
+              }
+
+              // 模拟注册监听器并触发事件
+              launch { // 在单独的协程中触发事件
+                  delay(100)
+                  listener.onEvent("Event 1")
+                  delay(100)
+                  listener.onEvent("Event 2")
+                  delay(100)
+                  listener.onCompleted()
+              }
+
+              // awaitClose 确保 channel 在协程清理时关闭
+              awaitClose { println("Listener removed, channel closed") }
+          }
+
+          suspend fun main() {
+              eventsFlow().collect { println("Received: $it") }
+          }
+          // 输出:
+          // Received: Event 1
+          // Received: Event 2
+          // Listener removed, channel closed
+          ```
+      - title: callbackFlow
+        description: '`callbackFlow` 是 `channelFlow` 的便捷版本，专门用于将基于回调的 API 转换为 Flow。它提供了 `awaitClose` 块，用于在 Flow 被取消或完成时注销回调。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.channels.*
+          import kotlinx.coroutines.flow.*
+
+          // 模拟一个需要注册和注销的回调 API
+          class CallbackApi {
+              private var listener: ((String) -> Unit)? = null
+              private var job: Job? = null
+              private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+              fun register(listener: (String) -> Unit) {
+                  this.listener = listener
+                  job = scope.launch { // 模拟异步事件
+                      delay(100)
+                      listener("Callback Event 1")
+                      delay(100)
+                      listener("Callback Event 2")
+                  }
+                  println("Listener registered")
+              }
+
+              fun unregister() {
+                  job?.cancel()
+                  listener = null
+                  scope.cancel()
+                  println("Listener unregistered")
+              }
+          }
+
+          fun callbackBasedFlow(): Flow<String> = callbackFlow {
+              val api = CallbackApi()
+              val listener: (String) -> Unit = { event ->
+                  trySendBlocking(event) // 发送事件到 Flow
+                  // 'offer' 是非阻塞版本, 'send' 是挂起版本
+              }
+              api.register(listener)
+
+              // 当 Flow 被取消或完成时，执行此块来清理资源
+              awaitClose {
+                  api.unregister()
+              }
+          }
+
+          suspend fun main() {
+              println("Collecting callback flow...")
+              coroutineScope { // 创建一个作用域
+                  val flow = callbackBasedFlow()
+                  val collectJob = launch {
+                      flow.collect { println("Collected: $it") }
+                  }
+                  delay(150) // 让 Flow 发射第一个事件
+                  collectJob.cancel() // 取消收集，会触发 awaitClose
+                  println("Collection cancelled")
+              }
+              delay(500) // 确保 unregister 日志打印
+          }
+          // 输出:
+          // Collecting callback flow...
+          // Listener registered
+          // Collected: Callback Event 1
+          // Collection cancelled
+          // Listener unregistered
+          ```
+  - title: 热流 (Hot Flows)
+    description: 热流是指独立于收集器存在的 Flow。即使没有收集器，它也可以产生（或持有）值。当新的收集器开始收集时，它不会重新启动生产逻辑，而是从当前状态开始接收值（或根据配置接收历史值）。`StateFlow` 和 `SharedFlow` 是主要的热流类型。
+    children:
+      - title: StateFlow
+        description: '`StateFlow` 是一个状态容器式的热流。它总是持有**一个**值（需要初始值），并且只向收集器发射最新的值（类似于 `conflate()`）。当值更新时，它只会发射与前一个值不同的新值（`distinctUntilChanged()` 行为）。非常适合表示 UI 状态或其他需要共享的单一状态。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          // MutableStateFlow 用于更新值
+          val mutableState = MutableStateFlow("Initial State")
+          // StateFlow 是只读的视图
+          val state: StateFlow<String> = mutableState
+
+          suspend fun main() {
+              val job1 = launch {
+                  println("Collector 1 started")
+                  state.collect { println("Collector 1 received: $it") } // 立即收到当前值
+              }
+
+              delay(100)
+              mutableState.value = "State 1" // 更新状态
+              mutableState.value = "State 1" // 相同的值不会发射
+              delay(100)
+              mutableState.value = "State 2"
+
+              val job2 = launch {
+                  println("Collector 2 started")
+                  state.collect { println("Collector 2 received: $it") } // 立即收到最新值 "State 2"
+              }
+
+              delay(100)
+              mutableState.value = "State 3"
+
+              delay(500) // 等待所有收集完成
+              job1.cancel()
+              job2.cancel()
+          }
+          // 输出:
+          // Collector 1 started
+          // Collector 1 received: Initial State
+          // Collector 1 received: State 1
+          // Collector 1 received: State 2
+          // Collector 2 started
+          // Collector 2 received: State 2
+          // Collector 1 received: State 3
+          // Collector 2 received: State 3
+          ```
+      - title: SharedFlow
+        description: '`SharedFlow` 是一个更通用的热流，用于向多个收集器广播值。它可以配置 `replay` 缓存（新收集器可以收到最近的N个值）和缓冲区溢出策略 (`onBufferOverflow`)。适合用于发送一次性事件，如用户操作通知、错误消息等。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          // 创建一个 SharedFlow
+          // replay=2: 新收集器会收到最近的 2 个事件
+          // onBufferOverflow=BufferOverflow.DROP_OLDEST: 缓冲区满时丢弃最旧的
+          val mutableShared = MutableSharedFlow<String>(replay = 2, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+          val shared: SharedFlow<String> = mutableShared
+
+          suspend fun main() {
+              val emitterJob = launch {
+                  mutableShared.emit("Event 1")
+                  delay(100)
+                  mutableShared.emit("Event 2")
+                  delay(100)
+                  mutableShared.emit("Event 3") // Event 1 会因为 replay=2 被挤出缓存
+                  delay(100)
+                  mutableShared.emit("Event 4") // Event 2 会被挤出
+              }
+
+              delay(50) // 等待 Event 1 发射
+
+              val job1 = launch {
+                  println("Collector 1 started")
+                  // Collector 1 会收到 Event 1, 2, 3, 4
+                  shared.collect { println("Collector 1 received: $it") }
+              }
+
+              delay(200) // 等待 Event 2, 3 发射
+
+              val job2 = launch {
+                  println("Collector 2 started")
+                  // Collector 2 开始时，缓存中有 Event 2, 3。它会收到 Event 2, 3 (replay) 和 Event 4
+                  shared.collect { println("Collector 2 received: $it") }
+              }
+
+              emitterJob.join() // 等待发射完成
+              delay(500)
+              job1.cancel()
+              job2.cancel()
+          }
+          // 输出:
+          // Collector 1 started
+          // Collector 1 received: Event 1
+          // Collector 1 received: Event 2
+          // Collector 1 received: Event 3
+          // Collector 2 started
+          // Collector 2 received: Event 2 // Replay
+          // Collector 2 received: Event 3 // Replay
+          // Collector 1 received: Event 4
+          // Collector 2 received: Event 4
+          ```
+      - title: MutableStateFlow
+        description: 是 `StateFlow` 的可变版本，提供 `value` 属性用于更新状态。通常在类的内部作为私有变量持有，对外暴露只读的 `StateFlow`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          class MyViewModel {
+              // 私有的可变 StateFlow
+              private val _uiState = MutableStateFlow("Loading")
+              // 公开的只读 StateFlow
+              val uiState: StateFlow<String> = _uiState
+
+              fun loadData() {
+                  viewModelScope.launch { // 在 ViewModel 的作用域内启动协程
+                      delay(1000)
+                      _uiState.value = "Data Loaded" // 更新状态
+                      delay(1000)
+                      _uiState.value = "More Data"
+                  }
+              }
+
+              // 模拟 ViewModelScope
+              private val viewModelScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+              fun cancelJobs() = viewModelScope.cancel()
+          }
+
+          suspend fun main() {
+              val viewModel = MyViewModel()
+
+              val job = CoroutineScope(Dispatchers.Main).launch { // 模拟 UI 订阅
+                  viewModel.uiState.collect { state ->
+                      println("UI updated: $state")
+                  }
+              }
+
+              viewModel.loadData() // 触发数据加载
+              delay(2500) // 等待所有状态更新
+              job.cancel()
+              viewModel.cancelJobs()
+          }
+          // 输出:
+          // UI updated: Loading
+          // UI updated: Data Loaded
+          // UI updated: More Data
+          ```
+      - title: MutableSharedFlow
+        description: 是 `SharedFlow` 的可变版本，提供 `emit()` (挂起) 和 `tryEmit()` (非挂起) 方法来发射值。同样，通常在内部持有可变版本，对外暴露只读的 `SharedFlow`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          class EventBus {
+              // 私有的可变 SharedFlow，用于发送一次性事件，不需要 replay
+              private val _events = MutableSharedFlow<String>()
+              // 公开的只读 SharedFlow
+              val events: SharedFlow<String> = _events
+
+              suspend fun postEvent(event: String) {
+                  println("Posting event: $event")
+                  _events.emit(event) // 发送事件
+              }
+          }
+
+          suspend fun main() {
+              val eventBus = EventBus()
+              val scope = CoroutineScope(Dispatchers.Default)
+
+              val job1 = scope.launch {
+                  eventBus.events.collect { event ->
+                      println("Listener 1 got: $event")
+                  }
+              }
+              val job2 = scope.launch {
+                  eventBus.events.collect { event ->
+                      println("Listener 2 got: $event")
+                  }
+              }
+
+              delay(100) // 确保监听器已启动
+              eventBus.postEvent("Login Success")
+              delay(100)
+              eventBus.postEvent("Profile Updated")
+
+              delay(500)
+              scope.cancel() // 取消所有监听
+          }
+          // 输出:
+          // Posting event: Login Success
+          // Listener 1 got: Login Success
+          // Listener 2 got: Login Success
+          // Posting event: Profile Updated
+          // Listener 1 got: Profile Updated
+          // Listener 2 got: Profile Updated
+          ```
+  - title: 转换冷热流
+    description: 可以将冷流转换为热流，使得多个收集器可以共享同一个上游 Flow 的执行实例，避免重复执行。这通常通过 `shareIn` 和 `stateIn` 操作符完成，它们都需要一个 `CoroutineScope` 来启动共享。
+    children:
+      - title: stateIn
+        description: '`stateIn` 操作符将一个冷流转换为 `StateFlow`。需要提供一个 `CoroutineScope`，一个 `SharingStarted` 策略（决定何时启动上游 Flow 并开始共享），以及一个初始值。`SharingStarted.Lazily` 表示第一个订阅者出现时启动，`SharingStarted.Eagerly` 表示立即启动，`SharingStarted.WhileSubscribed()` 表示当有订阅者时启动，没有订阅者一段时间后停止。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          // 模拟一个耗时的冷流
+          fun dataSource(): Flow<String> = flow {
+              println("Executing data source flow...")
+              emit("Initial Data from Source")
+              delay(500)
+              emit("Updated Data from Source")
+          }
+
+          suspend fun main() {
+              val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+              println("Creating StateFlow with stateIn...")
+              val sharedState: StateFlow<String> = dataSource()
+                  .stateIn(
+                      scope = scope, // 需要一个协程作用域来运行上游 Flow
+                      started = SharingStarted.WhileSubscribed(5000), // 最后一个订阅者离开 5 秒后停止上游 Flow
+                      initialValue = "Loading..." // 必须提供初始值
+                  )
+
+              println("Initial value: ${sharedState.value}") // 输出: Loading...
+
+              val job1 = scope.launch {
+                  println("Collector 1 subscribes")
+                  sharedState.collect { println("Collector 1: $it") }
+                  // 第一次订阅，触发 dataSource 执行
+              }
+
+              delay(100) // 等待 Collector 1 开始收集
+
+              val job2 = scope.launch {
+                  println("Collector 2 subscribes")
+                  sharedState.collect { println("Collector 2: $it") }
+                  // 第二次订阅，不会重新执行 dataSource，直接获取当前值和后续更新
+              }
+
+              delay(1000) // 等待 flow 完成发射
+
+              println("Final value: ${sharedState.value}") // 输出: Updated Data from Source
+
+              job1.cancel()
+              job2.cancel()
+              scope.cancel() // 取消作用域
+          }
+          // 输出:
+          // Creating StateFlow with stateIn...
+          // Initial value: Loading...
+          // Collector 1 subscribes
+          // Collector 1: Loading... // 初始值
+          // Executing data source flow... // dataSource 开始执行
+          // Collector 1: Initial Data from Source
+          // Collector 2 subscribes
+          // Collector 2: Initial Data from Source // Collector 2 获取当前值
+          // Collector 1: Updated Data from Source
+          // Collector 2: Updated Data from Source
+          // Final value: Updated Data from Source
+          ```
+      - title: shareIn
+        description: '`shareIn` 操作符将一个冷流转换为 `SharedFlow`。同样需要 `CoroutineScope` 和 `SharingStarted` 策略。可以配置 `replay` 数量，决定新订阅者能收到多少历史值。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          // 冷流，每次收集都会打印
+          fun eventSource(): Flow<Int> = flow {
+              println("Starting event source...")
+              for (i in 1..3) {
+                  delay(200)
+                  println("Emitting $i from source")
+                  emit(i)
+              }
+          }
+
+          suspend fun main() {
+              val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+              println("Creating SharedFlow with shareIn...")
+              val sharedEvents: SharedFlow<Int> = eventSource()
+                  .shareIn(
+                      scope = scope,
+                      started = SharingStarted.WhileSubscribed(), // 有订阅者时启动
+                      replay = 1 // 新订阅者会收到最近的 1 个值
+                  )
+
+              delay(100) // 稍微延迟，此时还没有订阅者，eventSource 未启动
+
+              val job1 = scope.launch {
+                  println("Collector 1 subscribes")
+                  sharedEvents.collect { println("Collector 1 received: $it") }
+                  // 第一次订阅，启动 eventSource
+              }
+
+              delay(300) // 等待第一个和第二个事件发射
+
+              val job2 = scope.launch {
+                  println("Collector 2 subscribes")
+                  sharedEvents.collect { println("Collector 2 received: $it") }
+                  // 第二次订阅，会收到 replay 的值 (2) 和后续的值 (3)
+              }
+
+              delay(1000) // 等待完成
+
+              job1.cancel()
+              job2.cancel()
+              scope.cancel()
+          }
+          // 输出:
+          // Creating SharedFlow with shareIn...
+          // Collector 1 subscribes
+          // Starting event source... // eventSource 启动
+          // Emitting 1 from source
+          // Collector 1 received: 1
+          // Emitting 2 from source
+          // Collector 1 received: 2
+          // Collector 2 subscribes
+          // Collector 2 received: 2 // Replay 值
+          // Emitting 3 from source
+          // Collector 1 received: 3
+          // Collector 2 received: 3
+          ```
+  - title: 异常处理
+    description: Flow 中的异常处理可以通过 `catch` 操作符或标准的 `try-catch` 块来完成。
+    children:
+      - title: catch 操作符
+        description: '`catch` 是一个中间操作符，用于捕获其**上游**操作符（包括源 Flow）抛出的异常。它接收一个异常对象，可以在 `catch` 块内执行备用逻辑，例如发射一个默认值 (`emit`) 或记录错误。`catch` 不会捕获下游（`collect` 内部）抛出的异常。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun flowWithError(): Flow<Int> = flow {
+              emit(1)
+              emit(2)
+              throw RuntimeException("Error in flow")
+              emit(3) // 不会执行
+          }
+
+          suspend fun main() {
+              println("--- Using catch ---")
+              flowWithError()
+                  .map { it * 10 } // 这个 map 的异常也会被 catch 捕获 (如果在 map 中抛出)
+                  .catch { e -> // 捕获上游的异常
+                      println("Caught error: ${e.message}")
+                      emit(-1) // 发射一个默认值作为替代
+                  }
+                  .collect { value ->
+                      println("Collected $value")
+                      // if (value == 20) throw Exception("Error in collect") // catch 无法捕获这里的异常
+                  }
+
+              println("--- Catching downstream error (doesn't work) ---")
+              try {
+                  flowOf(1, 2)
+                      .catch { e -> println("Catch block: ${e.message}") } // 不会执行
+                      .collect {
+                          println("Collecting $it")
+                          if (it == 2) throw Exception("Error inside collect")
+                      }
+              } catch (e: Exception) {
+                  println("Caught by try-catch: ${e.message}") // 异常在这里被捕获
+              }
+          }
+          // 输出:
+          // --- Using catch ---
+          // Collected 10
+          // Collected 20
+          // Caught error: Error in flow
+          // Collected -1
+          // --- Catching downstream error (doesn't work) ---
+          // Collecting 1
+          // Collecting 2
+          // Caught by try-catch: Error inside collect
+          ```
+      - title: try-catch 块
+        description: 可以在调用末端操作符（如 `collect`）的代码块周围使用标准的 `try-catch` 块。这种方式可以捕获来自 Flow **任何位置**的异常，包括上游、中间操作符以及 `collect` 内部。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          fun flowWithError(): Flow<Int> = flow {
+              emit(1)
+              throw RuntimeException("Error in source")
+          }
+
+          suspend fun main() {
+              println("--- Catching upstream error with try-catch ---")
+              try {
+                  flowWithError().collect { println("Collected $it") }
+              } catch (e: Exception) {
+                  println("Try-catch caught: ${e.message}")
+              }
+
+              println("--- Catching downstream error with try-catch ---")
+              try {
+                  flowOf(1, 2).collect {
+                      println("Collected $it")
+                      if (it == 2) throw RuntimeException("Error in collector")
+                  }
+              } catch (e: Exception) {
+                  println("Try-catch caught: ${e.message}")
+              }
+          }
+          // 输出:
+          // --- Catching upstream error with try-catch ---
+          // Collected 1
+          // Try-catch caught: Error in source
+          // --- Catching downstream error with try-catch ---
+          // Collected 1
+          // Collected 2
+          // Try-catch caught: Error in collector
+          ```
+  - title: 最佳实践示例
+    description: 结合 Flow 的特性可以实现常见的异步模式。
+    children:
+      - title: 点击计数器 (UI 状态)
+        description: 使用 `MutableStateFlow` 来维护点击次数状态，UI 可以观察这个 `StateFlow` 来更新显示。适合表示简单、需要持久化的状态。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+
+          class ClickCounterViewModel {
+              private val _clickCount = MutableStateFlow(0)
+              val clickCount: StateFlow<Int> = _clickCount
+
+              fun incrementCount() {
+                  _clickCount.update { currentCount -> currentCount + 1 } // 安全地更新值
+                  // _clickCount.value += 1 // 也可以这样写，但 update 更安全
+              }
+
+              // 模拟 ViewModelScope
+              private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+              fun observe(action: suspend (Int) -> Unit) = scope.launch { clickCount.collect(action) }
+              fun cancel() = scope.cancel()
+          }
+
+          suspend fun main() {
+              val viewModel = ClickCounterViewModel()
+
+              // 模拟 UI 观察
+              val observerJob = viewModel.observe { count ->
+                  println("UI: Click count is $count")
+              }
+
+              delay(100)
+              viewModel.incrementCount() // 模拟点击
+              delay(100)
+              viewModel.incrementCount() // 模拟点击
+              delay(100)
+              viewModel.incrementCount() // 模拟点击
+
+              delay(500)
+              viewModel.cancel() // 清理
+          }
+          // 输出:
+          // UI: Click count is 0
+          // UI: Click count is 1
+          // UI: Click count is 2
+          // UI: Click count is 3
+          ```
+      - title: 定时获取天气数据
+        description: 使用 `flow` 结合 `delay` 来创建定时轮询。`flatMapLatest` 可以用于在需要刷新数据时（例如用户手动刷新或配置更改）取消旧的请求并发起新的请求。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlinx.coroutines.flow.*
+          import kotlin.random.Random
+
+          // 模拟网络请求
+          suspend fun fetchWeather(location: String): String {
+              delay(300) // 模拟网络延迟
+              return "Weather in $location: ${Random.nextInt(10, 30)}°C"
+          }
+
+          // 定时轮询 Flow
+          fun tickerFlow(periodMillis: Long): Flow<Unit> = flow {
+              while (currentCoroutineContext().isActive) {
+                  emit(Unit) // 发射一个信号
+                  delay(periodMillis) // 等待指定时间
+              }
+          }
+
+          suspend fun main() {
+              val locationFlow = MutableStateFlow("London") // 可以改变地点的 Flow
+              val refreshSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1) // 手动刷新信号
+
+              val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+              // 合并定时器和手动刷新信号，并使用 flatMapLatest 获取天气
+              // merge(tickerFlow(5000), refreshSignal.onStart { emit(Unit) }) // 每5秒或手动刷新时触发
+              val weatherFlow = locationFlow
+                  .flatMapLatest { location -> // 当 location 改变时，取消旧的 ticker/fetch，启动新的
+                      merge(tickerFlow(1000), refreshSignal.onStart { emit(Unit) }) // 简化为1秒轮询+手动刷新
+                          .map { location } // 将信号映射回地点
+                          .flatMapLatest { loc -> // 当新信号来时，取消旧的 fetch
+                              flow {
+                                  println("Fetching weather for $loc...")
+                                  emit(fetchWeather(loc))
+                              }.catch { e -> // 处理网络错误
+                                  emit("Error fetching weather: ${e.message}")
+                              }
+                          }
+                  }
+                  .stateIn(scope, SharingStarted.WhileSubscribed(5000), "Loading weather...") // 转换为 StateFlow
+
+              // 模拟 UI 订阅
+              val uiJob = scope.launch(Dispatchers.Main) {
+                  weatherFlow.collect { weather ->
+                      println("UI Update: $weather")
+                  }
+              }
+
+              delay(2500) // 等待几次自动刷新
+              println("--- Changing location to Paris ---")
+              locationFlow.value = "Paris" // 改变地点，会触发 flatMapLatest 重新执行
+              delay(2500) // 等待几次巴黎的刷新
+
+              println("--- Manual refresh ---")
+              refreshSignal.tryEmit(Unit) // 手动触发一次刷新
+              delay(1500)
+
+              scope.cancel() // 清理
+          }
+          // 输出 (部分示例):
+          // UI Update: Loading weather...
+          // Fetching weather for London...
+          // UI Update: Weather in London: 25°C
+          // Fetching weather for London...
+          // UI Update: Weather in London: 18°C
+          // --- Changing location to Paris ---
+          // Fetching weather for Paris... // 旧的 London 请求被取消
+          // UI Update: Weather in Paris: 15°C
+          // Fetching weather for Paris...
+          // UI Update: Weather in Paris: 22°C
+          // --- Manual refresh ---
+          // Fetching weather for Paris... // 手动刷新触发
+          // UI Update: Weather in Paris: 19°C
+          ```
