@@ -12,12 +12,19 @@ export interface Reference {
   rate: number;
 }
 
+export interface FeatureOutline {
+  title: string;
+  description?: string;
+  children?: FeatureOutline[];
+}
+
 export interface Feature {
   id: string;
   title: string;
   query?: string;
   comment?: string;
   description?: string;
+  outline?: FeatureOutline[];
   usage?: {
     title: string;
     description: string;

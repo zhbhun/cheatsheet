@@ -1,464 +1,1433 @@
 id: async
 title: 协程
-query: Kotlin 协程 用法
-comment: 详细介绍 Kotlin 中协程的使用，涵盖基本概念、scope 的用法、构建器、上下文切换、异常处理等。
-description: |
-  Kotlin 协程是一种轻量级的并发编程模型，提供了一种简洁的方式来处理异步任务。它的核心概念包括挂起函数（`suspend`）、协程上下文（`CoroutineContext`）、协程作用域（`CoroutineScope`）、启动模式（`launch` 和 `async`）、异常处理机制、取消机制及超时控制。协程广泛用于 Android 应用程序开发和其他需要并发处理的场景。
-  
-  - **挂起函数（suspend）**：协程可以通过挂起函数暂停执行并释放资源，直到恢复运行。挂起函数只能在其他协程或挂起函数中调用。
-  - **协程上下文**：控制协程的执行环境，决定协程在哪个线程或调度器上运行。常见的调度器有 `Dispatchers.Main`、`Dispatchers.IO` 等。
-  - **协程作用域（CoroutineScope）**：管理协程的生命周期，防止内存泄漏，常见作用域有 `GlobalScope`、`CoroutineScope` 和 `viewModelScope`。
-  - **启动模式**：`launch` 启动协程，不返回结果；`async` 启动协程并返回 `Deferred`，用于并发任务的结果获取。
+query: Kotlin 协程
+description: Kotlin 协程是一种并发设计模式，用于简化异步编程。它允许编写看起来像同步代码的非阻塞代码，常用于处理网络请求、数据库操作等耗时任务，避免阻塞主线程，提升应用性能和响应性。主要通过 `suspend` 函数、协程构建器 (`launch`, `async`)、`CoroutineScope` 和 `Dispatchers` 来实现。
+outline:
+  - title: 构建
+    children:
+      - title: runBlocking
+      - title: GlobalScope.launch()
+      - title: launch
+      - title: async
+  - title: 使用
+    children:
+      - title: Job
+      - title: Deferred
+  - title: 作用域
+    children:
+      - title: 构建作用域
+      - title: 全局作用域
+      - title: 主线程作用域
+      - title: Android 作用域
+        children:
+          - title: lifecycleScope
+          - title: viewModelScope
+  - title: 调度器
+    children:
+      - title: 默认调度器
+      - title: 主线程调度器
+      - title: 非受限调度器
+      - title: IO调度器
+      - title: 自定义调度器
+  - title: 上下文
+    children:
+      - title: 构建上下文
+      - title: 切换上下文
+  - title: 启动模式
+    children:
+      - title: Default
+      - title: Lazy
+      - title: Atomic
+      - title: Undispatched
+  - title: 挂起函数
+    children:
+      - title: suspend
+      - title: delay
+      - title: withTimeout
+      - title: coroutineScope
+      - title: supervisorScope
+      - title: awaitAll
+  - title: 异常处理
+    children:
+      - title: CoroutineExceptionHandler
+      - title: launch vs async
+      - title: coroutineScope vs supervisorScope
+usage:
+  - title: 构建协程
+    description: 创建和启动协程的不同方式。
+    children:
+      - title: runBlocking
+        description: '`runBlocking` 是一个协程构建器，它会启动一个新的协程并**阻塞当前线程**，直到该协程内部的所有逻辑执行完毕。它主要用于连接阻塞代码和挂起代码，例如在 `main` 函数或测试代码中使用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-example:
-  - title: 不同协程作用域的用法示例
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          // GlobalScope 的协程生命周期与整个应用程序一致（主线程不会等待子协程结束）
-          GlobalScope.launch {
-              delay(1000L)
-              println("GlobalScope Coroutine")
+          fun main() = runBlocking { // 启动一个顶层协程，并阻塞主线程
+              println("Coroutine starts on thread: ${Thread.currentThread().name}")
+              delay(1000L) // 非阻塞地暂停协程 1 秒钟
+              println("World!") // 在延迟后打印
+              println("Coroutine ends on thread: ${Thread.currentThread().name}")
           }
+          // 输出:
+          // Coroutine starts on thread: main
+          // (等待 1 秒)
+          // World!
+          // Coroutine ends on thread: main
+          ```
+      - title: GlobalScope.launch()
+        description: '`GlobalScope.launch` 在全局作用域 (`GlobalScope`) 中启动一个顶层协程。这个协程的生命周期只受整个应用程序的生命周期限制，并且它不与任何特定的 `Job` 绑定。**不推荐**在应用程序代码中直接使用 `GlobalScope`，因为它容易导致资源泄漏。更好的做法是使用结构化并发，将协程绑定到特定的作用域（如 `viewModelScope` 或自定义 `CoroutineScope`）。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import kotlin.concurrent.thread
 
-          // runBlocking 会阻塞当前线程直到协程执行完毕
-          runBlocking {
-              println("runBlocking Coroutine")
-          }
+          fun main() {
+              println("Main thread starts: ${Thread.currentThread().name}")
 
-          // coroutineScope 会挂起但不阻塞当前线程，等待内部协程完成
-          coroutineScope {
-              launch {
+              GlobalScope.launch { // 在后台启动一个全局协程
+                  println("GlobalScope coroutine starts on thread: ${Thread.currentThread().name}")
                   delay(500L)
-                  println("coroutineScope Coroutine")
+                  println("Hello from GlobalScope!") // 这可能不会打印，如果主线程提前结束
               }
+
+              println("GlobalScope.launch called")
+              // 主线程需要等待，否则 JVM 可能在协程完成前退出
+              Thread.sleep(1000L) // 阻塞主线程以观察协程输出 (不推荐的实践)
+              println("Main thread ends: ${Thread.currentThread().name}")
           }
+          // 可能的输出 (线程名可能不同):
+          // Main thread starts: main
+          // GlobalScope.launch called
+          // GlobalScope coroutine starts on thread: DefaultDispatcher-worker-1
+          // Hello from GlobalScope!
+          // Main thread ends: main
+          ```
+      - title: launch
+        description: '`launch` 是一个协程构建器，用于启动一个新的协程而**不阻塞**当前线程。它返回一个 `Job` 对象，该对象可用于管理协程（例如取消它）。`launch` 通常用于执行不需要返回结果的“发射后不管”（fire-and-forget）类型的任务，如更新 UI、记录日志或触发网络请求。它必须在 `CoroutineScope` 内调用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-          // supervisorScope 允许子协程独立失败
-          supervisorScope {
-              launch {
-                  throw Exception("Error in child coroutine")
-              }
-              println("supervisorScope continues despite failure")
-          }
-      }
-      ```
+          fun main() = runBlocking { // 创建一个作用域
+              println("runBlocking starts on thread: ${Thread.currentThread().name}")
 
-  - title: scope 取消协程示例
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          // 创建一个作用域
-          val scope = CoroutineScope(Dispatchers.Default)
-
-          // 启动多个协程
-          scope.launch {
-              repeat(1000) { i ->
-                  println("Job 1 is working on $i")
-                  delay(300L)
-              }
-          }
-
-          scope.launch {
-              repeat(1000) { i ->
-                  println("Job 2 is working on $i")
+              val job: Job = launch { // 在 runBlocking 的作用域内启动一个新协程 (非阻塞)
+                  println("Launch coroutine starts on thread: ${Thread.currentThread().name}")
                   delay(500L)
+                  println("Hello from launch!")
               }
+
+              println("Launch called")
+              // runBlocking 会自动等待其子协程 (job) 完成
+              // job.join() // 可以显式等待，但在这里 runBlocking 已经处理了
+
+              println("runBlocking ends on thread: ${Thread.currentThread().name}")
+          }
+          // 输出 (线程名可能不同):
+          // runBlocking starts on thread: main
+          // Launch called
+          // Launch coroutine starts on thread: main (因为 runBlocking 的上下文默认是当前线程)
+          // Hello from launch!
+          // runBlocking ends on thread: main
+          ```
+      - title: async
+        description: '`async` 是一个协程构建器，用于启动一个执行计算并**返回结果**的新协程。它返回一个 `Deferred<T>` 对象，其中 `T` 是预期结果的类型。`Deferred` 是 `Job` 的子类型，因此也可以被取消。要获取 `async` 的结果，需要调用 `Deferred` 对象的 `await()` 方法，`await()` 是一个挂起函数，它会暂停当前协程直到结果可用。`async` 也必须在 `CoroutineScope` 内调用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          suspend fun computeAnswer(): Int {
+              delay(1000L) // 模拟耗时计算
+              return 42
           }
 
-          scope.launch {
-              repeat(1000) { i ->
-                  println("Job 3 is working on $i")
-                  delay(700L)
+          suspend fun computeAnotherAnswer(): Int {
+              delay(500L) // 模拟另一个耗时计算
+              return 23
+          }
+
+          fun main() = runBlocking {
+              println("runBlocking starts")
+
+              val deferredAnswer: Deferred<Int> = async { // 启动一个计算结果的协程
+                  println("Async computing answer...")
+                  computeAnswer()
               }
+
+              val deferredAnotherAnswer: Deferred<Int> = async { // 启动另一个
+                  println("Async computing another answer...")
+                  computeAnotherAnswer()
+              }
+
+              println("Async calls made")
+
+              // 等待并获取结果
+              val answer = deferredAnswer.await() // 挂起直到第一个 async 完成
+              val anotherAnswer = deferredAnotherAnswer.await() // 挂起直到第二个 async 完成
+
+              println("The answer is $answer")
+              println("Another answer is $anotherAnswer")
+              println("Total is ${answer + anotherAnswer}")
+
+              println("runBlocking ends")
           }
+          // 输出 (启动消息顺序可能不同):
+          // runBlocking starts
+          // Async computing answer...
+          // Async computing another answer...
+          // Async calls made
+          // (等待大约 1 秒)
+          // The answer is 42
+          // Another answer is 23
+          // Total is 65
+          // runBlocking ends
+          ```
+  - title: 使用协程
+    description: 与启动的协程进行交互，主要是通过 Job 和 Deferred。
+    children:
+      - title: Job
+        description: |
+          `Job` 是协程的句柄（handle），代表一个可被取消的后台任务。它由 `launch` 构建器返回。`Job` 具有生命周期，并且可以包含子 `Job`，形成父子层级结构。
+          关键属性和方法：
+          - `isActive`: `Boolean` - 如果协程处于活动状态（未完成且未取消），则为 true。
+          - `isCompleted`: `Boolean` - 如果协程已完成（包括正常完成、异常终止或被取消），则为 true。
+          - `isCancelled`: `Boolean` - 如果协程已被取消，则为 true。
+          - `start()`: `Boolean` - 启动一个以 `CoroutineStart.LAZY` 模式创建的协程。如果协程已启动或完成，返回 `false`。
+          - `join()`: `suspend` - 挂起当前协程，直到此 `Job` 完成。
+          - `cancel(cause: CancellationException? = null)`: 取消此 `Job`。可以提供一个可选的原因。取消是协作式的，协程需要检查其状态（例如通过 `isActive` 或调用其他挂起函数）来响应取消。
+          - `attachChild(child: ChildJob)`: `ChildHandle` - （高级用法）将一个子 Job 附加到当前 Job。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-          // 让协程运行一段时间
-          delay(1500L)
-          println("Main: Cancelling scope")
-          
-          // 取消整个作用域，所有在该作用域中运行的协程都会停止执行，并不会继续输出内容。
-          scope.cancel()
-          println("Main: Scope cancelled")
+          fun main() = runBlocking {
+              val job = launch {
+                  try {
+                      repeat(5) { i ->
+                          println("Job: I'm sleeping $i ...")
+                          delay(500L)
+                      }
+                  } finally {
+                      // 通常在 finally 块中释放资源
+                      println("Job: I'm running finally!")
+                  }
+              }
 
-          // 等待一小段时间以确保取消的协程不会再输出
-          delay(500L)
+              delay(1300L) // 等待一段时间
+              println("Main: I'm tired of waiting!")
+              job.cancel() // 取消 Job
+              job.join() // 等待 Job 完成 (包括其 finally 块)
+              // 或者使用 cancelAndJoin()
+              // job.cancelAndJoin()
 
-          /*
-            Job 1 is working on 0
-            Job 2 is working on 0
-            Job 3 is working on 0
-            Job 1 is working on 1
-            Job 2 is working on 1
-            Job 1 is working on 2
-            Job 3 is working on 1
-            Main: Cancelling scope
-            Main: Scope cancelled
-          */
-      }
-      ```
+              println("Main: Now I can quit.")
+              println("Job isActive: ${job.isActive}, isCompleted: ${job.isCompleted}, isCancelled: ${job.isCancelled}")
+          }
+          // 输出:
+          // Job: I'm sleeping 0 ...
+          // Job: I'm sleeping 1 ...
+          // Job: I'm sleeping 2 ...
+          // Main: I'm tired of waiting!
+          // Job: I'm running finally!
+          // Main: Now I can quit.
+          // Job isActive: false, isCompleted: true, isCancelled: true
+          ```
+      - title: Deferred
+        description: |
+          `Deferred<T>` 是 `Job` 的子接口，代表一个带有未来结果的 `Job`。它由 `async` 构建器返回。除了继承 `Job` 的所有功能外，`Deferred` 还提供了一个关键的挂起方法来获取结果。
+          关键方法：
+          - `await()`: `suspend () -> T` - 挂起当前协程，直到计算完成，并返回结果 `T`。如果计算过程中发生异常或协程被取消，`await()` 会重新抛出该异常。
+          - `getCompleted()`: `T` - （非挂起）如果计算已完成，则立即返回结果；否则，抛出 `IllegalStateException`。主要用于协程已确认完成的情况。
+          - `getCompletionExceptionOrNull()`: `Throwable?` - （非挂起）如果协程因异常而完成，则返回该异常；否则返回 `null`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-  - title: 协程构建器 launch 与 async 的区别
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          // launch 启动一个协程，不返回结果
-          val job = launch {
+          suspend fun calculateValue(): Int {
               delay(1000L)
-              println("Launch completed")
+              return 10
           }
 
-          // async 启动一个协程并返回结果
-          val deferred = async {
-              delay(1000L)
-              "Async result"
-          }
-          println("Async result: ${deferred.await()}")
-      }
-      ```
-
-  - title: launch 懒启动的用法
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          val job = launch(start = CoroutineStart.LAZY) {
-              println("Lazy launch started")
-          }
-          delay(500L)
-          println("Lazy launch will now start")
-          job.start() // 手动启动协程
-
-          /*
-            Lazy launch will now start
-            Lazy launch started
-          */
-      }
-      ```
-
-  - title: launch 返回 Job 的状态
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          val job = launch {
-              delay(1000L)
-              println("Coroutine finished")
-          }
-          println("Job is active: ${job.isActive}")
-          job.join() // 等待协程完成
-          println("Job is completed: ${job.isCompleted}")
-      }
-      ```
-
-  - title: async 并发调用返回
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          val deferred1 = async { getData1() }
-          val deferred2 = async { getData2() }
-          println("Result: ${deferred1.await() + deferred2.await()}")
-      }
-
-      suspend fun getData1(): Int {
-          delay(1000L)
-          return 10
-      }
-
-      suspend fun getData2(): Int {
-          delay(1000L)
-          return 20
-      }
-      ```
-
-  - title: awaitAll
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          // 创建多个 async 并发任务，并存储在一个数组中
-          val deferredList = listOf(
-              async { getData1() },
-              async { getData2() },
-              async { getData3() }
-          )
-
-          // 使用 awaitAll 等待所有任务完成并获取结果
-          val results = deferredList.awaitAll()
-
-          // 处理结果
-          println("Results: ${results.sum()}")
-      }
-
-      suspend fun getData1(): Int {
-          delay(1000L)
-          return 10
-      }
-
-      suspend fun getData2(): Int {
-          delay(1000L)
-          return 20
-      }
-
-      suspend fun getData3(): Int {
-          delay(1000L)
-          return 30
-      }
-      ```
-
-  - title: suspend 挂起函数的使用
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      suspend fun mainTask() {
-          delay(1000L) // 模拟耗时操作
-          println("Task completed")
-      }
-
-      fun main() = runBlocking {
-          launch {
-              mainTask() // 调用挂起函数
-          }
-      }
-      ```
-  - title: suspend 函数的嵌套调用
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      suspend fun mainTask() = coroutineScope {
-          // 在 coroutineScope 中启动两个新协程
-          launch {
-              delay(1000L)
-              println("Task 1 completed in new coroutine")
-          }
-
-          launch {
+          suspend fun calculateFailedValue(): Int {
               delay(500L)
-              println("Task 2 completed in new coroutine")
+              throw IllegalStateException("Calculation failed")
           }
 
-          println("Main task started")
-      }
+          fun main() = runBlocking {
+              val deferredValue: Deferred<Int> = async { calculateValue() }
+              val deferredFailure: Deferred<Int> = async { calculateFailedValue() }
 
-      fun main() = runBlocking {
-          // 调用挂起函数
-          mainTask()
-          println("Main function completed")
-      }
-      ```
+              println("Waiting for values...")
 
-  - title: 不同 Dispatchers 的用法
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
+              try {
+                  val value = deferredValue.await() // 等待并获取结果
+                  println("Got value: $value")
+              } catch (e: Exception) {
+                  println("Error getting value: ${e.message}")
+              }
 
-      fun main() = runBlocking {
-          // 使用 Default Dispatcher：适合 CPU 密集型任务
-          launch(Dispatchers.Default) {
-              println("Default dispatcher - Running on: ${Thread.currentThread().name}")
-              // 此调度器使用共享的后台线程池，适用于需要大量计算的任务
+              try {
+                  val failedValue = deferredFailure.await() // 等待并获取结果 (会抛出异常)
+                  println("Got failed value: $failedValue")
+              } catch (e: Exception) {
+                  println("Error getting failed value: ${e.message}")
+              }
+
+              // 检查完成状态和异常 (非挂起方式，通常在知道已完成后使用)
+              if (deferredFailure.isCompleted) {
+                  val exception = deferredFailure.getCompletionExceptionOrNull()
+                  println("Failure completed with exception: ${exception?.message}")
+              }
           }
+          // 输出:
+          // Waiting for values...
+          // (等待 1 秒)
+          // Got value: 10
+          // Error getting failed value: Calculation failed
+          // Failure completed with exception: Calculation failed
+          ```
+  - title: 作用域 (Scopes)
+    description: 协程必须在 CoroutineScope 内启动。作用域定义了协程的生命周期和上下文。
+    children:
+      - title: 构建作用域
+        description: 可以通过 `CoroutineScope()` 函数创建一个新的作用域。通常需要提供一个 `CoroutineContext`，至少包含一个 `Job` 来管理作用域内协程的生命周期。当作用域的 `Job` 被取消时，该作用域内启动的所有协程都会被取消。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-          // 使用 IO Dispatcher：适合 I/O 密集型任务
-          launch(Dispatchers.IO) {
-              println("IO dispatcher - Running on: ${Thread.currentThread().name}")
-              // 适用于网络、文件、数据库等 I/O 操作，它会根据需要动态扩展线程
+          fun main() {
+              // 创建一个包含新 Job 和默认调度器的作用域
+              val customScope = CoroutineScope(Job() + Dispatchers.Default)
+
+              val job = customScope.launch {
+                  println("Coroutine started in custom scope on thread: ${Thread.currentThread().name}")
+                  delay(500L)
+                  println("Coroutine finished in custom scope.")
+              }
+
+              println("Custom scope launch called.")
+
+              // 需要手动管理作用域的生命周期
+              Thread.sleep(1000L) // 等待协程完成 (仅为示例)
+
+              println("Cancelling custom scope.")
+              customScope.cancel() // 取消作用域会取消其中的所有协程
+
+              // 确认 job 已被取消
+              // 注意：立即检查可能还是 active，需要等待取消过程完成
+              // println("Job is active after scope cancel: ${job.isActive}")
+
+              println("Main thread finished.")
           }
+          // 可能的输出 (线程名可能不同):
+          // Custom scope launch called.
+          // Coroutine started in custom scope on thread: DefaultDispatcher-worker-1
+          // Coroutine finished in custom scope.
+          // Cancelling custom scope.
+          // Main thread finished.
+          ```
+      - title: 全局作用域
+        description: '`GlobalScope` 是一个预定义的、单例的 `CoroutineScope`。它不与任何 `Job` 绑定，因此在 `GlobalScope` 中启动的协程拥有独立的生命周期，只受应用程序生命周期的限制。这使得追踪和管理这些协程变得困难，容易导致内存泄漏或意外行为，因此**强烈不推荐**在常规应用开发中使用它。应优先使用与组件生命周期绑定的作用域（如 `viewModelScope`, `lifecycleScope`）或自定义作用域。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-          // 使用 Unconfined Dispatcher：无特定线程绑定，任务运行时选择线程
-          launch(Dispatchers.Unconfined) {
-              println("Unconfined dispatcher - Running on: ${Thread.currentThread().name}")
-              // 任务开始在哪个线程运行就继续在哪个线程，适用于简单任务
+          // 再次展示 GlobalScope.launch，强调其独立性
+          fun main() {
+              println("Main start")
+              val job = GlobalScope.launch {
+                  println("GlobalScope: Start")
+                  delay(1000)
+                  println("GlobalScope: End") // 如果 main 提前结束，这可能不执行
+              }
+              println("GlobalScope launched")
+              // 如果没有 Thread.sleep() 或其他等待机制，main 可能会立即退出
+              // job.join() // 不能直接在 main 中调用 suspend 函数 join()
+              Thread.sleep(1500) // 阻塞主线程等待 (不好的做法)
+              println("Main end")
           }
+          ```
+      - title: 主线程作用域
+        description: 可以通过指定 `Dispatchers.Main` 来创建仅在主（UI）线程上执行协程的作用域。这对于需要与 UI 交互的任务非常重要。通常创建为 `CoroutineScope(SupervisorJob() + Dispatchers.Main)`，其中 `SupervisorJob` 防止一个子协程失败导致整个作用域被取消，这在 UI 场景下通常是期望的行为。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-          // 使用 newSingleThreadContext 创建新的单独线程：明确分配线程
-          val singleThreadContext = newSingleThreadContext("MyThread")
-          launch(singleThreadContext) {
-              println("Running on MyThread - Thread name: ${Thread.currentThread().name}")
-              // 适用于需要在特定线程执行任务的场景，但代价较高，建议尽量少用
+          // 假设这是在一个支持 Dispatchers.Main 的环境 (例如 Android App 或配置了对应库的 JVM 项目)
+          // 对于纯 JVM 项目，需要添加 kotlinx-coroutines-swing 或 javafx 依赖
+          // import kotlinx.coroutines.swing.Swing // 示例: 使用 Swing dispatcher
+
+          fun main() {
+              // 模拟主线程环境，通常由框架提供
+              // val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main) // 实际用法
+              // 下面用 runBlocking 模拟，并强制指定 Main dispatcher (如果可用)
+              runBlocking(Dispatchers.Main.immediate) { // 使用 Main.immediate 确保立即在主线程开始 (如果已经在主线程)
+                  println("Running on main thread: ${Thread.currentThread().name}")
+
+                  val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+                  scope.launch {
+                      println("Task 1 started on thread: ${Thread.currentThread().name}")
+                      delay(100)
+                      println("Task 1 finished - updating UI (simulated)")
+                  }
+
+                  scope.launch {
+                      println("Task 2 started on thread: ${Thread.currentThread().name}")
+                      delay(200)
+                      throw RuntimeException("Task 2 failed!") // 模拟失败
+                  }
+
+                  scope.launch {
+                      println("Task 3 started on thread: ${Thread.currentThread().name}")
+                      delay(300)
+                      println("Task 3 finished - updating another UI part (simulated)")
+                  }
+
+                  delay(500) // 给协程一些执行时间
+                  println("Main scope tasks launched.")
+                  scope.cancel() // 清理作用域
+                  println("Main scope cancelled.")
+              }
           }
+          // 如果 Dispatchers.Main 可用且配置正确，输出大致如下 (Task 2 的异常会被 SupervisorJob 忽略，不影响 Task 3):
+          // Running on main thread: main
+          // Task 1 started on thread: main
+          // Task 2 started on thread: main
+          // Task 3 started on thread: main
+          // Task 1 finished - updating UI (simulated)
+          // (Task 2 抛出异常，通常会被 CoroutineExceptionHandler 捕获或打印到日志)
+          // Task 3 finished - updating another UI part (simulated)
+          // Main scope tasks launched.
+          // Main scope cancelled.
+          ```
+      - title: Android 作用域
+        description: 在 Android 开发中，官方提供了与 Android 组件生命周期绑定的协程作用域。
+        children:
+          - title: lifecycleScope
+            description: '`lifecycleScope` 是 `LifecycleOwner` (如 `Activity` 或 `Fragment`) 的扩展属性。在此作用域内启动的协程会在相应的 `Lifecycle` 被销毁（如 `onDestroy`）时自动取消。它默认使用 `Dispatchers.Main.immediate` 调度器，适合启动需要在主线程执行且与 UI 生命周期同步的任务。'
+            example: |
+              ```kotlin
+              // 在 Android Activity 或 Fragment 中:
+              import androidx.lifecycle.lifecycleScope
+              import kotlinx.coroutines.launch
+              import kotlinx.coroutines.delay
 
-          // 释放单线程上下文，避免内存泄漏
-          singleThreadContext.close()
-      }
-      ```
+              class MyActivity : AppCompatActivity() {
+                  override fun onCreate(savedInstanceState: Bundle?) {
+                      super.onCreate(savedInstanceState)
 
-  - title: withContext 的用法
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
+                      lifecycleScope.launch { // 协程与 Activity 的生命周期绑定
+                          Log.d("MyActivity", "Coroutine started on thread: ${Thread.currentThread().name}")
+                          try {
+                              delay(5000) // 模拟耗时操作
+                              Log.d("MyActivity", "Coroutine finished")
+                              // update UI...
+                          } catch (e: CancellationException) {
+                              Log.d("MyActivity", "Coroutine cancelled")
+                              throw e // 重新抛出 CancellationException 是推荐做法
+                          }
+                      }
+                  }
+              }
 
-      fun main() = runBlocking {
-          // 使用 withContext 切换到 IO 调度器，执行耗时操作
-          val result = withContext(Dispatchers.IO) {
-              // 适用于你需要在不同的线程中执行一些串行任务。例如从主线程切换到 I/O 线程进行文件读写，然后返回主线程更新 UI。每个任务必须执行完才能继续后续操作。
-              println("Executing on: ${Thread.currentThread().name}")
-              delay(1000L) // 模拟耗时操作
-              "Result from IO" // 返回结果
-          }
+              // 模拟示例 (无法在纯 Kotlin 中运行 Android 代码)
+              println("// 示例：在 Activity 中使用 lifecycleScope.launch")
+              println("// 当 Activity onDestroy 时，这个协程会自动取消")
+              ```
+          - title: viewModelScope
+            description: '`viewModelScope` 是 `ViewModel` 的扩展属性。在此作用域内启动的协程会在 `ViewModel` 被清除（当其所有者如 Activity/Fragment 销毁且不再需要时）时自动取消。它非常适合执行与 UI 相关的数据加载或处理任务，这些任务的生命周期应比单个 Activity/Fragment 实例更长（例如，在屏幕旋转后存活）。默认使用 `Dispatchers.Main.immediate` 调度器。'
+            example: |
+              ```kotlin
+              // 在 Android ViewModel 中:
+              import androidx.lifecycle.ViewModel
+              import androidx.lifecycle.viewModelScope
+              import kotlinx.coroutines.launch
+              import kotlinx.coroutines.delay
 
-          // 等待结果返回后继续执行
-          println("Back on main thread: ${Thread.currentThread().name}")
-          println(result) // 输出结果
-      }
-      ```
-  - title: 协程传播取消机制
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          // 启动一个父协程
-          val parentJob = launch {
-              println("Parent coroutine started")
-
-              // 启动第一个子协程
-              val childJob1 = launch {
-                  println("Child coroutine 1 started")
-
-                  // 启动子协程的子协程
-                  launch {
-                      try {
-                          println("Grandchild coroutine started")
-                          delay(2000L) // 模拟耗时任务
-                          println("Grandchild coroutine completed")
-                      } catch (e: CancellationException) {
-                          println("Grandchild coroutine was cancelled")
+              class MyViewModel : ViewModel() {
+                  fun loadData() {
+                      viewModelScope.launch { // 协程与 ViewModel 的生命周期绑定
+                          Log.d("MyViewModel", "Loading data on thread: ${Thread.currentThread().name}")
+                          try {
+                              val data = fetchDataFromNetwork() // 假设是 suspend fun
+                              Log.d("MyViewModel", "Data loaded: $data")
+                              // update LiveData or StateFlow...
+                          } catch (e: Exception) {
+                              Log.e("MyViewModel", "Failed to load data", e)
+                          }
                       }
                   }
 
-                  try {
-                      delay(3000L) // 模拟耗时任务
-                      println("Child coroutine 1 completed")
-                  } catch (e: CancellationException) {
-                      println("Child coroutine 1 was cancelled")
+                  override fun onCleared() {
+                      super.onCleared()
+                      // viewModelScope 会在这里自动取消所有协程
+                      Log.d("MyViewModel", "ViewModel cleared, coroutines cancelled.")
+                  }
+
+                  private suspend fun fetchDataFromNetwork(): String {
+                      delay(2000) // 模拟网络请求
+                      return "Sample Data"
                   }
               }
 
-              // 启动第二个子协程
-              val childJob2 = launch {
+              // 模拟示例
+              println("// 示例：在 ViewModel 中使用 viewModelScope.launch")
+              println("// 当 ViewModel onCleared 时，这个协程会自动取消")
+              ```
+  - title: 调度器 (Dispatchers)
+    description: 调度器决定了协程在哪个线程或线程池上执行。可以通过 `launch`、`async` 或 `withContext` 指定调度器。
+    children:
+      - title: 默认调度器 (Dispatchers.Default)
+        description: '`Dispatchers.Default` 使用一个后台共享线程池。这个线程池的大小通常等于 CPU 的核心数（但至少为 2）。它适用于执行计算密集型（CPU-bound）的任务，因为这些任务会充分利用 CPU 资源，而线程数限制可以防止创建过多线程。如果未指定调度器，并且作用域上下文没有提供调度器，`launch` 和 `async` 通常会默认使用它（除了 `runBlocking` 和一些特殊作用域）。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              println("runBlocking context: $coroutineContext") // 打印当前上下文信息
+
+              launch(Dispatchers.Default) { // 显式指定在 Default 调度器上运行
+                  println("Default dispatcher thread: ${Thread.currentThread().name}")
+                  // 执行 CPU 密集型计算...
+                  val result = (1..1_000_000).map { it * it }.sum()
+                  println("Calculation finished on Default dispatcher.")
+              }
+
+              launch { // 未指定，继承 runBlocking 的上下文 (这里是 main 线程)
+                   println("Inherited context thread: ${Thread.currentThread().name}")
+              }
+
+              println("Dispatchers launched.")
+              // runBlocking 会等待子协程完成
+          }
+          // 可能的输出 (线程名和顺序可能变化):
+          // runBlocking context: [BlockingCoroutine{Active}@..., BlockingEventLoop@...]
+          // Inherited context thread: main
+          // Dispatchers launched.
+          // Default dispatcher thread: DefaultDispatcher-worker-1
+          // Calculation finished on Default dispatcher.
+          ```
+      - title: 主线程调度器 (Dispatchers.Main)
+        description: '`Dispatchers.Main` 将协程的执行限制在特定的“主”线程上。这个线程通常是 UI 线程（在 Android、Swing、JavaFX 等环境中）。因此，`Dispatchers.Main` 主要用于执行任何需要与 UI 交互的操作，如更新视图、显示消息等。使用它需要相应的平台依赖（如 `kotlinx-coroutines-android`）。它还有一个变体 `Dispatchers.Main.immediate`，如果当前已经在主线程，它会尝试立即执行协程体，而不是将其放入队列等待下一个事件循环。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          // 需要 kotlinx-coroutines-android 或 swing/javafx 依赖
+
+          // 模拟在支持 Dispatchers.Main 的环境
+          suspend fun updateUI(message: String) {
+              // 确保在主线程执行 UI 更新
+              withContext(Dispatchers.Main) {
+                  println("Updating UI on thread: ${Thread.currentThread().name} with message: '$message'")
+                  // 实际 UI 更新代码...
+              }
+          }
+
+          fun main() = runBlocking { // 模拟启动点
+              launch(Dispatchers.IO) { // 假设在 IO 线程加载数据
+                  println("Loading data on thread: ${Thread.currentThread().name}")
+                  delay(500)
+                  val data = "Data loaded successfully"
+                  updateUI(data) // 调用函数切换到主线程更新 UI
+              }
+              println("Launched data loading.")
+              delay(1000) // 等待完成
+          }
+          // 如果 Dispatchers.Main 可用:
+          // Launched data loading.
+          // Loading data on thread: DefaultDispatcher-worker-1 (或其他 IO 线程)
+          // Updating UI on thread: main (或对应的 UI 线程名) with message: 'Data loaded successfully'
+          ```
+      - title: 非受限调度器 (Dispatchers.Unconfined)
+        description: '`Dispatchers.Unconfined` 不将协程限制在任何特定的线程或线程池。它会在调用者线程中启动协程，但在第一个挂起点之后，协程的恢复将发生在执行挂起操作的那个线程上。这意味着协程执行的线程可能会在挂起点之后发生变化。由于其行为难以预测且可能导致意外的并发问题（例如，如果一个协程在不同线程上修改共享状态），因此应谨慎使用。它主要适用于那些既不消耗 CPU 也不更新限制于特定线程的共享数据（如 UI），且不需要立即执行的协程。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              launch(Dispatchers.Unconfined) { // 使用 Unconfined 调度器
+                  println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+                  delay(500) // 第一个挂起点
+                  // 恢复执行的线程取决于 delay 内部使用的线程 (通常是调度器的线程)
+                  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+              }
+
+              launch { // 继承 runBlocking 的上下文 (main 线程)
+                  println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
+                  delay(1000)
+                  println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+              }
+              println("Dispatchers launched")
+          }
+          // 可能的输出 (Unconfined 的恢复线程可能不同):
+          // Dispatchers launched
+          // Unconfined      : I'm working in thread main  (开始于调用者线程 main)
+          // main runBlocking: I'm working in thread main
+          // Unconfined      : After delay in thread kotlinx.coroutines.DefaultExecutor (或其他后台线程)
+          // main runBlocking: After delay in thread main
+          ```
+      - title: IO 调度器 (Dispatchers.IO)
+        description: '`Dispatchers.IO` 使用一个按需创建线程的共享线程池。它被设计用于执行涉及阻塞 I/O 操作（如文件读写、网络请求、数据库访问）的任务。这些操作通常会让线程等待外部系统的响应，因此使用一个可以按需增加线程数量的池是合适的，以避免阻塞 CPU 密集型任务使用的 `Dispatchers.Default` 线程池。这个池中的线程数有上限（通常是 64 或系统属性配置的值）。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import java.io.File
+          import java.net.URL
+
+          suspend fun readFileContent(path: String): String {
+              // 切换到 IO 调度器执行阻塞的文件读取
+              return withContext(Dispatchers.IO) {
+                  println("Reading file on thread: ${Thread.currentThread().name}")
                   try {
-                      println("Child coroutine 2 started")
-                      delay(5000L) // 模拟耗时任务
-                      println("Child coroutine 2 completed")
-                  } catch (e: CancellationException) {
-                      println("Child coroutine 2 was cancelled")
+                      // 模拟阻塞 IO 操作
+                      File(path).readText() // 这是一个阻塞调用
+                  } catch (e: Exception) {
+                      "Error reading file: ${e.message}"
                   }
               }
           }
 
-          delay(1000L) // 等待1秒后取消所有协程
-          println("Cancelling parent job")
-          parentJob.cancelAndJoin() // 取消父协程，等待其完成
-          println("Parent job is cancelled")
-      }
-      ```
-
-  - title: 协程的超时机制
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-
-      fun main() = runBlocking {
-          try {
-              withTimeout(1000L) {
-                  delay(2000L) // 模拟超时任务
-              }
-          } catch (e: TimeoutCancellationException) {
-              println("Task timed out")
+          suspend fun fetchUrlContent(url: String): String {
+             // 网络请求也适合 IO 调度器
+             return withContext(Dispatchers.IO) {
+                 println("Fetching URL on thread: ${Thread.currentThread().name}")
+                 try {
+                     // 模拟阻塞网络 IO
+                     URL(url).readText().substring(0, 100) + "..." // 阻塞调用
+                 } catch (e: Exception) {
+                      "Error fetching URL: ${e.message}"
+                 }
+             }
           }
-      }
-      ```
 
-  - title: 协程的异常处理
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
 
-      fun main() = runBlocking {
-          val job = launch {
+          fun main() = runBlocking {
+              // 创建一个临时文件用于演示
+              val tempFile = File.createTempFile("coroutines_io_test", ".txt")
+              tempFile.writeText("Hello from IO dispatcher test!")
+              tempFile.deleteOnExit()
+
+              launch {
+                  val fileContent = readFileContent(tempFile.absolutePath)
+                  println("File content: $fileContent")
+              }
+
+              launch {
+                  // 使用一个公共可访问的 URL
+                  val urlContent = fetchUrlContent("https://kotlinlang.org")
+                  println("URL content (first 100 chars): $urlContent")
+              }
+
+              println("IO tasks launched.")
+              // runBlocking 会等待它们完成
+          }
+          // 可能的输出 (线程名可能不同, 网络内容会变):
+          // IO tasks launched.
+          // Reading file on thread: DefaultDispatcher-worker-1
+          // Fetching URL on thread: DefaultDispatcher-worker-2
+          // File content: Hello from IO dispatcher test!
+          // URL content (first 100 chars): <!doctype html><html lang="en" data-theme="light" class="no-js"><head><meta charSet="utf-8"/><meta n...
+          ```
+      - title: 自定义调度器
+        description: 除了预定义的调度器，还可以创建自定义调度器。常见的方式是使用 Java 的 `ExecutorService`（如 `Executors.newFixedThreadPool` 创建固定大小的线程池）并通过 `asCoroutineDispatcher()` 扩展函数将其转换为 `CoroutineDispatcher`。这对于需要精确控制线程池大小、与现有 Java 并发代码集成或实现特定调度逻辑的场景非常有用。使用完自定义调度器后，如果它基于 `ExecutorService`，记得在不再需要时调用其 `close()` 方法（对于实现了 `Closeable` 的 `CoroutineDispatcher`）或关闭底层的 `ExecutorService` 来释放资源。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import java.util.concurrent.Executors
+
+          fun main() {
+              // 创建一个固定大小为 2 的线程池 ExecutorService
+              val customThreadPool = Executors.newFixedThreadPool(2)
+              // 将 ExecutorService 包装成 CoroutineDispatcher
+              val customDispatcher = customThreadPool.asCoroutineDispatcher()
+
+              println("Starting coroutines on custom dispatcher")
+
+              runBlocking { // 使用 runBlocking 来管理示例的生命周期
+                  val jobs = List(5) { i ->
+                      launch(customDispatcher) { // 在自定义调度器上启动协程
+                          println("Task $i started on thread: ${Thread.currentThread().name}")
+                          delay(500L) // 模拟工作
+                          println("Task $i finished on thread: ${Thread.currentThread().name}")
+                      }
+                  }
+                  // 等待所有在自定义调度器上启动的 job 完成
+                  jobs.joinAll()
+              }
+
+              println("All tasks finished.")
+
+              // 关闭调度器和底层的线程池
+              // customDispatcher.close() // 对于 ExecutorCoroutineDispatcher，调用 close
+              customThreadPool.shutdown() // 或者直接关闭原始的 ExecutorService
+
+              println("Custom dispatcher shut down.")
+          }
+          // 可能的输出 (线程名包含 pool-x-thread-y):
+          // Starting coroutines on custom dispatcher
+          // Task 0 started on thread: pool-1-thread-1
+          // Task 1 started on thread: pool-1-thread-2
+          // Task 2 started on thread: pool-1-thread-1
+          // Task 3 started on thread: pool-1-thread-2
+          // Task 4 started on thread: pool-1-thread-1
+          // Task 0 finished on thread: pool-1-thread-1
+          // Task 1 finished on thread: pool-1-thread-2
+          // Task 2 finished on thread: pool-1-thread-1
+          // Task 3 finished on thread: pool-1-thread-2
+          // Task 4 finished on thread: pool-1-thread-1
+          // All tasks finished.
+          // Custom dispatcher shut down.
+          ```
+  - title: 上下文 (Context)
+    description: CoroutineContext 是协程执行环境的持久化信息集合，包括调度器、Job、协程名称、异常处理器等。
+    children:
+      - title: 构建上下文
+        description: '`CoroutineContext` 是一个由 `CoroutineContext.Element` 组成的索引集合（类似于 Map）。每个元素都有一个唯一的 `Key`。常见的元素包括 `Job`, `CoroutineDispatcher`, `CoroutineName`, `CoroutineExceptionHandler`。可以使用 `+` 操作符将不同的元素组合起来创建新的上下文。子协程会继承父协程的上下文，并可以覆盖或添加新的元素（例如，通过 `launch` 或 `async` 的 `context` 参数指定）。`CoroutineScope` 自身也拥有一个 `coroutineContext` 属性。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              // 创建一个包含 Job、特定调度器和名称的上下文
+              val customContext = Job() + Dispatchers.IO + CoroutineName("MyCustomCoroutine")
+
+              println("Parent context: $coroutineContext")
+              println("Custom context: $customContext")
+
+              launch(customContext) { // 使用自定义上下文启动协程
+                  println("Running in custom context: $coroutineContext")
+                  println("Thread: ${Thread.currentThread().name}")
+                  println("Name: ${coroutineContext[CoroutineName]?.name}") // 访问上下文中的元素
+                  println("Job: ${coroutineContext[Job]}")
+
+                  // 子协程继承父协程上下文，但有自己的 Job
+                  launch {
+                      println("Child context: $coroutineContext")
+                      println("Child Job is child of parent Job: ${coroutineContext[Job]?.parent == customContext[Job]}")
+                  }
+              }
+              // runBlocking 会等待 customContext 中的 Job 完成
+          }
+          // 可能的输出 (Job 实例 ID 会变化):
+          // Parent context: [BlockingCoroutine{Active}@..., BlockingEventLoop@...]
+          // Custom context: [JobImpl{Active}@..., CoroutineName(MyCustomCoroutine), Dispatchers.IO]
+          // Running in custom context: [JobImpl{Active}@..., CoroutineName(MyCustomCoroutine), Dispatchers.IO]
+          // Thread: DefaultDispatcher-worker-1
+          // Name: MyCustomCoroutine
+          // Job: JobImpl{Active}@...
+          // Child context: [JobImpl{Active}@..., CoroutineName(MyCustomCoroutine), Dispatchers.IO]
+          // Child Job is child of parent Job: true
+          ```
+      - title: 切换上下文
+        description: '`withContext(context)` 是一个挂起函数，用于在协程内部临时切换到不同的上下文（通常是切换调度器）来执行指定的代码块。它会启动一个新的协程来执行代码块，并挂起当前协程直到新协程完成。完成后，它会返回新协程的结果，并将执行流程切回原来的上下文（调度器）。这对于将 CPU 密集型或 IO 密集型任务从主线程或其他特定线程中分离出来非常有用，执行完任务后再切回原线程继续执行（例如更新 UI）。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          // 假设在主线程启动 (用 runBlocking 模拟)
+          fun main() = runBlocking(Dispatchers.Main.immediate) { // 假设 Dispatchers.Main 可用
+              println("Start on thread: ${Thread.currentThread().name}")
+
+              val result = withContext(Dispatchers.IO) { // 切换到 IO 线程执行
+                  println("Working in IO thread: ${Thread.currentThread().name}")
+                  delay(500) // 模拟 IO 操作
+                  "Result from IO" // 返回结果
+              } // 执行完毕后自动切回 Main 线程
+
+              println("Back on thread: ${Thread.currentThread().name}")
+              println("Received result: $result")
+
+              // 另一个例子：CPU 密集型计算
+              val computation = withContext(Dispatchers.Default) {
+                  println("Computing on thread: ${Thread.currentThread().name}")
+                  (1..1000).sum()
+              }
+
+              println("Back on thread: ${Thread.currentThread().name}")
+              println("Computation result: $computation")
+          }
+          // 可能的输出 (如果 Dispatchers.Main 可用):
+          // Start on thread: main
+          // Working in IO thread: DefaultDispatcher-worker-1
+          // Back on thread: main
+          // Received result: Result from IO
+          // Computing on thread: DefaultDispatcher-worker-1
+          // Back on thread: main
+          // Computation result: 500500
+          ```
+  - title: 启动模式 (Start Modes)
+    description: 协程可以通过 `CoroutineStart` 参数指定不同的启动行为。
+    children:
+      - title: DEFAULT
+        description: '`CoroutineStart.DEFAULT` 是 `launch` 和 `async` 的默认启动模式。它会根据协程上下文中的调度器，立即安排协程执行。如果调度器是立即执行的（如 `Dispatchers.Main.immediate` 且当前在主线程，或 `Dispatchers.Unconfined`），协程会立即开始执行；否则，它会被放入调度器的队列中等待执行。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              println("Before launch DEFAULT")
+              launch(start = CoroutineStart.DEFAULT) { // 显式指定 DEFAULT (通常省略)
+                  println("DEFAULT coroutine executing")
+              }
+              println("After launch DEFAULT")
+              // 输出:
+              // Before launch DEFAULT
+              // After launch DEFAULT
+              // DEFAULT coroutine executing (通常在 After 之后，因为 launch 不阻塞)
+          }
+          ```
+      - title: LAZY
+        description: '`CoroutineStart.LAZY` 使协程“懒惰地”启动。协程被创建但不会立即调度执行，直到它的 `Job` 被显式地启动（通过调用 `start()` 方法）或者被等待（通过调用 `join()` 或 `await()`）。这在你需要创建一个协程但不希望它马上开始运行时很有用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              println("Before launch LAZY")
+              val lazyJob = launch(start = CoroutineStart.LAZY) {
+                  println("LAZY coroutine executing")
+              }
+              println("After launch LAZY - job is not started yet.")
+              delay(500) // 等待一下，证明它没自动执行
+
+              println("Starting the lazy job...")
+              lazyJob.start() // 显式启动协程
+              // 或者 lazyJob.join() / (if async) deferred.await() 也会触发启动
+
+              println("Waiting for lazy job to complete...")
+              lazyJob.join() // 等待它完成
+              println("Lazy job finished.")
+          }
+          // 输出:
+          // Before launch LAZY
+          // After launch LAZY - job is not started yet.
+          // Starting the lazy job...
+          // LAZY coroutine executing
+          // Waiting for lazy job to complete...
+          // Lazy job finished.
+          ```
+      - title: ATOMIC
+        description: '`CoroutineStart.ATOMIC` 也是立即调度协程执行，类似于 `DEFAULT`。主要的区别在于**取消行为**。以 `ATOMIC` 模式启动的协程在开始执行之前（即，进入其代码块之前）是**不可取消**的。一旦开始执行，它会运行直到第一个挂起点，然后才变得可取消。这保证了即使在启动协程的调用返回和协程实际开始执行之间有一个 `cancel()` 调用，协程也至少会执行到第一个挂起点（如果它没有立即被调度并在 `cancel` 前完成的话）。适用于需要保证至少执行某些初始代码的场景。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              val job = launch(start = CoroutineStart.ATOMIC) {
+                  println("ATOMIC: Coroutine started") // 这行保证会执行，即使立即取消
+                  delay(100) // 第一个挂起点
+                  // 如果在 delay 之前被取消，这里及之后不会执行
+                  println("ATOMIC: Coroutine after delay (may not execute if cancelled quickly)")
+              }
+              // job.cancel() // 如果在这里立即取消，"Coroutine started" 仍会打印
+
+              println("Launched ATOMIC job.")
+              job.join() // 等待完成
+              println("ATOMIC job finished.")
+
+              // 对比 DEFAULT (取消可能阻止任何代码执行)
+              val jobDefault = launch(start = CoroutineStart.DEFAULT) {
+                   println("DEFAULT: Coroutine started (may not execute if cancelled immediately)")
+                   delay(100)
+                   println("DEFAULT: Coroutine after delay")
+              }
+              // jobDefault.cancel() // 如果立即取消，可能 "DEFAULT: Coroutine started" 都不会打印
+              jobDefault.join()
+
+          }
+          // 如果没有取消，输出:
+          // Launched ATOMIC job.
+          // ATOMIC: Coroutine started
+          // ATOMIC: Coroutine after delay (...)
+          // ATOMIC: job finished.
+          // DEFAULT: Coroutine started (...)
+          // DEFAULT: Coroutine after delay
+          ```
+      - title: UNDISPATCHED
+        description: '`CoroutineStart.UNDISPATCHED` 使协程**立即在当前线程**开始执行，直到遇到第一个挂起点。在挂起点之后，它会根据其上下文中的调度器重新调度（resume）。这有点像 `Dispatchers.Unconfined`，但只影响协程的启动阶段。这可以避免因调度带来的少量延迟，适用于需要立即执行某些操作且不关心初始执行线程的情况。但是，如果在挂起点之前发生异常，异常可能会在调用者线程中直接抛出。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              println("Before launch UNDISPATCHED. Current thread: ${Thread.currentThread().name}")
+              launch(start = CoroutineStart.UNDISPATCHED) {
+                  // 这部分立即在当前线程 (main) 执行
+                  println("UNDISPATCHED: Executing initial part. Thread: ${Thread.currentThread().name}")
+                  delay(100) // 第一个挂起点
+                  // 恢复执行的线程将由上下文的调度器决定 (这里继承 runBlocking 的，还是 main)
+                  println("UNDISPATCHED: Executing after suspension. Thread: ${Thread.currentThread().name}")
+              }
+              println("After launch UNDISPATCHED. Current thread: ${Thread.currentThread().name}")
+              // 输出显示初始部分在 "After launch" 之前执行
+              // Before launch UNDISPATCHED. Current thread: main
+              // UNDISPATCHED: Executing initial part. Thread: main
+              // After launch UNDISPATCHED. Current thread: main
+              // (延迟后)
+              // UNDISPATCHED: Executing after suspension. Thread: main
+          }
+          ```
+  - title: 挂起函数 (Suspending Functions)
+    description: 挂起函数是协程的核心，它们可以在不阻塞线程的情况下暂停和恢复执行。
+    children:
+      - title: suspend
+        description: '`suspend` 是一个 Kotlin 关键字，用于修饰函数。被 `suspend` 修饰的函数称为**挂起函数**。挂起函数具有特殊能力：它们可以调用其他的挂起函数（如 `delay`, `withContext`, `await` 等），并且自身可以在执行过程中被暂停（挂起）而**不阻塞**调用它的线程。当挂起函数暂停时，它会释放底层线程给其他任务使用。当挂起函数准备好恢复时，协程框架会在合适的线程上继续执行它。挂起函数只能从其他挂起函数或协程构建器（如 `launch`, `async`, `runBlocking`）内部调用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          // 定义一个挂起函数
+          suspend fun doSomethingUsefulOne(): Int {
+              println("Start useful work 1 on ${Thread.currentThread().name}")
+              delay(1000L) // 调用另一个挂起函数 delay
+              println("End useful work 1")
+              return 13
+          }
+
+          // 定义另一个挂起函数
+          suspend fun doSomethingUsefulTwo(): Int {
+              println("Start useful work 2 on ${Thread.currentThread().name}")
+              delay(1000L) // 调用另一个挂起函数 delay
+              println("End useful work 2")
+              return 29
+          }
+
+          // 只能在协程或另一个挂起函数中调用它们
+          fun main() = runBlocking {
+              val time = kotlin.system.measureTimeMillis {
+                  val one = async { doSomethingUsefulOne() } // async 启动协程调用挂起函数
+                  val two = async { doSomethingUsefulTwo() } // 并发执行
+                  println("Waiting for results...")
+                  val result = one.await() + two.await() // await 是挂起函数
+                  println("The answer is $result")
+              }
+              println("Completed in $time ms") // 总时间约 1 秒，而不是 2 秒
+          }
+          // 可能输出 (线程名可能不同):
+          // Start useful work 1 on main
+          // Start useful work 2 on main
+          // Waiting for results...
+          // (等待约 1 秒)
+          // End useful work 1
+          // End useful work 2
+          // The answer is 42
+          // Completed in 10XX ms
+          ```
+      - title: delay
+        description: '`delay(timeMillis: Long)` 是 `kotlinx.coroutines` 库提供的一个基础挂起函数。它会暂停当前协程指定的毫秒数，而**不会阻塞**它所在的线程。这使得线程可以去执行其他任务（例如，处理 UI 事件或其他协程）。过了指定时间后，协程会被重新调度以继续执行。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              println("Start")
+              val job1 = launch {
+                  delay(1000L) // 暂停协程 1 秒
+                  println("Coroutine 1 finished after delay")
+              }
+              val job2 = launch {
+                  delay(500L) // 暂停协程 0.5 秒
+                  println("Coroutine 2 finished after delay")
+              }
+              println("Launched coroutines")
+              // runBlocking 会等待 job1 和 job2 完成
+          }
+          // 输出:
+          // Start
+          // Launched coroutines
+          // (等待 0.5 秒)
+          // Coroutine 2 finished after delay
+          // (再等待 0.5 秒)
+          // Coroutine 1 finished after delay
+          ```
+      - title: withTimeout / withTimeoutOrNull
+        description: |
+          `withTimeout(timeMillis: Long, block: suspend CoroutineScope.() -> T)` 和 `withTimeoutOrNull(timeMillis: Long, block: suspend CoroutineScope.() -> T)` 是用于限制协程代码块执行时间的挂起函数。
+          - `withTimeout`: 如果代码块在指定时间内完成，它会返回代码块的结果。如果超时，它会取消代码块对应的协程并抛出 `TimeoutCancellationException`。
+          - `withTimeoutOrNull`: 行为类似，但在超时时不会抛出异常，而是返回 `null`。如果正常完成，则返回代码块的结果。
+          它们对于需要为耗时操作（如网络请求）设置截止时间的场景非常有用。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          suspend fun slowTask(duration: Long, failOnTimeout: Boolean = false): String {
               try {
-                  riskyTask()
+                  delay(duration)
+                  return "Task completed in $duration ms"
+              } catch (e: CancellationException) {
+                  if (failOnTimeout) throw e // 如果需要传播取消
+                  return "Task cancelled after timeout"
+              }
+          }
+
+          fun main() = runBlocking {
+              // 使用 withTimeout
+              try {
+                  val result1 = withTimeout(1000L) {
+                      slowTask(500L) // 这个会成功
+                  }
+                  println("withTimeout success: $result1")
+
+                  val result2 = withTimeout(1000L) {
+                      slowTask(1500L) // 这个会超时
+                  }
+                  println("withTimeout should not reach here: $result2")
+              } catch (e: TimeoutCancellationException) {
+                  println("withTimeout caught: ${e.message}")
+              }
+
+              println("---")
+
+              // 使用 withTimeoutOrNull
+              val result3 = withTimeoutOrNull(1000L) {
+                  slowTask(500L) // 这个会成功
+              }
+              println("withTimeoutOrNull success: $result3")
+
+              val result4 = withTimeoutOrNull(1000L) {
+                  slowTask(1500L) // 这个会超时并返回 null
+              }
+              println("withTimeoutOrNull timeout: $result4")
+          }
+          // 输出:
+          // withTimeout success: Task completed in 500 ms
+          // withTimeout caught: Timed out waiting for 1000 ms
+          // ---
+          // withTimeoutOrNull success: Task completed in 500 ms
+          // withTimeoutOrNull timeout: null
+          ```
+      - title: coroutineScope
+        description: '`coroutineScope { ... }` 是一个挂起函数，它会创建一个新的子作用域。这个子作用域继承外部作用域的上下文（特别是 `CoroutineContext`），但拥有自己的 `Job`。`coroutineScope` 会挂起，直到在其内部启动的所有协程都执行完成。它遵循结构化并发：如果 `coroutineScope` 块内的任何一个子协程失败（抛出异常），那么这个 `coroutineScope` 本身会失败，并且它会取消所有其他子协程。同样，如果 `coroutineScope` 自身被外部取消，它也会取消所有内部的子协程。这对于将一组相关的并发任务组合在一起，并确保它们要么全部成功完成，要么在失败时一起被取消非常有用。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          suspend fun taskA(): String {
+              delay(100)
+              println("Task A finished")
+              return "Result A"
+          }
+
+          suspend fun taskB(): String {
+              delay(200)
+              println("Task B finished")
+              // throw RuntimeException("Task B failed!") // 取消注释这行来测试失败场景
+              return "Result B"
+          }
+
+          fun main() = runBlocking {
+              println("Starting main scope")
+              try {
+                  val result = coroutineScope { // 创建一个子作用域
+                      val deferredA = async { taskA() }
+                      val deferredB = async { taskB() }
+
+                      println("Tasks launched in coroutineScope")
+                      // coroutineScope 会等待 A 和 B 都完成 (或失败)
+                      "${deferredA.await()} and ${deferredB.await()}" // 组合结果
+                  }
+                  println("coroutineScope finished successfully: $result")
               } catch (e: Exception) {
-                  println("Caught exception: ${e.message}")
+                  println("coroutineScope failed: ${e.message}")
               }
+              println("Finished main scope")
           }
-          job.join()
-      }
+          // 成功输出:
+          // Starting main scope
+          // Tasks launched in coroutineScope
+          // Task A finished
+          // Task B finished
+          // coroutineScope finished successfully: Result A and Result B
+          // Finished main scope
 
-      suspend fun riskyTask() {
-          delay(500L)
-          throw Exception("Something went wrong!")
-      }
-      ```
-  - title: 使用 Channel 在不同协程之间进行通信
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-      import kotlinx.coroutines.channels.Channel
+          // 如果 taskB 失败的输出:
+          // Starting main scope
+          // Tasks launched in coroutineScope
+          // Task A finished (如果它在 B 失败前完成)
+          // (Task B 抛出异常)
+          // coroutineScope failed: Task B failed! (或者只有消息，取决于异常类型)
+          // Finished main scope (协程 A 也会被取消)
+          ```
+      - title: supervisorScope
+        description: '`supervisorScope { ... }` 也是一个创建子作用域的挂起函数，类似于 `coroutineScope`。关键区别在于异常处理：**`supervisorScope` 使用 `SupervisorJob`**。这意味着，如果 `supervisorScope` 内部的一个子协程失败，这个失败**不会**传播给 `supervisorScope` 本身，也**不会**导致其他子协程被取消。失败的子协程需要自己处理异常（例如通过 `try-catch` 或 `CoroutineExceptionHandler`）。`supervisorScope` 适用于一组需要独立运行的子任务，其中一个任务的失败不应影响其他任务的执行。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
 
-      fun main() = runBlocking {
-          // 创建一个 Channel
-          val channel = Channel<Int>()
-
-          // 启动一个协程来发送数据
-          launch {
-              for (x in 1..5) {
-                  println("Sending: $x")
-                  channel.send(x) // 发送数据到 Channel
-                  delay(500L) // 模拟发送间隔
-              }
-              channel.close() // 关闭 Channel，表示没有更多数据
-          }
-
-          // 启动另一个协程来接收数据
-          launch {
-              for (y in channel) {
-                  println("Received: $y") // 接收并处理数据
-              }
-              println("Channel closed, no more data")
-          }
-      }
-      ```
-
-  - title: 使用 Flow 处理数据流
-    content: |
-      ```kotlin
-      import kotlinx.coroutines.*
-      import kotlinx.coroutines.flow.*
-
-      fun main() = runBlocking {
-          // 定义一个 Flow，生成一系列数据
-          val numberFlow: Flow<Int> = flow {
-              for (i in 1..5) {
-                  delay(500L) // 模拟异步操作
-                  println("Emitting: $i")
-                  emit(i) // 发射数据
+          suspend fun taskX() {
+              try {
+                  delay(100)
+                  println("Task X finished successfully")
+              } catch (e: Exception) {
+                  println("Task X caught exception: ${e.message}")
               }
           }
 
-          // 收集 Flow 数据
-          numberFlow.collect { value ->
-              println("Collected: $value") // 收集并处理数据
+          suspend fun taskY() {
+              try {
+                  delay(200)
+                  println("Task Y about to fail")
+                  throw IllegalStateException("Something went wrong in Y")
+              } catch (e: Exception) {
+                  // 如果这里不 catch，异常会传播到 supervisorScope 的父级 (如果父级没有处理)
+                  // 但不会取消 Task X 或 Z
+                  println("Task Y caught exception itself: ${e.message}")
+                  // throw e // 可以重新抛出给外部处理
+              }
           }
 
-          println("Flow collection completed")
-      }
-      ```
+          suspend fun taskZ() {
+               delay(300)
+               println("Task Z finished successfully (unaffected by Y's failure)")
+          }
 
+          fun main() = runBlocking {
+              println("Starting main scope")
+              try {
+                  supervisorScope { // 创建一个 supervisor 子作用域
+                      launch { taskX() }
+
+                      launch { taskY() } // 这个会失败，但不会取消其他 launch
+
+                      launch { taskZ() }
+
+                      println("Tasks launched in supervisorScope")
+                      // supervisorScope 会等待所有子协程“完成”（包括失败的）
+                      // 注意：如果子协程未捕获异常，异常会传播给 supervisorScope 的父级，
+                      // 但仍然不会取消 supervisorScope 内的其他兄弟协程。
+                  } // supervisorScope 本身不会因为 Y 的失败而失败 (除非 Y 重抛异常且未被外部捕获)
+                  println("supervisorScope finished")
+              } catch (e: Exception) {
+                  println("Caught exception outside supervisorScope: ${e.message}")
+              }
+              println("Finished main scope")
+          }
+          // 输出 (如果 Task Y 捕获异常):
+          // Starting main scope
+          // Tasks launched in supervisorScope
+          // Task X finished successfully
+          // Task Y about to fail
+          // Task Y caught exception itself: Something went wrong in Y
+          // Task Z finished successfully (unaffected by Y's failure)
+          // supervisorScope finished
+          // Finished main scope
+          ```
+      - title: awaitAll
+        description: '`awaitAll(vararg deferreds: Deferred<T>)` 和 `Iterable<Deferred<T>>.awaitAll()` 是用于等待多个 `Deferred` 对象完成并收集它们结果的扩展函数。它会挂起当前协程，直到所有指定的 `Deferred` 都计算完成。然后，它返回一个包含所有结果的 `List<T>`，顺序与输入的 `Deferred` 顺序一致。如果任何一个 `Deferred` 因异常失败，`awaitAll` 会立即取消所有其他的 `Deferred` 并重新抛出第一个遇到的异常。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          suspend fun computePart(id: Int, delayMs: Long): String {
+              delay(delayMs)
+              println("Part $id computed")
+              // if (id == 2) throw RuntimeException("Failed part $id") // 测试失败场景
+              return "Result $id"
+          }
+
+          fun main() = runBlocking {
+              println("Starting computation")
+              val deferreds = listOf(
+                  async { computePart(1, 300) },
+                  async { computePart(2, 100) },
+                  async { computePart(3, 200) }
+              )
+
+              println("Waiting for all parts...")
+              try {
+                  val results: List<String> = deferreds.awaitAll() // 等待所有 async 完成
+                  println("All parts completed: $results")
+              } catch (e: Exception) {
+                  println("Computation failed: ${e.message}")
+                  // 检查其他 deferred 的状态 (它们应该被取消了)
+                  deferreds.forEachIndexed { index, deferred ->
+                      println("Deferred ${index+1} cancelled: ${deferred.isCancelled}")
+                  }
+              }
+              println("Finished")
+          }
+          // 成功输出:
+          // Starting computation
+          // Waiting for all parts...
+          // Part 2 computed
+          // Part 3 computed
+          // Part 1 computed
+          // All parts completed: [Result 1, Result 2, Result 3]
+          // Finished
+
+          // 如果 Part 2 失败的输出:
+          // Starting computation
+          // Waiting for all parts...
+          // Part 2 computed (假设失败发生在 delay 之后)
+          // Computation failed: Failed part 2
+          // Deferred 1 cancelled: true
+          // Deferred 2 cancelled: false (因为它自己失败了)
+          // Deferred 3 cancelled: true
+          // Finished
+          ```
+  - title: 异常处理 (Exception Handling)
+    description: 协程中的异常处理机制，以及不同构建器和作用域如何影响异常传播。
+    children:
+      - title: CoroutineExceptionHandler
+        description: '`CoroutineExceptionHandler` 是 `CoroutineContext.Element` 的一个实现，可以添加到协程的上下文中，用于处理**未捕获**的异常。它类似于线程的 `UncaughtExceptionHandler`。它主要对由 `launch` 构建器启动的协程中发生的、且未在协程内部通过 `try-catch` 处理的异常有效。对于 `async`，异常会被封装在 `Deferred` 对象中，并在调用 `await()` 时抛出，通常不由 `CoroutineExceptionHandler` 处理（除非 `async` 是根协程或在 `SupervisorJob` 下）。`CoroutineExceptionHandler` 不会阻止异常的传播（即，它不会“吞掉”异常，父 Job 仍然会被取消，除非是 `SupervisorJob`）。'
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() {
+              // 创建一个异常处理器
+              val handler = CoroutineExceptionHandler { context, exception ->
+                  println("Caught exception in handler: '$exception' in context $context")
+              }
+
+              // 场景 1: launch 在普通 Job 下
+              val scope1 = CoroutineScope(Job()) // 普通 Job
+              scope1.launch(handler) { // 添加处理器
+                  println("Scope1: Launch started")
+                  throw RuntimeException("Failure in launch under Job")
+                  println("Scope1: This won't be printed")
+              }
+              Thread.sleep(100) // 给协程执行和处理异常的时间
+              println("Scope1 Job isActive: ${scope1.isActive}") // Job 会被异常取消
+
+              println("---")
+
+              // 场景 2: launch 在 SupervisorJob 下
+              val scope2 = CoroutineScope(SupervisorJob() + handler) // SupervisorJob + Handler
+              scope2.launch { // 异常会被 handler 捕获，且不会取消 scope2
+                  println("Scope2: Launch 1 started")
+                  throw IllegalStateException("Failure in launch 1 under SupervisorJob")
+              }
+              scope2.launch {
+                  delay(50)
+                  println("Scope2: Launch 2 finished (unaffected)")
+              }
+              Thread.sleep(100)
+              println("Scope2 Job isActive: ${scope2.isActive}") // SupervisorJob 仍然 active
+
+              println("---")
+
+              // 场景 3: async (异常在 await 时抛出，handler 通常不触发)
+              val scope3 = CoroutineScope(Job() + handler)
+              val deferred = scope3.async {
+                  println("Scope3: Async started")
+                  throw ArithmeticException("Failure in async")
+              }
+              try {
+                  deferred.await()
+              } catch (e: Exception) {
+                  println("Caught exception from await: '$e'")
+              }
+              Thread.sleep(100)
+              println("Scope3 Job isActive: ${scope3.isActive}") // Job 会被 async 的失败取消
+
+              // 清理作用域
+              scope1.cancel()
+              scope2.cancel()
+              scope3.cancel()
+          }
+          // 输出:
+          // Scope1: Launch started
+          // Caught exception in handler: 'java.lang.RuntimeException: Failure in launch under Job' in context [JobImpl{Cancelling}@..., ...]
+          // Scope1 Job isActive: false
+          // ---
+          // Scope2: Launch 1 started
+          // Caught exception in handler: 'java.lang.IllegalStateException: Failure in launch 1 under SupervisorJob' in context [StandaloneCoroutine{Cancelling}@..., SupervisorJobImpl{Active}@..., ...]
+          // Scope2: Launch 2 finished (unaffected)
+          // Scope2 Job isActive: true
+          // ---
+          // Scope3: Async started
+          // Caught exception from await: 'java.lang.ArithmeticException: Failure in async'
+          // Scope3 Job isActive: false
+          ```
+      - title: launch vs async 异常传播
+        description: |
+          异常在 `launch` 和 `async` 中的处理方式不同，这影响了它们如何传播以及何时被观察到：
+          - **`launch`**: 在 `launch` 构建的协程中发生的未捕获异常被视为“未处理”异常。
+            - 如果协程有父 `Job`（非 `SupervisorJob`），异常会立即传播给父 `Job`，导致父 `Job` 和所有其他子协程被取消。
+            - 如果协程上下文中有 `CoroutineExceptionHandler`，它会被调用来处理这个异常。
+            - 如果是根协程（如 `GlobalScope.launch` 或直接在 `runBlocking` 中 `launch` 而没有父 `Job`）且没有 `CoroutineExceptionHandler`，异常通常会根据平台默认行为处理（例如，打印到控制台并可能终止线程）。
+          - **`async`**: 在 `async` 构建的协程中发生的异常会被捕获并存储在返回的 `Deferred` 对象中。
+            - 异常**不会**立即传播给父 `Job`（除非父级是 `SupervisorJob` 且异常未被 `await` 处理）。
+            - 只有当调用该 `Deferred` 对象的 `await()` 方法时，存储的异常才会被重新抛出。
+            - 如果 `async` 产生的 `Deferred` 对象从未被 `await`，并且其父 `Job` 是 `SupervisorJob`，那么这个异常可能会丢失（除非通过 `CoroutineExceptionHandler` 处理，但这通常不适用于 `async` 的典型用法）。如果父 `Job` 是普通 `Job`，即使不 `await`，当 `async` 因异常结束时，仍然会取消父 `Job`。
+
+          总结：`launch` 的异常是“即时”和“传播”的（倾向于失败整个层级），适合不关心结果或副作用的操作；`async` 的异常是“延迟”和“封装”的（在 `await` 时暴露），适合需要结果的操作，允许调用者通过 `try-catch` 处理 `await()`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          fun main() = runBlocking {
+              val handler = CoroutineExceptionHandler { _, e -> println("Handler caught: $e") }
+
+              println("Testing launch exception:")
+              val launchJob = launch(handler) { // launch with handler
+                  println("Launch: Starting")
+                  throw RuntimeException("Launch failed")
+              }
+              try {
+                  launchJob.join() // 等待 launch 完成 (会因为异常而很快完成)
+                  println("Launch finished normally (should not happen)")
+              } catch (e: Exception) {
+                  // join 不会抛出子协程的异常
+                  println("Caught exception from launch.join (should not happen for child exception): $e")
+              }
+              // 异常由 Handler 处理
+
+              delay(100) // 等待 handler 输出
+              println("\nTesting async exception:")
+              val asyncDeferred = async { // async without handler (handler on parent doesn't apply directly here)
+                  println("Async: Starting")
+                  throw IllegalStateException("Async failed")
+              }
+
+              try {
+                  println("Async: Trying to await...")
+                  val result = asyncDeferred.await() // await 会抛出异常
+                  println("Async result: $result (should not happen)")
+              } catch (e: Exception) {
+                  println("Caught exception from async.await: $e")
+              }
+
+              delay(100)
+              println("\nTesting async exception without await (but with parent job):")
+              val scope = CoroutineScope(Job() + handler) // Parent job with handler
+              val asyncDeferredNoAwait = scope.async {
+                  println("Async No Await: Starting")
+                  delay(50) // Give parent a chance to setup
+                  throw ArithmeticException("Async failed without await")
+              }
+              // 不调用 await()。异常会取消父 Job (scope)
+              // 对于非 SupervisorJob，即使不 await，异常也会传播并取消父 Job。
+              // Handler 可能不会被调用，因为异常没有被视为“未捕获”于根协程或 Supervisor 子协程。
+              delay(200) // 等待协程执行和可能的取消
+              println("Parent scope isActive after async failure (no await): ${scope.isActive}")
+              scope.cancel() // 清理
+          }
+          // 输出:
+          // Testing launch exception:
+          // Launch: Starting
+          // Handler caught: java.lang.RuntimeException: Launch failed
+          //
+          // Testing async exception:
+          // Async: Starting
+          // Async: Trying to await...
+          // Caught exception from async.await: java.lang.IllegalStateException: Async failed
+          //
+          // Testing async exception without await (but with parent job):
+          // Async No Await: Starting
+          // Parent scope isActive after async failure (no await): false
+          ```
+      - title: coroutineScope vs supervisorScope 异常处理
+        description: |
+          `coroutineScope` 和 `supervisorScope` 在处理子协程失败时的行为有显著不同：
+          - **`coroutineScope`**:
+            - 使用普通的 `Job`。
+            - **失败传播**: 如果 `coroutineScope` 内的**任何一个**子协程失败（抛出未捕获的异常），该异常会向上传播给 `coroutineScope` 本身。
+            - **集体取消**: `coroutineScope` 在收到子协程的失败信号后，会立即**取消所有其他**正在运行的子协程。然后，`coroutineScope` 自身以失败状态结束，并将异常继续向上传播给其调用者（除非在 `coroutineScope` 调用处被 `try-catch`）。
+            - **适用场景**: 当一组任务是“全有或全无”的关系时，一个失败意味着整个操作失败。
+          - **`supervisorScope`**:
+            - 使用 `SupervisorJob`。
+            - **失败隔离**: 如果 `supervisorScope` 内的一个子协程失败，这个失败**不会**传播给 `supervisorScope` 本身，也**不会**影响或取消任何其他的兄弟子协程。
+            - **异常处理责任**: 失败的子协程需要自己处理异常（例如，内部 `try-catch`）或者将异常传播给它的父级（即 `supervisorScope`），这时异常可以被附加到 `supervisorScope` 上的 `CoroutineExceptionHandler` 捕获（如果提供了）。
+            - **适用场景**: 当一组任务是相互独立的，一个任务的失败不应该中断其他任务时。例如，UI 应用程序中处理多个独立的 UI 更新或后台任务。
+
+          总结：`coroutineScope` 遵循严格的父子失败关联，而 `supervisorScope` 则提供了子级之间的失败隔离。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          suspend fun childTask(name: String, delayMs: Long, shouldFail: Boolean) {
+              println("Task $name: Started")
+              try {
+                  delay(delayMs)
+                  if (shouldFail) {
+                      throw RuntimeException("Task $name failed!")
+                  }
+                  println("Task $name: Finished successfully")
+              } catch (e: CancellationException) {
+                  println("Task $name: Cancelled")
+                  throw e // Re-throw cancellation
+              } catch (e: Exception) {
+                  println("Task $name: Caught exception - ${e.message}")
+                  throw e // Re-throw original exception
+              }
+          }
+
+          fun main() = runBlocking {
+              println("--- Testing coroutineScope ---")
+              try {
+                  coroutineScope {
+                      launch { childTask("A (coroutineScope)", 100, false) }
+                      launch { childTask("B (coroutineScope)", 200, true) } // This will fail
+                      launch { childTask("C (coroutineScope)", 300, false) } // This will likely be cancelled
+                      delay(500) // Give time for tasks to run/fail
+                  }
+                  println("coroutineScope finished normally (should not happen)")
+              } catch (e: Exception) {
+                  println("coroutineScope caught exception: ${e.message}")
+              }
+
+              delay(100) // Pause between tests
+              println("\n--- Testing supervisorScope ---")
+              try {
+                  supervisorScope {
+                      launch { childTask("X (supervisorScope)", 100, false) }
+                      launch { childTask("Y (supervisorScope)", 200, true) } // This will fail but not affect others
+                      launch { childTask("Z (supervisorScope)", 300, false) } // This should complete normally
+                      delay(500) // Give time for tasks to run/fail
+                  }
+                  println("supervisorScope finished normally (expected)")
+              } catch (e: Exception) {
+                  // This might catch the exception from Y if Y re-throws it and there's no handler
+                  println("supervisorScope caught exception outside: ${e.message}")
+              }
+
+              println("\n--- Testing supervisorScope with Handler ---")
+               val handler = CoroutineExceptionHandler { _, e -> println("Handler caught in supervisorScope: ${e.message}") }
+               try {
+                  supervisorScope {
+                      // Add handler directly to launch, or to the supervisorScope itself
+                      // launch(handler) { childTask("Y2 (supervisorScope+Handler)", 200, true) }
+                      // Or handle at the scope level:
+                      val scopeContext = coroutineContext + handler
+                      launch(scopeContext) { childTask("Y2 (supervisorScope+Handler)", 200, true) }
+                      launch(scopeContext) { childTask("Z2 (supervisorScope+Handler)", 300, false) }
+                      delay(500)
+                  }
+                  println("supervisorScope with Handler finished normally")
+               } catch (e: Exception) {
+                  println("supervisorScope with Handler caught exception outside: ${e.message}")
+               }
+          }
+          // 输出:
+          // --- Testing coroutineScope ---
+          // Task A (coroutineScope): Started
+          // Task B (coroutineScope): Started
+          // Task C (coroutineScope): Started
+          // Task A (coroutineScope): Finished successfully
+          // Task B (coroutineScope): Caught exception - Task B (coroutineScope) failed!
+          // Task C (coroutineScope): Cancelled  (Task B's failure cancelled C)
+          // coroutineScope caught exception: Task B (coroutineScope) failed!
+          //
+          // --- Testing supervisorScope ---
+          // Task X (supervisorScope): Started
+          // Task Y (supervisorScope): Started
+          // Task Z (supervisorScope): Started
+          // Task X (supervisorScope): Finished successfully
+          // Task Y (supervisorScope): Caught exception - Task Y (supervisorScope) failed!
+          // Task Z (supervisorScope): Finished successfully (Unaffected by Y's failure)
+          // supervisorScope finished normally (expected)
+          //
+          // --- Testing supervisorScope with Handler ---
+          // Task Y2 (supervisorScope+Handler): Started
+          // Task Z2 (supervisorScope+Handler): Started
+          // Task Y2 (supervisorScope+Handler): Caught exception - Task Y2 (supervisorScope+Handler) failed!
+          // Handler caught in supervisorScope: Task Y2 (supervisorScope+Handler) failed!
+          // Task Z2 (supervisorScope+Handler): Finished successfully
+          // supervisorScope with Handler finished normally
+          ```
 references:
   - title: Coroutines guide
     url: https://kotlinlang.org/docs/coroutines-guide.html

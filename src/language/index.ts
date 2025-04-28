@@ -35,19 +35,20 @@ export interface LanguageOutline {
   children?: LanguageOutline[];
 }
 
+export interface LanguageFeautureUsage {
+  title: string;
+  description?: string;
+  example?: string;
+  children?: LanguageFeautureUsage[];
+}
+
 export interface LanguageFeauture {
   id: string;
   title: string;
   query?: string;
   comment?: string;
   description: string;
-  usage?:
-    | string
-    | {
-        title: string;
-        description: string;
-        example: string;
-      }[];
+  usage?: string | LanguageFeautureUsage[];
   references: {
     title: string;
     url: string;

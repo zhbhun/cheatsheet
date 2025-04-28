@@ -1,10 +1,11 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, createElement, useMemo } from 'react';
 import { Link } from '@nextui-org/react';
 import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
-import { LanguageFeauture } from '@/language';
+import { LanguageFeauture, LanguageFeautureUsage } from '@/language';
 import { Highlight } from '@/component';
+import { div } from 'framer-motion/client';
 
 const marked = new Marked(
   markedHighlight({
@@ -15,6 +16,59 @@ const marked = new Marked(
     },
   })
 );
+
+function parseUsage(usage: LanguageFeautureUsage): LanguageFeautureUsage {
+  return {
+    title: usage.title,
+    description: usage.description
+      ? (marked.parse(usage.description) as string)
+      : '',
+    example: usage.example ? (marked.parse(usage.example) as string) : '',
+    children: usage.children
+      ? usage.children.map((item) => parseUsage(item))
+      : [],
+  };
+}
+
+function FeatureUsage({
+  level,
+  usage,
+}: {
+  level: number;
+  usage: LanguageFeautureUsage;
+}) {
+  const { title, description, example, children } = usage;
+  return (
+    <div className="mb-8">
+      {createElement(
+        `h${level}`,
+        {
+          className: 'mb-2 text-lg font-medium',
+        },
+        title
+      )}
+      {description ? (
+        <div
+          className="markdown mb-4"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+      ) : null}
+      {example ? (
+        <div
+          className="markdown mb-4"
+          dangerouslySetInnerHTML={{ __html: example }}
+        />
+      ) : null}
+      {children && children.length > 0 ? (
+        <div>
+          {children.map((item, index) => (
+            <FeatureUsage key={index} level={level + 1} usage={item} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export interface FeatureContentProps {
   feature: LanguageFeauture;
@@ -27,18 +81,12 @@ export function FeatureContent({ feature }: FeatureContentProps) {
   }, [feature]);
   const usage = useMemo(() => {
     if (!feature) {
-      return '';
+      return [];
     }
     if (typeof feature.usage === 'string') {
-      return feature.usage;
+      return [];
     }
-    return (
-      feature.usage?.map((item) => ({
-        title: item.title,
-        description: item.description ? marked.parse(item.description) : '',
-        example: item.example ? marked.parse(item.example) : '',
-      })) ?? []
-    );
+    return feature.usage?.map(parseUsage) ?? [];
   }, [feature]);
   let content: ReactNode = null;
   if (feature) {
@@ -55,24 +103,8 @@ export function FeatureContent({ feature }: FeatureContentProps) {
           </div>
         ) : (
           <div>
-            {(
-              usage as {
-                title: string;
-                description: string;
-                example: string;
-              }[]
-            ).map((item, index) => (
-              <div key={index} className="mb-8">
-                <h2 className="mb-2 text-lg font-medium">{item.title}</h2>
-                <div
-                  className="markdown mb-4"
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                />
-                <div
-                  className="markdown mb-4"
-                  dangerouslySetInnerHTML={{ __html: item.example }}
-                />
-              </div>
+            {usage.map((usage, index) => (
+              <FeatureUsage key={index} level={2} usage={usage} />
             ))}
           </div>
         )}
