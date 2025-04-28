@@ -5,7 +5,6 @@ import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
 import { LanguageFeauture, LanguageFeautureUsage } from '@/language';
 import { Highlight } from '@/component';
-import { div } from 'framer-motion/client';
 
 const marked = new Marked(
   markedHighlight({
