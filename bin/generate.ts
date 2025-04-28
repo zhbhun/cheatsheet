@@ -1,5 +1,5 @@
 import process from 'node:process';
-import { generateFeature } from './feature.ts';
+import { generateFeature } from './common/feature.ts';
 
 const language = process.argv[2]; // swift
 const feature = process.argv[3]; // gui/view/custom

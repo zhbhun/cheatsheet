@@ -3,7 +3,7 @@ import path from 'path';
 import yaml from 'js-yaml';
 import { LanguageData, Feature } from './types.ts';
 
-export const context = path.resolve(import.meta.dirname, '..');
+export const context = path.resolve(import.meta.dirname, '../..');
 export const dataContext = path.resolve(context, 'src/language');
 
 export async function isFileExit(filePath: string) {

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "cheatsheet:generate": "tsx ./bin/index.ts",
+    "cheatsheet:generate": "tsx ./bin/generate.ts",
     "cheatsheet:outline": "tsx ./bin/outline.ts"
   },
   "dependencies": {
