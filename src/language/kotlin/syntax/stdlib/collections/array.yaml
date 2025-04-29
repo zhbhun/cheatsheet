@@ -1,123 +1,945 @@
 id: array
 title: 数组
-query: List, Array operations in Kotlin
-comment: 区分 `Array` 和 `List` 的用法，详细介绍数组的常见操作。
-description: |
-  Kotlin 中的 `Array` 和 `List` 都用于存储有序元素，但它们有明显的区别。`Array` 是固定大小的，初始化后不能调整长度，且每个元素都可以被修改（mutable）。`List` 是接口，分为只读的 `listOf()` 和可变的 `mutableListOf()`。与数组不同，`List` 可以动态增加或减少元素。
+query: Kotlin Array & List
+comment: |
+  详细梳理 Kotlin 中数组和列表的创建、操作、转换、常用 API 和常见坑，侧重实战用法和避坑技巧。
+description: Kotlin 提供了 `Array` 和 `List` (包括只读的 `List` 和可变的 `MutableList`) 两种主要的集合类型来存储有序元素。`Array` 是固定大小的，创建后长度不可变，但其元素可修改。`List` 接口代表有序集合，`listOf()` 创建只读列表，大小和元素都不可变；`mutableListOf()` 创建可变列表，可以动态添加、删除或修改元素。此外，Kotlin 还为基本数据类型提供了专门的数组类型（如 `IntArray`、`DoubleArray`），以优化性能并避免自动装箱/拆箱开销。
+outline:
+  - title: 构建
+    description: Kotlin 中数组与列表的声明、初始化与常用构建方式
+    children:
+      - title: 数组
+        description: arrayOf()、Array(size) { value }、emptyArray()、Array(size) { index -> value }
+      - title: 不可变列表
+        description: listOf()、emptyList()，元素只读，无法增删
+      - title: 可变列表
+        description: mutableListOf()、arrayListOf()，可增删改查
+      - title: 特殊类型数组
+        description: intArrayOf()、doubleArrayOf()、booleanArrayOf()，避免装箱问题，提高性能
+  - title: 使用
+    description: 数组和列表的基本操作与遍历方式
+    children:
+      - title: 访问&更新
+        description: get(index)、set(index, value)、下标运算符 [index]
+      - title: 遍历
+        description: for 循环、forEach、forEachIndexed、indices
+      - title: 排序
+        description: sorted()、sort()、sortDescending()、sortBy()
+      - title: 过滤
+        description: filter()、filterNot()、filterIndexed()、filterNotNull()。。。
+      - title: 查找
+        description: indexOf()、lastIndexOf()、find()、findLast()、none()
+      - title: 匹配
+        description: contains()、containsAll()、any()、all()
+      - title: 聚合
+        description: count()、sum()、average()、reduce()、fold()
+  - title: 转换
+    description: 数组与其他集合、字符串的相互转换
+    children:
+      - title: 数组转列表
+        description: toList()、toMutableList()
+      - title: 数组转字符串
+        description: joinToString()、contentToString()
+      - title: 数组拷贝
+        description: copyOf()、copyOfRange()、clone()
+      - title: 数组合并与拆分
+        description: plus()、sliceArray()、drop()、take()
+  - title: 常见问题与陷阱
+    description: 开发中常遇到的坑点与解决方案
+    children:
+      - title: 类型擦除与 Array<T>
+        description: 泛型数组创建限制及 workaround：arrayOfNulls<T>()
+      - title: 基本类型数组与装箱问题
+        description: 避免使用 Array<Int>，优先 intArrayOf()，节省内存和性能
+      - title: 空数组与空列表处理
+        description: emptyArray()、emptyList()、isEmpty()/isNotEmpty()
+      - title: 数组与列表比较
+        description: '== 与 equals() 比较地址，contentEquals()/contentDeepEquals() 比较内容'
+  - title: 最佳实践
+    description: 常见数组与列表实战技巧和代码模板
+    children:
+      - title: 安全取值
+        description: getOrNull(index)、getOrElse(index) { default }
+      - title: 快速去重
+        description: toSet().toTypedArray()、toSet().toList() 实现去重
+      - title: 初始化固定值数组或列表
+        description: Array(size) { constantValue }、List(size) { constant }
+      - title: 交换元素
+        description: swap(i, j)：临时变量或 also() 快速交换
+      - title: 二维数组与嵌套列表
+        description: Array(rows) { IntArray(columns) }、List(rows) { List(columns) { value } }
+usage:
+  - title: 构建
+    description: 介绍如何在 Kotlin 中创建不同类型的数组和列表。
+    children:
+      - title: 数组 (Array)
+        description: |
+          `Array` 是固定大小的、元素可变的集合。创建方式包括：
+          - `arrayOf(element1, element2, ...)`: 使用明确的元素值创建数组。
+          - `Array(size) { init }`: 创建指定大小 `size` 的数组，并通过 `init` lambda 表达式初始化每个元素。Lambda 接收元素索引 `it` 作为参数，返回该索引对应的元素值。
+          - `emptyArray<T>()`: 创建一个指定类型 `T` 的空数组。
+          - `arrayOfNulls<T>(size)`: 创建一个指定大小 `size` 的数组，所有元素初始化为 `null`。常用于需要先创建容器再填充的泛型数组场景。
+        example: |
+          ```kotlin
+          // 使用 arrayOf() 创建包含指定元素的数组
+          val names = arrayOf("Alice", "Bob", "Charlie")
+          println("arrayOf: ${names.contentToString()}") // Output: arrayOf: [Alice, Bob, Charlie]
 
-  - **数组 (`Array`)**：用于存储固定大小的同一类型元素，可以通过索引访问和修改元素，但长度不可变。
-  - **不可变列表 (`List`)**：使用 `listOf()` 创建的只读集合，不支持元素的增加、删除或修改。
-  - **可变列表 (`MutableList`)**：使用 `mutableListOf()` 创建，可以自由增删改元素，类似于动态数组。
+          // 使用 Array(size) { init } 创建数组，元素为索引的两倍
+          val evenNumbers = Array(5) { index -> index * 2 }
+          println("Array(size){init}: ${evenNumbers.contentToString()}") // Output: Array(size){init}: [0, 2, 4, 6, 8]
 
-  具体操作包括数组的创建、读取、更新，列表的增删，数组和列表之间的互相转换等。
-example:
-  - title: "创建数组"
-    content: |
-      ```kotlin
-      val cities = arrayOf("Beijing", "Shanghai", "Shenzhen")  // 创建数组
-      println(cities[0])  // 输出：Beijing
-      cities[0] = "Guangzhou"  // 修改元素
-      println(cities[0])  // 输出：Guangzhou
-      ```
+          // 使用 emptyArray() 创建空数组
+          val emptyFloats = emptyArray<Float>()
+          println("emptyArray: ${emptyFloats.contentToString()}") // Output: emptyArray: []
 
-  - title: "遍历数组"
-    content: |
-      ```kotlin
-      val numbers = arrayOf(1, 2, 3, 4, 5)
-      for (number in numbers) {
-          println(number)  // 输出数组中的每个元素
-      }
-      ```
+          // 使用 arrayOfNulls<T>(size) 创建填充 null 的数组
+          val nullableInts = arrayOfNulls<Int>(3)
+          println("arrayOfNulls: ${nullableInts.contentToString()}") // Output: arrayOfNulls: [null, null, null]
+          ```
+      - title: 不可变列表 (List)
+        description: |
+          `List` 是只读列表接口，创建后其大小和元素都不能修改。常用创建方式：
+          - `listOf(element1, element2, ...)`: 使用明确的元素值创建只读列表。
+          - `emptyList<T>()`: 创建一个指定类型 `T` 的空只读列表。
+          - `List(size) { init }`: 创建指定大小 `size` 的只读列表，并通过 `init` lambda 表达式初始化每个元素。
+        example: |
+          ```kotlin
+          // 使用 listOf() 创建只读列表
+          val readOnlyNums = listOf(10, 20, 30)
+          println("listOf: $readOnlyNums") // Output: listOf: [10, 20, 30]
+          // readOnlyNums.add(40) //编译错误，List 不支持修改操作
 
-  - title: "数组和列表的转换"
-    content: |
-      ```kotlin
-      val array = arrayOf(1, 2, 3)
-      val list = array.toList()  // 转换为 List
-      val newArray = list.toTypedArray()  // 转换回 Array
-      ```
+          // 使用 emptyList() 创建空列表
+          val emptyStringsList = emptyList<String>()
+          println("emptyList: $emptyStringsList") // Output: emptyList: []
 
-  - title: "创建不可变列表"
-    content: |
-      ```kotlin
-      val fruits = listOf("Apple", "Banana", "Orange")  // 不可变列表
-      println(fruits[1])  // 输出：Banana
-      ```
+          // 使用 List(size) { init } 创建只读列表
+          val squaresList = List(4) { it * it } // Lambda 接收索引 it
+          println("List(size){init}: $squaresList") // Output: List(size){init}: [0, 1, 4, 9]
+          ```
+      - title: 可变列表 (MutableList)
+        description: |
+          `MutableList` 继承自 `List`，提供了修改列表内容（增、删、改）的方法。常用创建方式：
+          - `mutableListOf(element1, element2, ...)`: 使用明确的元素值创建可变列表。
+          - `arrayListOf(element1, element2, ...)`: `arrayListOf` 是 `mutableListOf` 的一个常见实现（基于 `ArrayList`），功能相同。
+          - 可以通过 `ArrayList()` 构造函数创建。
+        example: |
+          ```kotlin
+          // 使用 mutableListOf() 创建可变列表
+          val mutableColors = mutableListOf("Red", "Green")
+          println("mutableListOf (initial): $mutableColors") // Output: mutableListOf (initial): [Red, Green]
 
-  - title: "创建可变列表并修改元素"
-    content: |
-      ```kotlin
-      val mutableFruits = mutableListOf("Apple", "Banana")
-      mutableFruits.add("Orange")  // 添加元素
-      println(mutableFruits)  // 输出：[Apple, Banana, Orange]
-      mutableFruits.removeAt(0)  // 移除第一个元素
-      println(mutableFruits)  // 输出：[Banana, Orange]
-      ```
+          // 添加元素
+          mutableColors.add("Blue")
+          println("After add: $mutableColors") // Output: After add: [Red, Green, Blue]
 
-  - title: "数组的基本操作"
-    content: |
-      ```kotlin
-      val numbers = arrayOf(10, 20, 30)
-      println("Size of array: ${numbers.size}")  // 输出数组的大小
-      println("First element: ${numbers.first()}")  // 输出第一个元素
-      println("Last element: ${numbers.last()}")  // 输出最后一个元素
-      ```
-  - title: "映射集合中的每个元素"
-    content: |
-      ```kotlin
-      val numbers = listOf(1, 2, 3, 4, 5)
-      val squared = numbers.map { it * it }
-      println(squared)  // 输出: [1, 4, 9, 16, 25]
-      ```
+          // 删除元素
+          mutableColors.remove("Green")
+          println("After remove: $mutableColors") // Output: After remove: [Red, Blue]
 
-  - title: "对集合中的每个元素执行操作"
-    content: |
-      ```kotlin
-      val numbers = listOf(1, 2, 3, 4, 5)
-      numbers.forEach { println(it * 2) }  // 每个元素乘以 2 后输出
-      ```
+          // 修改元素
+          mutableColors[0] = "Scarlet"
+          println("After set: $mutableColors") // Output: After set: [Scarlet, Blue]
 
-  - title: "聚合集合元素"
-    content: |
-      ```kotlin
-      val numbers = listOf(1, 2, 3, 4)
-      val sum = numbers.reduce { acc, num -> acc + num }
-      println(sum)  // 输出: 10
-      ```
+          // 使用 arrayListOf() 创建可变列表
+          val tasks = arrayListOf("Task 1", "Task 2")
+          tasks.add("Task 3")
+          println("arrayListOf: $tasks") // Output: arrayListOf: [Task 1, Task 2, Task 3]
+          ```
+      - title: 特殊类型数组 (Primitive Type Arrays)
+        description: |
+          为了优化性能和内存使用，Kotlin 提供了针对基本数据类型的特化数组，避免了自动装箱/拆箱的开销。它们是独立的类，不是 `Array<T>` 的子类。
+          - `IntArray`, `intArrayOf(...)`
+          - `DoubleArray`, `doubleArrayOf(...)`
+          - `FloatArray`, `floatArrayOf(...)`
+          - `LongArray`, `longArrayOf(...)`
+          - `ShortArray`, `shortArrayOf(...)`
+          - `ByteArray`, `byteArrayOf(...)`
+          - `CharArray`, `charArrayOf(...)`
+          - `BooleanArray`, `booleanArrayOf(...)`
+          它们也支持 `Array(size) { init }` 形式的构造函数。
+        example: |
+          ```kotlin
+          // 使用 intArrayOf() 创建 IntArray
+          val primitiveInts = intArrayOf(1, 2, 3)
+          println("intArrayOf: ${primitiveInts.contentToString()}") // Output: intArrayOf: [1, 2, 3]
 
-  - title: "检查集合中是否存在符合条件的元素"
-    content: |
-      ```kotlin
-      val numbers = listOf(1, 2, 3, 4)
-      val hasEven = numbers.any { it % 2 == 0 }
-      println(hasEven)  // 输出: true
-      ```
+          // 使用 IntArray(size) { init } 创建 IntArray
+          val primitiveSquares = IntArray(5) { it * it }
+          println("IntArray(size){init}: ${primitiveSquares.contentToString()}") // Output: IntArray(size){init}: [0, 1, 4, 9, 16]
 
-  - title: "检查集合中的所有元素是否符合条件"
-    content: |
-      ```kotlin
-      val numbers = listOf(2, 4, 6, 8)
-      val allEven = numbers.all { it % 2 == 0 }
-      println(allEven)  // 输出: true
-      ```
+          // 使用 booleanArrayOf() 创建 BooleanArray
+          val flags = booleanArrayOf(true, false, true)
+          println("booleanArrayOf: ${flags.contentToString()}") // Output: booleanArrayOf: [true, false, true]
 
-  - title: "对集合进行排序"
-    content: |
-      ```kotlin
-      val numbers = mutableListOf(5, 3, 8, 1)
-      numbers.sort()
-      println(numbers)  // 输出: [1, 3, 5, 8]
-      ```
+          // 对比 Array<Int> (会发生装箱)
+          val boxedInts: Array<Int> = arrayOf(1, 2, 3) // 每个 Int 被包装成 Integer 对象
+          println("Array<Int>: ${boxedInts.contentToString()}") // Output: Array<Int>: [1, 2, 3]
+          ```
+  - title: 使用
+    description: 涵盖数组和列表的常见操作，如访问、更新、遍历、排序、过滤、查找、匹配和聚合计算。
+    children:
+      - title: 访问与更新元素
+        description: |
+          访问和更新数组或列表中的元素。
+          - **访问**:
+            - `get(index)`: 返回指定索引 `index` 处的元素。如果索引越界，抛出 `IndexOutOfBoundsException`。
+            - `[index]`: 下标运算符，与 `get(index)` 等效。
+          - **更新** (仅适用于 `Array` 和 `MutableList`):
+            - `set(index, value)`: 将指定索引 `index` 处的元素更新为 `value`。如果索引越界，抛出 `IndexOutOfBoundsException`。
+            - `[index] = value`: 下标运算符赋值，与 `set(index, value)` 等效。
+        example: |
+          ```kotlin
+          val arr = arrayOf("A", "B", "C")
+          val mList = mutableListOf(10, 20, 30)
 
-  - title: "查找集合中第一个满足条件的元素"
-    content: |
-      ```kotlin
-      val numbers = listOf(1, 2, 3, 4, 5)
-      val firstEven = numbers.find { it % 2 == 0 }
-      println(firstEven)  // 输出: 2
-      ```
+          // --- 访问 ---
+          // 使用 get()
+          val firstElementArr = arr.get(0) // firstElementArr = "A"
+          println("Array get(0): $firstElementArr") // Output: Array get(0): A
+
+          // 使用下标运算符 []
+          val secondElementList = mList[1] // secondElementList = 20
+          println("MutableList [1]: $secondElementList") // Output: MutableList [1]: 20
+
+          // --- 更新 (Array) ---
+          // 使用 set()
+          arr.set(1, "X")
+          println("Array after set: ${arr.contentToString()}") // Output: Array after set: [A, X, C]
+
+          // 使用下标运算符 []=
+          arr[2] = "Z"
+          println("Array after []: ${arr.contentToString()}") // Output: Array after []: [A, X, Z]
+
+          // --- 更新 (MutableList) ---
+          // 使用 set()
+          mList.set(0, 100)
+          println("MutableList after set: $mList") // Output: MutableList after set: [100, 20, 30]
+
+          // 使用下标运算符 []=
+          mList[2] = 300
+          println("MutableList after []: $mList") // Output: MutableList after []: [100, 20, 300]
+          ```
+      - title: 遍历
+        description: |
+          迭代访问数组或列表中的所有元素。常用方式：
+          - `for (element in collection)`: 标准的 `for-in` 循环，遍历每个元素。
+          - `forEach { action }`: 对每个元素执行 `action` lambda 表达式。
+          - `forEachIndexed { index, element -> action }`: 对每个元素执行 `action` lambda，同时提供元素的索引 `index` 和值 `element`。
+          - `for (index in collection.indices)`: 通过索引 `indices` 属性（一个 `IntRange`）遍历集合，然后使用 `collection[index]` 访问元素。
+        example: |
+          ```kotlin
+          val items = listOf("Apple", "Banana", "Cherry")
+          val itemArray = items.toTypedArray() // 转换为数组以便演示
+
+          // 使用 for-in 循环 (适用于 List 和 Array)
+          println("--- for-in loop ---")
+          for (item in items) {
+              print("$item ") // Output: Apple Banana Cherry
+          }
+          println()
+
+          // 使用 forEach (适用于 List 和 Array)
+          println("--- forEach ---")
+          items.forEach { print("$it ") } // Output: Apple Banana Cherry
+          println()
+
+          // 使用 forEachIndexed (适用于 List 和 Array)
+          println("--- forEachIndexed ---")
+          itemArray.forEachIndexed { index, element ->
+              print("($index: $element) ") // Output: (0: Apple) (1: Banana) (2: Cherry)
+          }
+          println()
+
+          // 使用 indices (适用于 List 和 Array)
+          println("--- indices ---")
+          for (i in items.indices) {
+              print("${items[i]} ") // Output: Apple Banana Cherry
+          }
+          println()
+          ```
+      - title: 排序
+        description: |
+          对集合元素进行排序。需要区分返回新集合的方法和原地修改的方法：
+          - `sorted()`: 返回一个包含原集合元素**升序排序**的新列表。原集合不变。适用于 `Array`, `List`, `MutableList`。
+          - `sort()`: **原地**对 `Array` 或 `MutableList` 进行**升序排序**。不适用于只读 `List`。无返回值 (`Unit`)。
+          - `sortedDescending()`: 返回一个包含原集合元素**降序排序**的新列表。原集合不变。
+          - `sortDescending()`: **原地**对 `Array` 或 `MutableList` 进行**降序排序**。
+          - `sortBy { selector }`: 根据 `selector` lambda 返回的可比较键，**原地**对 `Array` 或 `MutableList` 进行**升序排序**。
+          - `sortedBy { selector }`: 根据 `selector` 返回的可比较键，返回一个**升序排序**的新列表。
+          - `sortWith(comparator)` / `sortedWith(comparator)`: 使用自定义 `Comparator` 进行原地排序或返回新排序列表。
+        example: |
+          ```kotlin
+          val numbers = mutableListOf(3, 1, 4, 1, 5, 9)
+          val letters = arrayOf('c', 'a', 'b')
+
+          // sorted(): 返回新列表，原列表不变
+          val sortedNumbers = numbers.sorted()
+          println("Original List: $numbers")       // Output: Original List: [3, 1, 4, 1, 5, 9]
+          println("Sorted List (new): $sortedNumbers") // Output: Sorted List (new): [1, 1, 3, 4, 5, 9]
+
+          // sort(): 原地排序，修改原列表
+          numbers.sort()
+          println("Sorted List (in-place): $numbers") // Output: Sorted List (in-place): [1, 1, 3, 4, 5, 9]
+
+          // sortedDescending(): 返回降序新列表
+          val sortedDesc = letters.sortedDescending()
+          println("Original Array: ${letters.contentToString()}") // Output: Original Array: [c, a, b]
+          println("Sorted Desc Array (new): ${sortedDesc.joinToString()}") // Output: Sorted Desc Array (new): c, b, a
+
+          // sortBy(): 原地按条件排序 (例如按绝对值)
+          val mixedNums = mutableListOf(-5, 3, -1, 4, -2)
+          mixedNums.sortBy { kotlin.math.abs(it) }
+          println("Sorted by absolute value (in-place): $mixedNums") // Output: Sorted by absolute value (in-place): [-1, -2, 3, 4, -5]
+
+          // sortWith(): 使用自定义比较器原地排序
+          letters.sortWith(compareBy { it }) // 等同于 letters.sort()
+          println("Sorted Array with Comparator (in-place): ${letters.contentToString()}") // Output: Sorted Array with Comparator (in-place): [a, b, c]
+          ```
+      - title: 过滤
+        description: |
+          根据条件筛选集合中的元素，生成新的集合。
+          - `filter { predicate }`: 返回一个新列表，包含所有使 `predicate` lambda 返回 `true` 的元素。
+          - `filterNot { predicate }`: 返回一个新列表，包含所有使 `predicate` lambda 返回 `false` 的元素。
+          - `filterIndexed { index, element -> predicate }`: 类似于 `filter`，但 `predicate` lambda 同时接收索引和元素。
+          - `filterNotNull()`: 返回一个新列表，移除原集合中的所有 `null` 元素。对于元素类型为 `T?` 的集合，返回类型为 `List<T>`。
+          - `filterIsInstance<T>()`: 返回一个新列表，只包含原集合中类型为 `T` 的元素，并进行智能类型转换。
+        example: |
+          ```kotlin
+          val items = listOf(1, null, 2, 3, null, 4, 5)
+          val strings = listOf("apple", "banana", 123, "cherry", null)
+
+          // filter: 保留偶数
+          val evens = items.filter { it != null && it % 2 == 0 }
+          println("Filtered (evens): $evens") // Output: Filtered (evens): [2, 4]
+
+          // filterNot: 排除偶数 (保留奇数和 null)
+          val notEvens = items.filterNot { it != null && it % 2 == 0 }
+          println("FilteredNot (not evens): $notEvens") // Output: FilteredNot (not evens): [1, null, 3, null, 5]
+
+          // filterIndexed: 保留索引为偶数的非 null 元素
+          val evenIndexItems = items.filterIndexed { index, item -> index % 2 == 0 && item != null }
+          println("FilteredIndexed (even index, non-null): $evenIndexItems") // Output: FilteredIndexed (even index, non-null): [1, 2, 4]
+
+          // filterNotNull: 移除所有 null 元素
+          val nonNullItems = items.filterNotNull()
+          println("FilteredNotNull: $nonNullItems") // Output: FilteredNotNull: [1, 2, 3, 4, 5] (Type is List<Int>)
+
+          // filterIsInstance: 只保留字符串元素
+          val onlyStrings = strings.filterIsInstance<String>()
+          println("FilteredIsInstance (String): $onlyStrings") // Output: FilteredIsInstance (String): [apple, banana, cherry] (Type is List<String>)
+          ```
+      - title: 查找
+        description: |
+          在集合中定位元素或检查是否存在满足条件的元素。
+          - `indexOf(element)`: 返回元素 `element` 在集合中首次出现的索引，如果不存在则返回 -1。
+          - `lastIndexOf(element)`: 返回元素 `element` 在集合中最后一次出现的索引，如果不存在则返回 -1。
+          - `find { predicate }`: 返回第一个满足 `predicate` lambda 条件的元素，如果找不到则返回 `null`。
+          - `findLast { predicate }`: 返回最后一个满足 `predicate` lambda 条件的元素，如果找不到则返回 `null`。
+          - `first()` / `first { predicate }`: 返回第一个元素，或第一个满足条件的元素。如果集合为空或找不到满足条件的元素，抛出 `NoSuchElementException`。
+          - `last()` / `last { predicate }`: 返回最后一个元素，或最后一个满足条件的元素。如果集合为空或找不到满足条件的元素，抛出 `NoSuchElementException`。
+          - `firstOrNull()` / `firstOrNull { predicate }`: 功能同 `first`，但在找不到时返回 `null` 而不是抛异常。
+          - `lastOrNull()` / `lastOrNull { predicate }`: 功能同 `last`，但在找不到时返回 `null` 而不是抛异常。
+          - `elementAt(index)` / `elementAtOrNull(index)` / `elementAtOrElse(index) { defaultValue }`: 按索引获取元素，提供不同错误处理方式。
+          - `none()` / `none { predicate }`: 如果集合为空或没有元素满足条件，返回 `true`。
+        example: |
+          ```kotlin
+          val numbers = listOf(1, 2, 3, 4, 3, 5)
+
+          // indexOf / lastIndexOf
+          val firstThreeIndex = numbers.indexOf(3)
+          val lastThreeIndex = numbers.lastIndexOf(3)
+          println("indexOf(3): $firstThreeIndex")   // Output: indexOf(3): 2
+          println("lastIndexOf(3): $lastThreeIndex") // Output: lastIndexOf(3): 4
+          println("indexOf(9): ${numbers.indexOf(9)}") // Output: indexOf(9): -1
+
+          // find / findLast
+          val firstEven = numbers.find { it % 2 == 0 }
+          val lastEven = numbers.findLast { it % 2 == 0 }
+          println("find (first even): $firstEven") // Output: find (first even): 2
+          println("findLast (last even): $lastEven") // Output: findLast (last even): 4
+          println("find (> 10): ${numbers.find { it > 10 }}") // Output: find (> 10): null
+
+          // first / firstOrNull
+          val firstElement = numbers.first()
+          val firstGreaterThan3 = numbers.first { it > 3 }
+          val firstGreaterThan10 = numbers.firstOrNull { it > 10 }
+          println("first(): $firstElement") // Output: first(): 1
+          println("first { > 3 }: $firstGreaterThan3") // Output: first { > 3 }: 4
+          println("firstOrNull { > 10 }: $firstGreaterThan10") // Output: firstOrNull { > 10 }: null
+          // emptyList<Int>().first() // Throws NoSuchElementException
+
+          // none
+          val hasNoZeros = numbers.none { it == 0 }
+          val isEmpty = emptyList<Int>().none()
+          println("none { == 0 }: $hasNoZeros") // Output: none { == 0 }: true
+          println("emptyList.none(): $isEmpty") // Output: emptyList.none(): true
+          ```
+      - title: 匹配
+        description: |
+          检查集合中的元素是否满足特定条件。
+          - `contains(element)`: 检查集合是否包含指定的 `element`。
+          - `containsAll(elements)`: 检查集合是否包含 `elements` 集合中的所有元素。
+          - `any()`: 检查集合是否至少包含一个元素。
+          - `any { predicate }`: 检查集合中是否存在**至少一个**元素满足 `predicate` lambda 条件。
+          - `all { predicate }`: 检查集合中的**所有**元素是否都满足 `predicate` lambda 条件。如果集合为空，`all` 返回 `true`。
+        example: |
+          ```kotlin
+          val letters = listOf('a', 'b', 'c', 'd')
+          val search = listOf('b', 'd')
+          val empty = emptyList<Char>()
+
+          // contains
+          val hasB = letters.contains('b')
+          println("contains('b'): $hasB") // Output: contains('b'): true
+          val hasX = letters.contains('x')
+          println("contains('x'): $hasX") // Output: contains('x'): false
+
+          // containsAll
+          val hasAll = letters.containsAll(search)
+          println("containsAll(['b', 'd']): $hasAll") // Output: containsAll(['b', 'd']): true
+          val hasAllExtended = letters.containsAll(listOf('a', 'x'))
+          println("containsAll(['a', 'x']): $hasAllExtended") // Output: containsAll(['a', 'x']): false
+
+          // any (non-empty)
+          val isNotEmpty = letters.any()
+          println("letters.any(): $isNotEmpty") // Output: letters.any(): true
+          val isEmptyAny = empty.any()
+          println("empty.any(): $isEmptyAny") // Output: empty.any(): false
+
+          // any { predicate }
+          val hasVowel = letters.any { it in "aeiou" }
+          println("any { is vowel }: $hasVowel") // Output: any { is vowel }: true
+
+          // all { predicate }
+          val allLowerCase = letters.all { it.isLowerCase() }
+          println("all { is lower case }: $allLowerCase") // Output: all { is lower case }: true
+          val allVowels = letters.all { it in "aeiou" }
+          println("all { is vowel }: $allVowels") // Output: all { is vowel }: false
+          val emptyAll = empty.all { false } // Predicate doesn't matter for empty list
+          println("empty.all { false }: $emptyAll") // Output: empty.all { false }: true
+          ```
+      - title: 聚合
+        description: |
+          对集合中的元素执行计算，得到一个单一的结果值。
+          - `count()`: 返回集合中的元素数量。等价于 `size` 属性。
+          - `count { predicate }`: 返回满足 `predicate` lambda 条件的元素数量。
+          - `sum()`: (仅适用于数字类型集合) 返回所有元素的总和。有 `sumOf { selector }` 版本可根据选择器结果求和。
+          - `average()`: (仅适用于数字类型集合) 返回所有元素的平均值 (Double)。
+          - `reduce { accumulator, element -> result }`: 从第一个元素开始，将 `accumulator` (累积值) 与每个后续 `element` 结合，返回最终的累积结果。如果集合为空，抛出异常。
+          - `fold(initial) { accumulator, element -> result }`: 与 `reduce` 类似，但提供一个 `initial` 初始值作为第一次调用的 `accumulator`。可用于空集合。
+          - `maxOrNull()` / `minOrNull()`: 返回最大/最小元素，如果集合为空则返回 `null`。有 `maxByOrNull { selector }` / `minByOrNull { selector }` 版本。
+        example: |
+          ```kotlin
+          val numbers = listOf(1, 2, 3, 4, 5)
+          val words = listOf("apple", "banana", "kiwi")
+
+          // count
+          val totalCount = numbers.count()
+          println("count(): $totalCount") // Output: count(): 5
+          val evenCount = numbers.count { it % 2 == 0 }
+          println("count { even }: $evenCount") // Output: count { even }: 2
+
+          // sum / average (for numbers)
+          val totalSum = numbers.sum()
+          val avg = numbers.average()
+          println("sum(): $totalSum") // Output: sum(): 15
+          println("average(): $avg") // Output: average(): 3.0
+
+          // reduce: 计算乘积
+          val product = numbers.reduce { acc, i -> acc * i }
+          println("reduce (product): $product") // Output: reduce (product): 120
+          // emptyList<Int>().reduce { a, b -> a + b } // Throws UnsupportedOperationException
+
+          // fold: 计算总长度 (需要初始值 0)
+          val totalLength = words.fold(0) { acc, word -> acc + word.length }
+          println("fold (total length): $totalLength") // Output: fold (total length): 16
+          val emptyFold = emptyList<String>().fold("init") { acc, s -> acc + s }
+          println("fold (empty list): $emptyFold") // Output: fold (empty list): init
+
+          // maxOrNull / minOrNull
+          val maxNum = numbers.maxOrNull()
+          val minWord = words.minOrNull() // Lexicographical comparison
+          println("maxOrNull(): $maxNum") // Output: maxOrNull(): 5
+          println("minOrNull(): $minWord") // Output: minOrNull(): apple
+          ```
+  - title: 转换
+    description: 在数组、列表、字符串等不同类型之间进行转换。
+    children:
+      - title: 数组与列表互转
+        description: |
+          - `toList()`: 将 `Array` 或其他 `Iterable` 转换为只读 `List`。
+          - `toMutableList()`: 将 `Array` 或其他 `Iterable` 转换为可变 `MutableList`。
+          - `toTypedArray()`: 将 `List` 或其他 `Collection` 转换为 `Array`。对于基本类型列表（如 `List<Int>`）转为对应的特化数组（`IntArray`），使用 `toIntArray()`, `toDoubleArray()` 等。
+        example: |
+          ```kotlin
+          val array = arrayOf(1, 2, 3)
+          val list = listOf("a", "b", "c")
+          val intList = listOf(10, 20)
+
+          // Array to List/MutableList
+          val readOnlyList = array.toList()
+          val mutableList = array.toMutableList()
+          println("Array to List: $readOnlyList")       // Output: Array to List: [1, 2, 3]
+          println("Array to MutableList: $mutableList") // Output: Array to MutableList: [1, 2, 3]
+          // readOnlyList.add(4) // Error
+          mutableList.add(4)
+          println("MutableList after add: $mutableList") // Output: MutableList after add: [1, 2, 3, 4]
+
+          // List to Array
+          val typedArray = list.toTypedArray()
+          println("List to Array: ${typedArray.contentToString()}") // Output: List to Array: [a, b, c]
+
+          // List<Int> to IntArray
+          val intArray = intList.toIntArray()
+          println("List<Int> to IntArray: ${intArray.contentToString()}") // Output: List<Int> to IntArray: [10, 20]
+          ```
+      - title: 数组转字符串
+        description: |
+          将数组内容格式化为字符串，方便打印或日志记录。
+          - `joinToString(separator=", ", prefix="[", postfix="]", limit=-1, truncated="...") { transform }`: 将集合元素连接成一个字符串。可以自定义分隔符、前缀、后缀、元素数量限制及截断标记，还可以通过 `transform` lambda 对每个元素进行转换后再连接。
+          - `contentToString()`: (仅限 `Array`) 返回数组内容的字符串表示形式，类似于 `[elem1, elem2, ...]`. 这是打印数组内容最常用的方法。对于嵌套数组，它只打印嵌套数组对象的引用。
+          - `contentDeepToString()`: (仅限 `Array`) 类似于 `contentToString()`，但能递归地处理嵌套数组，打印出深层内容。
+        example: |
+          ```kotlin
+          val arr = arrayOf("Kotlin", "Java", "Swift")
+          val nestedArr = arrayOf(intArrayOf(1, 2), intArrayOf(3, 4))
+
+          // joinToString (default)
+          val joinedDefault = arr.joinToString()
+          println("joinToString (default): $joinedDefault") // Output: joinToString (default): Kotlin, Java, Swift
+
+          // joinToString (custom)
+          val joinedCustom = arr.joinToString(separator = " | ", prefix = "<", postfix = ">") { it.toUpperCase() }
+          println("joinToString (custom): $joinedCustom") // Output: joinToString (custom): <KOTLIN | JAVA | SWIFT>
+
+          // contentToString (for Array)
+          val contentStr = arr.contentToString()
+          println("contentToString: $contentStr") // Output: contentToString: [Kotlin, Java, Swift]
+
+          // contentToString (for nested Array - shallow)
+          val nestedContentStr = nestedArr.contentToString()
+          println("contentToString (nested): $nestedContentStr") // Output: contentToString (nested): [[I@..., [I@...] (shows references)
+
+          // contentDeepToString (for nested Array - deep)
+          val deepContentStr = nestedArr.contentDeepToString()
+          println("contentDeepToString (nested): $deepContentStr") // Output: contentDeepToString (nested): [[1, 2], [3, 4]]
+          ```
+      - title: 数组拷贝
+        description: |
+          创建数组的副本。注意区分浅拷贝和深拷贝（尤其对于包含对象引用的数组）。
+          - `copyOf()`: (Array extension) 返回一个包含原数组所有元素的新数组（浅拷贝）。可以指定新数组的大小，如果新大小大于原大小，多余位置用 `null` (对 `Array<T?>`) 或默认值 (对基本类型数组) 填充；如果小于，则截断。
+          - `copyOfRange(fromIndex, toIndex)`: (Array extension) 返回一个新数组，包含原数组从 `fromIndex` (包含) 到 `toIndex` (不包含) 的元素。
+          - `clone()`: (Array method) 返回数组的浅拷贝副本。功能类似 `copyOf()`。
+          - 对于 `List` 和 `MutableList`，通常通过 `toList()` 或 `toMutableList()` 创建副本。
+        example: |
+          ```kotlin
+          val originalArray = arrayOf("a", "b", "c", "d")
+          val originalIntArray = intArrayOf(1, 2, 3)
+
+          // copyOf: 完整浅拷贝
+          val fullCopy = originalArray.copyOf()
+          fullCopy[0] = "x" // 修改副本不影响原始
+          println("Original Array: ${originalArray.contentToString()}") // Output: Original Array: [a, b, c, d]
+          println("Full Copy: ${fullCopy.contentToString()}")       // Output: Full Copy: [x, b, c, d]
+
+          // copyOf: 扩展大小 (Array<String?>)
+          val extendedCopy = originalArray.copyOf(5) // New size 5
+          println("Extended Copy: ${extendedCopy.contentToString()}") // Output: Extended Copy: [a, b, c, d, null]
+
+          // copyOf: 截断大小 (IntArray)
+          val truncatedCopy = originalIntArray.copyOf(2) // New size 2
+          println("Truncated Copy: ${truncatedCopy.contentToString()}") // Output: Truncated Copy: [1, 2]
+
+          // copyOfRange: 部分拷贝
+          val rangeCopy = originalArray.copyOfRange(1, 3) // Elements at index 1 and 2
+          println("Range Copy: ${rangeCopy.contentToString()}") // Output: Range Copy: [b, c]
+
+          // clone: 浅拷贝 (类似 copyOf())
+          val cloneCopy = originalArray.clone()
+          cloneCopy[1] = "y"
+          println("Original Array (after clone mod): ${originalArray.contentToString()}") // Output: Original Array (after clone mod): [a, b, c, d]
+          println("Clone Copy: ${cloneCopy.contentToString()}")       // Output: Clone Copy: [a, y, c, d]
+
+          // List copy using toList()
+          val originalList = listOf(10, 20)
+          val listCopy = originalList.toList() // Creates a new read-only list copy
+          println("Original List: $originalList") // Output: Original List: [10, 20]
+          println("List Copy: $listCopy")       // Output: List Copy: [10, 20]
+          ```
+      - title: 数组合并与拆分
+        description: |
+          组合多个数组/列表，或从现有集合中提取子集。
+          - `plus(element)` / `plus(elements)`: 返回一个**新**的列表或数组，包含原集合的所有元素，后面附加指定的元素或集合。可以使用 `+` 操作符。
+          - `sliceArray(indices)`: (Array extension) 返回一个**新**数组，包含原数组在指定 `indices` (通常是 `IntRange` 或 `Collection<Int>`) 处的元素。
+          - `slice(indices)`: (List extension) 返回一个**新**列表，包含原列表在指定 `indices` 处的元素。
+          - `subList(fromIndex, toIndex)`: (List method) 返回原列表从 `fromIndex` (包含) 到 `toIndex` (不包含) 的**视图**。**注意：对视图的修改会反映到原列表（如果原列表是 MutableList），反之亦然。**
+          - `drop(n)`: 返回一个**新**列表，包含原集合除了前 `n` 个元素之外的所有元素。
+          - `take(n)`: 返回一个**新**列表，包含原集合的前 `n` 个元素。
+          - `dropLast(n)` / `takeLast(n)`: 类似 `drop`/`take`，但从末尾操作。
+        example: |
+          ```kotlin
+          val arr1 = intArrayOf(1, 2)
+          val arr2 = intArrayOf(3, 4)
+          val list1 = listOf('a', 'b', 'c', 'd', 'e')
+
+          // plus (+) operator for arrays and lists
+          val combinedArray = arr1 + arr2 + 5 // Combines arrays and adds element
+          println("Combined Array: ${combinedArray.contentToString()}") // Output: Combined Array: [1, 2, 3, 4, 5]
+          val combinedList = list1 + 'f' + listOf('g', 'h')
+          println("Combined List: $combinedList") // Output: Combined List: [a, b, c, d, e, f, g, h]
+
+          // sliceArray / slice
+          val slicedArray = combinedArray.sliceArray(1..3) // Indices 1, 2, 3
+          println("Sliced Array: ${slicedArray.contentToString()}") // Output: Sliced Array: [2, 3, 4]
+          val slicedList = list1.slice(listOf(0, 2, 4)) // Indices 0, 2, 4
+          println("Sliced List: $slicedList") // Output: Sliced List: [a, c, e]
+
+          // subList (view)
+          val mutableList = mutableListOf(10, 20, 30, 40)
+          val sub = mutableList.subList(1, 3) // View of elements at index 1, 2
+          println("Original MutableList: $mutableList") // Output: Original MutableList: [10, 20, 30, 40]
+          println("SubList view: $sub")          // Output: SubList view: [20, 30]
+          sub[0] = 200 // Modify the view
+          println("Original after modifying view: $mutableList") // Output: Original after modifying view: [10, 200, 30, 40]
+          mutableList.add(50) // Modifying original might affect sublist structure (use carefully)
+
+          // drop / take
+          val dropped = list1.drop(2) // Drop first 2
+          val taken = list1.take(3) // Take first 3
+          println("Dropped List: $dropped") // Output: Dropped List: [c, d, e]
+          println("Taken List: $taken")   // Output: Taken List: [a, b, c]
+          ```
+  - title: 常见问题与陷阱
+    description: 在使用 Kotlin 数组和列表时需要注意的问题和潜在的坑点。
+    children:
+      - title: 类型擦除与泛型数组创建 (Array<T>)
+        description: |
+          由于 JVM 的类型擦除机制，Kotlin (和 Java) 不能直接创建泛型数组，如 `val array = Array<String>(5)` 这样是不允许的（无法在运行时确定 `T` 的具体类型来构造数组）。
+          **Workaround**:
+          1.  使用 `arrayOfNulls<T>(size)` 创建一个 `Array<T?>`，然后填充非 null 元素，但需要处理潜在的 null。
+          2.  如果可以，使用 `List<T>` 代替，因为列表没有这个限制。
+          3.  使用内联函数和 `reified` 类型参数可以间接创建，但这通常在库函数内部实现。
+          4.  使用基本类型数组 (`IntArray` 等) 或 `Array<Any>` (如果类型不重要)。
+        example: |
+          ```kotlin
+          // Fails: Cannot create generic array directly
+          // val strings = Array<String>(5) { "init" } // Compile Error
+
+          // Workaround 1: arrayOfNulls (Resulting type is Array<String?>)
+          val nullableStrings = arrayOfNulls<String>(3)
+          nullableStrings[0] = "Hello"
+          println("arrayOfNulls workaround: ${nullableStrings.contentToString()}") // Output: arrayOfNulls workaround: [Hello, null, null]
+
+          // Workaround 2: Use List
+          val stringList = List(3) { "Item $it" } // Works perfectly
+          println("List alternative: $stringList") // Output: List alternative: [Item 0, Item 1, Item 2]
+
+          // Inline function with reified T (example, not typical user code)
+          inline fun <reified T> createGenericArray(size: Int, init: (Int) -> T): Array<T> {
+              // This pattern is often used internally in Kotlin stdlib or other libraries
+              return Array(size, init) // Works inside an inline function with reified T
+          }
+          val genericArray = createGenericArray(2) { index -> "Generated $index" }
+          println("Generic Array via inline/reified: ${genericArray.contentToString()}") // Output: Generic Array via inline/reified: [Generated 0, Generated 1]
+          ```
+      - title: 基本类型数组与装箱问题
+        description: |
+          使用 `Array<Int>`, `Array<Double>` 等通用数组来存储基本类型（如 `Int`, `Double`）会导致**装箱**（boxing）。每个基本类型值会被包装成对应的对象类型（如 `Integer`, `Double`）。这会带来额外的内存开销和性能损耗。
+          **解决方案**: 优先使用 Kotlin 提供的基本类型特化数组：`IntArray`, `DoubleArray`, `BooleanArray` 等。它们直接存储原始的基本类型值，没有装箱开销，性能更好，内存占用更少。
+        example: |
+          ```kotlin
+          // Avoid: Array<Int> - causes boxing
+          val boxedInts: Array<Int> = arrayOf(1, 2, 3) // Each Int is boxed into an Integer object
+
+          // Preferred: IntArray - no boxing
+          val primitiveInts: IntArray = intArrayOf(1, 2, 3) // Stores primitive int values directly
+
+          fun processInts(ints: IntArray) { /* ... */ }
+          fun processMaybeBoxed(ints: Array<Int>) { /* ... */ }
+
+          // Using primitive array is generally more efficient
+          processInts(primitiveInts)
+
+          // Using boxed array might have performance implications in tight loops or large datasets
+          processMaybeBoxed(boxedInts)
+
+          println("Boxed array type: ${boxedInts::class.simpleName}")       // Output: Boxed array type: Array
+          println("Primitive array type: ${primitiveInts::class.simpleName}") // Output: Primitive array type: IntArray
+          ```
+      - title: 空数组与空列表处理
+        description: |
+          Kotlin 提供了创建空集合的标准方法，以及检查集合是否为空的便捷方式。
+          - **创建空集合**:
+            - `emptyArray<T>()`: 创建指定类型的空数组。
+            - `emptyList<T>()`: 创建指定类型的空只读列表。
+            - `mutableListOf<T>()`: 创建空的、可变的列表。
+          - **检查是否为空**:
+            - `isEmpty()`: 如果集合没有元素，返回 `true`。
+            - `isNotEmpty()`: 如果集合至少有一个元素，返回 `true`。
+            - `isNullOrEmpty()`: (Nullable receiver extension) 如果集合是 `null` 或者为空，返回 `true`。这对于处理可能为 null 的集合变量非常有用。
+        example: |
+          ```kotlin
+          // Creating empty collections
+          val emptyArr = emptyArray<String>()
+          val emptyLst = emptyList<Double>()
+          val emptyMutLst = mutableListOf<Int>()
+
+          println("emptyArr is empty: ${emptyArr.isEmpty()}") // Output: emptyArr is empty: true
+          println("emptyLst is empty: ${emptyLst.isEmpty()}") // Output: emptyLst is empty: true
+          println("emptyMutLst is not empty: ${emptyMutLst.isNotEmpty()}") // Output: emptyMutLst is not empty: false
+
+          val nonEmtpyList = listOf(1)
+          println("nonEmtpyList is not empty: ${nonEmtpyList.isNotEmpty()}") // Output: nonEmtpyList is not empty: true
+
+          // Handling nullable collections
+          var nullableList: List<Int>? = null
+          println("nullableList is null or empty: ${nullableList.isNullOrEmpty()}") // Output: nullableList is null or empty: true
+
+          nullableList = emptyList()
+          println("nullableList (now empty) is null or empty: ${nullableList.isNullOrEmpty()}") // Output: nullableList (now empty) is null or empty: true
+
+          nullableList = listOf(1, 2)
+          println("nullableList (now non-empty) is null or empty: ${nullableList.isNullOrEmpty()}") // Output: nullableList (now non-empty) is null or empty: false
+          ```
+      - title: 数组与列表比较
+        description: |
+          比较数组或列表时，需要注意比较的是引用还是内容。
+          - `==` (结构相等性):
+            - 对于 `List` (和 `MutableList`)，`==` 通常调用其 `equals()` 方法，比较的是**内容**（元素、顺序、大小）。如果两个列表包含相同的元素且顺序一致，则 `==` 返回 `true`。
+            - 对于 `Array`，`==` 比较的是**引用地址**。即使两个数组内容完全相同，如果它们是不同的对象实例，`==` 也会返回 `false`。
+          - `equals()`:
+            - `List.equals()`: 比较内容。
+            - `Array.equals()`: 比较引用地址（与 `==` 行为一致）。
+          - **内容比较 (用于数组)**:
+            - `contentEquals(other: Array<*>)`: 比较两个数组的内容是否相等（元素、顺序、大小）。适用于一维数组。
+            - `contentDeepEquals(other: Array<*>)`: 递归地比较数组内容，适用于**嵌套数组**（多维数组）。
+        example: |
+          ```kotlin
+          // --- List Comparison (compares content) ---
+          val list1 = listOf(1, 2, 3)
+          val list2 = listOf(1, 2, 3)
+          val list3 = mutableListOf(1, 2, 3)
+          val list4 = listOf(1, 3, 2)
+
+          println("list1 == list2: ${list1 == list2}") // Output: list1 == list2: true (content is the same)
+          println("list1 == list3: ${list1 == list3}") // Output: list1 == list3: true (content is the same, type difference doesn't matter for equals)
+          println("list1 == list4: ${list1 == list4}") // Output: list1 == list4: false (order differs)
+          println("list1 === list2: ${list1 === list2}") // Output: list1 === list2: false (referential equality, different objects)
+
+          // --- Array Comparison (== compares references) ---
+          val arr1 = arrayOf(1, 2, 3)
+          val arr2 = arrayOf(1, 2, 3)
+          val arr3 = arr1 // arr3 points to the same object as arr1
+
+          println("arr1 == arr2: ${arr1 == arr2}") // Output: arr1 == arr2: false (different objects)
+          println("arr1 === arr2: ${arr1 === arr2}") // Output: arr1 === arr2: false (different objects)
+          println("arr1 == arr3: ${arr1 == arr3}") // Output: arr1 == arr3: true (same object reference)
+          println("arr1 === arr3: ${arr1 === arr3}") // Output: arr1 === arr3: true (same object reference)
+
+          // --- Array Content Comparison ---
+          println("arr1 contentEquals arr2: ${arr1.contentEquals(arr2)}") // Output: arr1 contentEquals arr2: true (content is the same)
+
+          // --- Nested Array Comparison ---
+          val nestedArr1 = arrayOf(intArrayOf(1, 2), intArrayOf(3, 4))
+          val nestedArr2 = arrayOf(intArrayOf(1, 2), intArrayOf(3, 4))
+
+          println("nestedArr1 == nestedArr2: ${nestedArr1 == nestedArr2}") // Output: nestedArr1 == nestedArr2: false (reference comparison)
+          println("nestedArr1 contentEquals nestedArr2: ${nestedArr1.contentEquals(nestedArr2)}") // Output: nestedArr1 contentEquals nestedArr2: false (shallow content comparison, compares references of inner arrays)
+          println("nestedArr1 contentDeepEquals nestedArr2: ${nestedArr1.contentDeepEquals(nestedArr2)}") // Output: nestedArr1 contentDeepEquals nestedArr2: true (deep content comparison)
+          ```
+  - title: 最佳实践
+    description: 一些实用的技巧和代码模式，用于更安全、高效地使用数组和列表。
+    children:
+      - title: 安全取值 (避免 IndexOutOfBoundsException)
+        description: |
+          直接使用 `[index]` 或 `get(index)` 访问元素时，如果索引越界会抛出异常。为了更安全地访问，可以使用以下方法：
+          - `getOrNull(index)`: 返回指定索引处的元素，如果索引越界，则返回 `null`。
+          - `getOrElse(index) { defaultValueLambda }`: 返回指定索引处的元素，如果索引越界，则执行 `defaultValueLambda` 并返回其结果。
+          - `elementAtOrNull(index)`: 功能同 `getOrNull(index)`.
+          - `elementAtOrElse(index) { defaultValueLambda }`: 功能同 `getOrElse(index) { defaultValueLambda }`.
+        example: |
+          ```kotlin
+          val letters = listOf("a", "b", "c")
+
+          // Direct access - potentially unsafe
+          // println(letters[5]) // Throws IndexOutOfBoundsException
+
+          // Safe access using getOrNull
+          val safeElement = letters.getOrNull(5)
+          println("getOrNull(5): $safeElement") // Output: getOrNull(5): null
+
+          val validElement = letters.getOrNull(1)
+          println("getOrNull(1): $validElement") // Output: getOrNull(1): b
+
+          // Safe access using getOrElse
+          val elementOrDefault = letters.getOrElse(10) { "default" }
+          println("getOrElse(10): $elementOrDefault") // Output: getOrElse(10): default
+
+          val validElementOrElse = letters.getOrElse(2) { "default" }
+          println("getOrElse(2): $validElementOrElse") // Output: getOrElse(2): c
+          ```
+      - title: 快速去重
+        description: |
+          从数组或列表中移除重复元素，保留唯一值。最简洁的方法是利用 `Set` 的特性（集合元素唯一）。
+          - **转换为 Set 再转回**:
+            - `toSet()`: 将数组或列表转换为 `Set`，自动去除重复元素。注意 `Set` 不保证元素顺序（除非使用 `LinkedHashSet`，这是 `toSet()` 的默认实现，会保持插入顺序）。
+            - `toList()` / `toTypedArray()`: 将 `Set` 转换回列表或数组。
+          - `distinct()`: 返回一个**新**列表，其中包含原集合中的所有唯一元素，并保持**首次出现**的顺序。这是保持顺序去重的首选方法。
+        example: |
+          ```kotlin
+          val numbersWithDuplicates = listOf(1, 2, 2, 3, 1, 4, 5, 4)
+          val arrayWithDuplicates = arrayOf("A", "B", "A", "C", "B", "B")
+
+          // Method 1: Using toSet() -> toList() (preserves insertion order due to LinkedHashSet)
+          val uniqueNumbersList = numbersWithDuplicates.toSet().toList()
+          println("Unique List via Set: $uniqueNumbersList") // Output: Unique List via Set: [1, 2, 3, 4, 5]
+
+          // Method 1: Using toSet() -> toTypedArray()
+          val uniqueStringsArray = arrayWithDuplicates.toSet().toTypedArray()
+          println("Unique Array via Set: ${uniqueStringsArray.contentToString()}") // Output: Unique Array via Set: [A, B, C]
+
+          // Method 2: Using distinct() (preferred for preserving original order)
+          val distinctNumbers = numbersWithDuplicates.distinct()
+          println("Distinct List: $distinctNumbers") // Output: Distinct List: [1, 2, 3, 4, 5]
+
+          val distinctStrings = arrayWithDuplicates.distinct() // Works on Array too
+          println("Distinct Array (as List): $distinctStrings") // Output: Distinct Array (as List): [A, B, C]
+          ```
+      - title: 初始化固定值数组或列表
+        description: |
+          快速创建所有元素都初始化为相同常量值的数组或列表。
+          - `Array(size) { constantValue }`: 使用 `Array` 构造函数，lambda 表达式忽略索引参数 `it`，直接返回常量值。
+          - `List(size) { constantValue }`: 使用 `List` 构造函数，逻辑同上。
+          - `MutableList(size) { constantValue }`: 使用 `MutableList` 构造函数。
+          - `IntArray(size) { constantValue }` (以及其他基本类型数组): 同理。
+        example: |
+          ```kotlin
+          val size = 5
+          val defaultValue = 0
+          val defaultString = "N/A"
+
+          // Initialize Array with zeros
+          val zeroArray = Array(size) { defaultValue }
+          println("Zero Array: ${zeroArray.contentToString()}") // Output: Zero Array: [0, 0, 0, 0, 0]
+
+          // Initialize List with "N/A"
+          val naList = List(size) { defaultString }
+          println("N/A List: $naList") // Output: N/A List: [N/A, N/A, N/A, N/A, N/A]
+
+          // Initialize MutableList with true
+          val trueFlags = MutableList(3) { true }
+          println("True Flags MutableList: $trueFlags") // Output: True Flags MutableList: [true, true, true]
+
+          // Initialize IntArray with -1
+          val negIntArray = IntArray(4) { -1 }
+          println("Negative IntArray: ${negIntArray.contentToString()}") // Output: Negative IntArray: [-1, -1, -1, -1]
+          ```
+      - title: 交换元素
+        description: |
+          在 `Array` 或 `MutableList` 中交换两个位置上的元素。
+          - **传统方式**: 使用临时变量。
+          - **Kotlin 风格**: 使用 `also` 或 `apply` 作用域函数，结合解构赋值（虽然 Kotlin 没有直接的解构赋值用于交换，但可以模拟）。更常见的是结合下标运算。
+          - **`Collections.swap(list, i, j)`**: Java 标准库提供的用于 `MutableList` 的方法。
+        example: |
+          ```kotlin
+          // Using MutableList for demonstration
+          val items = mutableListOf("First", "Second", "Third", "Fourth")
+          val index1 = 0
+          val index2 = 2
+
+          // Method 1: Temporary Variable
+          println("Original: $items") // Output: Original: [First, Second, Third, Fourth]
+          val temp = items[index1]
+          items[index1] = items[index2]
+          items[index2] = temp
+          println("Swapped (temp var): $items") // Output: Swapped (temp var): [Third, Second, First, Fourth]
+
+          // Reset for next method
+          items[index2] = items[index1].also { items[index1] = temp } // Swap back
+
+          // Method 2: Using 'also' (more Kotlinic but can be less readable)
+          // items[index1] = items[index2].also { items[index2] = items[index1] } // This is incorrect logic, be careful
+          // Correct 'also' or similar scope function usage requires careful thought, often temp var is clearer.
+          // A common pattern (though still using implicit temp):
+          val i = 1
+          val j = 3
+          items[i] = items[j].also { items[j] = items[i] }
+          println("Swapped (also): $items") // Output: Swapped (also): [Third, Fourth, First, Second]
+
+          // Reset
+          items[j] = items[i].also { items[i] = items[j] } // Swap back
+
+          // Method 3: Using Collections.swap (for MutableList)
+          java.util.Collections.swap(items, 0, 3)
+          println("Swapped (Collections.swap): $items") // Output: Swapped (Collections.swap): [Second, Fourth, First, Third]
+
+          // For Array, methods 1 and 2 (with careful implementation) apply. No direct Collections.swap.
+          val arrItems = items.toTypedArray()
+          val tmpArr = arrItems[0]
+          arrItems[0] = arrItems[1]
+          arrItems[1] = tmpArr
+          println("Swapped Array (temp var): ${arrItems.contentToString()}") // Output: Swapped Array (temp var): [Fourth, Second, First, Third]
+          ```
+      - title: 二维数组与嵌套列表
+        description: |
+          创建和操作二维结构（矩阵、表格等）。
+          - **二维数组**: 使用 `Array(rows) { Array(columns) { value } }` 或 `Array(rows) { IntArray(columns) { value } }` (推荐用于基本类型) 的方式创建。访问使用 `matrix[row][col]`。
+          - **嵌套列表**: 使用 `List(rows) { List(columns) { value } }` 或 `List(rows) { MutableList(columns) { value } }` 等创建。访问同样使用 `nestedList[row][col]`。
+        example: |
+          ```kotlin
+          val rows = 3
+          val cols = 4
+
+          // --- Two-dimensional Array (using IntArray for inner for efficiency) ---
+          val matrix = Array(rows) { row ->
+              IntArray(cols) { col -> row * cols + col } // Initialize with row * cols + col
+          }
+
+          // Accessing element
+          val element = matrix[1][2] // Element at row 1, column 2
+          println("Matrix[1][2]: $element") // Output: Matrix[1][2]: 6 (1 * 4 + 2)
+
+          // Printing the matrix
+          println("Matrix:")
+          matrix.forEach { rowArray ->
+              println(rowArray.contentToString())
+          }
+          // Output:
+          // Matrix:
+          // [0, 1, 2, 3]
+          // [4, 5, 6, 7]
+          // [8, 9, 10, 11]
+
+          // Modifying element (since inner is IntArray, and outer is Array, both mutable)
+          matrix[0][0] = 99
+          println("Matrix after modification: ${matrix.contentDeepToString()}") // Output: Matrix after modification: [[99, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]]
+
+          // --- Nested List (List of Lists) ---
+          val nestedList = List(rows) { row ->
+              List(cols) { col -> "R${row}C${col}" } // Initialize with string coordinates
+          }
+
+          // Accessing element
+          val cell = nestedList[2][1] // Element at row 2, column 1
+          println("NestedList[2][1]: $cell") // Output: NestedList[2][1]: R2C1
+
+          // Printing the nested list
+          println("Nested List:")
+          nestedList.forEach { innerList ->
+              println(innerList)
+          }
+          // Output:
+          // Nested List:
+          // [R0C0, R0C1, R0C2, R0C3]
+          // [R1C0, R1C1, R1C2, R1C3]
+          // [R2C0, R2C1, R2C2, R2C3]
+
+          // Cannot modify nestedList[0][0] = "New" because it's a List of immutable Lists
+          ```
 references:
-  - title: "Kotlin Lists (listOf & mutableListOf) - jquery-az"
+  - title: Kotlin Lists (listOf & mutableListOf) - jquery-az
     url: https://www.jquery-az.com/kotlin-lists
   - title: List
     url: https://kotlinlang.org/docs/collections-overview.html#list
