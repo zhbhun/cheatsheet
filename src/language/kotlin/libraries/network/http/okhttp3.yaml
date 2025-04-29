@@ -1,0 +1,1949 @@
+id: okhttp3
+title: OkHttp3
+query: Android OkHttp3
+comment: 系统梳理 OkHttp3 网络库的用法，涵盖请求构建、同步异步请求、拦截器、超时配置、缓存、异常处理、常见坑与实战技巧。
+description: OkHttp3 是一个用于 Android 和 Java 应用程序的高效 HTTP 客户端库。它支持 HTTP/2 和 SPDY，允许对同一主机的请求共享套接字，通过连接池减少请求延迟，透明的 GZIP 压缩可以减小下载大小，响应缓存可以完全避免网络重复请求。OkHttp3 通过构建 `OkHttpClient` 实例进行配置，使用 `Request` 对象表示 HTTP 请求，并通过 `Call` 对象执行同步或异步请求，最终获取 `Response` 对象。
+outline:
+  - title: 安装
+    description: 添加依赖
+  - title: 使用
+    description: 核心请求操作，含同步、异步、上传、下载。
+    children:
+      - title: 创建 OkHttpClient
+        description: OkHttpClient.Builder() 配置链式调用
+      - title: 构建 Request
+        description: Request.Builder().url().get()/post()
+      - title: 创建 RequestBody
+        description: FormBody、MultipartBody、Json 字符串
+      - title: 同步请求
+        description: client.newCall(request).execute()
+      - title: 异步请求
+        description: client.newCall(request).enqueue()
+      - title: POST 表单提交
+        description: FormBody.Builder()
+      - title: POST Json 提交
+        description: RequestBody.create(JSON, jsonString)
+      - title: 文件上传 Multipart
+      - title: 文件下载流处理
+        description: response.body?.byteStream()
+  - title: 配置
+    description: OkHttpClient 全局配置项与优化。
+    children:
+      - title: 超时配置
+        description: connectTimeout、readTimeout、writeTimeout
+      - title: 重定向策略
+      - title: 失败重试开关
+      - title: 缓存配置
+        description: Cache(cacheDir, cacheSize)
+      - title: Cookie 持久化
+      - title: 拦截器配置
+  - title: 拦截器
+    description: 请求、响应、日志、缓存拦截器用法。
+    children:
+      - title: 自定义拦截器
+        description: Interceptor 接口实现
+      - title: 网络拦截器
+        description: chain.proceed(request)
+      - title: 日志拦截器
+        description: HttpLoggingInterceptor
+      - title: 缓存拦截器
+        description: 添加 Cache-Control 控制策略
+      - title: Token 自动刷新拦截器
+  - title: 异常处理
+    description: 请求失败、超时、异常场景处理策略。
+    children:
+      - title: 超时异常捕获
+      - title: 网络不可用异常
+      - title: 空响应体处理
+      - title: Json 解析异常
+      - title: SSL 握手异常排查
+  - title: 常见问题与解决技巧
+    description: OkHttp 高频问题与优化技巧。
+    children:
+      - title: 多 client 实例内存泄漏
+      - title: 重复请求问题
+      - title: 缓存不生效排查
+      - title: 文件下载断点续传
+      - title: Https 自签名证书配置
+      - title: 多 BaseUrl 动态配置方案
+  - title: 最佳实践
+    description: OkHttp3 项目内标准用法推荐。
+    children:
+      - title: 单例 OkHttpClient 封装
+      - title: 网络模块统一封装
+      - title: 配合 Retrofit 使用最佳配置
+      - title: 协程 suspend 封装 OkHttp
+      - title: 自定义 Json 响应拦截器
+usage:
+  - title: 安装
+    description: '在你的 Android 项目的 `build.gradle` (Module: app) 文件中添加 OkHttp3 的依赖。'
+    example: |
+      ```groovy
+      dependencies {
+          implementation("com.squareup.okhttp3:okhttp:4.12.0") // 替换为最新版本
+          // 可选：添加日志拦截器，方便调试
+          implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+      }
+
+      // 不要忘记在 AndroidManifest.xml 中添加网络权限
+      // <uses-permission android:name="android.permission.INTERNET" />
+      ```
+  - title: 使用
+    description: OkHttp3 的核心使用流程包括创建 `OkHttpClient` 实例、构建 `Request` 对象、执行请求（同步或异步）并处理 `Response`。
+    children:
+      - title: 创建 OkHttpClient
+        description: 通过 `OkHttpClient.Builder()` 以链式调用的方式配置和创建 `OkHttpClient` 实例。通常建议全局共享一个 `OkHttpClient` 实例以复用连接池和线程资源。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import java.util.concurrent.TimeUnit
+
+          // 创建一个基本的 OkHttpClient 实例
+          val client = OkHttpClient()
+
+          // 创建一个自定义配置的 OkHttpClient 实例
+          val customClient = OkHttpClient.Builder()
+              .connectTimeout(10, TimeUnit.SECONDS) // 连接超时时间
+              .readTimeout(30, TimeUnit.SECONDS)    // 读取超时时间
+              .writeTimeout(15, TimeUnit.SECONDS)   // 写入超时时间
+              // .addInterceptor(...) // 添加应用拦截器
+              // .addNetworkInterceptor(...) // 添加网络拦截器
+              // .cache(...) // 配置缓存
+              // .cookieJar(...) // 配置 Cookie 管理
+              .build()
+
+          // 使用方法： val call = customClient.newCall(request)
+          ```
+      - title: 构建 Request
+        description: 使用 `Request.Builder()` 创建请求对象。需要指定 URL，并可以通过链式调用设置请求方法（默认为 GET）、请求头、请求体等。
+        example: |
+          ```kotlin
+          import okhttp3.Request
+          import okhttp3.RequestBody
+
+          // 构建一个简单的 GET 请求
+          val getRequest = Request.Builder()
+              .url("https://api.example.com/data") // 设置请求 URL
+              .header("User-Agent", "MyApp/1.0") // 添加请求头
+              .get() // 指定 GET 方法 (默认)
+              .build()
+
+          // 构建一个 POST 请求 (RequestBody 在后面创建)
+          // val requestBody: RequestBody = ...
+          // val postRequest = Request.Builder()
+          //     .url("https://api.example.com/submit")
+          //     .post(requestBody) // 指定 POST 方法并传入请求体
+          //     .build()
+          ```
+      - title: 创建 RequestBody
+        description: |
+          `RequestBody` 用于定义 POST、PUT、PATCH 等请求的请求体内容。OkHttp3 提供了多种创建 `RequestBody` 的方式：
+          - `FormBody`: 用于发送 `application/x-www-form-urlencoded` 格式的表单数据。
+          - `MultipartBody`: 用于发送 `multipart/form-data` 格式的数据，常用于文件上传。
+          - `RequestBody.create()`: 用于发送自定义 `MediaType` 的内容，如 JSON、XML 或纯文本。
+            - `MediaType`: 定义了数据的 MIME 类型，例如 `application/json; charset=utf-8`。常用的 `MediaType` 可以通过 `MediaType.parse()` 或 `MediaType.get()` 获取。
+        example: |
+          ```kotlin
+          import okhttp3.FormBody
+          import okhttp3.MediaType.Companion.toMediaType
+          import okhttp3.MultipartBody
+          import okhttp3.RequestBody
+          import okhttp3.RequestBody.Companion.asRequestBody
+          import okhttp3.RequestBody.Companion.toRequestBody
+          import java.io.File
+
+          // 1. 创建 FormBody (表单)
+          val formBody = FormBody.Builder()
+              .add("username", "testuser")
+              .add("password", "secret")
+              .build()
+
+          // 2. 创建 JSON RequestBody
+          val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+          val jsonString = """{"key":"value", "count":1}"""
+          val jsonRequestBody = jsonString.toRequestBody(jsonMediaType)
+          // 或者使用 RequestBody.create(mediaType, content)
+          // val jsonRequestBody = RequestBody.create(jsonMediaType, jsonString)
+
+
+          // 3. 创建 MultipartBody (文件上传)
+          val fileMediaType = "image/png".toMediaType() // 文件的 MIME 类型
+          val file = File("/path/to/image.png") // 要上传的文件
+          val multipartBody = MultipartBody.Builder()
+              .setType(MultipartBody.FORM) // 设置类型为 form-data
+              .addFormDataPart("title", "My Image") // 添加普通表单字段
+              .addFormDataPart(
+                  "image", // 表单字段名 (与后端约定)
+                  file.name, // 文件名
+                  file.asRequestBody(fileMediaType) // 创建文件的 RequestBody
+              )
+              .build()
+
+          // 4. 创建纯文本 RequestBody
+          val textMediaType = "text/plain; charset=utf-8".toMediaType()
+          val textContent = "This is plain text content."
+          val textRequestBody = textContent.toRequestBody(textMediaType)
+          ```
+      - title: 同步请求
+        description: 使用 `client.newCall(request).execute()` 发起同步请求。该方法会阻塞当前线程直到收到响应或发生错误。**注意：在 Android 中，同步网络请求不能在主线程执行，否则会导致 `NetworkOnMainThreadException`。** 需要在后台线程（如使用协程、`AsyncTask` 或 `Thread`）中调用。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import okhttp3.Request
+          import okhttp3.Response
+          import java.io.IOException
+          import kotlinx.coroutines.* // 需要添加 kotlinx-coroutines-android 依赖
+
+          val client = OkHttpClient()
+          val request = Request.Builder()
+              .url("https://api.example.com/data")
+              .build()
+
+          // 使用 Kotlin 协程在后台线程执行同步请求
+          suspend fun fetchData(): String? {
+              return withContext(Dispatchers.IO) { // 切换到 IO 线程
+                  try {
+                      val response: Response = client.newCall(request).execute() // 执行同步请求
+                      if (response.isSuccessful) {
+                          // 请求成功，处理响应体
+                          val responseBody = response.body?.string() // 获取响应字符串 (注意: body().string() 只能调用一次)
+                          responseBody // 返回结果
+                      } else {
+                          // 请求失败，处理错误码
+                          println("Request failed with code: ${response.code}")
+                          null
+                      }
+                  } catch (e: IOException) {
+                      // 网络或其他 IO 异常
+                      println("Error during request: ${e.message}")
+                      null
+                  }
+              }
+          }
+
+          // 在 Activity 或 ViewModelScope 中调用
+          // CoroutineScope(Dispatchers.Main).launch {
+          //     val data = fetchData()
+          //     if (data != null) {
+          //         // 更新 UI
+          //     } else {
+          //         // 显示错误
+          //     }
+          // }
+          ```
+      - title: 异步请求
+        description: 使用 `client.newCall(request).enqueue(Callback)` 发起异步请求。该方法不会阻塞当前线程，请求结果会通过传入的 `Callback` 接口在后台线程回调。`Callback` 有两个方法：`onResponse` (请求成功) 和 `onFailure` (请求失败)。**回调方法本身在 OkHttp 的后台线程执行，如果需要在回调中更新 UI，必须切换到主线程。**
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import android.os.Handler
+          import android.os.Looper // 假设在 Android 环境
+
+          val client = OkHttpClient()
+          val request = Request.Builder()
+              .url("https://api.example.com/data")
+              .build()
+
+          // 获取主线程 Handler (在 Android 中)
+          val mainHandler = Handler(Looper.getMainLooper())
+
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  // 请求失败回调 (在后台线程)
+                  println("Request failed: ${e.message}")
+                  // 如果需要更新 UI，切换到主线程
+                  mainHandler.post {
+                      // 更新 UI 显示错误信息
+                  }
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  // 请求成功回调 (在后台线程)
+                  if (response.isSuccessful) {
+                      try {
+                          val responseBody = response.body?.string() // 获取响应字符串 (注意: 只能调用一次)
+                          println("Response: $responseBody")
+                          // 如果需要更新 UI，切换到主线程
+                          mainHandler.post {
+                              // 更新 UI 显示数据
+                              // textView.text = responseBody
+                          }
+                      } catch (e: IOException) {
+                         println("Error reading response body: ${e.message}")
+                         // 处理读取响应体时的异常
+                         mainHandler.post {
+                             // 更新 UI 显示错误
+                         }
+                      } finally {
+                         response.close() // 确保关闭 Response Body，即使读取出错也要关闭
+                      }
+                  } else {
+                      // 服务器返回错误码 (如 404, 500)
+                      println("Request failed with code: ${response.code}")
+                      mainHandler.post {
+                          // 更新 UI 显示错误码
+                      }
+                       response.close() // 同样需要关闭
+                  }
+              }
+          })
+
+          // enqueue 是非阻塞的，代码会继续执行
+          println("Request enqueued...")
+          ```
+      - title: POST 表单提交
+        description: 使用 `FormBody.Builder` 构建 `application/x-www-form-urlencoded` 格式的请求体，然后通过 `Request.Builder().post()` 发送。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+
+          val client = OkHttpClient()
+
+          // 1. 创建 FormBody
+          val formBody = FormBody.Builder()
+              .add("grant_type", "password")
+              .add("username", "user")
+              .add("password", "pass")
+              .build()
+
+          // 2. 创建 POST Request
+          val request = Request.Builder()
+              .url("https://api.example.com/token")
+              .post(formBody) // 将 FormBody 设置为请求体
+              .build()
+
+          // 3. 执行请求 (异步示例)
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  println("Form POST failed: ${e.message}")
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  if (response.isSuccessful) {
+                      println("Form POST successful: ${response.body?.string()}")
+                  } else {
+                      println("Form POST failed with code: ${response.code}")
+                  }
+                  response.close()
+              }
+          })
+          ```
+      - title: POST Json 提交
+        description: 将 JSON 数据序列化为字符串，然后使用 `RequestBody.create()` 或 Kotlin 扩展函数 `.toRequestBody()` 创建 `application/json` 类型的请求体，最后通过 `Request.Builder().post()` 发送。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import okhttp3.MediaType.Companion.toMediaType
+          import okhttp3.RequestBody.Companion.toRequestBody
+          import java.io.IOException
+          // import com.google.gson.Gson // 假设使用 Gson 库序列化对象
+
+          val client = OkHttpClient()
+
+          // 假设有一个数据类
+          // data class UserData(val name: String, val age: Int)
+          // val userData = UserData("Alice", 30)
+
+          // 1. 将对象序列化为 JSON 字符串 (使用 Gson 或其他库)
+          // val gson = Gson()
+          // val jsonString = gson.toJson(userData)
+          val jsonString = """{"name":"Alice", "age":30}""" // 手动创建示例
+
+          // 2. 定义 JSON MediaType
+          val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
+          // 3. 创建 JSON RequestBody
+          val requestBody = jsonString.toRequestBody(jsonMediaType)
+          // 或者: val requestBody = RequestBody.create(jsonMediaType, jsonString)
+
+          // 4. 创建 POST Request
+          val request = Request.Builder()
+              .url("https://api.example.com/users")
+              .post(requestBody) // 将 JSON RequestBody 设置为请求体
+              .header("Content-Type", "application/json") // 显式设置 Content-Type header (虽然 MediaType 已包含)
+              .build()
+
+          // 5. 执行请求 (异步示例)
+          client.newCall(request).enqueue(object : Callback {
+               override fun onFailure(call: Call, e: IOException) {
+                  println("JSON POST failed: ${e.message}")
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  if (response.isSuccessful) {
+                      println("JSON POST successful: ${response.body?.string()}")
+                  } else {
+                      println("JSON POST failed with code: ${response.code}")
+                  }
+                  response.close()
+              }
+          })
+          ```
+      - title: 文件上传 Multipart
+        description: 使用 `MultipartBody.Builder` 构建 `multipart/form-data` 格式的请求体，可以同时包含文件和普通表单字段。需要指定文件的 `MediaType`。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import okhttp3.MediaType.Companion.toMediaType
+          import okhttp3.RequestBody.Companion.asRequestBody
+          import java.io.File
+          import java.io.IOException
+
+          // 假设 context 是 Android 的 Context
+          // val context: Context = ...
+          // val cacheDir = context.cacheDir // 获取缓存目录用于示例文件
+
+          // 创建一个临时文件用于演示
+          // val tempFile = File(cacheDir, "upload_test.txt")
+          // tempFile.writeText("This is the file content.")
+          val fileToUpload = File("/path/to/your/file.txt") // 替换为实际文件路径
+
+          if (!fileToUpload.exists()) {
+               println("Error: File not found at ${fileToUpload.absolutePath}")
+               // return or handle error
+          }
+
+
+          val client = OkHttpClient()
+
+          // 1. 定义文件的 MediaType
+          val fileMediaType = "text/plain".toMediaType() // 根据实际文件类型修改
+
+          // 2. 创建 MultipartBody
+          val multipartBody = MultipartBody.Builder()
+              .setType(MultipartBody.FORM) // 必须设置类型为 FORM
+              .addFormDataPart("user_id", "12345") // 添加普通字段
+              .addFormDataPart("description", "A test file upload") // 添加普通字段
+              .addFormDataPart(
+                  "file", // 后端接收文件的字段名
+                  fileToUpload.name, // 文件名，会包含在 Content-Disposition 中
+                  fileToUpload.asRequestBody(fileMediaType) // 创建文件的 RequestBody
+              )
+              .build()
+
+          // 3. 创建 POST Request
+          val request = Request.Builder()
+              .url("https://api.example.com/upload")
+              .post(multipartBody) // 设置 MultipartBody 为请求体
+              .build()
+
+          // 4. 执行请求 (异步示例)
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  println("File upload failed: ${e.message}")
+                  // tempFile.delete() // 清理临时文件
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  // tempFile.delete() // 清理临时文件
+                  if (response.isSuccessful) {
+                      println("File upload successful: ${response.body?.string()}")
+                  } else {
+                      println("File upload failed with code: ${response.code} - ${response.message}")
+                      println("Response body: ${response.body?.string()}") // 打印错误响应体帮助调试
+                  }
+                  response.close()
+              }
+          })
+          ```
+      - title: 文件下载流处理
+        description: 对于大文件下载，为了避免内存溢出，应使用 `response.body?.byteStream()` 获取输入流（InputStream），然后分块读取写入文件。**务必在后台线程处理，并确保在 finally 块中关闭流和响应体。**
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.File
+          import java.io.FileOutputStream
+          import java.io.IOException
+          import java.io.InputStream
+          import kotlinx.coroutines.* // 使用协程处理后台任务和线程切换
+
+          val client = OkHttpClient()
+          val downloadUrl = "https://example.com/largefile.zip"
+          // 假设 context 是 Android 的 Context
+          // val context: Context = ...
+          // val targetFile = File(context.getExternalFilesDir(null), "downloaded_file.zip")
+          val targetFile = File("/path/to/save/downloaded_file.zip") // 替换为实际保存路径
+
+
+          suspend fun downloadFile() {
+              val request = Request.Builder().url(downloadUrl).build()
+              withContext(Dispatchers.IO) { // 切换到 IO 线程执行网络和文件操作
+                  var response: Response? = null
+                  var inputStream: InputStream? = null
+                  var outputStream: FileOutputStream? = null
+                  try {
+                      response = client.newCall(request).execute() // 同步执行请求
+                      if (!response.isSuccessful) {
+                          throw IOException("Download failed with code: ${response.code}")
+                      }
+
+                      inputStream = response.body?.byteStream() // 获取输入流
+                      if (inputStream == null) {
+                           throw IOException("Response body is null")
+                      }
+
+                      outputStream = FileOutputStream(targetFile)
+                      val buffer = ByteArray(4 * 1024) // 4KB 缓冲区
+                      var bytesRead: Int
+                      var totalBytesRead = 0L
+                      val totalSize = response.body?.contentLength() ?: -1L // 获取文件总大小 (可能未知)
+
+                      // 循环读取并写入文件
+                      while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                          outputStream.write(buffer, 0, bytesRead)
+                          totalBytesRead += bytesRead
+                          // 可选：计算并更新下载进度
+                          if (totalSize > 0) {
+                              val progress = (totalBytesRead * 100 / totalSize).toInt()
+                              withContext(Dispatchers.Main) { // 切换回主线程更新 UI (如果需要)
+                                  // updateProgress(progress)
+                                  println("Download progress: $progress%")
+                              }
+                          } else {
+                               println("Downloading... ${totalBytesRead / 1024} KB")
+                          }
+                      }
+                      outputStream.flush() // 确保所有缓冲数据写入文件
+                      println("File downloaded successfully to ${targetFile.absolutePath}")
+
+                  } catch (e: IOException) {
+                      println("Download error: ${e.message}")
+                      // 下载失败时可以考虑删除不完整的文件
+                      // targetFile.delete()
+                  } finally {
+                      // 务必关闭所有流和响应体
+                      try {
+                          outputStream?.close()
+                          inputStream?.close()
+                          response?.close() // 关闭 Response Body
+                      } catch (e: IOException) {
+                          println("Error closing streams: ${e.message}")
+                      }
+                  }
+              }
+          }
+
+          // 在 CoroutineScope 中启动下载
+          // CoroutineScope(Dispatchers.IO).launch {
+          //     downloadFile()
+          // }
+          ```
+  - title: 配置
+    description: 通过 `OkHttpClient.Builder` 可以对客户端进行详细配置，如超时时间、缓存、拦截器、代理、连接池等。
+    children:
+      - title: 超时配置
+        description: |
+          可以分别配置连接、读取和写入的超时时间。单位通常是秒或毫秒。
+          - `connectTimeout`: 建立 TCP 连接的超时时间。
+          - `readTimeout`: 从服务器读取数据的超时时间，指两次数据包之间的时间间隔。
+          - `writeTimeout`: 向服务器写入数据的超时时间，指两次写操作之间的时间间隔。
+          - `callTimeout`: 整个请求（从开始到结束）的总超时时间（包括 DNS、连接、读写等所有阶段）。如果设置了这个，其他超时仍然有效，但总时间不能超过 callTimeout。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import java.util.concurrent.TimeUnit
+
+          val client = OkHttpClient.Builder()
+              .connectTimeout(15, TimeUnit.SECONDS) // 连接超时设置为 15 秒
+              .readTimeout(20, TimeUnit.SECONDS)    // 读取超时设置为 20 秒
+              .writeTimeout(20, TimeUnit.SECONDS)   // 写入超时设置为 20 秒
+              // .callTimeout(60, TimeUnit.SECONDS) // (可选) 整个调用的总超时时间
+              .build()
+          ```
+      - title: 重定向策略
+        description: |
+          OkHttp 默认会自动处理 HTTP 重定向（状态码 3xx）。可以通过以下方法控制：
+          - `followRedirects(boolean follow)`: 是否自动处理 HTTP 重定向（如 301, 302）。默认为 `true`。
+          - `followSslRedirects(boolean follow)`: 是否自动处理 HTTPS 到 HTTP 或 HTTP 到 HTTPS 的重定向。默认为 `true`。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+
+          // 配置客户端不自动处理任何重定向
+          val noRedirectClient = OkHttpClient.Builder()
+              .followRedirects(false)       // 禁用 HTTP 重定向
+              .followSslRedirects(false)    // 禁用 SSL 重定向
+              .build()
+
+          // 使用默认配置 (自动处理重定向)
+          val defaultRedirectClient = OkHttpClient.Builder().build()
+          ```
+      - title: 失败重试开关
+        description: OkHttp 默认会在遇到某些网络连接问题时自动重试请求（幂等请求，如 GET）。可以通过 `retryOnConnectionFailure(boolean retry)` 控制此行为。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+
+          // 禁用连接失败时的自动重试
+          val noRetryClient = OkHttpClient.Builder()
+              .retryOnConnectionFailure(false)
+              .build()
+
+          // 使用默认配置 (开启自动重试)
+          val defaultRetryClient = OkHttpClient.Builder()
+              .retryOnConnectionFailure(true) // 默认值
+              .build()
+          ```
+      - title: 缓存配置
+        description: OkHttp 支持 HTTP 缓存，可以将符合缓存条件的响应存储在本地，避免不必要的网络请求。需要提供一个缓存目录和最大缓存大小。
+        example: |
+          ```kotlin
+          import okhttp3.Cache
+          import okhttp3.OkHttpClient
+          import java.io.File
+          // import android.content.Context // 假设在 Android 环境
+
+          // 假设 context 是 Android 的 Context
+          // val context: Context = ...
+          // val cacheDir = File(context.cacheDir, "http_cache") // 获取应用缓存目录下的子目录
+
+          // 使用临时目录作为示例
+          val cacheDir = File("./okhttp_cache") // 当前目录下创建缓存文件夹 (仅为示例)
+          if (!cacheDir.exists()) {
+              cacheDir.mkdirs()
+          }
+
+          val cacheSize = 10 * 1024 * 1024L // 10 MB 缓存大小
+
+          // 创建 Cache 对象
+          val cache = Cache(cacheDir, cacheSize)
+
+          // 配置 OkHttpClient 使用缓存
+          val cachedClient = OkHttpClient.Builder()
+              .cache(cache) // 设置缓存
+              .build()
+
+          // 注意：缓存是否生效还取决于服务器响应头中的 Cache-Control 或 Expires 等指令。
+          // 也可以通过拦截器强制添加缓存策略 (见拦截器部分)。
+          ```
+      - title: Cookie 持久化
+        description: OkHttp 默认不处理 Cookie 持久化。需要提供一个 `CookieJar` 的实现来管理 Cookie。`JavaNetCookieJar` 是一个常用的实现，它使用 `java.net.CookieManager`。
+        example: |
+          ```kotlin
+          import okhttp3.CookieJar
+          import okhttp3.JavaNetCookieJar
+          import okhttp3.OkHttpClient
+          import java.net.CookieManager
+          import java.net.CookiePolicy
+
+          // 创建一个 CookieManager，设置接受所有 Cookie 的策略
+          val cookieManager = CookieManager()
+          cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL)
+
+          // 创建 JavaNetCookieJar 实例
+          val cookieJar: CookieJar = JavaNetCookieJar(cookieManager)
+
+          // 配置 OkHttpClient 使用 CookieJar
+          val cookieClient = OkHttpClient.Builder()
+              .cookieJar(cookieJar) // 设置 CookieJar
+              .build()
+
+          // 现在使用 cookieClient 发送的请求会自动携带和存储 Cookie
+          ```
+      - title: 拦截器配置
+        description: |
+          拦截器（Interceptor）是 OkHttp 强大的扩展机制，可以在请求发送前或响应接收后对其进行修改或监控。有两种类型的拦截器：
+          - **应用拦截器 (Application Interceptors)**: 使用 `addInterceptor()` 添加。它们位于 OkHttp 核心逻辑之外，只会被调用一次，可以访问原始的 `Request`，并且不受 OkHttp 内部重试和重定向的影响。适合用于修改请求头、记录日志、添加通用参数等。
+          - **网络拦截器 (Network Interceptors)**: 使用 `addNetworkInterceptor()` 添加。它们位于 OkHttp 核心逻辑链的内部，靠近实际的网络 I/O 操作。可以访问 `Connection` 对象，并且在重试和重定向时可能会被多次调用。适合用于监控网络流量、处理 Gzip 压缩、修改最终发往服务器的请求等。
+        example: |
+          ```kotlin
+          import okhttp3.Interceptor
+          import okhttp3.OkHttpClient
+          import okhttp3.Response
+          import okhttp3.logging.HttpLoggingInterceptor // 需要 logging-interceptor 依赖
+
+          // 1. 定义一个简单的应用拦截器 (添加通用 Header)
+          class HeaderInterceptor : Interceptor {
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val originalRequest = chain.request()
+                  val newRequest = originalRequest.newBuilder()
+                      .header("X-App-Version", "1.0.0") // 添加自定义 Header
+                      .header("Accept-Language", "zh-CN")
+                      .build()
+                  return chain.proceed(newRequest) // 继续执行请求链
+              }
+          }
+
+          // 2. 创建日志拦截器
+          val loggingInterceptor = HttpLoggingInterceptor().apply {
+              level = HttpLoggingInterceptor.Level.BODY // 设置日志级别 (NONE, BASIC, HEADERS, BODY)
+          }
+
+          // 3. 配置 OkHttpClient 添加拦截器
+          val client = OkHttpClient.Builder()
+              .addInterceptor(HeaderInterceptor()) // 添加应用拦截器
+              .addInterceptor(loggingInterceptor)   // 添加日志拦截器 (作为应用拦截器)
+              // .addNetworkInterceptor(...) // 添加网络拦截器 (如果需要)
+              .build()
+          ```
+  - title: 拦截器
+    description: 拦截器允许监控、重写和重试调用。OkHttp 提供了灵活的拦截器机制用于扩展其功能。
+    children:
+      - title: 自定义拦截器
+        description: 通过实现 `Interceptor` 接口并重写 `intercept` 方法来创建自定义拦截器。在 `intercept` 方法中，可以访问 `Chain` 对象，获取原始请求 `chain.request()`，然后必须调用 `chain.proceed(request)` 将请求（可能是修改后的）传递给下一个拦截器或执行网络调用，并返回响应。
+        example: |
+          ```kotlin
+          import okhttp3.Interceptor
+          import okhttp3.Response
+          import okhttp3.Request
+          import java.io.IOException
+
+          // 自定义拦截器示例：添加一个时间戳 Header
+          class TimestampInterceptor : Interceptor {
+              @Throws(IOException::class)
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  // 1. 获取原始请求
+                  val originalRequest: Request = chain.request()
+
+                  // 2. 创建新的 Request Builder，并添加 Header
+                  val modifiedRequest: Request = originalRequest.newBuilder()
+                      .header("X-Timestamp", System.currentTimeMillis().toString())
+                      .method(originalRequest.method, originalRequest.body) // 确保方法和请求体被保留
+                      .build()
+
+                  // 3. 使用修改后的请求继续执行链，并获取响应
+                  val response: Response = chain.proceed(modifiedRequest)
+
+                  // 4. (可选) 修改响应
+                  // val modifiedResponse = response.newBuilder()...build()
+                  // return modifiedResponse
+
+                  // 5. 返回响应
+                  return response
+              }
+          }
+
+          // 使用方法 (在配置 OkHttpClient 时添加):
+          // val client = OkHttpClient.Builder()
+          //     .addInterceptor(TimestampInterceptor())
+          //     .build()
+          ```
+      - title: 网络拦截器
+        description: 使用 `addNetworkInterceptor()` 添加。网络拦截器运行在所有应用拦截器之后，靠近网络层。它们可以访问底层的 `Connection` 信息，并且可以看到重定向和重试后的实际网络请求。适用于需要了解网络传输细节的场景，如 Gzip 压缩/解压、监控传输速率等。
+        example: |
+          ```kotlin
+          import okhttp3.Interceptor
+          import okhttp3.Response
+          import okhttp3.Request
+          import java.io.IOException
+
+          // 网络拦截器示例：打印连接信息和请求/响应大小
+          class NetworkMonitorInterceptor : Interceptor {
+              @Throws(IOException::class)
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val request: Request = chain.request()
+                  val startTime = System.nanoTime()
+
+                  // 打印连接信息 (只有网络拦截器能可靠获取)
+                  val connection = chain.connection()
+                  println("--> Sending request ${request.url} on ${connection?.route()?.socketAddress()}")
+                  println("--> Request Headers: ${request.headers}")
+                  val requestBodySize = request.body?.contentLength() ?: 0L
+                  println("--> Request Body Size: $requestBodySize bytes")
+
+
+                  // 执行请求
+                  val response: Response
+                  try {
+                     response = chain.proceed(request)
+                  } catch (e: Exception) {
+                     println("<-- HTTP FAILED: $e")
+                     throw e
+                  }
+
+
+                  val endTime = System.nanoTime()
+                  val durationMs = (endTime - startTime) / 1_000_000.0
+
+                  val responseBody = response.peekBody(Long.MAX_VALUE) // 使用 peekBody 读取而不消耗
+                  val responseBodySize = responseBody.contentLength()
+                  println("<-- Received response for ${response.request.url} in ${durationMs}ms")
+                  println("<-- Response Code: ${response.code} ${response.message}")
+                  println("<-- Response Headers: ${response.headers}")
+                  println("<-- Response Body Size: ${if(responseBodySize != -1L) "$responseBodySize bytes" else "Unknown size"}")
+
+
+                  return response // 返回原始响应
+              }
+          }
+
+          // 使用方法 (在配置 OkHttpClient 时添加):
+          // val client = OkHttpClient.Builder()
+          //     .addNetworkInterceptor(NetworkMonitorInterceptor())
+          //     .build()
+          ```
+      - title: 日志拦截器
+        description: OkHttp 提供了一个官方的 `HttpLoggingInterceptor` 用于打印请求和响应的详细信息，非常便于调试。需要添加 `com.squareup.okhttp3:logging-interceptor` 依赖。可以设置不同的日志级别（NONE, BASIC, HEADERS, BODY）。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import okhttp3.logging.HttpLoggingInterceptor
+
+          // 1. 创建日志拦截器实例
+          val loggingInterceptor = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+              override fun log(message: String) {
+                  // 可以自定义日志输出方式，例如使用 Android Logcat
+                  // Log.d("OkHttp", message)
+                  println("OkHttpLog: $message") // 简单打印到控制台
+              }
+          })
+
+          // 2. 设置日志级别
+          // NONE: 不打印日志
+          // BASIC: 打印请求行、响应状态行、请求耗时
+          // HEADERS: 打印 BASIC 信息 + 请求和响应头
+          // BODY: 打印 HEADERS 信息 + 请求和响应体 (可能会暴露敏感数据，生产环境慎用)
+          loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY // 推荐开发时使用 BODY
+
+          // 3. 配置 OkHttpClient 添加日志拦截器 (通常作为应用拦截器)
+          val client = OkHttpClient.Builder()
+              .addInterceptor(loggingInterceptor)
+              .build()
+          ```
+      - title: 缓存拦截器
+        description: 可以通过拦截器来修改请求或响应的 `Cache-Control` 头，以影响 OkHttp 的缓存行为。例如，强制使用缓存或强制进行网络请求。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import java.util.concurrent.TimeUnit
+
+          // 拦截器示例：强制从网络获取最新数据 (忽略缓存)
+          class ForceNetworkInterceptor : Interceptor {
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val originalRequest = chain.request()
+                  val newRequest = originalRequest.newBuilder()
+                      .cacheControl(CacheControl.FORCE_NETWORK) // 强制网络请求
+                      // 或者 .header("Cache-Control", "no-cache")
+                      .build()
+                  return chain.proceed(newRequest)
+              }
+          }
+
+          // 拦截器示例：强制使用缓存，即使缓存过期 (有网络时仍会验证)
+          // 注意：如果没缓存会失败。若希望无网络时也用过期缓存，需要更复杂逻辑。
+          class ForceCacheInterceptor : Interceptor {
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val originalRequest = chain.request()
+                  val newRequest = originalRequest.newBuilder()
+                      .cacheControl(CacheControl.FORCE_CACHE) // 强制使用缓存
+                      .build()
+                  return chain.proceed(newRequest)
+              }
+          }
+
+           // 拦截器示例：智能缓存策略 (有网请求，无网用缓存，即使过期)
+           // (需要检测网络状态，这里仅作概念演示)
+           class SmartCacheInterceptor(/* val context: Context */) : Interceptor {
+                override fun intercept(chain: Interceptor.Chain): Response {
+                    var request = chain.request()
+                    // if (!isNetworkAvailable(context)) { // 假设 isNetworkAvailable 是检测网络的方法
+                    if (/* 网络不可用 */ false) {
+                         request = request.newBuilder()
+                             .cacheControl(
+                                 CacheControl.Builder()
+                                     .onlyIfCached() // 只从缓存获取
+                                     .maxStale(30, TimeUnit.DAYS) // 即使过期也接受，设置一个较长的过期容忍时间
+                                     .build()
+                             )
+                             .build()
+                             println("Network unavailable, trying cache (even stale).")
+                    } else {
+                         println("Network available, proceeding normally.")
+                         // 可以根据需要添加 'Cache-Control: max-age=...' 等正常缓存头
+                         // request = request.newBuilder()
+                         //      .header("Cache-Control", "public, max-age=" + 60) // 例如，缓存60秒
+                         //      .build()
+                    }
+                    return chain.proceed(request)
+                }
+           }
+
+
+          // 使用方法 (在配置 OkHttpClient 时添加):
+          // val client = OkHttpClient.Builder()
+          //     .addInterceptor(ForceNetworkInterceptor()) // 根据需要选择添加哪个
+          //     // .addNetworkInterceptor(SmartCacheInterceptor()) // 网络拦截器更适合检查网络状态
+          //     .cache(cache) // 必须先配置缓存
+          //     .build()
+          ```
+      - title: Token 自动刷新拦截器
+        description: 在需要身份验证的 API 调用中，访问令牌（Token）可能会过期。可以创建一个拦截器，在收到 401 Unauthorized 响应时，自动尝试刷新 Token，然后使用新 Token 重试原始请求。这通常需要一个同步的方法来刷新 Token。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import java.util.concurrent.locks.ReentrantLock
+          import kotlin.concurrent.withLock
+
+          // 假设有一个管理 Token 的单例或服务
+          object TokenManager {
+              private var accessToken: String? = "initial_token" // 当前访问令牌
+              private var refreshToken: String? = "initial_refresh_token" // 用于刷新访问令牌的令牌
+              private val lock = ReentrantLock() // 锁，防止并发刷新 Token
+
+              fun getAccessToken(): String? = accessToken
+
+              // 同步刷新 Token 的方法 (实际应发起网络请求)
+              @Synchronized // 或者使用 lock.withLock
+              fun refreshTokenSynchronously(client: OkHttpClient): Boolean {
+                   println("Attempting to refresh token...")
+                   // !!! 这里应该发起一个同步的 OkHttp 请求到刷新 Token 的接口 !!!
+                   // 使用 refreshToken 获取新的 accessToken 和 refreshToken
+
+                   // 模拟刷新成功
+                   val newAccessToken = "refreshed_access_token_${System.currentTimeMillis()}"
+                   val newRefreshToken = "refreshed_refresh_token_${System.currentTimeMillis()}"
+
+                   Thread.sleep(1000) // 模拟网络延迟
+
+                   // 假设请求成功
+                   val success = true // 根据实际刷新结果设置
+                   if (success) {
+                       this.accessToken = newAccessToken
+                       this.refreshToken = newRefreshToken
+                       println("Token refreshed successfully. New token: $newAccessToken")
+                       return true
+                   } else {
+                       println("Token refresh failed.")
+                       // 可能需要清除旧 Token 并引导用户重新登录
+                       this.accessToken = null
+                       this.refreshToken = null
+                       return false
+                   }
+              }
+          }
+
+          // Token 刷新拦截器
+          class TokenRefreshAuthenticator(private val client: OkHttpClient) : Authenticator {
+
+              override fun authenticate(route: Route?, response: Response): Request? {
+                  // 检查是否是因为 Token 失效导致的 401
+                  // 有些服务器可能对错误的用户名/密码也返回 401，需要区分
+                  if (response.request.header("Authorization") == null || response.code != 401) {
+                       return null // 不是 Token 问题或不是 401，放弃处理
+                  }
+
+                  // 尝试刷新 Token (需要同步执行)
+                  // 使用锁防止多个请求同时触发刷新
+                  TokenManager.lock.withLock {
+                      // 再次检查 Token 是否已被其他线程刷新
+                      val currentToken = TokenManager.getAccessToken()
+                      if (response.request.header("Authorization")?.endsWith(currentToken ?: "") == true) {
+                          // Token 仍然是旧的，执行刷新
+                           if (!TokenManager.refreshTokenSynchronously(client)) {
+                               return null // 刷新失败，放弃重试
+                           }
+                      } else {
+                         println("Token already refreshed by another thread.")
+                      }
+
+
+                      // 获取刷新后的新 Token
+                      val newToken = TokenManager.getAccessToken()
+                      if (newToken != null) {
+                           println("Retrying request with new token.")
+                           // 使用新 Token 构建新的请求
+                           return response.request.newBuilder()
+                               .header("Authorization", "Bearer $newToken")
+                               .build()
+                      } else {
+                           println("Failed to get new token after refresh attempt.")
+                           return null // 没有新 Token，放弃重试
+                      }
+                  }
+
+
+              }
+          }
+
+
+          // 使用方法 (在配置 OkHttpClient 时添加 Authenticator)
+          // 注意：Authenticator 不同于 Interceptor，它是专门处理认证失败 (如 401, 407) 的机制
+          // val tokenRefreshClient = OkHttpClient.Builder()
+          //     // 创建一个独立的、不带认证器的 client 用于刷新 token (避免死循环)
+          //     .authenticator(TokenRefreshAuthenticator(OkHttpClient())) // 传入一个用于刷新 token 的 client 实例
+          //     // 添加其他拦截器...
+          //     .addInterceptor { chain -> // 添加一个拦截器自动添加当前 Token
+          //          val token = TokenManager.getAccessToken()
+          //          val originalRequest = chain.request()
+          //          if (token != null && originalRequest.header("Authorization") == null) {
+          //              val newRequest = originalRequest.newBuilder()
+          //                  .header("Authorization", "Bearer $token")
+          //                  .build()
+          //              chain.proceed(newRequest)
+          //          } else {
+          //              chain.proceed(originalRequest)
+          //          }
+          //     }
+          //     .build()
+          ```
+  - title: 异常处理
+    description: 在使用 OkHttp 时，需要妥善处理可能发生的各种异常，如网络问题、超时、服务器错误、数据解析错误等。
+    children:
+      - title: 超时异常捕获
+        description: 如果在配置的 `connectTimeout`, `readTimeout`, `writeTimeout` 或 `callTimeout` 内未能完成相应操作，OkHttp 会抛出 `java.net.SocketTimeoutException` (通常包装在 `IOException` 中)。需要使用 `try-catch` 块捕获并处理。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import java.net.SocketTimeoutException
+
+          val client = OkHttpClient.Builder()
+              .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS) // 设置较短超时以便测试
+              .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+              .build()
+
+          val request = Request.Builder()
+              .url("https://httpbin.org/delay/10") // 这个 URL 会延迟 10 秒响应
+              .build()
+
+          // 异步请求示例
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  when (e) {
+                      is SocketTimeoutException -> {
+                          println("Request timed out: ${e.message}")
+                          // 处理超时逻辑，例如提示用户网络慢或重试
+                      }
+                      else -> {
+                          println("Request failed with IO error: ${e.message}")
+                          // 处理其他 IO 异常
+                      }
+                  }
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  // ... 正常处理响应 ...
+                   response.close()
+              }
+          })
+
+          // 同步请求示例 (需要在后台线程)
+          // try {
+          //     val response = client.newCall(request).execute()
+          //     // ... process response ...
+          //      response.close()
+          // } catch (e: SocketTimeoutException) {
+          //     println("Request timed out (sync): ${e.message}")
+          // } catch (e: IOException) {
+          //     println("IO error (sync): ${e.message}")
+          // }
+          ```
+      - title: 网络不可用异常
+        description: 当设备网络连接断开或无法访问目标主机时，OkHttp 通常会抛出 `java.net.UnknownHostException` (DNS 解析失败) 或其他 `IOException` (如连接被拒绝)。可以在 `onFailure` 回调或 `catch` 块中捕获这些异常，并提示用户检查网络连接。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import java.net.UnknownHostException
+
+          val client = OkHttpClient()
+          // 一个无效或无法访问的 URL
+          val request = Request.Builder()
+              .url("https://nonexistent.domain.invalid")
+              .build()
+
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  when (e) {
+                      is UnknownHostException -> {
+                          println("Network error: Cannot resolve host. Check internet connection or URL.")
+                          // 提示用户检查网络
+                      }
+                      // 可以捕获更具体的异常，如 ConnectException
+                      // is java.net.ConnectException -> { ... }
+                      else -> {
+                           println("Network request failed: ${e.message}")
+                           // 其他网络相关 IO 异常
+                      }
+                  }
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  // This won't be called if onFailure is triggered
+                  response.close()
+              }
+          })
+          ```
+      - title: 空响应体处理
+        description: 即使请求成功 (`response.isSuccessful` 为 true)，响应体 `response.body` 也可能为 `null`，例如对于 204 No Content 或 205 Reset Content 响应。在访问 `response.body` 的方法（如 `string()`, `byteStream()`）之前，必须进行空检查。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+
+          fun handleResponse(response: Response) {
+              if (response.isSuccessful) {
+                  val responseBody = response.body // 获取响应体
+                  if (responseBody != null) {
+                      try {
+                          val bodyString = responseBody.string() // 安全调用 string()
+                          if (bodyString.isNotEmpty()) {
+                              println("Response body: $bodyString")
+                              // 解析数据...
+                          } else {
+                              println("Response body is empty.")
+                          }
+                      } catch (e: IOException) {
+                          println("Error reading response body: ${e.message}")
+                      } finally {
+                           response.close() // 确保关闭
+                      }
+                  } else {
+                      println("Response successful but body is null (e.g., 204 No Content). Code: ${response.code}")
+                      response.close() // 即使 body 为 null 也要 close response
+                  }
+              } else {
+                  println("Request failed with code: ${response.code}")
+                  response.close()
+              }
+          }
+
+          // 在 onResponse 回调中调用:
+          // client.newCall(request).enqueue(object : Callback {
+          //    override fun onResponse(call: Call, response: Response) {
+          //        handleResponse(response)
+          //    }
+          //    override fun onFailure(call: Call, e: IOException) { ... }
+          // })
+          ```
+      - title: Json 解析异常
+        description: 当尝试将响应体解析为 JSON 对象时（例如使用 Gson、Moshi 或 kotlinx.serialization），如果响应体不是有效的 JSON 格式，或者格式与目标数据类不匹配，会抛出相应的解析异常（如 `JsonSyntaxException` for Gson）。需要在解析代码周围添加 `try-catch`。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          // import com.google.gson.Gson
+          // import com.google.gson.JsonSyntaxException
+
+          // data class MyData(val id: Int, val name: String) // 目标数据类
+
+          fun parseJsonResponse(response: Response) {
+              if (!response.isSuccessful) {
+                   println("Request failed: ${response.code}")
+                   response.close()
+                   return
+              }
+
+              val responseBody = response.body
+              if (responseBody == null) {
+                  println("Response body is null.")
+                  response.close()
+                  return
+              }
+
+              // val gson = Gson()
+              try {
+                  val bodyString = responseBody.string() // 获取响应字符串
+                   println("Raw JSON response: $bodyString") // 打印原始 JSON 用于调试
+
+                   // 尝试解析 JSON
+                   // val myData = gson.fromJson(bodyString, MyData::class.java)
+                   // println("Parsed data: $myData")
+
+                   // 模拟解析成功
+                   if (bodyString.contains("id") && bodyString.contains("name")) {
+                       println("Simulated JSON parsing successful.")
+                   } else {
+                       // 模拟抛出解析异常
+                       throw /* JsonSyntaxException */ Exception("Invalid JSON format")
+                   }
+
+              } catch (e: /* JsonSyntaxException */ Exception) {
+                  println("JSON parsing failed: ${e.message}")
+                  // 处理 JSON 格式错误，可能记录日志或显示错误信息
+              } catch (e: IOException) {
+                  println("Error reading response body: ${e.message}")
+              } finally {
+                  response.close() // 确保关闭
+              }
+          }
+
+          // 示例用法 (假设获取了一个包含无效 JSON 的响应)
+          // val invalidJsonResponse = Response.Builder() // ... 构建一个模拟响应
+          //      .code(200)
+          //      .request(Request.Builder().url("http://example.com").build())
+          //      .protocol(Protocol.HTTP_1_1)
+          //      .message("OK")
+          //      .bodyResponseBody.create("application/json".toMediaType(), "{invalid json"))
+          //      .build()
+          // parseJsonResponse(invalidJsonResponse)
+          ```
+      - title: SSL 握手异常排查
+        description: |-
+          连接 HTTPS 站点时，如果服务器证书无效、不受信任、过期，或者客户端与服务器之间的 SSL/TLS 协议版本或加密套件不兼容，会发生 `javax.net.ssl.SSLHandshakeException`。排查步骤通常包括：
+          1. 确认设备时间和日期是否正确。
+          2. 检查服务器证书是否由受信任的 CA 颁发且未过期（可以在浏览器中访问检查）。
+          3. 如果是自签名证书或私有 CA，需要在 OkHttpClient 中配置自定义的 `TrustManager` 或 `SSLSocketFactory` (见“Https 自签名证书配置”)。
+          4. 检查是否有网络代理或防火墙干扰了 SSL 连接。
+          5. 开启详细的 SSL 调试日志 (较复杂，通常通过系统属性设置 `javax.net.debug=ssl`)。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          import javax.net.ssl.SSLHandshakeException
+
+          val client = OkHttpClient()
+          // 尝试连接一个使用无效或自签名证书的 HTTPS 站点 (替换为实际测试 URL)
+          val request = Request.Builder()
+              .url("https://self-signed.badssl.com/") // 一个用于测试的坏 SSL 站点
+              .build()
+
+          client.newCall(request).enqueue(object : Callback {
+              override fun onFailure(call: Call, e: IOException) {
+                  if (e is SSLHandshakeException) {
+                      println("SSL Handshake Failed: ${e.message}")
+                      // 根据错误信息判断原因：
+                      // - "java.security.cert.CertPathValidatorException: Trust anchor for certification path not found." -> 证书不受信任
+                      // - "java.security.cert.CertificateExpiredException" -> 证书过期
+                      // - "javax.net.ssl.SSLProtocolException: SSL handshake aborted: ssl=..." -> 协议或密码套件问题
+                      // 采取相应措施，如信任自签名证书或联系服务器管理员
+                  } else {
+                      println("Request failed: ${e.message}")
+                  }
+              }
+
+              override fun onResponse(call: Call, response: Response) {
+                  println("SSL connection successful (unexpected for badssl.com). Code: ${response.code}")
+                  response.close()
+              }
+          })
+          ```
+  - title: 常见问题与解决技巧
+    description: 在使用 OkHttp3 过程中可能遇到的一些常见问题及其解决方法和优化技巧。
+    children:
+      - title: 多 client 实例内存泄漏
+        description: 频繁创建 `OkHttpClient` 实例而不复用会导致资源浪费（线程池、连接池无法共享）和潜在的内存泄漏。**最佳实践是全局共享一个 `OkHttpClient` 单例。** 可以通过依赖注入（如 Hilt, Koin）或 Kotlin 的 `object` 来实现单例。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import java.util.concurrent.TimeUnit
+
+          // 使用 object 创建 OkHttpClient 单例
+          object NetworkClient {
+              val instance: OkHttpClient by lazy { // 使用 lazy 延迟初始化
+                  OkHttpClient.Builder()
+                      .connectTimeout(10, TimeUnit.SECONDS)
+                      .readTimeout(30, TimeUnit.SECONDS)
+                      // ... 其他全局配置 ...
+                      .build()
+              }
+          }
+
+          // 在代码中始终使用这个单例
+          // val client = NetworkClient.instance
+          // val call = client.newCall(request)
+          ```
+      - title: 重复请求问题
+        description: |-
+          重复请求可能由多种原因引起：
+          1. **用户快速点击按钮：** 在 UI层面做防抖处理，例如点击后禁用按钮，或使用 RxJava/Flow 的 `debounce` 操作符。
+          2. **OkHttp 自动重试：** 如果 `retryOnConnectionFailure` 开启（默认），对于幂等请求（如 GET）在网络连接失败时会自动重试。确认是否是预期行为。对于非幂等请求（如 POST），OkHttp 默认不会自动重试连接失败。
+          3. **业务逻辑错误：** 代码中可能存在重复调用请求方法的地方。
+          4. **拦截器逻辑问题：** 自定义拦截器中 `chain.proceed()` 被错误地调用了多次。
+          排查时，使用日志拦截器观察请求次数和流程。
+        example: |
+          ```kotlin
+          // 示例：UI 层面防止快速点击 (简单版)
+          // var isRequesting = false
+          // button.setOnClickListener {
+          //     if (!isRequesting) {
+          //         isRequesting = true
+          //         makeNetworkRequest().invokeOnCompletion {
+          //             isRequesting = false // 请求完成后恢复可点击状态
+          //         }
+          //     }
+          // }
+
+          // 示例：检查 OkHttp 重试配置
+          val client = OkHttpClient.Builder()
+              // .retryOnConnectionFailure(false) // 如果不希望连接失败时重试 GET 请求，可以禁用
+              .build()
+
+          // 示例：检查拦截器逻辑
+          class MyInterceptor : okhttp3.Interceptor {
+              override fun intercept(chain: okhttp3.Interceptor.Chain): okhttp3.Response {
+                  val request = chain.request()
+                  println("Interceptor: proceeding with request ${request.url}")
+                  // !!! 确保 chain.proceed(request) 只被调用一次 !!!
+                  val response = chain.proceed(request)
+                  // val response2 = chain.proceed(request) // 错误：重复调用会发起两次请求
+                  println("Interceptor: received response for ${request.url}")
+                  return response
+              }
+          }
+          ```
+      - title: 缓存不生效排查
+        description: |-
+          OkHttp 缓存不生效的常见原因：
+          1. **未配置 Cache：** 必须在 `OkHttpClient.Builder` 中调用 `.cache(cache)`。
+          2. **服务器响应头不支持缓存：** 服务器响应需要包含正确的 `Cache-Control` (如 `max-age=...`, `public`/`private`) 或 `Expires` 头。如果响应头是 `Cache-Control: no-store` 或 `no-cache` (没有 ETag/Last-Modified)，则无法缓存。
+          3. **请求方法不是 GET：** OkHttp 默认只缓存 GET 请求的响应。
+          4. **请求包含 `Authorization` 头：** 默认情况下，带 `Authorization` 头的响应被认为是私有的，不会被共享缓存存储（除非响应头明确允许，如 `Cache-Control: public`）。
+          5. **请求包含变化的查询参数：** 即使是相同的资源，如果 URL 查询参数每次都变化（如加了时间戳），OkHttp 会认为是不同的请求，无法命中缓存。
+          6. **缓存目录问题：** 确保缓存目录可写，并且缓存大小配置合理。
+          使用网络拦截器打印请求和响应头，特别是 `Cache-Control`, `Expires`, `ETag`, `Last-Modified`，有助于诊断问题。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.File
+          import java.util.concurrent.TimeUnit
+
+          // 确保 Cache 已配置
+          val cacheDir = File("./okhttp_cache")
+          val cacheSize = 10L * 1024 * 1024 // 10MB
+          val cache = Cache(cacheDir, cacheSize)
+
+          // 网络拦截器，用于打印缓存相关 Header
+          class CacheDebugInterceptor : Interceptor {
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val request = chain.request()
+                  println("--> Request Cache-Control: ${request.cacheControl}")
+                  println("--> Request Headers: ${request.headers}")
+
+                  val response = chain.proceed(request)
+
+                  println("<-- Response Cache-Control: ${response.cacheControl}")
+                  println("<-- Response Headers: ${response.headers}")
+                  println("<-- Network Response: ${response.networkResponse}") // null 表示来自缓存
+                  println("<-- Cache Response: ${response.cacheResponse}")     // null 表示来自网络
+                  return response
+              }
+          }
+
+
+          val client = OkHttpClient.Builder()
+              .cache(cache) // 确认已配置 Cache
+              .addNetworkInterceptor(CacheDebugInterceptor()) // 添加调试拦截器
+              .build()
+
+          // 发起一个 GET 请求
+          // val request = Request.Builder()
+          //     .url("https://publicobject.com/helloworld.txt") // 一个通常可缓存的资源
+          //     .get() // 必须是 GET
+          //     // .cacheControl(CacheControl.FORCE_NETWORK) // 测试时不强制网络
+          //     .build()
+
+          // 多次执行相同的请求，观察日志中 networkResponse 和 cacheResponse 的变化
+          ```
+      - title: 文件下载断点续传
+        description: |-
+          要实现断点续传，需要在请求头中添加 `Range` 字段，指定从哪个字节开始下载。服务器需要支持 `Range` 请求（响应头中包含 `Accept-Ranges: bytes`）。下载前需要检查本地已下载文件的大小，然后从该位置继续下载。
+          1. 获取已下载文件的大小 `downloadedBytes`。
+          2. 在请求头中添加 `Range: bytes=downloadedBytes-`。
+          3. 发起请求。如果服务器支持，会返回 206 Partial Content 状态码和剩余部分的数据。
+          4. 将接收到的数据追加写入文件。
+          5. 如果返回 200 OK，说明服务器不支持 Range 或文件已完整，需要从头下载或判断是否已完成。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.File
+          import java.io.FileOutputStream
+          import java.io.IOException
+          import kotlinx.coroutines.*
+
+          suspend fun downloadFileWithResume(client: OkHttpClient, url: String, targetFile: File) {
+              var downloadedBytes = 0L
+              if (targetFile.exists()) {
+                  downloadedBytes = targetFile.length() // 获取已下载大小
+              }
+
+              val requestBuilder = Request.Builder().url(url)
+              if (downloadedBytes > 0) {
+                  requestBuilder.header("Range", "bytes=$downloadedBytes-") // 添加 Range 头
+                  println("Resuming download from byte $downloadedBytes")
+              } else {
+                  println("Starting download from beginning.")
+              }
+              val request = requestBuilder.build()
+
+              withContext(Dispatchers.IO) {
+                  var response: Response? = null
+                  var inputStream: InputStream? = null
+                  var outputStream: FileOutputStream? = null
+                  try {
+                      response = client.newCall(request).execute()
+
+                      if (!response.isSuccessful && response.code != 206) { // 200 OK or 206 Partial Content
+                          throw IOException("Download failed with code: ${response.code}")
+                      }
+
+                      // 检查是否是部分内容，否则可能需要从头开始或已完成
+                      val isPartialContent = response.code == 206
+                      if (isPartialContent) {
+                          println("Server returned 206 Partial Content, appending to file.")
+                           outputStream = FileOutputStream(targetFile, true) // 追加写入
+                      } else {
+                           println("Server returned ${response.code}, writing file from beginning.")
+                           downloadedBytes = 0 // 重置计数器
+                           outputStream = FileOutputStream(targetFile, false) // 覆盖写入
+                      }
+
+
+                      inputStream = response.body?.byteStream() ?: throw IOException("Response body is null")
+                      val buffer = ByteArray(4 * 1024)
+                      var bytesRead: Int
+                      var currentTotalBytes = downloadedBytes // 用于进度计算
+
+                      while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                          outputStream.write(buffer, 0, bytesRead)
+                          currentTotalBytes += bytesRead
+                          // 更新进度...
+                           println("Downloaded: ${currentTotalBytes / 1024} KB")
+                      }
+                      outputStream.flush()
+                      println("Download finished. Total size: ${currentTotalBytes / 1024} KB")
+
+                  } catch (e: IOException) {
+                      println("Download error: ${e.message}")
+                  } finally {
+                      outputStream?.close()
+                      inputStream?.close()
+                      response?.close()
+                  }
+              }
+          }
+          // 使用:
+          // val client = OkHttpClient()
+          // val target = File("./downloaded_large_file.zip")
+          // CoroutineScope(Dispatchers.IO).launch {
+          //      downloadFileWithResume(client, "https://example.com/largefile.zip", target)
+          // }
+          ```
+      - title: Https 自签名证书配置
+        description: |-
+          默认情况下，OkHttp (和 Java/Android 系统) 不信任自签名证书或由私有 CA 颁发的证书，会导致 `SSLHandshakeException`。要允许连接这类 HTTPS 服务，需要自定义 `SSLSocketFactory` 和 `TrustManager` 来信任特定的证书。
+          **警告：这会降低安全性，只应在明确信任目标服务器且无法获取有效 CA 证书的情况下使用。不要在生产环境中盲目信任所有证书！**
+          一种常见的做法是：
+          1. 将服务器的自签名证书（或 CA 证书）打包到 App 中（例如放在 `res/raw` 目录下）。
+          2. 创建一个 `KeyStore`，加载该证书。
+          3. 创建一个 `TrustManagerFactory`，用该 `KeyStore` 初始化。
+          4. 获取 `TrustManager`。
+          5. 创建 `SSLContext`，用该 `TrustManager` 初始化。
+          6. 从 `SSLContext` 获取 `SSLSocketFactory`。
+          7. 在 `OkHttpClient.Builder` 中配置 `sslSocketFactory` 和 `trustManager` (注意：需要获取 X509TrustManager)。
+          对于测试或内部环境，有时会使用一个“信任所有证书”的 `TrustManager`，**这极不安全，绝不能用于生产环境。**
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import java.security.KeyStore
+          import java.security.cert.CertificateFactory
+          import java.security.cert.X509Certificate
+          import javax.net.ssl.*
+          // import android.content.Context // 假设在 Android 环境
+
+          // !!! 信任所有证书的示例（极不安全，仅用于测试或特殊内部环境）!!!
+          fun createUnsafeTrustManager(): X509TrustManager {
+               return object : X509TrustManager {
+                   override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                   override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                   override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+               }
+          }
+
+          fun createUnsafeClient(): OkHttpClient {
+               try {
+                   val trustAllCerts = arrayOf<TrustManager>(createUnsafeTrustManager())
+                   val sslContext = SSLContext.getInstance("SSL") // 或 "TLS"
+                   sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+                   val sslSocketFactory = sslContext.socketFactory
+
+                   return OkHttpClient.Builder()
+                       .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+                       .hostnameVerifier { _, _ -> true } // 禁用主机名验证 (同样不安全)
+                       .build()
+               } catch (e: Exception) {
+                   throw RuntimeException("Failed to create unsafe OkHttpClient", e)
+               }
+          }
+
+          // --- 推荐方式：信任特定证书 ---
+          // fun createTrustManagerForCert(context: Context, certResId: Int): X509TrustManager? {
+          //     try {
+          //         val certificateFactory = CertificateFactory.getInstance("X.509")
+          //         val inputStream = context.resources.openRawResource(certResId)
+          //         val certificate = certificateFactory.generateCertificate(inputStream)
+          //         inputStream.close()
+          //
+          //         val keyStoreType = KeyStore.getDefaultType()
+          //         val keyStore = KeyStore.getInstance(keyStoreType)
+          //         keyStore.load(null, null) // 初始化空 keystore
+          //         keyStore.setCertificateEntry("ca", certificate) // 添加证书
+          //
+          //         val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
+          //         val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
+          //         tmf.init(keyStore) // 用包含证书的 keystore 初始化
+          //
+          //         // 获取 TrustManager (确保是 X509TrustManager)
+          //         return tmf.trustManagers.find { it is X509TrustManager } as? X509TrustManager
+          //     } catch (e: Exception) {
+          //         println("Error creating TrustManager for certificate: ${e.message}")
+          //         return null
+          //     }
+          // }
+          //
+          // fun createSecureClientWithCustomCert(context: Context, certResId: Int): OkHttpClient? {
+          //      val trustManager = createTrustManagerForCert(context, certResId) ?: return null
+          //      try {
+          //          val sslContext = SSLContext.getInstance("TLS")
+          //          sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
+          //          val sslSocketFactory = sslContext.socketFactory
+          //
+          //          return OkHttpClient.Builder()
+          //              .sslSocketFactory(sslSocketFactory, trustManager)
+          //              // 默认的主机名验证器通常足够，除非证书 CN 不匹配域名
+          //              // .hostnameVerifier { hostname, session -> ... }
+          //              .build()
+          //      } catch (e: Exception) {
+          //          println("Error creating secure OkHttpClient: ${e.message}")
+          //          return null
+          //      }
+          // }
+
+          // 使用不安全的客户端 (仅测试)
+          // val unsafeClient = createUnsafeClient()
+          // val request = Request.Builder().url("https://self-signed.badssl.com/").build()
+          // unsafeClient.newCall(request).execute() // 应该能成功连接 (但忽略了安全风险)
+
+          // 使用信任特定证书的客户端 (推荐)
+          // val secureClient = createSecureClientWithCustomCert(context, R.raw.my_server_cert)
+          // secureClient?.newCall(...)
+          ```
+      - title: 多 BaseUrl 动态配置方案
+        description: |-
+          当应用需要与多个不同的 API 服务交互（即有多个 Base URL）时，有几种处理方式：
+          1. **创建多个 OkHttpClient 实例：** 为每个 Base URL 创建和配置一个 `OkHttpClient`。简单但不推荐，浪费资源。
+          2. **在 Request 构建时指定完整 URL：** 在 `Request.Builder().url()` 中始终传入包含协议和域名的完整 URL，而不是相对路径。这是最直接的方式。
+          3. **使用拦截器动态修改 URL：** 可以创建一个拦截器，根据请求头或其他标记，将请求的 URL 中的占位符或特定路径替换为目标 Base URL。
+          4. **配合 Retrofit 使用：** Retrofit 提供了更灵活的方式处理 Base URL。可以在 Service 接口方法的 `@GET`, `@POST` 等注解中使用完整 URL，或者使用 `@Url` 参数动态指定完整 URL，或者通过拦截器动态修改 Retrofit 的 `baseUrl`（较复杂）。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+
+          // --- 方案 2: 完整 URL ---
+          val client = OkHttpClient() // 一个共享的 client
+          val requestApi1 = Request.Builder().url("https://api.service1.com/users").build()
+          val requestApi2 = Request.Builder().url("https://data.service2.org/items").build()
+          // client.newCall(requestApi1)...
+          // client.newCall(requestApi2)...
+
+          // --- 方案 3: 拦截器动态修改 ---
+          class BaseUrlInterceptor : Interceptor {
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  var request = chain.request()
+                  val originalHttpUrl = request.url
+
+                  // 假设通过 Header 指定目标服务
+                  val targetService = request.header("X-Target-Service")
+
+                  val newBaseUrl: HttpUrl? = when (targetService) {
+                      "service1" -> "https://api.service1.com/".toHttpUrlOrNull()
+                      "service2" -> "https://data.service2.org/".toHttpUrlOrNull()
+                      else -> null // 使用默认或原始 URL
+                  }
+
+                  if (newBaseUrl != null && targetService != null) {
+                      // 从原始 URL 构建新的 URL
+                      val newHttpUrl = originalHttpUrl.newBuilder()
+                          .scheme(newBaseUrl.scheme)
+                          .host(newBaseUrl.host)
+                          .port(newBaseUrl.port)
+                          // 保留原始路径段和查询参数
+                          .build()
+
+                      // 创建新请求，移除用于选择服务的 Header
+                      request = request.newBuilder()
+                          .url(newHttpUrl)
+                          .removeHeader("X-Target-Service") // 移除标记 Header
+                          .build()
+                        println("Redirecting to: ${newHttpUrl}")
+                  } else {
+                       println("Using original URL: ${originalHttpUrl}")
+                  }
+
+                  return chain.proceed(request)
+              }
+          }
+
+          // 配置 Client 使用拦截器
+          // val multiUrlClient = OkHttpClient.Builder()
+          //      .addInterceptor(BaseUrlInterceptor())
+          //      .build()
+
+          // 使用时，通过 Header 指定目标
+          // val reqService1 = Request.Builder()
+          //      .url("http://placeholder.com/users") // URL 主机部分会被替换
+          //      .header("X-Target-Service", "service1")
+          //      .build()
+          // val reqService2 = Request.Builder()
+          //      .url("http://placeholder.com/items/query?id=1") // 路径和参数会保留
+          //      .header("X-Target-Service", "service2")
+          //      .build()
+          // multiUrlClient.newCall(reqService1)...
+          // multiUrlClient.newCall(reqService2)...
+          ```
+  - title: 最佳实践
+    description: 一些在项目中使用 OkHttp3 的推荐做法和模式。
+    children:
+      - title: 单例 OkHttpClient 封装
+        description: 为了资源复用（连接池、线程池）和方便全局配置（超时、拦截器、缓存等），强烈建议在应用中只使用一个 `OkHttpClient` 实例。可以使用 Kotlin 的 `object` 或依赖注入框架（如 Hilt, Koin）来管理这个单例。
+        example: |
+          ```kotlin
+          import okhttp3.Cache
+          import okhttp3.OkHttpClient
+          import okhttp3.logging.HttpLoggingInterceptor
+          import java.io.File
+          import java.util.concurrent.TimeUnit
+          // import android.content.Context // Assume Android context
+
+          object HttpClientProvider {
+
+              // 假设 context 存在
+              // lateinit var applicationContext: Context
+
+              private val loggingInterceptor = HttpLoggingInterceptor().apply {
+                  level = if (/* BuildConfig.DEBUG */ true) { // 根据构建类型设置日志级别
+                      HttpLoggingInterceptor.Level.BODY
+                  } else {
+                      HttpLoggingInterceptor.Level.NONE
+                  }
+              }
+
+              // 懒加载方式创建单例
+              val instance: OkHttpClient by lazy {
+                  // val cacheDir = File(applicationContext.cacheDir, "http_cache")
+                  // val cacheSize = 10 * 1024 * 1024L // 10MB
+                  // val cache = Cache(cacheDir, cacheSize)
+
+                  OkHttpClient.Builder()
+                      .connectTimeout(15, TimeUnit.SECONDS)
+                      .readTimeout(30, TimeUnit.SECONDS)
+                      .writeTimeout(15, TimeUnit.SECONDS)
+                      // .cache(cache) // 配置缓存
+                      .addInterceptor(loggingInterceptor) // 添加日志拦截器
+                      // .addInterceptor(AuthInterceptor()) // 添加自定义认证拦截器
+                      // .cookieJar(...) // 配置 Cookie
+                      // .authenticator(...) // 配置 Token 刷新
+                      .retryOnConnectionFailure(true) // 默认开启重试
+                      .build()
+              }
+          }
+
+          // 使用:
+          // val client = HttpClientProvider.instance
+          // client.newCall(...)
+          ```
+      - title: 网络模块统一封装
+        description: 将网络请求相关的逻辑（创建 Client、构建 Request、执行请求、处理 Response、解析数据、异常处理）封装到一个单独的模块或层次中（例如 Repository 或 DataSource 层）。这有助于代码解耦、复用和测试。可以提供简洁的接口给业务层调用。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import java.io.IOException
+          // import com.google.gson.Gson
+
+          // 简化的数据类
+          data class User(val id: Long, val name: String)
+          sealed class Result<out T> {
+              data class Success<out T>(val data: T) : Result<T>()
+              data class Error(val exception: Exception) : Result<Nothing>()
+          }
+
+
+          // 假设的 UserRepository
+          class UserRepository {
+              private val client = HttpClientProvider.instance // 使用单例 Client
+              // private val gson = Gson()
+
+              suspend fun getUser(userId: Long): Result<User> {
+                  val request = Request.Builder()
+                      .url("https://api.example.com/users/$userId")
+                      .get()
+                      .build()
+
+                  return try {
+                      val response = client.newCall(request).execute() // 使用同步 execute (假设在 IO 协程中)
+                      if (response.isSuccessful) {
+                          val body = response.body?.string()
+                          if (body != null) {
+                              try {
+                                  // val user = gson.fromJson(body, User::class.java) // 解析 JSON
+                                  // 模拟解析
+                                  if (userId == 1L && body.contains("Alice")) {
+                                     val user = User(1L, "Alice")
+                                     Result.Success(user)
+                                  } else {
+                                     Result.Error(Exception("User not found or invalid format"))
+                                  }
+                              } catch (e: Exception /* JsonSyntaxException */) {
+                                  Result.Error(Exception("Failed to parse user data", e))
+                              }
+                          } else {
+                              Result.Error(IOException("Response body is null"))
+                          }
+                      } else {
+                          Result.Error(IOException("Request failed with code: ${response.code}"))
+                      }
+                       response.close() // 关闭 response
+                  } catch (e: IOException) {
+                      Result.Error(e) // 网络或 IO 错误
+                  }
+              }
+
+              // 可以添加其他方法，如 updateUser, createUser 等
+          }
+
+          // 在 ViewModel 或 UseCase 中调用:
+          // viewModelScope.launch {
+          //     when (val result = userRepository.getUser(1)) {
+          //         is Result.Success -> // 更新 UI
+          //         is Result.Error -> // 显示错误
+          //     }
+          // }
+          ```
+      - title: 配合 Retrofit 使用最佳配置
+        description: Retrofit 是一个基于 OkHttp 的类型安全的 HTTP 客户端库，它极大地简化了 API 接口的定义和调用。将配置好的 `OkHttpClient` 实例传递给 Retrofit 的 `Builder` 是标准做法。OkHttp 的拦截器、缓存、超时等配置会直接应用于 Retrofit 的请求。
+        example: |
+          ```kotlin
+          import okhttp3.OkHttpClient
+          import retrofit2.Retrofit
+          import retrofit2.converter.gson.GsonConverterFactory // 需要 retrofit2 和 converter-gson 依赖
+          import retrofit2.http.GET
+          import retrofit2.http.Path
+
+          // 1. 获取或创建配置好的 OkHttpClient 单例
+          val okHttpClient = HttpClientProvider.instance
+
+          // 2. 定义 Retrofit 接口
+          interface ApiService {
+              @GET("users/{userId}")
+              suspend fun getUser(@Path("userId") userId: Long): User // 使用 suspend 实现协程支持
+          }
+
+          // 3. 创建 Retrofit 实例
+          val retrofit = Retrofit.Builder()
+              .baseUrl("https://api.example.com/") // 设置基础 URL
+              .client(okHttpClient) // !! 传入配置好的 OkHttpClient 实例 !!
+              .addConverterFactory(GsonConverterFactory.create()) // 添加 JSON 转换器
+              // .addCallAdapterFactory(...) // 添加调用适配器 (如 RxJava, Coroutine)
+              .build()
+
+          // 4. 创建 API Service 实例
+          val apiService = retrofit.create(ApiService::class.java)
+
+          // 5. 调用 API (在协程中)
+          // CoroutineScope(Dispatchers.IO).launch {
+          //     try {
+          //         val user = apiService.getUser(1)
+          //         // 处理 user 数据
+          //     } catch (e: Exception) {
+          //         // 处理异常
+          //     }
+          // }
+          ```
+      - title: 协程 suspend 封装 OkHttp
+        description: 虽然 Retrofit 提供了对 `suspend` 函数的良好支持，但如果直接使用 OkHttp，可以通过 Kotlin 协程的 `suspendCancellableCoroutine` 来将异步的 `enqueue` 回调封装成 `suspend` 函数，使其能以同步的方式编写异步代码，并支持协程的取消。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import kotlinx.coroutines.suspendCancellableCoroutine
+          import java.io.IOException
+          import kotlin.coroutines.resume
+          import kotlin.coroutines.resumeWithException
+
+          // 定义一个扩展函数，将 Call.enqueue 封装为 suspend 函数
+          suspend fun Call.await(): Response {
+              return suspendCancellableCoroutine { continuation ->
+                  // 当协程被取消时，也取消 OkHttp 请求
+                  continuation.invokeOnCancellation {
+                      this.cancel()
+                      println("OkHttp call cancelled due to coroutine cancellation.")
+                  }
+
+                  // 执行异步请求
+                  this.enqueue(object : Callback {
+                      override fun onFailure(call: Call, e: IOException) {
+                          // 如果协程没有被取消，则恢复协程并传递异常
+                          if (continuation.isActive) {
+                              continuation.resumeWithException(e)
+                          }
+                      }
+
+                      override fun onResponse(call: Call, response: Response) {
+                           // 如果协程没有被取消，则恢复协程并传递响应
+                           if (continuation.isActive) {
+                              continuation.resume(response)
+                          } else {
+                              // 如果协程已被取消，即使收到响应也要关闭它
+                              response.close()
+                          }
+                      }
+                  })
+              }
+          }
+
+          // --- 使用示例 ---
+          suspend fun fetchUserDataSuspend(client: OkHttpClient, url: String): String {
+              val request = Request.Builder().url(url).build()
+              var response: Response? = null
+              try {
+                  println("Making request using await()...")
+                  response = client.newCall(request).await() // 调用封装的 suspend 函数
+                  println("Request completed. Code: ${response.code}")
+                  if (!response.isSuccessful) {
+                      throw IOException("Request failed with code: ${response.code}")
+                  }
+                  return response.body?.string() ?: throw IOException("Response body is null")
+              } catch (e: IOException) {
+                   println("Error during await(): ${e.message}")
+                  throw e // 重新抛出异常或处理
+              } finally {
+                   response?.close() // 确保关闭响应
+              }
+          }
+
+          // 在 CoroutineScope 中调用
+          // val client = HttpClientProvider.instance
+          // CoroutineScope(Dispatchers.IO).launch {
+          //     try {
+          //         val data = fetchUserDataSuspend(client, "https://api.example.com/data")
+          //         println("Data fetched: $data")
+          //         withContext(Dispatchers.Main) { /* 更新 UI */ }
+          //     } catch (e: Exception) {
+          //         println("Failed to fetch data: ${e.message}")
+          //         withContext(Dispatchers.Main) { /* 显示错误 */ }
+          //     }
+          // }
+          ```
+      - title: 自定义 Json 响应拦截器
+        description: 可以创建一个拦截器来统一处理 API 响应。例如，检查业务状态码（如果 API 设计在 HTTP 200 OK 的响应体内部包含业务成功/失败码）、统一解析 `data` 字段、或是在业务失败时抛出自定义异常。这有助于将通用的响应处理逻辑从具体的业务代码中分离出来。
+        example: |
+          ```kotlin
+          import okhttp3.*
+          import okhttp3.MediaType.Companion.toMediaTypeOrNull
+          import okhttp3.ResponseBody.Companion.toResponseBody
+          import java.io.IOException
+          // import com.google.gson.Gson
+          // import com.google.gson.JsonObject
+          // import com.google.gson.JsonParser
+
+          // 假设 API 响应结构如下:
+          // {
+          //   "code": 0, // 0 表示成功，其他表示失败
+          //   "message": "Success",
+          //   "data": { ... } // 实际数据
+          // }
+          // 或失败时:
+          // {
+          //   "code": 1001,
+          //   "message": "Invalid parameter",
+          //   "data": null
+          // }
+
+          class ApiResponseInterceptor : Interceptor {
+              // private val gson = Gson()
+
+              @Throws(IOException::class)
+              override fun intercept(chain: Interceptor.Chain): Response {
+                  val request = chain.request()
+                  val response = chain.proceed(request)
+
+                  if (!response.isSuccessful) {
+                      // 对于 HTTP 错误码，直接返回，让调用处处理
+                      return response
+                  }
+
+                  val responseBody = response.body ?: return response // 如果 body 为空，直接返回
+                   // 使用 peekBody 防止消耗原始流，以便后续还能读取
+                  val source = responseBody.source()
+                  source.request(Long.MAX_VALUE) // Buffer the entire body.
+                  val buffer = source.buffer.clone() // 克隆 buffer
+
+                  val contentType = responseBody.contentType()
+                  val bodyString = buffer.readString(contentType?.charset(Charsets.UTF_8) ?: Charsets.UTF_8)
+
+
+                  try {
+                      // 尝试解析通用结构 (使用 Gson 示例)
+                      // val jsonObject = JsonParser.parseString(bodyString).asJsonObject
+                      // val code = jsonObject.get("code")?.asInt
+                      // val message = jsonObject.get("message")?.asString ?: ""
+
+                       // 模拟解析业务 code
+                       val code: Int?
+                       val message: String
+                       val dataJsonString: String?
+
+                       if (bodyString.contains("\"code\": 0")) {
+                           code = 0
+                           message = "Success (Simulated)"
+                           dataJsonString = bodyString.substringAfter("\"data\":").substringBeforeLast("}") // 粗略提取 data 部分
+                       } else if (bodyString.contains("\"code\": 1001")) {
+                            code = 1001
+                            message = "Invalid parameter (Simulated)"
+                            dataJsonString = null
+                       } else {
+                            code = null // 无法解析 code
+                            message = "Unknown format (Simulated)"
+                            dataJsonString = null
+                       }
+
+
+                      if (code != null && code == 0) {
+                           // 业务成功，可以选择只保留 data 部分返回
+                           println("API business success (code=0).")
+                           if (dataJsonString != null) {
+                                // 创建一个新的 Response Body 只包含 data 部分
+                                val newDataBody = dataJsonString.toResponseBody(contentType)
+                                return response.newBuilder()
+                                    .body(newDataBody) // 替换 Body
+                                    .message("OK (Business Success)") // (可选) 修改 HTTP message
+                                    .build()
+                           } else {
+                               // 如果 data 为空但 code=0，也认为是成功的，返回原始响应或空内容响应
+                                println("API business success (code=0) but data is null.")
+                                return response // 返回原始响应
+                                // 或者创建一个空body响应？取决于业务需求
+                                // return response.newBuilder().body("".toResponseBody(contentType)).build()
+                           }
+                      } else if (code != null) {
+                          // 业务失败，抛出自定义异常
+                           println("API business error. Code: $code, Message: $message")
+                          throw ApiException(code, message)
+                      } else {
+                           // 无法解析业务 code，返回原始响应让调用者处理
+                           println("Could not parse business code from response.")
+                           return response
+                      }
+                  } catch (e: /* JsonSyntaxException */ Exception) {
+                      // JSON 解析失败，返回原始响应
+                      println("JSON parsing error in interceptor: ${e.message}")
+                      return response
+                  }
+              }
+          }
+
+          // 自定义业务异常
+          class ApiException(val code: Int, message: String) : IOException("API Error $code: $message")
+
+          // 使用拦截器:
+          // val client = OkHttpClient.Builder()
+          //     .addInterceptor(ApiResponseInterceptor())
+          //     .build()
+
+          // 调用处的异常处理需要捕获 ApiException
+          // try {
+          //    val response = client.newCall(request).execute()
+          //    // 如果拦截器处理成功，这里的 response body 就是 data 部分了
+          //    val data = response.body?.string()
+          //    // ... process data ...
+          // } catch (e: ApiException) {
+          //    // 处理业务异常
+          //    println("Caught API Exception: Code=${e.code}, Message=${e.message}")
+          // } catch (e: IOException) {
+          //    // 处理网络或IO异常
+          // }
+          ```

@@ -1,0 +1,1010 @@
+id: smart-refresh
+title: SmartRefreshLayout
+query: Android SmartRefreshLayout
+comment: 系统梳理 SmartRefreshLayout 的用法，涵盖基础用法、Header/Footer 配置、自定义动画、嵌套滚动冲突、异常处理与实战技巧。
+description: SmartRefreshLayout 是一个功能强大的 Android 下拉刷新和上拉加载库，适用于各种可滚动视图（如 RecyclerView、ScrollView 等）。它提供了丰富的内置 Header 和 Footer 样式，支持高度自定义，并能有效解决常见的嵌套滚动冲突问题。通过监听器回调处理刷新和加载逻辑，并使用 finish 方法结束状态。
+outline:
+  - title: 安装
+    description: 添加 SmartRefreshLayout 库依赖与基础布局配置。
+  - title: 使用
+    description: 基础刷新与加载功能实现。
+    children:
+      - title: 布局中引用 SmartRefreshLayout
+      - title: 自带 Header/Footer 使用声明
+      - title: 下拉刷新实现
+        description: setOnRefreshListener
+      - title: 上拉加载实现
+        description: setOnLoadMoreListener
+      - title: 同时监听刷新与加载
+      - title: 主动触发刷新
+        description: autoRefresh()
+      - title: 主动触发加载
+        description: autoLoadMore()
+      - title: 结束刷新与加载
+        description: finishRefresh()、finishLoadMore()
+  - title: Header / Footer 配置
+    description: 内置样式、参数配置与自定义实现。
+    children:
+      - title: 内置 Header 样式
+        description: ClassicsHeader、MaterialHeader
+      - title: 内置 Footer 样式
+        description: ClassicsFooter、BallPulseFooter
+      - title: 自定义 Header / Footer 实现
+      - title: 设置默认 Header / Footer
+        description: SmartRefreshLayout.setDefaultRefreshHeaderCreator
+      - title: 动态替换 Header / Footer
+  - title: 配置
+    description: SmartRefreshLayout 的属性配置项。
+    children:
+      - title: 禁用刷新或加载
+        description: setEnableRefresh(false)
+      - title: 设置是否嵌套滚动
+      - title: 超时自动关闭
+      - title: 回弹动画时间
+      - title: 自动上拉加载开关
+  - title: 嵌套滚动冲突
+    description: 解决与 RecyclerView、ScrollView、ViewPager 嵌套冲突问题。
+    children:
+      - title: setNestedScrollingEnabled
+      - title: overScrollDrag 配置
+      - title: 启用 pureScrollMode
+      - title: 解决与 AppBarLayout 联动冲突
+  - title: 异常处理
+    description: 常见异常场景与排查技巧。
+    children:
+      - title: 刷新完成方法未调用导致界面卡住
+      - title: 动画卡死、重复触发刷新
+      - title: Header/Footer 样式不生效
+      - title: 多次嵌套导致嵌套滚动失效
+  - title: 常见问题与解决技巧
+    description: 高频开发问题总结。
+    children:
+      - title: 滑动过快触发两次刷新
+      - title: 与 RecyclerView 滑动冲突
+      - title: 无数据时禁用上拉加载
+      - title: 自动刷新 + 网络异常场景处理
+      - title: ViewPager2 内嵌 SmartRefreshLayout 控制
+  - title: 最佳实践
+    description: SmartRefreshLayout 项目内标准用法推荐。
+    children:
+      - title: 封装 BaseRefreshFragment
+      - title: BaseRecyclerAdapter + SmartRefreshLayout 联动
+      - title: 自定义 Loading 样式统一管理
+      - title: 多状态视图 + 刷新联动
+      - title: 自动刷新 + 分页加载整合方案
+usage:
+  - title: 安装
+    description: 在 Android 项目中引入 SmartRefreshLayout 库依赖，并在布局文件中添加基础配置。
+    example: |
+      ```gradle
+      // build.gradle (app 级别)
+      dependencies {
+          // SmartRefreshLayout 核心库 (必须)
+          implementation 'io.github.scwang90:refresh-layout-kernel:2.1.0'
+          // 经典样式 Header (按需添加)
+          implementation 'io.github.scwang90:refresh-header-classics:2.1.0'
+          // 经典样式 Footer (按需添加)
+          implementation 'io.github.scwang90:refresh-footer-classics:2.1.0'
+          // 其他 Header/Footer 样式库 (例如 Material Design 风格)
+          // implementation 'io.github.scwang90:refresh-header-material:2.1.0'
+          // implementation 'io.github.scwang90:refresh-footer-ball:2.1.0'
+      }
+      ```
+      ```xml
+      <!-- 在你的布局 XML 文件中 (例如 activity_main.xml) -->
+      <com.scwang.smart.refresh.layout.SmartRefreshLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/refreshLayout"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+          <!-- 内部必须包含一个可滚动的视图，例如 RecyclerView, ScrollView, NestedScrollView 等 -->
+          <!-- 也可以是一个普通的 ViewGroup，但需要确保 SmartRefreshLayout 能找到滚动目标 -->
+          <androidx.recyclerview.widget.RecyclerView
+              android:id="@+id/recyclerView"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" />
+
+          <!-- 可选：也可以在这里直接声明 Header 和 Footer -->
+          <!-- <com.scwang.smart.refresh.header.ClassicsHeader
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"/> -->
+          <!-- <com.scwang.smart.refresh.footer.ClassicsFooter
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"/> -->
+
+      </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+      ```
+  - title: 使用
+    description: 实现 SmartRefreshLayout 的基础下拉刷新和上拉加载功能。
+    children:
+      - title: 布局中引用 SmartRefreshLayout
+        description: 将 `SmartRefreshLayout` 作为根布局或包裹需要刷新/加载的内容视图。确保其直接子视图是可滚动的（如 `RecyclerView`, `ScrollView`）或指定了滚动目标。
+        example: |
+          ```xml
+          <!-- activity_main.xml -->
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/refreshLayout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/recyclerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#FFFFFF" /> <!-- 内容视图 -->
+
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 自带 Header/Footer 使用声明
+        description: 可以直接在 XML 布局文件中的 `SmartRefreshLayout` 标签内声明使用库提供的内置 Header 和 Footer 视图。
+        example: |
+          ```xml
+          <!-- activity_main.xml -->
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/refreshLayout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              app:srlEnablePreviewInEditMode="true"> <!-- 允许在 Android Studio 布局编辑器中预览效果 -->
+
+              <!-- 声明使用经典 Header -->
+              <com.scwang.smart.refresh.header.ClassicsHeader
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"/>
+
+              <!-- 内容视图 -->
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/recyclerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent" />
+
+              <!-- 声明使用经典 Footer -->
+              <com.scwang.smart.refresh.footer.ClassicsFooter
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"/>
+
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 下拉刷新实现
+        description: 通过 `setOnRefreshListener` 设置监听器。当用户执行下拉刷新手势时，会触发监听器的 `onRefresh` 回调。在此回调中执行数据刷新逻辑（通常是网络请求），数据加载完成后**必须**调用 `finishRefresh()` 方法来结束刷新状态。
+        example: |
+          ```kotlin
+          // 在 Activity 或 Fragment 中获取 SmartRefreshLayout 实例
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 设置下拉刷新监听器
+          refreshLayout.setOnRefreshListener { layout -> // 'layout' 就是 SmartRefreshLayout 实例本身
+              // 执行刷新操作，例如请求第一页数据
+              fetchData(isRefresh = true) { success ->
+                  // 数据加载完成后，根据成功或失败调用 finishRefresh()
+                  // 不带参数表示成功
+                  // 传入 Boolean 表示成功(true)或失败(false)，会影响 Header 的状态显示
+                  // 也可以传入延迟毫秒数和成功状态
+                  layout.finishRefresh(success)
+                  // layout.finishRefresh()        // 效果：立即结束刷新动画，标记为成功
+                  // layout.finishRefresh(false)   // 效果：立即结束刷新动画，标记为失败
+                  // layout.finishRefresh(1000)    // 效果：延迟 1 秒结束刷新动画，标记为成功
+                  // layout.finishRefresh(1000, false) // 效果：延迟 1 秒结束刷新动画，标记为失败
+              }
+          }
+
+          // 模拟数据请求函数
+          fun fetchData(isRefresh: Boolean, callback: (success: Boolean) -> Unit) {
+              // 模拟网络请求延迟
+              refreshLayout.postDelayed({
+                  val success = Math.random() > 0.3 // 模拟成功或失败
+                  // 更新 RecyclerView 数据等 UI 操作...
+                  callback(success) // 回调通知完成
+              }, 1500) // 模拟 1.5 秒的加载时间
+          }
+          ```
+      - title: 上拉加载实现
+        description: 通过 `setOnLoadMoreListener` 设置监听器。当用户滚动到底部并执行上拉加载手势时（或自动触发，如果开启），会触发监听器的 `onLoadMore` 回调。在此回调中执行加载更多数据的逻辑，数据加载完成后**必须**调用 `finishLoadMore()` 方法来结束加载状态。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 设置上拉加载监听器
+          refreshLayout.setOnLoadMoreListener { layout ->
+              // 执行加载更多操作，例如请求下一页数据
+              fetchMoreData { success, noMoreData ->
+                  // 数据加载完成后，根据状态调用 finishLoadMore()
+                  if (noMoreData) {
+                      // 如果没有更多数据了，调用 finishLoadMoreWithNoMoreData()
+                      // Footer 会显示 "没有更多数据" 的提示
+                      layout.finishLoadMoreWithNoMoreData()
+                  } else {
+                      // 否则，根据加载是否成功调用 finishLoadMore()
+                      layout.finishLoadMore(success)
+                  }
+                  // layout.finishLoadMore()           // 效果：立即结束加载动画，标记为成功，表示还有更多数据
+                  // layout.finishLoadMore(false)      // 效果：立即结束加载动画，标记为失败
+                  // layout.finishLoadMore(1000)       // 效果：延迟 1 秒结束加载动画，标记为成功
+                  // layout.finishLoadMore(1000, success, noMoreData) // 效果：延迟、成功状态、是否还有更多数据
+              }
+          }
+
+          // 模拟加载更多数据函数
+          var page = 1
+          fun fetchMoreData(callback: (success: Boolean, noMoreData: Boolean) -> Unit) {
+              refreshLayout.postDelayed({
+                  val success = Math.random() > 0.3
+                  page++
+                  val noMoreData = page >= 5 // 模拟加载到第5页就没有更多数据了
+                  if (success) {
+                      // 添加新数据到 RecyclerView ...
+                  }
+                  callback(success, noMoreData)
+              }, 1500)
+          }
+          ```
+      - title: 同时监听刷新与加载
+        description: 如果希望在同一个监听器中处理刷新和加载事件，可以使用 `setOnRefreshLoadMoreListener`。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          refreshLayout.setOnRefreshLoadMoreListener(object : OnRefreshLoadMoreListener {
+              override fun onRefresh(refreshLayout: RefreshLayout) {
+                  // 执行刷新逻辑...
+                  fetchData(isRefresh = true) { success ->
+                      refreshLayout.finishRefresh(success)
+                      // 重置 "没有更多数据" 状态，以便刷新后能再次加载
+                      if (success) {
+                           // refreshLayout.resetNoMoreData() // 如果之前是 NoMoreData 状态，需要重置
+                           // 或者更常用的是直接在 finishLoadMore 成功时处理
+                           // 如果刷新成功且有数据，则确保加载更多是启用的
+                           refreshLayout.setEnableLoadMore(true) // 假设刷新后总是有数据的可能
+                      }
+                  }
+              }
+
+              override fun onLoadMore(refreshLayout: RefreshLayout) {
+                  // 执行加载更多逻辑...
+                  fetchMoreData { success, noMoreData ->
+                      if (noMoreData) {
+                          refreshLayout.finishLoadMoreWithNoMoreData()
+                      } else {
+                          refreshLayout.finishLoadMore(success)
+                      }
+                  }
+              }
+          })
+          ```
+      - title: 主动触发刷新
+        description: 调用 `autoRefresh()` 方法可以在代码中主动触发下拉刷新动画，并执行 `OnRefreshListener` 中的逻辑。常用于页面首次加载数据。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 在需要的时候（例如 Activity/Fragment 的 onResume 或数据初始化时）
+          // 立即触发刷新动画和逻辑
+          refreshLayout.autoRefresh()
+          // 效果：显示下拉 Header 动画，并触发 onRefresh 回调
+
+          // 带参数的调用
+          // refreshLayout.autoRefresh(400) // 延迟 400ms 触发
+          // refreshLayout.autoRefresh(400, 300, 1.5f, true) // 延迟400ms, Header显示动画时长300ms, 拖拽效果的摩擦系数1.5f, 是否平滑滚动到顶部true
+          ```
+      - title: 主动触发加载
+        description: 调用 `autoLoadMore()` 方法可以在代码中主动触发上拉加载动画，并执行 `OnLoadMoreListener` 中的逻辑。使用场景相对较少，例如特定条件下需要自动加载下一页。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 在特定条件下主动触发加载更多
+          if (shouldLoadMoreNow()) {
+              refreshLayout.autoLoadMore()
+              // 效果：显示上拉 Footer 动画，并触发 onLoadMore 回调
+          }
+
+          // 带参数的调用 (类似 autoRefresh)
+          // refreshLayout.autoLoadMore(500) // 延迟 500ms 触发
+          ```
+      - title: 结束刷新与加载
+        description: |
+          在刷新或加载的数据处理完成后，**必须**调用相应的 `finish` 方法来关闭 Header 或 Footer 的动画，并更新状态。
+          - `finishRefresh()`: 结束下拉刷新。
+            - `finishRefresh()`: 标记成功，立即关闭。
+            - `finishRefresh(boolean success)`: 标记成功或失败，立即关闭。
+            - `finishRefresh(int delayed)`: 标记成功，延迟指定毫秒后关闭。
+            - `finishRefresh(int delayed, boolean success)`: 标记成功或失败，延迟指定毫秒后关闭。
+          - `finishLoadMore()`: 结束上拉加载。
+            - `finishLoadMore()`: 标记成功，有更多数据，立即关闭。
+            - `finishLoadMore(boolean success)`: 标记成功或失败，有更多数据，立即关闭。
+            - `finishLoadMore(int delayed)`: 标记成功，有更多数据，延迟指定毫秒后关闭。
+            - `finishLoadMore(int delayed, boolean success, boolean noMoreData)`: 标记成功或失败，指定是否还有更多数据，延迟指定毫秒后关闭。
+          - `finishLoadMoreWithNoMoreData()`: 标记成功，**没有更多数据**，立即关闭。Footer 会显示相应提示。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 刷新成功
+          refreshLayout.finishRefresh(true)
+          // 或者
+          // refreshLayout.finishRefresh()
+
+          // 刷新失败
+          // refreshLayout.finishRefresh(false)
+
+          // 加载成功，并且还有下一页数据
+          refreshLayout.finishLoadMore(true)
+          // 或者
+          // refreshLayout.finishLoadMore()
+
+          // 加载成功，但是没有更多数据了
+          // refreshLayout.finishLoadMoreWithNoMoreData()
+          // 或者在 finishLoadMore 中指定
+          // refreshLayout.finishLoadMore(0, true, true) // 延迟0ms, 成功, 没有更多数据
+
+          // 加载失败
+          // refreshLayout.finishLoadMore(false)
+          ```
+  - title: Header / Footer 配置
+    description: 配置 SmartRefreshLayout 的下拉刷新头部 (Header) 和上拉加载脚部 (Footer)，包括使用内置样式、调整参数和实现自定义组件。
+    children:
+      - title: 内置 Header 样式
+        description: SmartRefreshLayout 提供了多种预设的 Header 样式。常用的有 `ClassicsHeader`（经典）、`MaterialHeader`（谷歌 Material Design 风格）。可以在 XML 中声明或在代码中通过 `setRefreshHeader()` 设置。
+        example: |
+          ```kotlin
+          // 在代码中设置 Header
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 使用经典 Header
+          val classicsHeader = ClassicsHeader(this)
+          // classicsHeader.setAccentColor(Color.WHITE) // 设置强调色（如箭头、文字颜色）
+          // classicsHeader.setPrimaryColor(Color.GRAY) // 设置主色（背景色）
+          // classicsHeader.setTimeFormat(DynamicTimeFormat("更新于 %s")) // 自定义时间格式
+          refreshLayout.setRefreshHeader(classicsHeader)
+
+          // 使用 Material Design Header
+          // val materialHeader = MaterialHeader(this)
+          // materialHeader.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorOther) // 设置进度条颜色
+          // refreshLayout.setRefreshHeader(materialHeader)
+          ```
+          ```xml
+          <!-- 在 XML 中使用 MaterialHeader -->
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout ...>
+              <com.scwang.smart.refresh.header.MaterialHeader
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  app:mhPrimaryColor="@color/colorPrimary"
+                  app:mhShadowRadius="5dp"/> <!-- 设置阴影半径 -->
+
+              <androidx.recyclerview.widget.RecyclerView ... />
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 内置 Footer 样式
+        description: 类似 Header，也提供了多种 Footer 样式。常用的有 `ClassicsFooter`（经典）、`BallPulseFooter`（球脉冲动画）。可以在 XML 中声明或在代码中通过 `setRefreshFooter()` 设置。
+        example: |
+          ```kotlin
+          // 在代码中设置 Footer
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 使用经典 Footer
+          val classicsFooter = ClassicsFooter(this)
+          // classicsFooter.setDrawableSize(20f) // 设置图标大小
+          // classicsFooter.setFinishDuration(0) // 设置完成动画时长为0 (立即消失)
+          refreshLayout.setRefreshFooter(classicsFooter)
+
+          // 使用 BallPulse Footer
+          // val ballPulseFooter = BallPulseFooter(this)
+          // ballPulseFooter.setAnimatingColor(ContextCompat.getColor(this, R.color.colorPrimary)) // 设置动画颜色
+          // ballPulseFooter.setSpinnerStyle(SpinnerStyle.Translate) // 设置动画风格
+          // refreshLayout.setRefreshFooter(ballPulseFooter)
+          ```
+          ```xml
+          <!-- 在 XML 中使用 BallPulseFooter -->
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout ...>
+              ...
+              <androidx.recyclerview.widget.RecyclerView ... />
+
+              <com.scwang.smart.refresh.footer.BallPulseFooter
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  app:srlAnimatingColor="@color/colorAccent"
+                  app:srlSpinnerStyle="Scale"/> <!-- 设置动画风格为缩放 -->
+
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 自定义 Header / Footer 实现
+        description: 通过实现 `RefreshHeader` 或 `RefreshFooter` 接口（或继承 `InternalAbstract`），可以创建完全自定义的 Header 或 Footer 视图和交互动画。需要实现接口定义的生命周期方法。
+        example: |
+          ```kotlin
+          // 1. 创建自定义 Header 类 (示例，简化版)
+          class MyCustomHeader @JvmOverloads constructor(
+              context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+          ) : InternalAbstract(context, attrs, defStyleAttr), RefreshHeader {
+
+              private val textView: TextView = TextView(context).apply {
+                  text = "下拉可以刷新"
+                  gravity = Gravity.CENTER
+                  layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                  setPadding(0, 40, 0, 40)
+              }
+
+              init {
+                  addView(textView)
+                  mSpinnerStyle = SpinnerStyle.Translate // 定义动画类型
+              }
+
+              // 核心生命周期方法实现
+              override fun onMoving(isDragging: Boolean, percent: Float, offset: Int, height: Int, maxDragHeight: Int) {
+                  // 拖动过程中
+                  if (isDragging) {
+                      if (percent < 1) {
+                          textView.text = "继续下拉..."
+                      } else {
+                          textView.text = "松开立即刷新"
+                      }
+                  }
+              }
+
+              override fun onStartAnimator(refreshLayout: RefreshLayout, height: Int, maxDragHeight: Int) {
+                  // 开始刷新动画时 (例如可以启动一个 Lottie 动画)
+                  textView.text = "正在刷新中..."
+              }
+
+              override fun onFinish(refreshLayout: RefreshLayout, success: Boolean): Int {
+                  // 刷新完成时
+                  textView.text = if (success) "刷新成功" else "刷新失败"
+                  return 500 // 返回提示信息停留的时间 (毫秒)
+              }
+
+              // 其他需要实现的方法: getView, getSpinnerStyle, setPrimaryColors, onInitialized, onReleased, etc.
+              // ... (完整实现参考官方 Demo 或 InternalAbstract)
+          }
+
+          // 2. 在代码中使用自定义 Header
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          refreshLayout.setRefreshHeader(MyCustomHeader(this))
+
+          // 3. 或者在 XML 中使用 (需要提供完整的包名路径)
+          // <com.yourcompany.yourapp.MyCustomHeader
+          //     android:layout_width="match_parent"
+          //     android:layout_height="wrap_content" />
+          ```
+          *注：自定义 Footer 实现方式类似，实现 `RefreshFooter` 接口。*
+      - title: 设置默认 Header / Footer
+        description: 通过 `SmartRefreshLayout.setDefaultRefreshHeaderCreator` 和 `setDefaultRefreshFooterCreator` 静态方法，可以在 `Application` 类中设置全局默认的 Header 和 Footer。这样就不需要在每个布局文件中单独指定了。
+        example: |
+          ```kotlin
+          // 在你的 Application 类的 onCreate 方法中设置
+          class App : Application() {
+              companion object {
+                  init {
+                      // 设置全局默认 Header 构建器
+                      SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, layout ->
+                          // layout.setPrimaryColorsId(R.color.colorPrimary, android.R.color.white) // 可以设置全局主题色
+                          ClassicsHeader(context) //.setTimeFormat(DynamicTimeFormat("更新于 %s"))
+                      }
+
+                      // 设置全局默认 Footer 构建器
+                      SmartRefreshLayout.setDefaultRefreshFooterCreator { context, layout ->
+                          ClassicsFooter(context).setDrawableSize(20f)
+                      }
+                  }
+              }
+
+              override fun onCreate() {
+                  super.onCreate()
+                  // ... 其他初始化 ...
+              }
+          }
+          ```
+      - title: 动态替换 Header / Footer
+        description: 在运行时，可以根据需要调用 `setRefreshHeader()` 或 `setRefreshFooter()` 方法来更换当前的 Header 或 Footer 组件。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 初始设置
+          refreshLayout.setRefreshHeader(ClassicsHeader(this))
+
+          // 假设有个按钮，点击后切换 Header 样式
+          buttonChangeHeader.setOnClickListener {
+              val newHeader = MaterialHeader(this)
+              refreshLayout.setRefreshHeader(newHeader)
+              Toast.makeText(this, "Header 已切换", Toast.LENGTH_SHORT).show()
+              // 注意：切换后可能需要重新触发一次测量布局，虽然通常会自动处理
+          }
+          ```
+  - title: 配置
+    description: 调整 SmartRefreshLayout 的行为和外观，包括启用/禁用功能、设置动画参数、处理滚动方式等。
+    children:
+      - title: 禁用刷新或加载
+        description: 通过代码或 XML 属性可以单独禁用下拉刷新或上拉加载功能。这在数据已经全部加载完毕或某些页面不需要这些功能时很有用。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 禁用下拉刷新功能
+          refreshLayout.setEnableRefresh(false)
+
+          // 禁用上拉加载功能
+          refreshLayout.setEnableLoadMore(false)
+
+          // 重新启用
+          // refreshLayout.setEnableRefresh(true)
+          // refreshLayout.setEnableLoadMore(true)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              ...
+              app:srlEnableRefresh="false"
+              app:srlEnableLoadMore="false">
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 设置是否嵌套滚动
+        description: 控制 SmartRefreshLayout 是否参与 Android 的嵌套滚动机制。默认启用 (`true`)。在某些复杂的嵌套布局（如 CoordinatorLayout）中，根据具体情况可能需要通过 `setEnableNestedScroll(false)` 或 XML 属性 `srlEnableNestedScrolling` 禁用它，以解决滚动冲突。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          // 禁用 SmartRefreshLayout 的嵌套滚动处理
+          refreshLayout.setEnableNestedScroll(false)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlEnableNestedScrolling="false">
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 超时自动关闭
+        description: 可以通过 `srlFinishDuration` XML 属性设置 Header/Footer 完成动画的默认时长（包括成功和失败状态的显示时间）。库本身没有独立的“超时”概念，超时的处理通常是在数据请求层实现，若请求超时，则调用 `finishRefresh(false)` 或 `finishLoadMore(false)`。
+        example: |
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlFinishDuration="500"> <!-- Header/Footer 完成动画（包括成功/失败提示）显示 500ms -->
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+          ```kotlin
+          // 模拟网络请求超时处理
+          val handler = Handler(Looper.getMainLooper())
+          val timeoutRunnable = Runnable {
+              if (refreshLayout.isRefreshing) { // 检查是否仍在刷新状态
+                   refreshLayout.finishRefresh(false) // 超时，标记为失败并关闭
+                   Toast.makeText(context, "刷新超时", Toast.LENGTH_SHORT).show()
+              }
+          }
+
+          refreshLayout.setOnRefreshListener {
+              handler.postDelayed(timeoutRunnable, 10000) // 设置 10 秒超时
+              viewModel.loadData { success ->
+                   handler.removeCallbacks(timeoutRunnable) // 请求完成，移除超时回调
+                   refreshLayout.finishRefresh(success)
+              }
+          }
+          ```
+      - title: 回弹动画时间
+        description: 通过 `setReboundDuration(int)` 或 XML 属性 `srlReboundDuration` 设置 Header 或 Footer 从显示状态收回（回弹）的动画时长（毫秒）。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          // 设置回弹动画时间为 300 毫秒
+          refreshLayout.setReboundDuration(300)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlReboundDuration="300">
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 自动上拉加载开关
+        description: 通过 `setEnableAutoLoadMore(boolean)` 或 XML 属性 `srlEnableAutoLoadMore` 控制是否在列表滚动到底部时自动触发上拉加载。默认为 `true`。设置为 `false` 后，需要用户手动向上拖动才能触发加载更多。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          // 禁用自动上拉加载
+          refreshLayout.setEnableAutoLoadMore(false)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlEnableAutoLoadMore="false">
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+  - title: 嵌套滚动冲突
+    description: 解决 SmartRefreshLayout 与内部或外部其他可滚动视图（如 RecyclerView, ViewPager, CoordinatorLayout+AppBarLayout）同时存在时可能发生的滚动事件冲突问题。
+    children:
+      - title: setNestedScrollingEnabled
+        description: 这是 Android View 的标准属性。对于嵌套在 SmartRefreshLayout 内部的 `RecyclerView` 或 `NestedScrollView`，有时需要将它们的 `isNestedScrollingEnabled` (或 XML `android:nestedScrollingEnabled`) 设置为 `false`，让 SmartRefreshLayout 完全接管滚动判断。但在某些场景（如配合 `CoordinatorLayout`）可能需要保持为 `true`。需要根据实际布局和效果进行尝试。
+        example: |
+          ```kotlin
+          // 在 RecyclerView 上禁用嵌套滚动
+          val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+          recyclerView.isNestedScrollingEnabled = false
+          // 或者 recyclerView.setNestedScrollingEnabled(false)
+          ```
+          ```xml
+          <!-- 在 RecyclerView XML 标签中禁用 -->
+          <androidx.recyclerview.widget.RecyclerView
+              android:id="@+id/recyclerView"
+              ...
+              android:nestedScrollingEnabled="false" />
+          ```
+      - title: overScrollDrag 配置
+        description: 通过 `setEnableOverScrollDrag(boolean)` 或 XML 属性 `srlEnableOverScrollDrag` 控制是否允许通过“越界拖动”来触发刷新或加载。默认为 `true`。当 SmartRefreshLayout 内部包含横向滚动视图（如 `ViewPager`, 横向 `RecyclerView`）时，建议设置为 `false`，以防止横向滑动时意外触发下拉刷新。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          // 当内部有 ViewPager 时，禁用越界拖动
+          refreshLayout.setEnableOverScrollDrag(false)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlEnableOverScrollDrag="false"> <!-- 特别适用于内部有横向滚动组件的情况 -->
+              <androidx.viewpager2.widget.ViewPager2
+                  android:id="@+id/viewPager"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"/>
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 启用 pureScrollMode
+        description: 通过 `setEnablePureScrollMode(boolean)` 或 XML 属性 `srlEnablePureScrollMode` 启用纯滚动模式。在此模式下，SmartRefreshLayout 自身不消耗滚动事件，只在内容视图滚动到边界时响应越界拖动（如果 `srlEnableOverScrollDrag` 为 true）。适用于某些复杂的嵌套场景，让内部视图优先处理滚动。
+        example: |
+          ```kotlin
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+          // 启用纯滚动模式，让内部的滚动视图完全自己处理滚动
+          refreshLayout.setEnablePureScrollMode(true)
+          ```
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlEnablePureScrollMode="true">
+              ...
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 解决与 AppBarLayout 联动冲突
+        description: 当 SmartRefreshLayout 作为 `CoordinatorLayout` 的子 View，并且内部包含 `AppBarLayout` 和可滚动内容（如 `RecyclerView`）时，需要确保： 1. 可滚动内容视图设置了正确的 `app:layout_behavior` (通常是 `@string/appbar_scrolling_view_behavior`)。 2. SmartRefreshLayout 放在 `AppBarLayout` 之后，并设置相同的 `layout_behavior`。 3. 可能需要监听 `AppBarLayout` 的 `OnOffsetChangedListener`，在 `AppBarLayout` 未完全展开时禁用 SmartRefreshLayout 的下拉刷新功能，防止滑动冲突。
+        example: |
+          ```xml
+          <androidx.coordinatorlayout.widget.CoordinatorLayout ...>
+
+              <com.google.android.material.appbar.AppBarLayout
+                  android:id="@+id/appBarLayout"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+                  <!-- Toolbar, CollapsingToolbarLayout etc. -->
+                  <androidx.appcompat.widget.Toolbar ... />
+              </com.google.android.material.appbar.AppBarLayout>
+
+              <!-- SmartRefreshLayout 设置 behavior -->
+              <com.scwang.smart.refresh.layout.SmartRefreshLayout
+                  android:id="@+id/refreshLayout"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                  <!-- 可滚动视图 (RecyclerView, NestedScrollView etc.) -->
+                  <androidx.recyclerview.widget.RecyclerView
+                      android:id="@+id/recyclerView"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent" />
+
+              </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+
+          </androidx.coordinatorlayout.widget.CoordinatorLayout>
+          ```
+          ```kotlin
+          val appBarLayout = findViewById<AppBarLayout>(R.id.appBarLayout)
+          val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+
+          // 监听 AppBarLayout 的偏移量变化
+          appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBar, verticalOffset ->
+              // 当 AppBarLayout 完全展开时 (verticalOffset == 0)，才允许下拉刷新
+              refreshLayout.setEnableRefresh(verticalOffset == 0)
+          })
+          ```
+  - title: 异常处理
+    description: 处理在使用 SmartRefreshLayout 过程中可能遇到的问题和错误情况。
+    children:
+      - title: 刷新完成方法未调用导致界面卡住
+        description: 最常见的问题：在 `onRefresh` 或 `onLoadMore` 回调中执行完异步操作后，忘记调用 `finishRefresh()` 或 `finishLoadMore()`。这会导致 Header/Footer 一直处于活动状态，用户无法进行其他操作。**务必确保在数据加载完成（无论成功、失败或异常）后都调用相应的 `finish` 方法。** 使用 `try...finally` 或在回调的各个分支中确保调用可以提高健壮性。
+        example: |
+          ```kotlin
+          refreshLayout.setOnRefreshListener { layout ->
+              try {
+                  viewModel.loadData { success ->
+                      // 在成功或失败的回调中调用 finish
+                      layout.finishRefresh(success)
+                  }
+              } catch (e: Exception) {
+                  // 在捕获到异常时也要调用 finish
+                  layout.finishRefresh(false) // 标记为失败
+                  // Log or handle exception
+              }
+              // 注意：对于异步操作，finally 块通常不适合调用 finish，因为它会在异步任务开始时就执行
+          }
+          ```
+      - title: 动画卡死、重复触发刷新
+        description: 可能原因：1. `finishRefresh/finishLoadMore` 未调用或调用时机不当。 2. 快速、连续的滑动操作可能在边界条件下触发意外行为。 3. 复杂的嵌套滚动冲突导致事件分发错误。 **排查步骤：** 确认 `finish` 调用逻辑；检查是否有快速点击/滑动的防抖处理；尝试调整嵌套滚动相关配置 (`srlEnableNestedScrolling`, `srlEnableOverScrollDrag`, `srlEnablePureScrollMode`)。
+        example: |
+          ```kotlin
+          // 增加简单的防抖逻辑，防止短时间内重复触发刷新
+          private var lastRefreshTriggerTime: Long = 0
+          private const val REFRESH_INTERVAL = 1000 // 1秒内只允许触发一次
+
+          refreshLayout.setOnRefreshListener { layout ->
+              val now = System.currentTimeMillis()
+              if (now - lastRefreshTriggerTime < REFRESH_INTERVAL) {
+                  layout.finishRefresh(false) // 忽略本次触发
+                  return@setOnRefreshListener
+              }
+              lastRefreshTriggerTime = now
+              // ... 执行实际刷新逻辑 ...
+              viewModel.loadData { success ->
+                  layout.finishRefresh(success)
+              }
+          }
+          ```
+      - title: Header/Footer 样式不生效
+        description: 可能原因：1. XML 声明或代码设置 Header/Footer 的方式有误（例如，自定义 Header/Footer 未正确添加到 `SmartRefreshLayout` 的子 View 中，或类路径错误）。 2. Application 中设置了全局默认 Header/Footer，覆盖了局部的设置。 3. 自定义 Header/Footer 的实现存在问题（如 `getView()` 返回 `null`，关键方法未实现）。 4. 相关的样式库依赖没有正确添加到 `build.gradle` 或版本冲突。 **排查步骤：** 仔细检查 XML 布局和代码中的设置；确认 `Application` 中有无全局设置；调试自定义组件的生命周期方法；检查 Gradle 依赖。
+        example: |-
+          // 确认 build.gradle 中已添加 'io.github.scwang90:refresh-header-classics:2.1.0' 等依赖
+          // 检查 Application 类中的 setDefaultRefreshHeaderCreator 设置
+          // 检查 XML 中 Header/Footer 标签是否正确闭合且在 SmartRefreshLayout 内部
+          // 检查自定义 Header/Footer 的构造函数和 getView() 方法
+      - title: 多次嵌套导致嵌套滚动失效
+        description: 过度复杂的嵌套布局（如 SmartRefreshLayout -> ViewPager -> Fragment -> SmartRefreshLayout -> RecyclerView）会使 Android 的嵌套滚动事件传递变得非常复杂，容易出现某个层级的滚动或刷新/加载功能失效。 **解决方法：** 尝试简化布局层级结构；仔细配置每一层 SmartRefreshLayout 的嵌套滚动相关属性 (`srlEnableNestedScrolling`, `srlEnableOverScrollDrag`, `srlEnablePureScrollMode`)，通常外层需要特别处理（如禁用 `overScrollDrag`）。
+        example: |-
+          // 示例：外层 SmartRefreshLayout 包裹 ViewPager
+          refreshLayoutOuter.setEnableOverScrollDrag(false) // 防止横滑时触发外层刷新
+
+          // 示例：内层 Fragment 中的 SmartRefreshLayout
+          // refreshLayoutInner.setEnableNestedScroll(true) // 通常需要保持内层参与嵌套滚动
+  - title: 常见问题与解决技巧
+    description: 针对开发过程中经常遇到的一些具体问题，提供相应的解决方案和实用技巧。
+    children:
+      - title: 滑动过快触发两次刷新
+        description: 见【异常处理】中的【动画卡死、重复触发刷新】部分，核心是添加防抖逻辑，限制短时间内重复触发 `onRefresh` 或 `onLoadMore`。
+        example: // 参考【异常处理】->【动画卡死、重复触发刷新】中的防抖示例代码
+      - title: 与 RecyclerView 滑动冲突
+        description: 主要指横向 RecyclerView 嵌套在 SmartRefreshLayout 中时，横向滑动容易误触下拉刷新。 **解决方法：** 设置 SmartRefreshLayout 的 `srlEnableOverScrollDrag="false"` (XML) 或 `setEnableOverScrollDrag(false)` (代码)。 对于垂直方向的冲突，可能需要调整 RecyclerView 的 `android:nestedScrollingEnabled` 属性。
+        example: |
+          ```xml
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              ...
+              app:srlEnableOverScrollDrag="false">
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/horizontalRecyclerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"/>
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+      - title: 无数据时禁用上拉加载
+        description: 当列表数据为空（首次加载或刷新后为空）时，应该禁用上拉加载功能，避免用户进行无效操作。在数据加载/刷新完成后，根据数据量判断，并调用 `refreshLayout.setEnableLoadMore(boolean)`。
+        example: |
+          ```kotlin
+          fun handleDataResponse(data: List<Any>?, isRefresh: Boolean, isLastPage: Boolean) {
+              val refreshLayout = findViewById<SmartRefreshLayout>(R.id.refreshLayout)
+              val adapter = findViewById<RecyclerView>(R.id.recyclerView).adapter as? YourAdapter
+
+              if (adapter == null) return
+
+              val hasData = !data.isNullOrEmpty()
+
+              if (isRefresh) {
+                  adapter.setList(data) // BaseRecyclerViewAdapterHelper 示例
+                  refreshLayout.finishRefresh(true)
+                  // 刷新后，如果无数据，则禁用加载更多；否则根据是否最后一页决定是否显示 NoMoreData
+                  if (!hasData) {
+                      refreshLayout.setEnableLoadMore(false)
+                      // 可选：如果希望显示一个空的 Footer 提示，而不是完全隐藏
+                      // refreshLayout.finishLoadMoreWithNoMoreData()
+                  } else {
+                       refreshLayout.setEnableLoadMore(true) // 有数据，先启用
+                       if (isLastPage) {
+                           refreshLayout.finishLoadMoreWithNoMoreData() // 如果同时也是最后一页
+                       } else {
+                           // refreshLayout.resetNoMoreData() // 如果之前是 NoMoreData 状态，刷新后需要重置
+                           // 通常 finishLoadMore(true) 会隐式重置
+                           // 或者确保 setEnableLoadMore(true) 后，Footer 状态正确
+                       }
+                  }
+              } else { // 加载更多
+                  if (hasData) {
+                      adapter.addData(data!!)
+                  }
+                  if (isLastPage) {
+                      refreshLayout.finishLoadMoreWithNoMoreData()
+                  } else {
+                      refreshLayout.finishLoadMore(true)
+                  }
+              }
+
+              // 最终确保：如果总数据为空，加载功能是禁用的
+              if (adapter.data.isEmpty()) {
+                   refreshLayout.setEnableLoadMore(false)
+              }
+          }
+          ```
+      - title: 自动刷新 + 网络异常场景处理
+        description: 当使用 `autoRefresh()` 触发刷新，但后续的网络请求失败时，需要：1. 正确调用 `finishRefresh(false)` 来结束刷新动画并显示失败状态。 2. 可能需要配合多状态视图（Loading/Content/Error/Empty）显示错误界面，并提供重试机制。
+        example: |
+          ```kotlin
+          // 假设有 StateLayout 用于管理状态视图
+          val stateLayout = findViewById<StateLayout>(R.id.stateLayout)
+
+          fun performInitialLoad() {
+              stateLayout.showLoading() // 显示加载中状态
+              refreshLayout.autoRefresh() // 触发自动刷新 (会调用 onRefresh)
+          }
+
+          refreshLayout.setOnRefreshListener { layout ->
+              viewModel.loadData { success, data ->
+                  if (success) {
+                      if (data.isNullOrEmpty()) {
+                          stateLayout.showEmpty() // 显示空状态
+                      } else {
+                          adapter.setData(data)
+                          stateLayout.showContent() // 显示内容
+                      }
+                      layout.finishRefresh(true)
+                      // 处理加载更多状态 (见上一个示例)
+                  } else {
+                      // 网络异常或加载失败
+                      if (adapter.data.isEmpty()) { // 如果当前列表也是空的（即首次加载失败）
+                          stateLayout.showError() // 显示错误状态（带重试按钮）
+                      } else {
+                          // 如果列表已有数据，仅提示错误，不改变状态布局
+                          Toast.makeText(context, "刷新失败", Toast.LENGTH_SHORT).show()
+                      }
+                      layout.finishRefresh(false) // 结束刷新，标记失败
+                  }
+              }
+          }
+
+          // 在错误视图的重试按钮点击事件中
+          errorViewRetryButton.setOnClickListener {
+              performInitialLoad() // 重新触发加载流程
+          }
+          ```
+      - title: ViewPager2 内嵌 SmartRefreshLayout 控制
+        description: 在 `ViewPager2` 的每个 `Fragment` 内部使用 `SmartRefreshLayout` 时，最关键的是解决横向滑动 (`ViewPager2`) 和纵向下拉 (`SmartRefreshLayout`) 的冲突。**通用解决方案：** 在每个 `Fragment` 的 `SmartRefreshLayout` 上设置 `srlEnableOverScrollDrag="false"` 或 `setEnableOverScrollDrag(false)`。
+        example: |
+          ```kotlin
+          // In your Fragment class inside ViewPager2
+          override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+              super.onViewCreated(view, savedInstanceState)
+              val refreshLayout = view.findViewById<SmartRefreshLayout>(R.id.refreshLayout) // Get instance in fragment's layout
+
+              // ** Crucial: Disable over-scroll drag to prevent conflict with ViewPager2 horizontal swipe **
+              refreshLayout.setEnableOverScrollDrag(false)
+
+              // Setup refresh and load more listeners as usual
+              refreshLayout.setOnRefreshListener { /* ... load data ... */ }
+              refreshLayout.setOnLoadMoreListener { /* ... load more data ... */ }
+
+              // Load initial data if needed
+              if (isDataNotLoadedYet()) {
+                  refreshLayout.autoRefresh()
+              }
+          }
+          ```
+          ```xml
+          <!-- fragment_layout_with_refresh.xml used by ViewPager2 adapter -->
+          <com.scwang.smart.refresh.layout.SmartRefreshLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/refreshLayout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              app:srlEnableOverScrollDrag="false"> <!-- Disable in XML -->
+
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/recyclerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"/>
+
+          </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+          ```
+  - title: 最佳实践
+    description: 在项目中更规范、高效地使用 SmartRefreshLayout 的推荐方法和模式。
+    children:
+      - title: 封装 BaseRefreshFragment
+        description: 创建一个抽象的基类 `Fragment` (或 `Activity`)，封装 `SmartRefreshLayout` 的初始化、监听器设置、`finish` 方法的调用、分页逻辑变量（如 `currentPage`）、以及空/错误状态视图的通用处理。子类只需实现具体的视图绑定和数据加载接口。
+        example: |
+          ```kotlin
+          abstract class BaseRefreshFragment : Fragment() {
+
+              protected lateinit var refreshLayout: SmartRefreshLayout
+              protected lateinit var recyclerView: RecyclerView
+              protected lateinit var adapter: BaseQuickAdapter<Any, BaseViewHolder> // Example using BRVAH
+
+              protected var currentPage = 1
+              protected val pageSize = 20
+
+              override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+                  // Inflate layout containing SmartRefreshLayout and RecyclerView
+                  val view = inflater.inflate(R.layout.fragment_base_refresh, container, false)
+                  refreshLayout = view.findViewById(R.id.refreshLayout)
+                  recyclerView = view.findViewById(R.id.recyclerView)
+                  setupRecyclerView()
+                  setupRefreshLayout()
+                  return view
+              }
+
+              open fun setupRecyclerView() {
+                  // Initialize LayoutManager, Adapter etc.
+                  adapter = createAdapter()
+                  recyclerView.layoutManager = LinearLayoutManager(context)
+                  recyclerView.adapter = adapter
+              }
+
+              open fun setupRefreshLayout() {
+                  refreshLayout.setOnRefreshListener { onRefreshTriggered() }
+                  refreshLayout.setOnLoadMoreListener { onLoadMoreTriggered() }
+                  // Common configurations like setting default header/footer if not global
+              }
+
+              private fun onRefreshTriggered() {
+                  currentPage = 1
+                  loadData()
+              }
+
+              private fun onLoadMoreTriggered() {
+                  currentPage++
+                  loadData()
+              }
+
+              // Force subclasses to implement adapter creation and data loading
+              abstract fun createAdapter(): BaseQuickAdapter<Any, BaseViewHolder>
+              abstract fun loadData()
+
+              // Helper method to handle data response
+              protected fun handleData(data: List<Any>?, isLastPage: Boolean) {
+                   if (currentPage == 1) {
+                       adapter.setList(data)
+                       refreshLayout.finishRefresh(true)
+                       // Reset no more data state?
+                       // refreshLayout.resetNoMoreData()
+                   } else {
+                       if (!data.isNullOrEmpty()) adapter.addData(data)
+                       refreshLayout.finishLoadMore(!isLastPage)
+                   }
+                   // Disable load more if last page or data is empty after refresh
+                  refreshLayout.setEnableLoadMore(!isLastPage && adapter.data.isNotEmpty())
+              }
+
+               protected fun handleLoadError() {
+                  if (currentPage == 1) {
+                      refreshLayout.finishRefresh(false)
+                      // Show error state view?
+                  } else {
+                      refreshLayout.finishLoadMore(false)
+                      currentPage-- // Revert page number on load more failure
+                  }
+              }
+
+              override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+                  super.onViewCreated(view, savedInstanceState)
+                  // Initial load
+                  refreshLayout.autoRefresh()
+              }
+          }
+          ```
+      - title: BaseRecyclerAdapter + SmartRefreshLayout 联动
+        description: 结合通用的 `RecyclerView.Adapter` 基类（如 BRVAH 的 `BaseQuickAdapter`），在获取到数据后，调用 Adapter 提供的 `setList` (刷新) 或 `addData` (加载更多) 方法来更新列表，然后根据请求结果和分页状态调用 `SmartRefreshLayout` 的 `finishRefresh`, `finishLoadMore`, `finishLoadMoreWithNoMoreData`, `setEnableLoadMore` 等方法，实现数据与刷新状态的同步。
+        example: // 参考【常见问题与解决技巧】->【无数据时禁用上拉加载】和【封装 BaseRefreshFragment】中的 handleDataResponse / handleData 示例代码
+      - title: 自定义 Loading 样式统一管理
+        description: 如果项目需要统一的刷新 Header 和加载 Footer 风格（如使用 Lottie 动画），建议：1. 创建自定义的 `RefreshHeader` 和 `RefreshFooter` 实现类。 2. 在 `Application` 类中使用 `SmartRefreshLayout.setDefaultRefreshHeaderCreator` 和 `setDefaultRefreshFooterCreator` 设置全局默认值。这样可以确保所有使用 `SmartRefreshLayout` 的地方风格一致，并方便后续统一修改。
+        example: // 参考【Header / Footer 配置】->【自定义 Header / Footer 实现】和【设置默认 Header / Footer】
+      - title: 多状态视图 + 刷新联动
+        description: 集成一个多状态视图库（如 LoadSir, StateLayout）。在数据加载前，显示 Loading 状态；加载失败时，显示 Error 状态（通常带重试按钮）；加载成功但数据为空时，显示 Empty 状态。将这些状态的切换与 `SmartRefreshLayout` 的刷新/加载流程结合起来：`autoRefresh()` 时显示 Loading，`finishRefresh(false)` 且列表为空时显示 Error，`finishRefresh(true)` 但数据为空时显示 Empty，成功且有数据时显示 Content。
+        example: // 参考【常见问题与解决技巧】->【自动刷新 + 网络异常场景处理】中的 StateLayout 示例代码
+      - title: 自动刷新 + 分页加载整合方案
+        description: 一套完整的列表页面加载模式： 1. 页面初始化时调用 `autoRefresh()` 触发首次加载。 2. 维护 `currentPage` 变量，刷新时重置为 1，加载更多时递增。 3. `onRefresh` 和 `onLoadMore` 回调中调用统一的数据请求方法，传入 `currentPage`。 4. 请求成功后，根据是否是刷新操作 (`currentPage == 1`) 调用 Adapter 的 `setList` 或 `addData`。 5. 根据服务器返回的是否是最后一页 (`isLastPage`) 信息，调用 `finishLoadMore()` 或 `finishLoadMoreWithNoMoreData()`。 6. 根据当前列表是否为空和是否是最后一页，更新 `refreshLayout.setEnableLoadMore()` 的状态。 7. 处理请求失败的情况，调用 `finishRefresh(false)` 或 `finishLoadMore(false)`，并可能需要回退 `currentPage`。
+        example: // 参考【封装 BaseRefreshFragment】中的完整分页逻辑示例代码

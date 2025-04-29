@@ -1,0 +1,87 @@
+id: room
+title: Room
+query: Android Kotlin Room
+comment: 全面介绍 Android 中 Room 数据库的用法，涵盖数据库构建、DAO 操作、查询语法、关系映射、协程与 Flow 配合、迁移、异常处理与常见坑解决技巧。
+outline:
+  - title: 安装
+    description: 添加依赖
+  - title: 创建
+    description: "Room 基于 SQLite，需定义 Entity、DAO 和 Database 类。"
+    children:
+      - title: 定义 Entity
+        description: "@Entity，@PrimaryKey，@ColumnInfo，嵌套对象、类型转换"
+      - title: 定义 Database
+        description: "@Database，单例实例，buildDatabase"
+      - title: 定义 DAO
+        description: "@Dao，@Insert，@Update，@Delete，@Query"
+
+  - title: 使用
+    description: "Room 核心操作：增删改查、事务、异步协程配合。"
+    children:
+      - title: 插入数据
+        description: "@Insert 单条、多条、冲突策略"
+      - title: 更新数据
+        description: "@Update 使用说明"
+      - title: 删除数据
+        description: "@Delete 单条、多条"
+      - title: 查询数据
+        description: "@Query、Flow 查询、LiveData 查询、suspend 查询"
+      - title: 事务处理
+        description: "@Transaction 注解、多个 DAO 联合事务"
+      - title: Flow 配合
+        description: "返回 Flow<T>、collect 实时监听数据变化"
+      - title: 协程调度
+        description: "withContext、Dispatchers.IO"
+
+  - title: 配置
+    description: "Gradle 配置、kapt 设置、TypeConverter 定制。"
+    children:
+      - title: Gradle kapt 配置
+      - title: 自定义 TypeConverter
+      - title: Database 版本管理
+
+  - title: 表关联与复杂查询
+    description: "一对一、一对多、多对多关系映射与联合查询。"
+    children:
+      - title: 一对多
+        description: "@Relation 使用"
+      - title: 多对多
+        description: "中间表实现"
+      - title: 联合查询
+        description: "JOIN 查询、多表返回数据类"
+
+  - title: 数据迁移
+    description: "Database 升级与降级处理。"
+    children:
+      - title: AutoMigration（自动迁移）
+      - title: 自定义 Migration 实现
+      - title: 数据备份与恢复技巧
+
+  - title: 异常处理
+    description: "常见异常与修复策略。"
+    children:
+      - title: 协程线程切换问题
+      - title: 数据库版本不匹配
+      - title: 表字段缺失崩溃
+      - title: TypeConverter 忽略问题
+      - title: 主键冲突异常
+
+  - title: 常见问题与解决技巧
+    description: "开发中高频遇到的问题排查与优化。"
+    children:
+      - title: 查询结果为空处理
+      - title: 数据实时同步异常
+      - title: 并发读写冲突
+      - title: 删除无效记录
+      - title: Flow collect 重复订阅
+      - title: 预置数据库导入
+
+  - title: 最佳实践
+    description: "Room 项目实战中的标准写法。"
+    children:
+      - title: 多个数据库实例拆分
+      - title: DAO 单一职责划分
+      - title: ViewModel 中封装 Repository
+      - title: 数据库调试打印日志
+      - title: 协程 + Flow + Room 架构整合
+

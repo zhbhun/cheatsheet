@@ -1,0 +1,1288 @@
+id: shared-preferences
+title: SharedPreferences
+query: Android SharedPreferences
+comment: 全面整理 SharedPreferences 的使用方法，涵盖创建、读写、监听、清除、协程封装、常见坑排查与实战技巧。
+description: SharedPreferences 是 Android 平台提供的一种轻量级键值对（Key-Value）数据存储机制，主要用于保存应用的配置信息、用户偏好设置等少量简单数据。它将数据以 XML 文件的形式存储在应用的私有目录下。
+outline:
+  - title: 构建
+    description: 获取 SharedPreferences 实例，有两种常见方式。
+    children:
+      - title: getSharedPreferences
+        description: 适用于 Activity、Application、Context
+      - title: PreferenceManager.getDefaultSharedPreferences
+        description: 获取默认 Preference 配置
+  - title: 使用
+    description: SharedPreferences 核心操作，含常见写法及注意事项。
+    children:
+      - title: 写入数据
+        description: edit { putString()、putInt()、putBoolean() }
+      - title: 读取数据
+        description: getString()、getInt()、getBoolean()，含默认值设置
+      - title: 删除数据
+        description: remove(key)、clear() 清空全部
+      - title: 判断是否存在
+        description: contains(key)
+      - title: 获取所有数据
+        description: all 属性返回 Map
+  - title: 配置
+    description: 模式与存储位置配置。
+    children:
+      - title: MODE_PRIVATE
+      - title: 多文件 SharedPreferences 名称区分
+      - title: 存储路径及作用域
+  - title: 监听器
+    description: 实时监听数据变更
+  - title: 协程封装
+    description: 将 SharedPreferences 封装为 suspend 或 Flow 实现异步读写
+    children:
+      - title: suspend 封装写入
+      - title: Flow 封装监听值变化
+      - title: withContext + SharedPreferences 读写优化
+  - title: 异常处理
+    description: 常见 SharedPreferences 问题及解决方案。
+    children:
+      - title: 数据丢失问题排查
+      - title: 多线程写入冲突
+      - title: apply 与 commit 区别与使用场景
+      - title: 监听器内存泄漏避免
+  - title: 常见问题与解决技巧
+    description: 开发中高频问题与技巧总结。
+    children:
+      - title: 清空数据无效排查
+      - title: 读取默认值策略
+      - title: 数据迁移到 DataStore 方案
+      - title: Preference 数据版本管理思路
+      - title: 多用户数据隔离策略
+  - title: 最佳实践
+    description: 标准化 SharedPreferences 使用建议。
+    children:
+      - title: 封装 SharedPreferences 工具类
+      - title: 常量统一管理 Key 值
+      - title: 配合 ViewModel 使用
+      - title: 配置项分类管理
+      - title: 使用 Kotlin Delegated Preferences
+usage:
+  - title: 构建 SharedPreferences 实例
+    description: 获取 `SharedPreferences` 对象是进行读写操作的第一步。Android 提供了两种主要方式来获取实例。
+    children:
+      - title: getSharedPreferences
+        description: |
+          通过 `Context` 调用 `getSharedPreferences(name: String, mode: Int)` 方法获取指定名称和模式的 `SharedPreferences` 实例。这是最常用的方式，允许你创建多个偏好设置文件。
+
+          **参数:**
+          *   `name`: 指定 SharedPreferences 文件的名称。如果该文件不存在，则会创建一个新的。
+          *   `mode`: 指定操作模式。最常用的是 `Context.MODE_PRIVATE`。
+            *   `Context.MODE_PRIVATE` (常用): 表示该文件只能被当前应用程序访问。这是默认且推荐的模式。
+            *   `Context.MODE_WORLD_READABLE` (已废弃): 允许其他应用读取该文件。
+            *   `Context.MODE_WORLD_WRITEABLE` (已废弃): 允许其他应用写入该文件。
+            *   `Context.MODE_MULTI_PROCESS` (已废弃): 在多进程场景下尝试检查文件修改，但不可靠，不推荐使用。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  
+                  // 获取名为 "app_settings" 的 SharedPreferences 实例
+                  // MODE_PRIVATE 表示只有本应用可以访问
+                  val sharedPreferences: SharedPreferences = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+                  
+                  // 可以在 Application 或其他 Context 中获取
+                  // val appPrefs = applicationContext.getSharedPreferences("global_config", Context.MODE_PRIVATE)
+              }
+          }
+          ```
+      - title: PreferenceManager.getDefaultSharedPreferences
+        description: |
+          获取应用默认的 `SharedPreferences` 实例。它内部调用 `getSharedPreferences`，使用一个固定的、与应用包名相关的默认文件名，并且模式为 `Context.MODE_PRIVATE`。适用于只需要一个全局偏好设置文件的简单场景。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.preference.PreferenceManager
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  // 获取默认的 SharedPreferences 实例
+                  val defaultSharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+                  
+                  // 等效于:
+                  // val packageName = context.packageName
+                  // context.getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE)
+              }
+          }
+          ```
+  - title: 使用 SharedPreferences
+    description: 获取实例后，可以进行数据的写入、读取、删除等核心操作。
+    children:
+      - title: 写入数据
+        description: |
+          写入数据需要通过 `SharedPreferences.edit()` 获取 `SharedPreferences.Editor` 对象，然后使用 `putXxx()` 方法添加数据，最后调用 `apply()` 或 `commit()` 提交更改。
+
+          **核心步骤:**
+          1.  调用 `sharedPreferences.edit()` 获取 `Editor` 实例。
+          2.  调用 `editor.putXxx(key: String, value: Xxx)` 方法存储键值对，支持 `String`, `Int`, `Long`, `Float`, `Boolean`, `Set<String>` 类型。
+          3.  调用 `editor.apply()` 或 `editor.commit()` 提交修改。
+              *   `apply()`: 异步操作。它会立即修改内存中的 `SharedPreferences` 对象，然后启动一个异步线程将修改写入磁盘。没有返回值，不会阻塞调用线程，推荐使用。
+              *   `commit()`: 同步操作。它会将修改直接写入磁盘，成功返回 `true`，失败返回 `false`。会阻塞调用线程，直到写入完成，应避免在主线程中调用。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+
+          class DataActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs: SharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+
+                  // 写入数据
+                  val editor: SharedPreferences.Editor = prefs.edit()
+                  editor.putString("username", "kotlin_dev") // 写入字符串
+                  editor.putInt("login_count", 5)         // 写入整数
+                  editor.putBoolean("is_vip", true)         // 写入布尔值
+                  editor.putStringSet("tags", setOf("android", "kotlin")) // 写入字符串集合
+
+                  // 提交修改 (推荐使用 apply)
+                  editor.apply() 
+                  
+                  // 或者使用 commit (会阻塞线程)
+                  // val success: Boolean = editor.commit() 
+                  // if (success) {
+                  //     println("Data committed successfully.")
+                  // } else {
+                  //     println("Failed to commit data.")
+                  // }
+              }
+          }
+          ```
+      - title: 读取数据
+        description: |
+          使用 `sharedPreferences.getXxx(key: String, defaultValue: Xxx)` 方法读取数据。需要提供一个键名（`key`）和一个默认值（`defaultValue`）。如果指定的 `key` 不存在，将返回该默认值。支持的类型与写入时对应。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+          import android.util.Log
+
+          class ReadDataActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs: SharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+
+                  // 读取数据，提供 key 和默认值
+                  val username: String? = prefs.getString("username", "guest") // 读取字符串，默认值为 "guest"
+                  val loginCount: Int = prefs.getInt("login_count", 0)       // 读取整数，默认值为 0
+                  val isVip: Boolean = prefs.getBoolean("is_vip", false)     // 读取布尔值，默认值为 false
+                  val tags: Set<String>? = prefs.getStringSet("tags", emptySet()) // 读取字符串集合，默认值为空集合
+
+                  // 读取一个不存在的 key，将返回默认值
+                  val nonExistentValue: String? = prefs.getString("unknown_key", "default_value") 
+
+                  Log.d("PrefsRead", "Username: $username, Count: $loginCount, VIP: $isVip, Tags: $tags")
+                  Log.d("PrefsRead", "Non-existent value: $nonExistentValue") // 输出: Non-existent value: default_value
+              }
+          }
+          ```
+      - title: 删除数据
+        description: |
+          删除数据也需要通过 `SharedPreferences.Editor`。
+          *   `editor.remove(key: String)`: 删除指定 `key` 对应的数据。
+          *   `editor.clear()`: 清空该 SharedPreferences 文件中的所有数据。
+          同样需要调用 `apply()` 或 `commit()` 来使删除生效。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+          import android.util.Log
+
+          class DeleteDataActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs: SharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+                  val editor: SharedPreferences.Editor = prefs.edit()
+
+                  // 删除单个 key
+                  editor.remove("login_count")
+                  editor.apply() // 应用删除操作
+                  Log.d("PrefsDelete", "Login count removed (if existed).")
+                  val countAfterRemove = prefs.getInt("login_count", -1) // 再次读取，会得到默认值 -1
+                  Log.d("PrefsDelete", "Login count after remove: $countAfterRemove")
+
+                  // 清空所有数据
+                  // editor.clear()
+                  // editor.apply() // 应用清空操作
+                  // Log.d("PrefsDelete", "All data cleared.")
+                  // val usernameAfterClear = prefs.getString("username", "cleared") // 读取 username，会得到默认值 "cleared"
+                  // Log.d("PrefsDelete", "Username after clear: $usernameAfterClear")
+              }
+          }
+          ```
+      - title: 判断是否存在
+        description: |
+          使用 `sharedPreferences.contains(key: String)` 方法检查指定的 `key` 是否存在于 SharedPreferences 文件中。返回 `true` 表示存在，`false` 表示不存在。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+          import android.util.Log
+
+          class CheckDataActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs: SharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+
+                  // 检查 username 是否存在
+                  val hasUsername: Boolean = prefs.contains("username")
+                  Log.d("PrefsCheck", "Contains username? $hasUsername") // 输出 true (如果在之前写入过)
+
+                  // 检查一个不存在的 key
+                  val hasUnknownKey: Boolean = prefs.contains("unknown_key")
+                  Log.d("PrefsCheck", "Contains unknown_key? $hasUnknownKey") // 输出 false
+              }
+          }
+          ```
+      - title: 获取所有数据
+        description: |
+          使用 `sharedPreferences.all` 属性可以获取该 SharedPreferences 文件中的所有键值对。它返回一个 `Map<String, *>`，其中 key 是字符串，value 的类型是实际存储的类型（Any?）。注意，直接修改这个返回的 Map 不会影响 SharedPreferences 文件。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+          import android.util.Log
+
+          class GetAllDataActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs: SharedPreferences = getSharedPreferences("user_data", Context.MODE_PRIVATE)
+
+                  // 获取所有键值对
+                  val allEntries: Map<String, *> = prefs.all
+
+                  Log.d("PrefsGetAll", "All entries:")
+                  for ((key, value) in allEntries) {
+                      Log.d("PrefsGetAll", "$key = $value (${value?.javaClass?.simpleName})")
+                      // 示例输出:
+                      // username = kotlin_dev (String)
+                      // is_vip = true (Boolean)
+                      // tags = [android, kotlin] (HashSet) 
+                  }
+              }
+          }
+          ```
+  - title: 配置
+    description: 了解 SharedPreferences 的模式配置和存储细节。
+    children:
+      - title: MODE_PRIVATE
+        description: |
+          `Context.MODE_PRIVATE` 是 `getSharedPreferences()` 方法的第二个参数中最常用的模式值。它指定创建的 SharedPreferences 文件只能被调用它的应用程序访问。这是默认且推荐的安全设置，可以防止其他应用读取或修改你的应用配置。从 Android N 开始，`MODE_WORLD_READABLE` 和 `MODE_WORLD_WRITEABLE` 已被废弃，并可能导致 `SecurityException`。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+
+          fun getPrivatePreferences(context: Context): SharedPreferences {
+              // 使用 MODE_PRIVATE 确保文件私有
+              return context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
+          }
+          ```
+      - title: 多文件 SharedPreferences 名称区分
+        description: |
+          通过 `getSharedPreferences(name: String, mode: Int)` 的 `name` 参数，可以创建和管理多个不同的 SharedPreferences 文件。这有助于按功能或模块组织配置项，例如将用户设置和应用内部状态分别存储在不同的文件中。使用 `PreferenceManager.getDefaultSharedPreferences()` 则始终获取同一个默认名称的文件。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.preference.PreferenceManager
+
+          fun manageMultiplePrefs(context: Context) {
+              // 用户设置相关的 SharedPreferences
+              val userSettingsPrefs: SharedPreferences = context.getSharedPreferences("user_settings", Context.MODE_PRIVATE)
+              userSettingsPrefs.edit().putString("theme", "dark").apply()
+
+              // 应用状态相关的 SharedPreferences
+              val appStatePrefs: SharedPreferences = context.getSharedPreferences("app_state", Context.MODE_PRIVATE)
+              appStatePrefs.edit().putBoolean("first_launch", false).apply()
+
+              // 获取默认的 SharedPreferences (通常用于全局配置或由 PreferenceFragmentCompat 管理的设置)
+              val defaultPrefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+              defaultPrefs.edit().putInt("version_code", 101).apply()
+          }
+          ```
+      - title: 存储路径及作用域
+        description: |
+          SharedPreferences 文件默认存储在应用的内部存储私有目录下。具体路径通常是：`/data/data/<your_package_name>/shared_prefs/<filename>.xml`。
+          *   **存储路径**: 这个路径是应用私有的，通常情况下，其他应用没有权限访问这些文件，除非设备已被 root。卸载应用时，此目录下的文件会被删除。
+          *   **作用域**:
+              *   `MODE_PRIVATE` (默认): 文件仅限当前应用访问。
+              *   (已废弃) `MODE_WORLD_READABLE`/`MODE_WORLD_WRITEABLE`: 理论上允许其他应用访问，但强烈不推荐且在现代 Android 版本中受限或无效。
+              *   (已废弃) `MODE_MULTI_PROCESS`: 尝试支持多进程访问，但不可靠，可能导致数据不一致或丢失，不应使用。对于多进程数据共享，应考虑使用 `ContentProvider`。
+        example: |
+          ```kotlin
+          // SharedPreferences 文件 "user_settings.xml" 会被存储在
+          // /data/data/com.example.myapp/shared_prefs/user_settings.xml (假设包名为 com.example.myapp)
+
+          // 这个文件默认只有 com.example.myapp 这个应用可以访问。
+          ```
+  - title: 监听器
+    description: |
+      可以通过注册 `SharedPreferences.OnSharedPreferenceChangeListener` 来监听 SharedPreferences 中特定 key 的值变化。当调用 `apply()` 或 `commit()` 成功修改数据后，监听器的 `onSharedPreferenceChanged()` 方法会被回调。
+
+      **关键步骤:**
+      1.  创建 `OnSharedPreferenceChangeListener` 实例。
+      2.  在 `onResume()` 或合适的生命周期点，使用 `sharedPreferences.registerOnSharedPreferenceChangeListener(listener)` 注册监听器。
+      3.  在 `onPause()` 或对应的生命周期点，使用 `sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)` 注销监听器，以避免内存泄漏。
+      4.  在 `onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?)` 方法中处理变更逻辑。`key` 参数指示哪个键的值发生了变化。如果调用了 `clear()`，`key` 可能是 `null` (行为可能因 Android 版本而异，通常是 null 或不会触发单个 key 的回调)。
+    example: |
+      ```kotlin
+      import android.content.Context
+      import android.content.SharedPreferences
+      import androidx.appcompat.app.AppCompatActivity
+      import android.os.Bundle
+      import android.util.Log
+      import androidx.lifecycle.Lifecycle
+      import androidx.lifecycle.LifecycleObserver
+      import androidx.lifecycle.OnLifecycleEvent
+
+      class ListenerActivity : AppCompatActivity() {
+
+          private lateinit var prefs: SharedPreferences
+          private lateinit var listener: SharedPreferences.OnSharedPreferenceChangeListener
+
+          override fun onCreate(savedInstanceState: Bundle?) {
+              super.onCreate(savedInstanceState)
+              prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+
+              // 创建监听器实例
+              listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                  Log.d("PrefsListener", "Preference changed: $key")
+                  when (key) {
+                      "username" -> {
+                          val newUsername = sharedPreferences.getString(key, "N/A")
+                          Log.d("PrefsListener", "New username: $newUsername")
+                          // 更新 UI 或执行其他操作
+                      }
+                      "dark_mode" -> {
+                           val darkModeEnabled = sharedPreferences.getBoolean(key, false)
+                           Log.d("PrefsListener", "Dark mode enabled: $darkModeEnabled")
+                           // 应用主题更改等
+                      }
+                      // 可以处理 clear() 的情况，但 key 可能为 null
+                      null -> {
+                           Log.d("PrefsListener", "Preferences possibly cleared or multiple changes occurred.")
+                      }
+                  }
+              }
+              
+              // 模拟写入变化
+              prefs.edit().putString("username", "ListenerUser").apply()
+              prefs.edit().putBoolean("dark_mode", true).apply()
+
+          }
+          
+          override fun onResume() {
+              super.onResume()
+              // 注册监听器
+              prefs.registerOnSharedPreferenceChangeListener(listener)
+              Log.d("PrefsListener", "Listener registered.")
+          }
+
+          override fun onPause() {
+              super.onPause()
+              // 注销监听器，防止内存泄漏
+              prefs.unregisterOnSharedPreferenceChangeListener(listener)
+              Log.d("PrefsListener", "Listener unregistered.")
+          }
+      }
+      ```
+  - title: 协程封装
+    description: 由于 SharedPreferences 的磁盘 I/O 操作（尤其是 `commit()`）可能阻塞线程，使用 Kotlin 协程可以方便地将其封装为异步操作，避免阻塞主线程。
+    children:
+      - title: suspend 封装写入
+        description: |
+          可以将写入操作封装在一个 `suspend` 函数中，使用 `withContext(Dispatchers.IO)` 将实际的 `apply()` 或 `commit()` 操作切换到 IO 线程池执行。虽然 `apply()` 本身是异步的，但将其放在 `suspend` 函数中并使用 `withContext` 可以更好地组织异步代码流，并且如果需要改用 `commit()` 也无需修改调用处的协程逻辑。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.withContext
+
+          suspend fun SharedPreferences.putStringSuspend(key: String, value: String) {
+              withContext(Dispatchers.IO) { // 切换到 IO 线程
+                  edit().putString(key, value).apply() // 执行 apply
+              }
+          }
+
+          suspend fun SharedPreferences.putIntSuspend(key: String, value: Int) {
+              withContext(Dispatchers.IO) {
+                  edit().putInt(key, value).apply()
+              }
+          }
+
+          // 使用示例 (在 CoroutineScope 中调用)
+          // lifecycleScope.launch {
+          //     prefs.putStringSuspend("session_token", "xyz123")
+          //     prefs.putIntSuspend("retry_count", 3)
+          //     Log.d("PrefsCoroutine", "Data saved asynchronously.")
+          // }
+          ```
+      - title: Flow 封装监听值变化
+        description: |
+          可以使用 `callbackFlow` 将 `OnSharedPreferenceChangeListener` 包装成 Kotlin Flow，从而以响应式的方式监听 SharedPreferences 的变化。这使得在 Compose UI 或 ViewModel 中处理配置变更更加方便。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import kotlinx.coroutines.channels.awaitClose
+          import kotlinx.coroutines.flow.Flow
+          import kotlinx.coroutines.flow.callbackFlow
+          import kotlinx.coroutines.flow.conflate
+
+          // 监听特定 key 的 Flow
+          @Suppress("UNCHECKED_CAST")
+          inline fun <reified T> SharedPreferences.observeKey(key: String, defaultValue: T): Flow<T> {
+              return callbackFlow {
+                  // 创建监听器
+                  val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+                      if (changedKey == key || changedKey == null) { // key 匹配或 clear() 时触发
+                          // 发送当前值
+                          trySend(all[key] as? T ?: defaultValue) 
+                      }
+                  }
+                  // 注册监听器
+                  registerOnSharedPreferenceChangeListener(listener)
+                  // 发送初始值
+                  send(all[key] as? T ?: defaultValue)
+
+                  // Flow 关闭时注销监听器
+                  awaitClose { unregisterOnSharedPreferenceChangeListener(listener) }
+              }.conflate() // 如果消费者处理慢，只保留最新值
+          }
+
+          // 使用示例 (在 CoroutineScope 中收集)
+          // lifecycleScope.launch {
+          //     prefs.observeKey("username", "default_user")
+          //         .collect { username ->
+          //             Log.d("PrefsFlow", "Username Flow observed: $username")
+          //             // 更新 UI
+          //         }
+          // }
+          // 模拟写入触发 Flow
+          // prefs.edit().putString("username", "FlowUser").apply() 
+          ```
+      - title: withContext + SharedPreferences 读写优化
+        description: |
+          对于读取操作，虽然它们通常很快，但在极端情况下或读取大量数据时，也可能涉及潜在的 I/O（例如，首次访问或系统需要从磁盘加载时）。将读写操作都包裹在 `withContext(Dispatchers.IO)` 中是一种安全的做法，可以确保所有 SharedPreferences 相关的磁盘操作都在后台线程执行，避免任何潜在的主线程阻塞风险。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.withContext
+
+          // 封装异步读取
+          suspend fun SharedPreferences.getStringSuspend(key: String, defaultValue: String?): String? {
+              return withContext(Dispatchers.IO) {
+                  getString(key, defaultValue)
+              }
+          }
+
+          suspend fun SharedPreferences.getIntSuspend(key: String, defaultValue: Int): Int {
+              return withContext(Dispatchers.IO) {
+                  getInt(key, defaultValue)
+              }
+          }
+
+          // 封装异步写入 (使用 apply)
+          suspend fun SharedPreferences.Editor.applySuspend() {
+              withContext(Dispatchers.IO) {
+                  apply()
+              }
+          }
+
+          // 使用示例 (在 CoroutineScope 中调用)
+          // lifecycleScope.launch {
+          //     // 异步写入
+          //     prefs.edit()
+          //         .putString("api_key", "secret-key")
+          //         .putInt("timeout", 30)
+          //         .applySuspend() // 调用封装的 apply
+          //     Log.d("PrefsWithContext", "Data written via withContext.")
+          // 
+          //     // 异步读取
+          //     val apiKey = prefs.getStringSuspend("api_key", null)
+          //     val timeout = prefs.getIntSuspend("timeout", 15)
+          //     Log.d("PrefsWithContext", "Read via withContext - API Key: $apiKey, Timeout: $timeout")
+          // }
+          ```
+  - title: 异常处理
+    description: 在使用 SharedPreferences 过程中可能遇到的一些问题及其排查思路。
+    children:
+      - title: 数据丢失问题排查
+        description: |
+          SharedPreferences 数据丢失可能由多种原因引起：
+          *   **未调用 `apply()` 或 `commit()`**: 忘记提交 `Editor` 的修改是最常见的原因。确保每次修改后都调用了 `apply()` 或 `commit()`。
+          *   **`apply()` 未完成**: `apply()` 是异步的，如果在应用进程被系统杀死（例如 ANR 或低内存强制终止）时，后台写入磁盘的操作可能尚未完成，导致数据丢失。对于非常关键的数据，可以考虑使用 `commit()`，但要注意其同步阻塞特性。
+          *   **`clear()` 误用**: 检查代码是否意外调用了 `editor.clear().apply()`。
+          *   **多进程问题**: SharedPreferences 不是进程安全的。如果在多个进程中读写同一个 SharedPreferences 文件，可能导致数据覆盖或丢失。`MODE_MULTI_PROCESS` 也不可靠。多进程共享数据应使用 `ContentProvider`。
+          *   **文件名或 Key 错误**: 确保读写时使用的 SharedPreferences 文件名和 Key 完全一致，注意大小写和拼写。
+          *   **卸载重装**: 应用卸载会删除其私有数据，包括 SharedPreferences 文件。
+          *   **设备存储问题**: 极少数情况下，设备存储故障也可能导致数据丢失。
+        example: |
+          ```kotlin
+          // 排查示例：确保 apply 被调用
+          fun saveData(prefs: SharedPreferences, username: String) {
+              val editor = prefs.edit()
+              editor.putString("username", username)
+              // 错误：忘记调用 apply 或 commit
+              // editor.apply() // 必须加上这行
+              println("Data saving attempted for $username") // 这行会执行，但不代表数据已保存
+          }
+
+          // 排查示例：检查 Key 是否一致
+          fun readData(prefs: SharedPreferences): String? {
+              // 错误：读取时 key 拼写错误 ("user_name" vs "username")
+              // return prefs.getString("user_name", null) 
+              return prefs.getString("username", null) // 正确的 key
+          }
+          ```
+      - title: 多线程写入冲突
+        description: |
+          虽然 SharedPreferences 内部对并发访问有一定的处理（例如 `Editor` 对象是线程安全的，`apply()` 和 `commit()` 内部有锁），但在多线程环境中频繁写入仍需注意：
+          *   **`apply()` 的并发**: 多个线程同时调用 `apply()` 是安全的，系统会处理后台写入队列。但最后一个 `apply()` 的修改会覆盖之前的。
+          *   **`commit()` 的阻塞**: 如果多个线程调用 `commit()`，它们会依次执行，互相阻塞。
+          *   **读写冲突**: 在一个线程写入（特别是 `commit()`）的同时，另一个线程读取，读取到的可能是旧值或新值，取决于写入完成的时机。
+          *   **最佳实践**: 尽量避免在多个线程中直接并发写入 SharedPreferences。可以将所有写入操作集中到一个后台线程（如使用 `Dispatchers.IO` 的协程）或使用队列来处理。如果必须并发，优先使用 `apply()`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import android.content.SharedPreferences
+
+          // 示例：使用单个协程上下文执行所有 SP 操作，避免冲突
+          val spDispatcher = Dispatchers.IO.limitedParallelism(1) // 创建一个限制并发为1的调度器
+
+          suspend fun concurrentWriteSafe(prefs: SharedPreferences, key: String, value: String) {
+              withContext(spDispatcher) { // 在专用单线程调度器上执行
+                  prefs.edit().putString(key, value).apply()
+                  println("Thread ${Thread.currentThread().name} wrote $key = $value")
+              }
+          }
+
+          // 在 CoroutineScope 中模拟并发调用
+          // coroutineScope.launch {
+          //     launch { concurrentWriteSafe(prefs, "key1", "valueA") }
+          //     launch { concurrentWriteSafe(prefs, "key1", "valueB") } // 后写入的会覆盖
+          //     launch { concurrentWriteSafe(prefs, "key2", "valueC") }
+          // }
+          ```
+      - title: apply 与 commit 区别与使用场景
+        description: |
+          `apply()` 和 `commit()` 都用于提交 `SharedPreferences.Editor` 的修改，但行为不同：
+
+          **`apply()`:**
+          *   **异步**: 立即修改内存中的 SharedPreferences 缓存，然后将写入操作提交到后台线程处理，不会阻塞调用线程。
+          *   **无返回值**: 无法知道写入磁盘是否成功或何时完成。
+          *   **原子性**: 多次修改后调用一次 `apply()`，这些修改会作为一个原子单元写入内存。
+          *   **推荐**: 大多数情况下推荐使用，因为它不会阻塞 UI 线程。
+
+          **`commit()`:**
+          *   **同步**: 直接在调用线程上执行磁盘写入操作，会阻塞线程直到写入完成。
+          *   **有返回值**: 返回 `true` 表示写入成功，`false` 表示失败。
+          *   **原子性**: 同 `apply()`。
+          *   **使用场景**:
+              *   需要确保数据立即写入磁盘，并且需要知道操作是否成功时。
+              *   在应用的 `onPause()` 或 `onStop()` 等生命周期方法中，如果需要确保数据在进程可能被杀死前保存（但仍有风险，`apply()` 可能会更快完成内存更新）。
+              *   **注意**: 绝对避免在主线程调用 `commit()`，因为它可能导致 ANR (Application Not Responding)。如果必须使用，请在后台线程调用。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import kotlinx.coroutines.*
+
+          fun saveDataExample(prefs: SharedPreferences) {
+              val editor = prefs.edit()
+              editor.putString("setting1", "value1")
+              editor.putInt("setting2", 100)
+
+              // 使用 apply (推荐)
+              editor.apply() 
+              println("apply() called, UI thread not blocked.")
+
+              // 使用 commit (需要在后台线程)
+              // GlobalScope.launch(Dispatchers.IO) {
+              //     val success = editor.commit()
+              //     if (success) {
+              //         println("commit() successful on background thread.")
+              //     } else {
+              //         println("commit() failed on background thread.")
+              //     }
+              // }
+          }
+          ```
+      - title: 监听器内存泄漏避免
+        description: |
+          `SharedPreferences` 对象通常是单例或生命周期较长，如果向它注册了 `OnSharedPreferenceChangeListener`，而这个监听器持有对 Activity 或 Fragment 等短生命周期组件的引用，当这些组件销毁时，如果监听器没有被注销，`SharedPreferences` 仍然会持有监听器的引用，进而导致 Activity/Fragment 无法被垃圾回收，造成内存泄漏。
+
+          **解决方法**:
+          *   **成对注册与注销**: 在组件的生命周期方法中（如 Activity 的 `onResume`/`onPause`，Fragment 的 `onResume`/`onPause` 或 `onViewCreated`/`onDestroyView`）成对地调用 `registerOnSharedPreferenceChangeListener()` 和 `unregisterOnSharedPreferenceChangeListener()`。
+          *   **使用 LifecycleObserver**: 结合 Android Jetpack Lifecycle 组件，创建一个 `LifecycleObserver`，在 `ON_RESUME` 时注册，在 `ON_PAUSE` 时注销。
+          *   **使用弱引用**: 如果监听器逻辑简单，可以考虑在监听器内部使用 `WeakReference` 持有 Activity/Fragment 引用，但这会增加代码复杂度。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.appcompat.app.AppCompatActivity
+          import android.os.Bundle
+          import android.util.Log
+          import androidx.lifecycle.Lifecycle
+          import androidx.lifecycle.LifecycleObserver
+          import androidx.lifecycle.OnLifecycleEvent
+
+          // 方法1：在 Activity 生命周期中注册/注销 (如 ListenerActivity 示例所示)
+
+          // 方法2：使用 LifecycleObserver
+          class PrefsListenerObserver(
+              private val context: Context, 
+              private val prefs: SharedPreferences
+          ) : LifecycleObserver {
+
+              private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                  Log.d("LifecycleListener", "Preference changed: $key in ${context.javaClass.simpleName}")
+                  // 处理变化... (注意不要强引用 Context)
+              }
+
+              @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+              fun registerListener() {
+                  prefs.registerOnSharedPreferenceChangeListener(listener)
+                  Log.d("LifecycleListener", "Registered via LifecycleObserver.")
+              }
+
+              @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+              fun unregisterListener() {
+                  prefs.unregisterOnSharedPreferenceChangeListener(listener)
+                  Log.d("LifecycleListener", "Unregistered via LifecycleObserver.")
+              }
+          }
+
+          class LifecycleObserverActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val prefs = getSharedPreferences("lifecycle_prefs", Context.MODE_PRIVATE)
+                  // 添加 LifecycleObserver
+                  lifecycle.addObserver(PrefsListenerObserver(applicationContext, prefs)) 
+              }
+          }
+          ```
+  - title: 常见问题与解决技巧
+    description: 开发过程中使用 SharedPreferences 时经常遇到的一些问题和相应的解决策略。
+    children:
+      - title: 清空数据无效排查
+        description: |
+          调用 `editor.clear()` 后发现数据依然存在，可能的原因及排查步骤：
+          1.  **未调用 `apply()` 或 `commit()`**: `clear()` 只是标记了清除操作，必须调用 `apply()` 或 `commit()` 才能真正生效。
+          2.  **操作了错误的 SharedPreferences 实例**: 确认 `clear()` 操作是在你想要清空的那个 SharedPreferences 文件对应的实例上执行的。检查获取实例时使用的文件名是否正确。
+          3.  **缓存问题**: 有时应用内部或系统可能有缓存。尝试完全杀死应用进程再重启，看数据是否已被清除。
+          4.  **多进程干扰**: 如果有其他进程也在操作同一个 SharedPreferences 文件，可能会在你清空后又写入数据。SharedPreferences 不适用于多进程。
+          5.  **读取时机**: 确认是在 `apply()` 生效之后（或 `commit()` 返回之后）才去读取验证的。由于 `apply()` 是异步的，立即读取可能读到旧数据。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import android.util.Log
+
+          fun clearPreferencesAndVerify(prefs: SharedPreferences) {
+              // 步骤 1: 执行 clear 和 apply
+              prefs.edit().clear().apply() 
+              Log.d("PrefsClear", "clear() and apply() called.")
+
+              // 步骤 2: 验证 (注意：由于 apply 是异步的，立即验证可能不准确，最好在之后的操作或重启后验证)
+              // 为了演示，这里立即读取，但实际效果取决于 apply 的后台写入速度
+              val remainingEntries = prefs.all
+              if (remainingEntries.isEmpty()) {
+                  Log.d("PrefsClear", "Verification: Preferences appear empty.")
+              } else {
+                  Log.d("PrefsClear", "Verification: Preferences still contain data (possibly due to apply latency or other issues). Entries: $remainingEntries")
+              }
+          }
+          ```
+      - title: 读取默认值策略
+        description: |
+          `getXxx(key, defaultValue)` 方法中的 `defaultValue` 非常重要。
+          *   **提供有意义的默认值**: 默认值应该代表该配置项在未设置时的合理状态。例如，`getBoolean("dark_mode", false)` 表示默认关闭暗黑模式。
+          *   **保持一致性**: 在代码中所有读取同一个 key 的地方，应使用相同的默认值，避免逻辑混乱。
+          *   **Nullable 类型**: 如果某个配置项允许不存在或为空状态，可以使用可空类型，并将默认值设为 `null`（例如 `getString("user_id", null)`）。读取后需要进行空检查。
+          *   **常量定义**: 将 Key 和默认值定义为常量，便于管理和维护。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+
+          object AppSettings {
+              const val KEY_USERNAME = "username"
+              const val DEFAULT_USERNAME = "Guest"
+              
+              const val KEY_ENABLE_NOTIFICATIONS = "enable_notifications"
+              const val DEFAULT_ENABLE_NOTIFICATIONS = true // 默认开启通知
+          }
+
+          fun readUserSettings(prefs: SharedPreferences) {
+              // 使用常量读取，并提供一致的默认值
+              val username = prefs.getString(AppSettings.KEY_USERNAME, AppSettings.DEFAULT_USERNAME)
+              val notificationsEnabled = prefs.getBoolean(AppSettings.KEY_ENABLE_NOTIFICATIONS, AppSettings.DEFAULT_ENABLE_NOTIFICATIONS)
+              
+              println("Username: $username, Notifications Enabled: $notificationsEnabled")
+          }
+          ```
+      - title: 数据迁移到 DataStore 方案
+        description: |
+          Jetpack DataStore 是 Google 推荐的 SharedPreferences 替代方案，提供了更强大、更安全、支持异步和事务性操作的数据存储。它有两种实现：Preferences DataStore（类似 SharedPreferences，存储键值对）和 Proto DataStore（存储类型化的对象，基于 Protocol Buffers）。
+
+          **迁移步骤 (以 Preferences DataStore 为例):**
+          1.  **添加依赖**: 在 `build.gradle` 中添加 DataStore 依赖 (`androidx.datastore:datastore-preferences`).
+          2.  **创建 DataStore**: 使用 `preferencesDataStore` 委托创建 DataStore 实例，通常在 Application 或单例中创建。
+          3.  **定义 Key**: 使用 `stringPreferencesKey`, `intPreferencesKey` 等函数定义类型安全的 Key。
+          4.  **提供迁移**: 在创建 DataStore 时，通过 `produceMigrations` 参数提供一个 `SharedPreferencesMigration`，指定要迁移的 SharedPreferences 文件名。DataStore 会在首次访问时自动将数据从 SharedPreferences 迁移过来，并可选地清除旧的 SharedPreferences 文件。
+          5.  **替换读写逻辑**: 使用 DataStore 的 `data` Flow 读取数据，使用 `edit` suspend 函数写入数据。所有操作都是异步的。
+        example: |
+          ```kotlin
+          // build.gradle (app)
+          // implementation("androidx.datastore:datastore-preferences:1.0.0") // 使用最新版本
+
+          import android.content.Context
+          import androidx.datastore.core.DataStore
+          import androidx.datastore.preferences.core.*
+          import androidx.datastore.preferences.preferencesDataStore
+          import androidx.datastore.preferences.SharedPreferencesMigration
+          import kotlinx.coroutines.flow.Flow
+          import kotlinx.coroutines.flow.map
+
+          // 1. 定义 DataStore 实例 (通常在 Context 扩展或单例中)
+          val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+              name = "settings", // DataStore 文件名
+              produceMigrations = { context -> 
+                  listOf(
+                      // 定义从哪个 SharedPreferences 文件迁移
+                      SharedPreferencesMigration(context, "app_settings") 
+                      // 可以添加多个迁移
+                      // , SharedPreferencesMigration(context, "user_data", setOf("old_key_to_remove")) // 可选：迁移后删除特定旧key
+                  )
+              }
+          )
+
+          // 2. 定义 Keys
+          object SettingsKeys {
+              val USERNAME = stringPreferencesKey("username")
+              val LOGIN_COUNT = intPreferencesKey("login_count")
+          }
+
+          // 3. 封装读取操作 (返回 Flow)
+          fun getUsernameFlow(context: Context): Flow<String> {
+              return context.dataStore.data
+                  .map { preferences ->
+                      preferences[SettingsKeys.USERNAME] ?: "DefaultUser" // 读取并提供默认值
+                  }
+          }
+
+          // 4. 封装写入操作 (suspend 函数)
+          suspend fun saveUsername(context: Context, username: String) {
+              context.dataStore.edit { settings ->
+                  settings[SettingsKeys.USERNAME] = username
+              }
+          }
+
+          // 使用示例 (在 CoroutineScope 中)
+          // lifecycleScope.launch {
+          //     // 收集用户名变化
+          //     getUsernameFlow(this@MyActivity).collect { name ->
+          //         Log.d("DataStore", "Username from DataStore: $name")
+          //     }
+          // }
+          // lifecycleScope.launch {
+          //     // 写入新用户名
+          //     saveUsername(this@MyActivity, "DataStoreUser")
+          // }
+          ```
+      - title: Preference 数据版本管理思路
+        description: |
+          当应用升级，配置项的结构或含义可能发生变化时，需要进行数据版本管理和迁移。
+          *   **存储版本号**: 在 SharedPreferences 中存储一个 `preference_version` (或类似名称) 的整数 key。初始版本可以设为 1。
+          *   **检查版本**: 应用启动时，读取存储的版本号。获取当前应用定义的最新版本号。
+          *   **执行迁移**: 如果存储的版本号低于当前版本号，则执行相应的迁移逻辑。
+              *   可以写一个 `when` 语句，根据旧版本号逐级迁移到最新版本。
+              *   迁移逻辑可能包括：重命名 key、修改数据类型、删除废弃的 key、设置新的默认值等。
+              *   迁移完成后，更新 SharedPreferences 中的 `preference_version` 为最新版本号。
+          *   **迁移位置**: 迁移逻辑通常放在应用启动时执行一次，例如在 `Application.onCreate()` 中。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+
+          object PrefVersions {
+              const val LATEST_VERSION = 2 // 当前应用定义的最新版本
+              const val KEY_PREF_VERSION = "preference_version"
+          }
+
+          fun migratePreferencesIfNeeded(context: Context) {
+              val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+              val currentVersion = prefs.getInt(PrefVersions.KEY_PREF_VERSION, 0) // 0 表示从未设置过版本
+
+              if (currentVersion < PrefVersions.LATEST_VERSION) {
+                  val editor = prefs.edit()
+                  Log.d("PrefMigration", "Migrating preferences from version $currentVersion to ${PrefVersions.LATEST_VERSION}")
+
+                  // 逐级迁移
+                  if (currentVersion < 1) {
+                      // 从版本 0 迁移到版本 1
+                      // 例如：将旧的 boolean key "is_logged_in" 迁移到新的 String key "auth_status"
+                      val isLoggedIn = prefs.getBoolean("is_logged_in", false)
+                      editor.putString("auth_status", if (isLoggedIn) "authenticated" else "guest")
+                      editor.remove("is_logged_in") // 删除旧 key
+                      Log.d("PrefMigration", "Migrated to version 1.")
+                  }
+                  if (currentVersion < 2) {
+                      // 从版本 1 迁移到版本 2
+                      // 例如：给新的配置项 "feature_flag_x" 设置默认值
+                      if (!prefs.contains("feature_flag_x")) {
+                          editor.putBoolean("feature_flag_x", true) 
+                      }
+                       Log.d("PrefMigration", "Migrated to version 2.")
+                  }
+                  // ... 其他迁移步骤
+
+                  // 更新版本号到最新
+                  editor.putInt(PrefVersions.KEY_PREF_VERSION, PrefVersions.LATEST_VERSION)
+                  editor.apply() // 应用所有迁移更改
+                  Log.d("PrefMigration", "Preference migration complete.")
+              } else {
+                   Log.d("PrefMigration", "Preferences are up to date (version $currentVersion).")
+              }
+          }
+
+          // 在 Application.onCreate() 中调用
+          // class MyApplication : Application() {
+          //     override fun onCreate() {
+          //         super.onCreate()
+          //         migratePreferencesIfNeeded(this)
+          //     }
+          // }
+          ```
+      - title: 多用户数据隔离策略
+        description: |
+          如果应用需要支持多个用户登录，并且每个用户的偏好设置需要分开存储，可以使用以下策略：
+          1.  **为每个用户使用不同的 SharedPreferences 文件**:
+              *   获取 `SharedPreferences` 实例时，文件名包含用户标识（如用户 ID）。例如 `getSharedPreferences("user_prefs_${userId}", Context.MODE_PRIVATE)`。
+              *   用户切换时，加载对应用户的 SharedPreferences 文件。
+              *   **优点**: 完全隔离，逻辑清晰。
+              *   **缺点**: 可能产生较多的小文件。
+          2.  **在 Key 中加入用户标识**:
+              *   使用同一个 SharedPreferences 文件，但在存储每个用户的配置项时，将用户 ID 作为 Key 的前缀或后缀。例如 `editor.putString("${userId}_theme", "dark")`。
+              *   读取时也要加上用户 ID 前缀。
+              *   **优点**: 文件数量少。
+              *   **缺点**: Key 变得复杂，需要手动管理前缀；`clear()` 会清空所有用户的数据，需要实现针对特定用户的清除逻辑（遍历删除带前缀的 key）。
+          3.  **结合策略**: 可以将全局配置放在默认 SharedPreferences 中，用户特定配置使用策略 1 或 2。
+
+          **注意**: 无论哪种策略，都需要在用户登出时，考虑是否清除当前用户的 SharedPreferences 数据，以保护隐私。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+
+          // 策略 1: 每个用户一个文件
+          fun getUserPreferences(context: Context, userId: String): SharedPreferences {
+              if (userId.isBlank()) {
+                  throw IllegalArgumentException("User ID cannot be blank")
+              }
+              val prefsName = "user_prefs_$userId"
+              return context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+          }
+
+          fun saveUserTheme(context: Context, userId: String, theme: String) {
+              val userPrefs = getUserPreferences(context, userId)
+              userPrefs.edit().putString("theme", theme).apply()
+          }
+
+          fun getUserTheme(context: Context, userId: String): String {
+              val userPrefs = getUserPreferences(context, userId)
+              return userPrefs.getString("theme", "light") ?: "light" // 默认主题
+          }
+
+          fun clearUserData(context: Context, userId: String) {
+              val userPrefs = getUserPreferences(context, userId)
+              userPrefs.edit().clear().apply()
+              // 或者更安全地，删除整个文件 (但这需要文件操作权限，不推荐直接操作文件)
+              // context.deleteSharedPreferences("user_prefs_$userId") // API 24+
+          }
+
+          // ---
+
+          // 策略 2: Key 中加前缀 (使用同一个 SharedPreferences 文件)
+          fun saveUserThemeWithPrefix(prefs: SharedPreferences, userId: String, theme: String) {
+               prefs.edit().putString("${userId}_theme", theme).apply()
+          }
+
+          fun getUserThemeWithPrefix(prefs: SharedPreferences, userId: String): String {
+               return prefs.getString("${userId}_theme", "light") ?: "light"
+          }
+
+          fun clearUserDataWithPrefix(prefs: SharedPreferences, userId: String) {
+              val editor = prefs.edit()
+              val userPrefix = "${userId}_"
+              prefs.all.keys.filter { it.startsWith(userPrefix) }.forEach { keyToRemove ->
+                  editor.remove(keyToRemove)
+              }
+              editor.apply()
+          }
+
+          // 使用示例
+          // val userId1 = "user123"
+          // val userId2 = "admin456"
+          // // 使用策略1
+          // saveUserTheme(context, userId1, "dark")
+          // saveUserTheme(context, userId2, "blue")
+          // println(getUserTheme(context, userId1)) // dark
+          // println(getUserTheme(context, userId2)) // blue
+
+          // // 使用策略2 (假设 prefs 是全局 SharedPreferences)
+          // val globalPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+          // saveUserThemeWithPrefix(globalPrefs, userId1, "dark")
+          // saveUserThemeWithPrefix(globalPrefs, userId2, "blue")
+          // println(getUserThemeWithPrefix(globalPrefs, userId1)) // dark
+          // clearUserDataWithPrefix(globalPrefs, userId1) // 清除 user123 的数据
+          ```
+  - title: 最佳实践
+    description: 一些推荐的做法，帮助更规范、高效、安全地使用 SharedPreferences。
+    children:
+      - title: 封装 SharedPreferences 工具类
+        description: |
+          创建一个工具类（例如 Kotlin object 或带有依赖注入的类）来封装 SharedPreferences 的读写操作。这可以：
+          *   **集中管理**: 将所有 SP 相关的逻辑放在一个地方，便于维护。
+          *   **简化调用**: 提供更简洁的接口给业务逻辑层，隐藏 `edit()`, `apply()` 等细节。
+          *   **统一 Key 和默认值**: 在工具类内部管理 Key 和默认值，避免在代码中散落。
+          *   **易于测试**: 可以更容易地模拟 (mock) 或替换这个工具类进行单元测试。
+          *   **方便迁移**: 如果将来需要更换存储方案（如迁移到 DataStore），只需修改这个工具类内部实现，对业务层影响最小。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+
+          object PrefsHelper {
+              private const val PREFS_NAME = "app_prefs"
+              private const val KEY_AUTH_TOKEN = "auth_token"
+              private const val KEY_LAST_SYNC_TIME = "last_sync_time"
+
+              private fun getPrefs(context: Context): SharedPreferences {
+                  return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+              }
+
+              fun saveAuthToken(context: Context, token: String?) {
+                  getPrefs(context).edit().putString(KEY_AUTH_TOKEN, token).apply()
+              }
+
+              fun getAuthToken(context: Context): String? {
+                  return getPrefs(context).getString(KEY_AUTH_TOKEN, null)
+              }
+
+              fun saveLastSyncTime(context: Context, timeMillis: Long) {
+                  getPrefs(context).edit().putLong(KEY_LAST_SYNC_TIME, timeMillis).apply()
+              }
+
+              fun getLastSyncTime(context: Context): Long {
+                  return getPrefs(context).getLong(KEY_LAST_SYNC_TIME, 0L) // 默认 0
+              }
+              
+              fun clearAll(context: Context) {
+                  getPrefs(context).edit().clear().apply()
+              }
+          }
+
+          // 使用示例
+          // class LoginActivity : AppCompatActivity() {
+          //     fun onLoginSuccess(token: String) {
+          //         PrefsHelper.saveAuthToken(this, token)
+          //         // ...
+          //     }
+          // }
+          // 
+          // class SettingsFragment : Fragment() {
+          //     fun displayLastSyncTime() {
+          //         val time = PrefsHelper.getLastSyncTime(requireContext())
+          //         // ... update UI
+          //     }
+          // }
+          ```
+      - title: 常量统一管理 Key 值
+        description: |
+          避免在代码中直接使用硬编码的字符串作为 SharedPreferences 的 Key。应该将所有 Key 定义为常量（使用 `const val`），通常放在一个伴生对象、独立的 `object` 或专门的常量文件中。
+          *   **减少拼写错误**: 使用常量可以利用编译器的检查，避免因手误导致读写错误的 Key。
+          *   **提高可维护性**: 如果需要修改 Key 名称，只需修改常量定义处即可。
+          *   **增强代码可读性**: 常量名通常比裸字符串更能表达 Key 的含义。
+        example: |
+          ```kotlin
+          // 定义常量的 Object
+          object PrefKeys {
+              const val USER_ID = "user_id"
+              const val USER_EMAIL = "user_email"
+              const val THEME_MODE = "theme_mode" // e.g., "light", "dark", "system"
+              const val NOTIFICATION_ENABLED = "notification_enabled"
+          }
+
+          // 在工具类或代码中使用常量
+          import android.content.SharedPreferences
+
+          fun saveTheme(prefs: SharedPreferences, mode: String) {
+              // 使用常量作为 key
+              prefs.edit().putString(PrefKeys.THEME_MODE, mode).apply() 
+          }
+
+          fun isNotificationEnabled(prefs: SharedPreferences): Boolean {
+              // 使用常量读取
+              return prefs.getBoolean(PrefKeys.NOTIFICATION_ENABLED, true) // 默认 true
+          }
+          ```
+      - title: 配合 ViewModel 使用
+        description: |
+          在 MVVM 架构中，应将 SharedPreferences 的读写逻辑放在 ViewModel (或者更底层的 Repository/UseCase) 中处理，而不是直接在 Activity 或 Fragment 中操作。
+          *   **分离关注点**: UI 控制器（Activity/Fragment）只负责展示数据和响应用户交互，不应包含数据存取逻辑。
+          *   **生命周期感知**: ViewModel 的生命周期通常比 Activity/Fragment 更长（例如配置更改时 ViewModel 不会销毁），适合持有和管理配置数据。
+          *   **可测试性**: ViewModel 更容易进行单元测试，可以模拟 SharedPreferences 的依赖。
+          *   **数据流**: ViewModel 可以通过 `LiveData` 或 `StateFlow` 将 SharedPreferences 中的值暴露给 UI，当值变化时自动更新 UI。
+        example: |
+          ```kotlin
+          import android.app.Application
+          import android.content.Context
+          import android.content.SharedPreferences
+          import androidx.lifecycle.*
+          import kotlinx.coroutines.flow.MutableStateFlow
+          import kotlinx.coroutines.flow.StateFlow
+          import kotlinx.coroutines.launch
+
+          // 假设 PrefsHelper 是之前定义的工具类
+
+          class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+
+              private val prefs = PrefsHelper.getPrefs(application) // 获取 SP 实例
+              
+              // 使用 StateFlow 暴露主题设置
+              private val _themeMode = MutableStateFlow(PrefsHelper.getThemeMode(application))
+              val themeMode: StateFlow<String> = _themeMode
+
+              // 使用 LiveData 暴露通知设置
+              private val _notificationsEnabled = MutableLiveData(PrefsHelper.isNotificationEnabled(application))
+              val notificationsEnabled: LiveData<Boolean> = _notificationsEnabled
+              
+              // 监听器，当 SP 变化时更新 Flow/LiveData
+              private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                  when (key) {
+                      PrefsHelper.KEY_THEME_MODE -> {
+                          _themeMode.value = PrefsHelper.getThemeMode(getApplication())
+                      }
+                      PrefsHelper.KEY_NOTIFICATION_ENABLED -> {
+                           _notificationsEnabled.postValue(PrefsHelper.isNotificationEnabled(getApplication()))
+                      }
+                  }
+              }
+
+              init {
+                  prefs.registerOnSharedPreferenceChangeListener(listener)
+              }
+              
+              // 更新主题设置的方法
+              fun setThemeMode(mode: String) {
+                  viewModelScope.launch { // 在 ViewModel 的协程作用域中执行
+                      PrefsHelper.saveThemeMode(getApplication(), mode)
+                      // apply() 后监听器会自动更新 _themeMode.value
+                  }
+              }
+              
+              // 更新通知设置的方法
+              fun setNotificationsEnabled(enabled: Boolean) {
+                  viewModelScope.launch {
+                      PrefsHelper.saveNotificationEnabled(getApplication(), enabled)
+                      // 监听器会更新 _notificationsEnabled
+                  }
+              }
+
+              override fun onCleared() {
+                  super.onCleared()
+                  // ViewModel 销毁时注销监听器
+                  prefs.unregisterOnSharedPreferenceChangeListener(listener)
+              }
+          }
+
+          // 在 Activity/Fragment 中观察 ViewModel 的数据
+          // class SettingsActivity : AppCompatActivity() {
+          //     private val viewModel: SettingsViewModel by viewModels()
+          // 
+          //     override fun onCreate(savedInstanceState: Bundle?) {
+          //         super.onCreate(savedInstanceState)
+          //         // ... setup UI ...
+          // 
+          //         // 观察 LiveData
+          //         viewModel.notificationsEnabled.observe(this) { isEnabled ->
+          //             // update notification switch UI
+          //         }
+          // 
+          //         // 收集 StateFlow (使用 lifecycleScope)
+          //         lifecycleScope.launch {
+          //             viewModel.themeMode.collect { theme ->
+          //                 // update theme selection UI
+          //                 applyTheme(theme) 
+          //             }
+          //         }
+          //         
+          //         // UI 事件触发 ViewModel 方法
+          //         themeSpinner.onItemSelectedListener = object : ... {
+          //             override fun onItemSelected(...) {
+          //                 viewModel.setThemeMode(selectedTheme)
+          //             }
+          //         }
+          //     }
+          // }
+          ```
+      - title: 配置项分类管理
+        description: |
+          当应用配置项较多时，将所有配置都放在同一个默认 SharedPreferences 文件中可能变得混乱。可以根据功能或模块将配置项分类存储：
+          *   **使用不同的 SharedPreferences 文件**: 为不同的模块（如用户设置、网络配置、缓存策略）创建独立的 SharedPreferences 文件。通过 `getSharedPreferences("module_name_prefs", MODE_PRIVATE)` 获取。
+          *   **使用 Key 前缀**: 在同一个文件中，为不同类别的 Key 添加统一的前缀，例如 `ui_theme`, `ui_fontsize`, `network_timeout`, `network_retry_count`。
+          *   **结合使用**: 全局配置放默认文件，模块特定配置放单独文件。
+
+          **优点**:
+          *   结构更清晰，易于管理和查找。
+          *   如果使用不同文件，`clear()` 操作只会影响特定模块。
+          *   便于按模块进行数据迁移或重构。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.content.SharedPreferences
+
+          // --- 策略1: 不同文件 ---
+          object UserSettingsPrefs {
+              private const val NAME = "user_settings"
+              fun get(context: Context): SharedPreferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+              // ... 定义 UserSettings 的 Keys 和读写方法 ...
+              const val KEY_NICKNAME = "nickname"
+          }
+
+          object NetworkPrefs {
+              private const val NAME = "network_config"
+              fun get(context: Context): SharedPreferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+              // ... 定义 NetworkConfig 的 Keys 和读写方法 ...
+              const val KEY_TIMEOUT = "timeout_ms"
+          }
+
+          // 使用
+          // UserSettingsPrefs.get(context).edit().putString(UserSettingsPrefs.KEY_NICKNAME, "Hero").apply()
+          // val timeout = NetworkPrefs.get(context).getInt(NetworkPrefs.KEY_TIMEOUT, 5000)
+
+          // --- 策略2: Key 前缀 (使用同一个文件) ---
+          object PrefKeysWithPrefix {
+              private const val UI_PREFIX = "ui_"
+              const val THEME = UI_PREFIX + "theme" // ui_theme
+              const val FONT_SIZE = UI_PREFIX + "font_size" // ui_font_size
+
+              private const val CACHE_PREFIX = "cache_"
+              const val MAX_SIZE_MB = CACHE_PREFIX + "max_size_mb" // cache_max_size_mb
+          }
+
+          // 使用 (prefs 是某个 SharedPreferences 实例)
+          // prefs.edit().putString(PrefKeysWithPrefix.THEME, "dark").apply()
+          // val maxSize = prefs.getInt(PrefKeysWithPrefix.MAX_SIZE_MB, 100)
+          ```
+      - title: 使用 Kotlin Delegated Preferences
+        description: |
+          利用 Kotlin 的委托属性（Delegated Properties）可以进一步简化 SharedPreferences 的读写样板代码。可以创建自定义的委托或使用第三方库来实现。
+          *   **简化读写**: 将 `prefs.getString(KEY, DEFAULT)` 和 `prefs.edit().putString(KEY, value).apply()` 封装在委托的 `getValue` 和 `setValue` 方法中。
+          *   **类型安全**: 委托可以确保读写的数据类型正确。
+          *   **代码简洁**: 使用起来就像操作普通属性一样。
+
+          可以自己实现一个简单的委托，或者使用成熟的库如 `androidx.preference:preference-ktx` (提供了 `PreferenceDataStore` 委托) 或其他社区库。
+        example: |
+          ```kotlin
+          import android.content.SharedPreferences
+          import kotlin.properties.ReadWriteProperty
+          import kotlin.reflect.KProperty
+
+          // --- 自定义委托实现示例 ---
+
+          // String 类型委托
+          class StringPrefDelegate(
+              private val prefs: SharedPreferences,
+              private val key: String,
+              private val defaultValue: String?
+          ) : ReadWriteProperty<Any?, String?> {
+              override fun getValue(thisRef: Any?, property: KProperty<*>): String? {
+                  return prefs.getString(key, defaultValue)
+              }
+
+              override fun setValue(thisRef: Any?, property: KProperty<*>, value: String?) {
+                  prefs.edit().putString(key, value).apply()
+              }
+          }
+
+          // Int 类型委托
+          class IntPrefDelegate(
+              private val prefs: SharedPreferences,
+              private val key: String,
+              private val defaultValue: Int
+          ) : ReadWriteProperty<Any?, Int> {
+               override fun getValue(thisRef: Any?, property: KProperty<*>): Int {
+                  return prefs.getInt(key, defaultValue)
+               }
+
+               override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+                  prefs.edit().putInt(key, value).apply()
+               }
+          }
+
+          // Boolean 类型委托
+          class BooleanPrefDelegate(
+              private val prefs: SharedPreferences,
+              private val key: String,
+              private val defaultValue: Boolean
+          ) : ReadWriteProperty<Any?, Boolean> {
+               override fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
+                  return prefs.getBoolean(key, defaultValue)
+               }
+
+               override fun setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
+                  prefs.edit().putBoolean(key, value).apply()
+               }
+          }
+
+          // --- 使用委托 ---
+          import android.content.Context
+
+          class AppSettingsManager(context: Context) {
+              private val prefs: SharedPreferences = context.getSharedPreferences("app_settings_delegated", Context.MODE_PRIVATE)
+
+              // 使用委托定义属性
+              var authToken: String? by StringPrefDelegate(prefs, "auth_token", null)
+              var retryCount: Int by IntPrefDelegate(prefs, "retry_count", 3)
+              var darkModeEnabled: Boolean by BooleanPrefDelegate(prefs, "dark_mode", false)
+          }
+
+          // 使用示例
+          // val settings = AppSettingsManager(context)
+          // 
+          // // 读写就像操作普通属性
+          // settings.authToken = "new_token_123" // 内部调用 setValue -> edit().putString().apply()
+          // val currentToken = settings.authToken // 内部调用 getValue -> getString()
+          // 
+          // settings.darkModeEnabled = true
+          // println("Dark Mode: ${settings.darkModeEnabled}") // Dark Mode: true
+          // 
+          // settings.retryCount++ // 读取、加1、写入
+          // println("Retry Count: ${settings.retryCount}") 
+          ```

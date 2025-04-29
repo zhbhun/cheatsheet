@@ -1,0 +1,1036 @@
+id: data-store
+title: DataStore
+comment: 详细介绍 Android 中 DataStore 的用法，涵盖创建、读写、数据迁移、异常处理、类型选择、协程配合与常见问题解决技巧。
+description: Android Jetpack 提供的数据存储解决方案 DataStore，用于替代 SharedPreferences。它基于 Kotlin 协程和 Flow，提供异步、一致且事务性的数据存储。DataStore 有两种实现：Preferences DataStore（用于存储键值对，类似 SharedPreferences）和 Proto DataStore（用于存储类型化的对象，基于 Protocol Buffers）。主要用于存储用户设置、应用状态或少量缓存数据等场景。
+outline:
+  - title: 安装
+    description: '`app/build.gradle` 或 `build.gradle.kts` 文件中添加依赖。'
+  - title: 构建
+    description: DataStore 有 Preferences 与 Proto 两种形式，构建方式不同，适配不同场景。
+    children:
+      - title: Preferences DataStore
+        description: 无需定义数据结构，基于 key-value 存储。
+      - title: Proto DataStore
+        description: 基于 proto 定义的强类型数据结构，适合复杂数据。
+  - title: 使用
+    description: 如何读写 DataStore 数据，以及常用操作符与协程结合使用方式。
+    children:
+      - title: 写入数据
+        description: updateData、edit、apply changes
+      - title: 读取数据
+        description: data Flow、map、first、catch 异常处理
+      - title: 清空数据
+        description: Preferences.clear()
+      - title: Flow 配合
+        description: collect、map、catch 组合使用
+      - title: 与协程调度器结合
+        description: flowOn、withContext 控制线程
+  - title: 配置
+    description: 配置 DataStore 所需依赖、Context 扩展与 proto 编译插件。
+    children:
+      - title: Context 扩展属性
+      - title: proto Gradle 配置
+  - title: 数据迁移
+    description: 从 SharedPreferences 迁移或版本升级场景。
+    children:
+      - title: SharedPreferencesMigration
+      - title: 自定义 Migration 实现
+  - title: 异常处理
+    description: 处理 DataStore 数据异常、文件 IO 错误。
+    children:
+      - title: try-catch + emit
+      - title: data Flow 中 catch 使用
+  - title: 常见问题与解决技巧
+    description: 整理开发中常遇到的坑及优化方案。
+    children:
+      - title: 多线程同步问题
+      - title: DataStore 文件损坏恢复
+      - title: Flow collect 重复收集导致问题
+      - title: 数据流订阅取消释放
+      - title: 数据更新不生效排查
+  - title: 最佳实践
+    description: 总结高频使用场景的推荐实现方式。
+    children:
+      - title: 设置保存（暗黑模式、语言）
+      - title: 用户信息缓存
+      - title: 单次引导弹窗记录
+      - title: 与 ViewModel 配合封装
+      - title: 多个 DataStore 实例拆分管理
+usage:
+  - title: 安装依赖
+    description: |
+      在你的模块（通常是 `app` 模块）的 `build.gradle` 或 `build.gradle.kts` 文件中添加所需的 DataStore 依赖。
+
+      **依赖选项:**
+      - `androidx.datastore:datastore-preferences:1.1.1`: Preferences DataStore 核心库。
+      - `androidx.datastore:datastore-preferences-core:1.1.1`: Preferences DataStore Java Only 核心库 (如果只用 Java)。
+      - `androidx.datastore:datastore:1.1.1`: Proto DataStore 核心库。
+      - `androidx.datastore:datastore-core:1.1.1`: Proto DataStore Java Only 核心库 (如果只用 Java)。
+      - (Proto DataStore 还需配置 Protobuf 插件，见“Proto DataStore 的 Gradle 配置”部分)
+    example: |
+      ```kotlin
+      // build.gradle.kts (Kotlin DSL)
+
+      dependencies {
+          // Preferences DataStore
+          implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+          // Proto DataStore (如果需要)
+          implementation("androidx.datastore:datastore:1.1.1")
+          implementation("com.google.protobuf:protobuf-kotlin-lite:3.25.1") // Protobuf Kotlin runtime
+      }
+      ```
+      ```groovy
+      // build.gradle (Groovy DSL)
+
+      dependencies {
+          // Preferences DataStore
+          implementation 'androidx.datastore:datastore-preferences:1.1.1'
+
+          // Proto DataStore (如果需要)
+          implementation 'androidx.datastore:datastore:1.1.1'
+          implementation 'com.google.protobuf:protobuf-kotlin-lite:3.25.1' // Protobuf Kotlin runtime
+      }
+      ```
+  - title: 创建 DataStore 实例
+    description: DataStore 提供了 Preferences 和 Proto 两种实现。推荐使用 `Context` 的属性委托来创建全局唯一的 DataStore 实例。
+    children:
+      - title: Preferences DataStore
+        description: |
+          用于存储简单的键值对数据，类似于 SharedPreferences，但提供了更好的异步和事务性支持。无需预定义数据结构（schema）。
+
+          **创建方式:**
+          - 使用 `preferencesDataStore` 属性委托。
+          - 需要提供一个 `name` 作为文件名。
+          - 访问数据时需要使用 `preferencesKey<T>("key_name")` 来定义键。支持的类型有 `Int`, `Long`, `Float`, `Double`, `Boolean`, `String`, `Set<String>`。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import androidx.datastore.core.DataStore
+          import androidx.datastore.preferences.core.Preferences
+          import androidx.datastore.preferences.core.booleanPreferencesKey
+          import androidx.datastore.preferences.core.edit
+          import androidx.datastore.preferences.core.stringPreferencesKey
+          import androidx.datastore.preferences.preferencesDataStore
+          import kotlinx.coroutines.flow.Flow
+          import kotlinx.coroutines.flow.map
+
+          // 1. 在 Context 伴生对象或顶层文件中创建 DataStore 委托
+          //    "settings" 是 DataStore 文件的名称
+          val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+          // 2. 定义 Keys
+          object SettingsKeys {
+              val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
+              val USER_NAME = stringPreferencesKey("user_name")
+          }
+
+          // 3. 使用示例 (通常在 Repository 或 ViewModel 中)
+          class SettingsRepository(private val context: Context) {
+
+              val isDarkMode: Flow<Boolean> = context.dataStore.data
+                  .map { preferences ->
+                      // 读取 boolean 值，如果 key 不存在，返回 false
+                      preferences[SettingsKeys.IS_DARK_MODE] ?: false
+                  }
+
+              suspend fun setDarkMode(isDark: Boolean) {
+                  context.dataStore.edit { settings ->
+                      // 写入 boolean 值
+                      settings[SettingsKeys.IS_DARK_MODE] = isDark
+                  }
+              }
+
+              // ... 其他 key 的读写方法
+          }
+          ```
+      - title: Proto DataStore
+        description: |
+          用于存储类型安全的结构化数据。它使用 Protocol Buffers 来定义数据模式 (schema)，可以保证数据的类型安全，并且比 JSON/XML 更高效。
+
+          **创建步骤:**
+          1.  **定义 Proto 文件:** 在 `app/src/main/proto/` 目录下创建 `.proto` 文件，定义数据结构。
+          2.  **配置 Gradle:** 添加 Protobuf Gradle 插件以自动生成基于 proto 文件的数据类。 (见 "Proto DataStore 的 Gradle 配置" 部分)
+          3.  **实现 Serializer:** 创建一个实现 `Serializer<T>` 接口的类，告诉 DataStore 如何读写你的 proto 数据类型。
+          4.  **创建 DataStore 实例:** 使用 `dataStore` 属性委托，并传入文件名和实现的 `Serializer`。
+        example: |
+          ```protobuf
+          // 1. 定义 Proto 文件 (例: app/src/main/proto/user_prefs.proto)
+          syntax = "proto3";
+
+          option java_package = "com.example.myapp.datastore";
+          option java_multiple_files = true;
+
+          message UserPreferences {
+            int32 user_id = 1;
+            string user_name = 2;
+            bool is_premium = 3;
+          }
+          ```
+
+          ```kotlin
+          // 3. 实现 Serializer
+          import androidx.datastore.core.CorruptionException
+          import androidx.datastore.core.Serializer
+          import androidx.datastore.preferences.protobuf.InvalidProtocolBufferException
+          import com.example.myapp.datastore.UserPreferences // 由 proto 生成的类
+          import java.io.InputStream
+          import java.io.OutputStream
+
+          object UserPreferencesSerializer : Serializer<UserPreferences> {
+              // 默认值，当无法解析数据或文件不存在时使用
+              override val defaultValue: UserPreferences = UserPreferences.getDefaultInstance()
+
+              override suspend fun readFrom(input: InputStream): UserPreferences {
+                  try {
+                      // 使用 proto 生成的 parseFrom 方法读取数据
+                      return UserPreferences.parseFrom(input)
+                  } catch (exception: InvalidProtocolBufferException) {
+                      throw CorruptionException("Cannot read proto.", exception)
+                  }
+              }
+
+              override suspend fun writeTo(t: UserPreferences, output: OutputStream) {
+                  // 使用 proto 生成的 writeTo 方法写入数据
+                  t.writeTo(output)
+              }
+          }
+
+          // 4. 创建 DataStore 实例
+          import androidx.datastore.dataStore
+          import com.example.myapp.datastore.UserPreferences
+
+          val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(
+              fileName = "user_prefs.pb", // 文件名通常以 .pb 结尾
+              serializer = UserPreferencesSerializer // 传入实现的 Serializer
+          )
+
+          // 5. 使用示例 (通常在 Repository 或 ViewModel 中)
+          class UserPrefsRepository(private val context: Context) {
+
+              val userPreferencesFlow: Flow<UserPreferences> = context.userPreferencesDataStore.data
+
+              suspend fun updateUserName(newName: String) {
+                  context.userPreferencesDataStore.updateData { currentPreferences ->
+                      // updateData 提供当前的 Preferences 对象，返回修改后的对象
+                      currentPreferences.toBuilder()
+                          .setUserName(newName)
+                          .build()
+                  }
+              }
+
+              suspend fun enablePremium() {
+                   context.userPreferencesDataStore.updateData { currentPreferences ->
+                       currentPreferences.toBuilder()
+                           .setIsPremium(true)
+                           .build()
+                   }
+              }
+          }
+          ```
+  - title: 数据读写与操作
+    description: DataStore 的核心操作是数据的读取和写入，所有操作都是基于 Kotlin Flow 和协程的。
+    children:
+      - title: 写入数据
+        description: |
+          使用 `DataStore.edit()` (Preferences) 或 `DataStore.updateData()` (Proto) 方法来修改数据。这两个都是 `suspend` 函数，应在协程中调用。它们保证了操作的原子性（读-改-写）。
+
+          **方法:**
+          - **`edit(transform: suspend (MutablePreferences) -> Unit)` (Preferences):** 接收一个 lambda 表达式，参数是 `MutablePreferences`，可以在 lambda 内部修改它。
+          - **`updateData(transform: suspend (t: T) -> T)` (Proto):** 接收一个 lambda 表达式，参数是当前的 proto 对象 `T`，需要返回一个新的修改后的 proto 对象 `T`。通常使用 proto 生成的 `toBuilder()` 方法来修改。
+        example: |
+          ```kotlin
+          import androidx.datastore.preferences.core.edit
+          import androidx.datastore.preferences.core.intPreferencesKey
+          import kotlinx.coroutines.runBlocking
+
+          // --- Preferences DataStore 写入 ---
+          val SCORE = intPreferencesKey("score")
+
+          suspend fun incrementScore(context: Context) {
+              context.dataStore.edit { settings ->
+                  val currentScore = settings[SCORE] ?: 0
+                  settings[SCORE] = currentScore + 1
+                  // 在 edit 块内完成所有修改
+              }
+          }
+
+          // --- Proto DataStore 写入 ---
+          suspend fun updateUserAge(context: Context, newAge: Int) {
+              context.userPreferencesDataStore.updateData { currentUserPrefs ->
+                  // 使用 toBuilder 创建可变副本，修改后 build 一个新对象返回
+                  currentUserPrefs.toBuilder()
+                      // .setAge(newAge) // 假设 UserPreferences 有 age 字段
+                      .build()
+              }
+          }
+
+          // 在协程中调用写入函数
+          // runBlocking { // 仅为示例，实际应在 ViewModelScope 或 lifecycleScope 中
+          //     incrementScore(applicationContext)
+          //     updateUserAge(applicationContext, 30)
+          // }
+          ```
+      - title: 读取数据
+        description: |
+          通过 `DataStore.data` 属性获取一个 `Flow<T>` (T 是 `Preferences` 或你的 Proto 类型)。这个 Flow 会在数据每次更新时发出最新的值。
+
+          **常用操作:**
+          - **`DataStore.data: Flow<T>`:** 获取数据流。首次收集时会读取磁盘数据，之后会在数据变更时发出新值。
+          - **`map { ... }`:** 对 Flow 发出的每个数据项进行转换。常用于从 `Preferences` 中提取特定值，或从 Proto 对象中获取字段。
+          - **`first()`:** 获取 Flow 发出的第一个（当前最新的）值。这是一个 `suspend` 函数，获取到值后 Flow 会被取消。适用于只需要获取一次当前值的场景。
+          - **`catch { ... }`:** 捕获 Flow 处理过程中的异常，特别是读取数据时可能发生的 `IOException`。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.flow.*
+          import kotlinx.coroutines.runBlocking
+          import java.io.IOException
+
+          // --- Preferences DataStore 读取 ---
+          val USER_NAME = stringPreferencesKey("user_name")
+
+          // 读取单个值 (Flow)
+          val userNameFlow: Flow<String> = context.dataStore.data
+              .map { preferences ->
+                  preferences[USER_NAME] ?: "Guest" // 提供默认值
+              }
+
+          // 读取单个值 (一次性获取)
+          suspend fun getUserNameOnce(context: Context): String {
+              return try {
+                  val preferences = context.dataStore.data.first() // 获取当前值
+                  preferences[USER_NAME] ?: "Guest"
+              } catch (e: Exception) {
+                  // first() 可能抛异常
+                  "Guest"
+              }
+          }
+
+          // --- Proto DataStore 读取 ---
+
+          // 读取整个 Proto 对象 (Flow)
+          val userPreferencesFlow: Flow<UserPreferences> = context.userPreferencesDataStore.data
+              .catch { exception ->
+                  // 如果读取失败 (如 IOException), 发出一个默认值
+                  if (exception is IOException) {
+                      emit(UserPreferences.getDefaultInstance())
+                  } else {
+                      throw exception // 重新抛出其他异常
+                  }
+              }
+
+          // 读取 Proto 对象中的特定字段 (Flow)
+          val isPremiumFlow: Flow<Boolean> = context.userPreferencesDataStore.data
+              .map { userPrefs ->
+                  userPrefs.isPremium
+              }.catch { /* ... 异常处理 ... */ }
+
+          // --- 使用 Flow ---
+          // 在 Activity/Fragment 或 ViewModel 中收集 Flow
+          // lifecycleScope.launch {
+          //     userNameFlow.collect { name ->
+          //         println("User name: $name")
+          //     }
+          // }
+
+          // runBlocking { // 仅为示例
+          //     val name = getUserNameOnce(applicationContext)
+          //     println("Current user name: $name")
+          // }
+          ```
+      - title: 清空数据 (Preferences)
+        description: |
+          对于 Preferences DataStore，可以在 `edit` 闭包中使用 `MutablePreferences.clear()` 方法来移除所有的键值对。
+          Proto DataStore 没有内置的 `clear()` 方法，需要通过 `updateData` 写入一个默认实例 (`YourProtoType.getDefaultInstance()`) 来达到清空效果。
+        example: |
+          ```kotlin
+          import androidx.datastore.preferences.core.edit
+
+          // --- Preferences DataStore 清空 ---
+          suspend fun clearSettings(context: Context) {
+              context.dataStore.edit { settings ->
+                  settings.clear() // 移除所有 key-value 对
+              }
+          }
+
+          // --- Proto DataStore "清空" (写入默认值) ---
+          suspend fun clearUserPreferences(context: Context) {
+              context.userPreferencesDataStore.updateData {
+                  UserPreferences.getDefaultInstance() // 返回默认实例
+              }
+          }
+          ```
+      - title: Flow 操作符组合
+        description: |
+          结合使用 `map`, `filter`, `catch`, `collect` 等标准 Flow 操作符可以灵活地处理 DataStore 的数据流。`catch` 用于处理读取异常，`map` 用于转换数据格式或提取特定字段。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.flow.*
+          import java.io.IOException
+
+          // 示例：读取用户 ID，如果大于 0 则认为是有效用户，处理读取异常
+          val userIdFlow: Flow<Int> = context.userPreferencesDataStore.data
+              .map { prefs -> prefs.userId } // 提取 userId 字段
+              .catch { exception ->
+                  if (exception is IOException) {
+                      println("Error reading user ID: ${exception.message}")
+                      emit(-1) // 发生 IO 异常时发出 -1
+                  } else {
+                      throw exception
+                  }
+              }
+
+          // 在协程中收集处理后的 Flow
+          // lifecycleScope.launch {
+          //     userIdFlow
+          //         .filter { it > 0 } // 只处理有效的用户 ID
+          //         .collect { validUserId ->
+          //             println("Valid User ID: $validUserId")
+          //         }
+          // }
+          ```
+      - title: 结合协程调度器
+        description: |
+          DataStore 内部已经处理了线程切换，所有的磁盘 I/O 操作默认都在 `Dispatchers.IO` 上执行。`DataStore.data` Flow 和 `edit`/`updateData` 函数都是 `suspend` 函数，可以安全地从主线程调用。
+          - **`DataStore.data` Flow:** 数据的读取和处理默认发生在 `Dispatchers.IO`。如果你在 `map` 等操作符中有 CPU 密集型计算，可以使用 `flowOn(Dispatchers.Default)` 来切换计算发生的线程。但通常不需要手动指定 `flowOn(Dispatchers.IO)`。
+          - **`edit`/`updateData`:** 这些挂起函数内部会切换到 `Dispatchers.IO` 执行文件操作。
+          - **`withContext`:** 一般不需要在调用 `edit`/`updateData` 或收集 `data` Flow 时包裹 `withContext(Dispatchers.IO)`，因为 DataStore 已经为你处理了。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.Dispatchers
+          import kotlinx.coroutines.flow.flowOn
+          import kotlinx.coroutines.withContext
+
+          // --- Data Flow ---
+          // DataStore 内部已使用 IO 调度器，通常无需显式指定 flowOn(Dispatchers.IO)
+          val settingsFlow = context.dataStore.data
+              // .map { performHeavyComputation(it) } // 如果 map 中有耗时计算
+              // .flowOn(Dispatchers.Default) // 可以切换到 Default 调度器进行计算
+              // .catch { ... }
+
+          // --- 写入操作 ---
+          suspend fun saveData(context: Context, data: String) {
+              // 不需要 withContext(Dispatchers.IO)，edit 内部会处理
+              context.dataStore.edit { settings ->
+                  // ...
+              }
+          }
+
+          // --- 读取单次值 ---
+          suspend fun readDataOnce(context: Context): String {
+              // 不需要 withContext(Dispatchers.IO)，first() 内部会处理
+              val prefs = context.dataStore.data.first()
+              // ...
+              return "some data"
+          }
+          ```
+  - title: 相关配置
+    description: 配置 DataStore 运行时所需的辅助设置，如 Context 扩展和 Proto 编译。
+    children:
+      - title: Context 扩展属性创建 DataStore
+        description: |
+          官方推荐的方式是使用 Kotlin 的属性委托，并将其定义为 `Context` 的扩展属性。这有助于确保 DataStore 在整个应用程序中是单例的。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import androidx.datastore.core.DataStore
+          import androidx.datastore.preferences.core.Preferences
+          import androidx.datastore.preferences.preferencesDataStore
+
+          // 在顶层文件或 Context 的伴生对象中定义
+          // "settings" 是文件名，确保应用内唯一
+          val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+          // Proto DataStore 同理
+          // val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(...)
+          ```
+      - title: Proto DataStore 的 Gradle 配置
+        description: |
+          要使用 Proto DataStore，你需要在 Gradle 文件中配置 Protocol Buffers 插件，以便根据 `.proto` 文件自动生成 Kotlin 或 Java 代码。
+
+          **步骤:**
+          1.  **应用 Protobuf 插件:** 在项目级和模块级的 `build.gradle(.kts)` 文件中应用插件。
+          2.  **添加 Protobuf 依赖:** 添加 `protobuf-kotlin-lite` (或 `protobuf-javalite`) 运行时库和 `protoc` 代码生成器。
+          3.  **配置 `protobuf` 块:** 指定生成的代码位置和使用的 `protoc` 版本。
+        example: |
+          ```kotlin
+          // build.gradle.kts (Project Level)
+          plugins {
+              id("com.google.protobuf") version "0.9.4" apply false // 应用插件但不立即应用
+          }
+
+          // build.gradle.kts (Module Level - app)
+          plugins {
+              id("com.android.application")
+              id("kotlin-android")
+              id("com.google.protobuf") // 应用 Protobuf 插件
+          }
+
+          android {
+              // ...
+          }
+
+          dependencies {
+              implementation("androidx.datastore:datastore:1.1.1")
+              implementation("com.google.protobuf:protobuf-kotlin-lite:3.25.1") // Kotlin Protobuf runtime
+              // implementation("com.google.protobuf:protobuf-javalite:3.25.1") // Java Protobuf runtime (如果不用 Kotlin)
+          }
+
+          protobuf {
+              protoc {
+                  artifact = "com.google.protobuf:protoc:3.25.1" // Protoc 代码生成器版本
+              }
+              generateProtoTasks {
+                  all().forEach { task ->
+                      // For Kotlin Lite runtime
+                      task.builtins {
+                          create("kotlin") {
+                              option("lite")
+                          }
+                      }
+                      // For Java Lite runtime (uncomment if using Java)
+                      // task.builtins {
+                      //     create("java") {
+                      //         option("lite")
+                      //     }
+                      // }
+                  }
+              }
+          }
+          ```
+          ```groovy
+          // build.gradle (Project Level)
+          plugins {
+              id 'com.google.protobuf' version '0.9.4' apply false
+          }
+
+          // build.gradle (Module Level - app)
+          plugins {
+              id 'com.android.application'
+              id 'kotlin-android'
+              id 'com.google.protobuf'
+          }
+
+          android {
+              // ...
+          }
+
+          dependencies {
+              implementation 'androidx.datastore:datastore:1.1.1'
+              implementation 'com.google.protobuf:protobuf-kotlin-lite:3.25.1' // Kotlin Protobuf runtime
+              // implementation 'com.google.protobuf:protobuf-javalite:3.25.1' // Java Protobuf runtime
+          }
+
+          protobuf {
+              protoc {
+                  artifact = 'com.google.protobuf:protoc:3.25.1'
+              }
+              generateProtoTasks {
+                  all().each { task ->
+                      // For Kotlin Lite runtime
+                      task.builtins {
+                          kotlin {
+                              option 'lite'
+                          }
+                      }
+                      // For Java Lite runtime
+                      // task.builtins {
+                      //     java {
+                      //         option 'lite'
+                      //     }
+                      // }
+                  }
+              }
+          }
+          ```
+  - title: 数据迁移
+    description: DataStore 提供了迁移机制，可以帮助你从 SharedPreferences 迁移数据，或者处理 DataStore 自身的版本更新。
+    children:
+      - title: 从 SharedPreferences 迁移
+        description: |
+          在创建 DataStore 实例时，可以通过 `produceMigrations` 参数传入一个或多个 `DataMigration`。`SharedPreferencesMigration` 是一个预置的实现，用于从指定的 SharedPreferences 文件迁移数据到 Preferences DataStore。
+
+          **要点:**
+          - 迁移只会在 DataStore 文件首次创建（即文件不存在）时运行一次。
+          - 需要提供 `Context` 和 SharedPreferences 的名称。
+          - 可以选择性地提供 `keysToMigrate` 来只迁移特定的键，或 `deleteEmptyPreferences` 来在迁移后删除空的 SharedPreferences 文件。
+        example: |
+          ```kotlin
+          import androidx.datastore.preferences.SharedPreferencesMigration
+          import androidx.datastore.preferences.core.Preferences
+          import androidx.datastore.preferences.core.intPreferencesKey
+          import androidx.datastore.preferences.preferencesDataStore
+
+          // SharedPreferences 文件名为 "my_app_prefs"
+          private const val USER_PREFERENCES_NAME = "settings"
+          private const val SHARED_PREFS_NAME = "my_app_prefs"
+
+          val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+              name = USER_PREFERENCES_NAME,
+              produceMigrations = { context ->
+                  listOf(
+                      SharedPreferencesMigration(
+                          context = context,
+                          sharedPreferencesName = SHARED_PREFS_NAME,
+                          // 可选：只迁移特定的 key
+                          // keysToMigrate = setOf("old_user_id", "old_theme_setting"),
+                          // 可选：迁移完成后删除空的 SharedPreferences 文件
+                          // deleteEmptyPreferences = true
+                      )
+                      // 可以添加其他的 Migration
+                  )
+              }
+          )
+
+          // 示例：假设 SharedPreferences 中有一个 key "user_score" (Int)
+          // 需要在 DataStore 中定义对应的 key，名称可以相同也可以不同
+          val USER_SCORE = intPreferencesKey("user_score") // DataStore key
+
+          // 首次访问 dataStore.data 或 dataStore.edit 时，如果 DataStore 文件不存在，
+          // 且 SharedPreferences 文件存在，迁移会自动执行。
+          // DataStore 会尝试读取 SharedPreferences 中 "user_score" 的值，并写入 DataStore 的 USER_SCORE key。
+          ```
+      - title: 自定义数据迁移 (DataMigration)
+        description: |
+          实现 `DataMigration<T>` 接口可以执行更复杂的迁移逻辑，例如：
+          - 从旧版本的 Proto DataStore 迁移到新版本（处理 schema 变更）。
+          - 从其他数据源迁移。
+          - 在迁移过程中进行数据清理或转换。
+
+          **需要实现的方法:**
+          - `shouldMigrate(currentData: T): Boolean`: 判断是否需要执行迁移。通常基于版本号或检查特定字段是否存在。
+          - `migrate(currentData: T): T`: 执行实际的迁移逻辑，返回迁移后的数据。
+          - `cleanUp()`: 可选，在迁移成功后执行清理操作（如删除旧文件）。
+        example: |
+          ```kotlin
+          import androidx.datastore.core.DataMigration
+          import com.example.myapp.datastore.UserPreferences // 假设这是新版 Proto
+          // import com.example.myapp.datastore.v1.UserPreferences as UserPreferencesV1 // 假设这是旧版 Proto
+
+          // 示例：假设从 V1 迁移到 V2，V2 增加了一个 email 字段
+          class UserPreferencesMigration : DataMigration<UserPreferences> {
+
+              override suspend fun shouldMigrate(currentData: UserPreferences): Boolean {
+                  // 假设 UserPreferences 有一个 version 字段
+                  // return currentData.version < 2
+                  // 或者检查新字段是否缺失
+                  return currentData.email.isEmpty() // 简单示例判断
+              }
+
+              override suspend fun migrate(currentData: UserPreferences): UserPreferences {
+                  // 这里可以执行更复杂的逻辑，比如从旧版数据结构转换
+                  // 简单示例：为老用户设置一个默认 email
+                  return currentData.toBuilder()
+                      .setEmail("default@example.com")
+                      // .setVersion(2) // 更新版本号
+                      .build()
+              }
+
+              override suspend fun cleanUp() {
+                  // 可选：迁移成功后执行清理，比如删除旧的 V1 文件
+              }
+          }
+
+          // 在创建 Proto DataStore 时添加 Migration
+          // val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(
+          //     fileName = "user_prefs_v2.pb",
+          //     serializer = UserPreferencesSerializer,
+          //     produceMigrations = { context ->
+          //         listOf(UserPreferencesMigration())
+          //     }
+          // )
+          ```
+  - title: 异常处理
+    description: DataStore 操作可能会遇到 I/O 问题（如磁盘空间不足、权限问题）或数据损坏问题。需要妥善处理这些异常。
+    children:
+      - title: 使用 try-catch 和 emit 处理读取异常
+        description: |
+          当收集 `DataStore.data` Flow 时，如果发生 `IOException`，Flow 会默认尝试重新读取。如果最终仍然失败，异常会传递给收集器。可以在 `catch` 操作符中捕获 `IOException` 并 `emit` 一个默认值，让下游继续处理，而不是让应用崩溃。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.flow.*
+          import java.io.IOException
+
+          val safeUserNameFlow: Flow<String> = context.dataStore.data
+              .catch { exception ->
+                  if (exception is IOException) {
+                      // Log a warning, handle the error, or emit a default value.
+                      println("Error reading preferences: ${exception.message}")
+                      emit(Preferences.EMPTY) // 发出空的 Preferences
+                  } else {
+                      throw exception // 重新抛出非 IO 异常
+                  }
+              }
+              .map { preferences ->
+                  preferences[SettingsKeys.USER_NAME] ?: "Default User" // 读取或使用默认值
+              }
+
+          // 收集这个安全的 Flow
+          // lifecycleScope.launch {
+          //     safeUserNameFlow.collect { userName -> /* ... */ }
+          // }
+          ```
+      - title: 使用 Flow 的 catch 操作符
+        description: |
+          `catch` 操作符是处理 `DataStore.data` Flow 读取异常的标准方式。它可以捕获上游（包括 DataStore 内部读取操作）抛出的异常。
+
+          对于写入操作 (`edit` / `updateData`)，它们是 `suspend` 函数，如果发生异常（如 `IOException`），会直接抛出。需要使用标准的 `try-catch` 块来捕获这些写入异常。
+
+          另外，如果 DataStore 文件损坏，读取或写入时可能会抛出 `CorruptionException`。可以通过提供 `CorruptionHandler` 来处理这种情况（见“文件损坏处理”）。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.flow.*
+          import kotlinx.coroutines.launch
+          import java.io.IOException
+
+          // --- 处理读取异常 (Flow) ---
+          // lifecycleScope.launch {
+          //     context.dataStore.data
+          //         .catch { exception ->
+          //             // 处理 IO 异常或其他可能的读取异常
+          //             println("Failed to read datastore: $exception")
+          //             // 可以 emit 默认值或采取其他恢复措施
+          //         }
+          //         .collect { preferences ->
+          //             // 处理读取到的数据
+          //         }
+          // }
+
+          // --- 处理写入异常 (suspend fun) ---
+          suspend fun safeWriteSetting(context: Context, key: Preferences.Key<String>, value: String) {
+              try {
+                  context.dataStore.edit { settings ->
+                      settings[key] = value
+                  }
+              } catch (e: IOException) {
+                  println("Failed to write to datastore: $e")
+                  // 处理写入失败的情况
+              } catch (e: Exception) {
+                  println("An unexpected error occurred during write: $e")
+                  // 处理其他可能的异常
+              }
+          }
+          ```
+  - title: 常见问题与解决技巧
+    description: 在使用 DataStore 过程中可能遇到的一些常见问题及其解决方案。
+    children:
+      - title: 避免多进程访问
+        description: |
+          **问题:** DataStore 不支持同一个文件被多个进程同时访问。如果在不同的进程中（例如，应用主进程和一个后台服务进程）尝试读写同一个 DataStore 文件，会导致数据竞争、状态不一致甚至文件损坏。
+          **解决:**
+          - **确保单例:** 使用依赖注入或 `Context` 扩展属性确保 DataStore 实例在应用内是单例。
+          - **单进程访问:** 确保只在应用的主进程中访问 DataStore。
+          - **跨进程通信:** 如果确实需要在不同进程间共享数据，应使用 Android 的 IPC 机制，如 `ContentProvider`, `AIDL`, 或 `Messenger`，而不是直接共享 DataStore 文件。可以在一个进程中管理 DataStore，并通过 IPC 接口向其他进程提供数据。
+      - title: 文件损坏处理
+        description: |
+          **问题:** DataStore 文件可能因为各种原因（如设备突然断电、存储错误、进程冲突）而损坏。当 DataStore 尝试读取损坏的文件时，会抛出 `CorruptionException`。
+          **解决:** 在创建 DataStore 实例时，提供一个 `CorruptionHandler`。`ReplaceFileCorruptionHandler` 是一个常用的实现，它允许你在文件损坏时用一个（通常是默认的）值来替换损坏的文件。
+        example: |
+          ```kotlin
+          import androidx.datastore.core.CorruptionException
+          import androidx.datastore.core.DataStore
+          import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+          import androidx.datastore.preferences.core.Preferences
+          import androidx.datastore.preferences.core.emptyPreferences
+          import androidx.datastore.preferences.preferencesDataStore
+
+          // 创建一个处理 Preferences DataStore 损坏的 Handler
+          val corruptionHandler = ReplaceFileCorruptionHandler<Preferences>(
+              produceNewData = { emptyPreferences() } // 当文件损坏时，用空的 Preferences 替换
+          )
+
+          // 创建 Preferences DataStore 时传入 Handler
+          val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(
+              name = "settings",
+              corruptionHandler = corruptionHandler // 添加 Handler
+              // produceMigrations = { ... } // Migrations 也可以一起使用
+          )
+
+          // 对于 Proto DataStore 也是类似的
+          // val protoCorruptionHandler = ReplaceFileCorruptionHandler<UserPreferences>(
+          //     produceNewData = { UserPreferences.getDefaultInstance() } // 返回默认 Proto 对象
+          // )
+          // val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(
+          //     fileName = "user_prefs.pb",
+          //     serializer = UserPreferencesSerializer,
+          //     corruptionHandler = protoCorruptionHandler
+          // )
+          ```
+      - title: 处理 Flow 重复收集
+        description: |
+          **问题:** 在 Android 组件（如 Activity, Fragment）的生命周期内收集 `DataStore.data` Flow 时，如果不正确管理协程作用域，可能导致：
+          - **内存泄漏:** 组件销毁后 Flow 仍在后台收集。
+          - **重复处理:** 在配置更改（如屏幕旋转）或导航返回时，可能会重新创建收集器，导致数据被重复处理或 UI 状态异常。
+          - **后台资源消耗:** 在应用进入后台后，Flow 可能仍在不必要地运行。
+          **解决:** 使用与生命周期感知的协程作用域来收集 Flow。
+          - **`lifecycleScope.launchWhenStarted` / `launchWhenResumed` (已不推荐):** 仅在特定生命周期状态下执行，但状态切换时会暂停/恢复，可能不符合预期。
+          - **`viewLifecycleOwner.lifecycleScope.launch` + `repeatOnLifecycle(Lifecycle.State.STARTED)` (推荐用于 Fragment):** 在 Fragment 的视图生命周期内，当状态至少为 `STARTED` 时启动新协程收集 Flow，并在 `STOPPED` 时取消。这是目前推荐的方式，可以有效防止后台收集和重复收集。
+          - **`lifecycleScope.launch` + `repeatOnLifecycle(Lifecycle.State.STARTED)` (推荐用于 Activity):** 类似 Fragment，但在 Activity 的生命周期内。
+        example: |
+          ```kotlin
+          import androidx.fragment.app.Fragment
+          import androidx.lifecycle.Lifecycle
+          import androidx.lifecycle.lifecycleScope
+          import androidx.lifecycle.repeatOnLifecycle
+          import kotlinx.coroutines.flow.collect
+          import kotlinx.coroutines.launch
+
+          class SettingsFragment : Fragment() {
+
+              override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+                  super.onViewCreated(view, savedInstanceState)
+
+                  // 使用 viewLifecycleOwner 和 repeatOnLifecycle
+                  viewLifecycleOwner.lifecycleScope.launch {
+                      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                          // 当 Fragment 至少是 STARTED 状态时，开始收集
+                          // 当 Fragment 变为 STOPPED 状态时，协程会自动取消
+                          context?.dataStore?.data?.collect { preferences ->
+                              // 更新 UI 或处理数据
+                              val isDarkMode = preferences[SettingsKeys.IS_DARK_MODE] ?: false
+                              updateUi(isDarkMode)
+                          }
+                      }
+                      // 当 repeatOnLifecycle 块完成 (即 Fragment DESTROYED) 时，协程结束
+                  }
+              }
+
+              private fun updateUi(isDarkMode: Boolean) { /* ... */ }
+          }
+          ```
+      - title: 正确取消 Flow 订阅
+        description: |
+          **问题:** 如果启动协程收集 `DataStore.data` Flow 的作用域 (Scope) 没有被正确管理和取消，即使相关的 UI 组件已经销毁，Flow 的收集可能仍然在后台进行，导致内存泄漏和不必要的资源消耗。
+          **解决:** 始终在具有明确生命周期的 CoroutineScope 中启动收集任务。
+          - **ViewModel:** 使用 `viewModelScope`。当 ViewModel 被清除时，`viewModelScope` 会自动取消所有启动的协程。这是处理业务逻辑和准备界面数据的推荐作用域。
+          - **Activity/Fragment:** 使用 `lifecycleScope` (Activity) 或 `viewLifecycleOwner.lifecycleScope` (Fragment)，并结合 `repeatOnLifecycle`（如上一个示例所示）。
+          - **自定义 Scope:** 如果在其他类（如 Repository）中收集 Flow，需要手动管理 Scope 的生命周期，确保在不再需要时调用 `scope.cancel()`。
+        example: |
+          ```kotlin
+          import androidx.lifecycle.ViewModel
+          import androidx.lifecycle.viewModelScope
+          import kotlinx.coroutines.flow.SharingStarted
+          import kotlinx.coroutines.flow.StateFlow
+          import kotlinx.coroutines.flow.map
+          import kotlinx.coroutines.flow.stateIn
+
+          class SettingsViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
+
+              // 将 DataStore Flow 转换为 StateFlow，在 viewModelScope 中共享
+              // stateIn 会在没有收集器时自动取消上游 Flow (根据策略)
+              val uiState: StateFlow<SettingsUiState> = settingsRepository.isDarkMode // 来自 Repository 的 Flow<Boolean>
+                  .map { isDarkMode -> SettingsUiState(isDarkMode) } // 转换为 UI 状态对象
+                  .stateIn(
+                      scope = viewModelScope, // 使用 viewModelScope
+                      started = SharingStarted.WhileSubscribed(5000), // 最后一个订阅者消失5秒后停止上游 Flow
+                      initialValue = SettingsUiState() // 初始状态
+                  )
+          }
+
+          data class SettingsUiState(val isDarkMode: Boolean = false)
+
+          // 在 Activity/Fragment 中观察这个 StateFlow
+          // viewLifecycleOwner.lifecycleScope.launch {
+          //     viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+          //         viewModel.uiState.collect { state -> /* 更新 UI */ }
+          //     }
+          // }
+          ```
+      - title: 排查数据更新不生效
+        description: |
+          **问题:** 调用了 `edit` / `updateData`，但之后读取数据时发现值没有改变。
+          **排查步骤:**
+          1.  **确认 `edit`/`updateData` 被调用且完成:** 它们是 `suspend` 函数，确保调用它们的协程启动了并且没有提前取消或发生未捕获的异常。添加日志确认函数被执行。
+          2.  **检查 `edit`/`updateData` 内部逻辑:**
+              *   **Preferences:** 确认在 `edit` 的 lambda 表达式中正确地使用了 `mutablePreferences[KEY] = value` 来赋值。确保 Key 是正确的 (`preferencesKey<T>("...")` 的实例）。
+              *   **Proto:** 确认在 `updateData` 的 lambda 中返回了一个**新的、修改后的** Proto 对象实例。仅仅修改传入的对象是无效的，必须使用 `toBuilder().setXXX().build()` 返回新对象。
+          3.  **确认观察的是同一个 DataStore 实例和 Key:** 确保写入和读取使用的是同一个 DataStore 实例（通过 `Context` 扩展属性保证单例）和完全相同的 Key 对象 (Preferences) 或字段 (Proto)。
+          4.  **检查是否有异常被忽略:** 确保 `edit`/`updateData` 的调用被 `try-catch` 包裹，或者其所在的协程有异常处理器，以捕获可能的 `IOException` 或其他错误。
+          5.  **检查 Flow 收集时机:** 如果更新后立即通过 `first()` 读取，可能没问题。但如果是通过 `collect` 观察 Flow，确保 Flow 的收集仍在活动状态，并且没有因为生命周期问题停止。
+          6.  **缓存问题?** 极少数情况下，如果应用逻辑中有额外的缓存层，可能需要检查缓存是否同步更新。DataStore 本身的数据是一致的。
+          7.  **迁移逻辑干扰?** 如果配置了数据迁移，确保迁移逻辑没有意外覆盖掉写入的数据（虽然迁移通常只运行一次）。
+  - title: 最佳实践
+    description: 针对一些常见的使用场景，推荐的 DataStore 实现方式。
+    children:
+      - title: 保存应用设置（暗黑模式、语言）
+        description: |
+          **场景:** 存储简单的用户偏好设置，如是否启用暗黑模式、选择的语言、字体大小等。
+          **推荐:** 使用 **Preferences DataStore**。
+          - 定义清晰的 `Key` 对象（如 `booleanPreferencesKey("dark_mode_enabled")`, `stringPreferencesKey("user_language")`）。
+          - 将读写操作封装在 Repository 或专门的 SettingsManager 类中。
+          - 通过 Flow 将设置状态暴露给 ViewModel 或 UI 层。
+        example: |
+          ```kotlin
+          // SettingsKeys.kt
+          object SettingsKeys {
+              val DARK_MODE_ENABLED = booleanPreferencesKey("dark_mode_enabled")
+              val LANGUAGE = stringPreferencesKey("language")
+          }
+
+          // SettingsRepository.kt
+          class SettingsRepository(private val context: Context) {
+              private val dataStore = context.settingsDataStore // 使用 Context 扩展
+
+              val isDarkModeEnabled: Flow<Boolean> = dataStore.data
+                  .map { prefs -> prefs[SettingsKeys.DARK_MODE_ENABLED] ?: false }
+
+              suspend fun setDarkModeEnabled(isEnabled: Boolean) {
+                  dataStore.edit { prefs -> prefs[SettingsKeys.DARK_MODE_ENABLED] = isEnabled }
+              }
+
+              // ... 其他设置的读写 ...
+          }
+          ```
+      - title: 缓存用户信息
+        description: |
+          **场景:** 存储当前登录用户的基本信息，如用户 ID、用户名、头像 URL、认证 Token 等结构化数据。
+          **推荐:** 使用 **Proto DataStore**。
+          - 定义 `user_info.proto` 文件来描述用户数据结构。
+          - 实现 `UserInfoSerializer`。
+          - 创建 `userInfoDataStore` 实例。
+          - Proto DataStore 提供了类型安全，避免了使用字符串 Key 可能出现的拼写错误，并且数据结构清晰。
+        example: |
+          ```protobuf
+          // user_info.proto
+          syntax = "proto3";
+          // ... options ...
+          message UserInfo {
+            string user_id = 1;
+            string display_name = 2;
+            string avatar_url = 3;
+            string auth_token = 4;
+          }
+          ```
+          ```kotlin
+          // UserInfoRepository.kt
+          class UserInfoRepository(private val context: Context) {
+              private val dataStore = context.userInfoDataStore // Proto DataStore 实例
+
+              val userInfo: Flow<UserInfo> = dataStore.data
+
+              suspend fun updateUserInfo(info: UserInfo) {
+                  dataStore.updateData { info } // 直接更新整个对象
+              }
+
+              suspend fun updateUserToken(token: String) {
+                  dataStore.updateData { currentUserInfo ->
+                      currentUserInfo.toBuilder().setAuthToken(token).build()
+                  }
+              }
+
+              suspend fun clearUserInfo() {
+                  dataStore.updateData { UserInfo.getDefaultInstance() }
+              }
+          }
+          ```
+      - title: 记录一次性事件（如引导弹窗）
+        description: |
+          **场景:** 记录某个操作是否已经执行过，例如是否显示过新手引导、是否同意了隐私协议等。
+          **推荐:** 使用 **Preferences DataStore**。
+          - 使用 `booleanPreferencesKey` 来存储标志位。
+          - 读取该标志位判断是否需要执行一次性操作，执行后将标志位设为 `true`。
+        example: |
+          ```kotlin
+          object FeatureFlagsKeys {
+              val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+          }
+
+          class FeatureFlagRepository(private val context: Context) {
+              private val dataStore = context.featureFlagsDataStore // 可能是一个独立的 DataStore 实例
+
+              val hasCompletedOnboarding: Flow<Boolean> = dataStore.data
+                  .map { prefs -> prefs[FeatureFlagsKeys.ONBOARDING_COMPLETED] ?: false }
+
+              suspend fun markOnboardingCompleted() {
+                  dataStore.edit { prefs -> prefs[FeatureFlagsKeys.ONBOARDING_COMPLETED] = true }
+              }
+          }
+
+          // 在需要显示引导的地方检查
+          // lifecycleScope.launch {
+          //     val completed = featureFlagRepository.hasCompletedOnboarding.first()
+          //     if (!completed) {
+          //         showOnboarding()
+          //         featureFlagRepository.markOnboardingCompleted()
+          //     }
+          // }
+          ```
+      - title: 在 ViewModel 中封装 DataStore 操作
+        description: |
+          **场景:** 遵循现代 Android 架构（如 MVVM, MVI），UI 层（Activity/Fragment）应保持简单，只负责展示数据和发送用户事件。数据获取和处理逻辑应放在 ViewModel 或更下层的 Repository 中。
+          **推荐:**
+          - 在 Repository 中封装 DataStore 的读写细节。
+          - Repository 向上暴露 `Flow<Data>`。
+          - ViewModel 持有 Repository 实例，将 Repository 的 Flow 转换为 UI 状态 `StateFlow<UiState>` 或 `SharedFlow<UiEvent>`。
+          - ViewModel 提供 `suspend` 函数或普通函数来触发 Repository 的写入操作。
+          - UI 层观察 ViewModel 的 `StateFlow` 来更新界面，并调用 ViewModel 的函数来响应用户交互。
+        example: |
+          ```kotlin
+          // SettingsViewModel.kt (续 SettingsRepository 示例)
+          class SettingsViewModel(private val settingsRepo: SettingsRepository) : ViewModel() {
+
+              val isDarkModeEnabled: StateFlow<Boolean> = settingsRepo.isDarkModeEnabled
+                  .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+              fun setDarkMode(enabled: Boolean) {
+                  viewModelScope.launch { // 在 viewModelScope 中调用 suspend 函数
+                      settingsRepo.setDarkModeEnabled(enabled)
+                  }
+              }
+          }
+
+          // Fragment 中使用
+          // override fun onViewCreated(...) {
+          //     viewLifecycleOwner.lifecycleScope.launch {
+          //         viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+          //             viewModel.isDarkModeEnabled.collect { isEnabled ->
+          //                 // 更新 Switch UI 状态
+          //             }
+          //         }
+          //     }
+          //     darkModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+          //         viewModel.setDarkMode(isChecked) // 调用 ViewModel 方法
+          //     }
+          // }
+          ```
+      - title: 拆分管理多个 DataStore 实例
+        description: |
+          **场景:** 应用可能需要存储不同类型、不相关的持久化数据。例如，用户偏好设置（Preferences）、用户账户信息（Proto）、应用运行时缓存（Preferences 或 Proto）。
+          **推荐:** 为每一类不相关的数据创建独立的 DataStore 实例，使用不同的文件名。
+          - **好处:**
+              - **逻辑分离:** 不同数据域的操作在不同的实例和可能不同的 Repository 中，代码更清晰。
+              - **性能:** 如果某个文件很大，只读写小文件可能更快。
+              - **维护性:** 修改一种数据的 schema (Proto) 或 Key (Preferences) 不会影响其他数据。
+              - **迁移/重置:** 可以独立地迁移或清空某个 DataStore 文件。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import androidx.datastore.preferences.preferencesDataStore
+          import androidx.datastore.dataStore
+
+          // 实例 1: 应用设置 (Preferences)
+          val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(
+              name = "app_settings"
+          )
+
+          // 实例 2: 用户信息 (Proto)
+          val Context.userDataStore: DataStore<UserInfo> by dataStore(
+              fileName = "user_info.pb",
+              serializer = UserInfoSerializer
+          )
+
+          // 实例 3: 临时缓存 (Preferences) - 可能需要定期清理
+          val Context.cacheDataStore: DataStore<Preferences> by preferencesDataStore(
+              name = "temp_cache"
+          )
+
+          // 然后在不同的 Repository 或 Manager 中使用对应的实例
+          // val settingsRepo = SettingsRepository(context.settingsDataStore)
+          // val userRepo = UserRepository(context.userDataStore)
+          // val cacheManager = CacheManager(context.cacheDataStore)
+          ```
+references:
+  - title: "使用 Preferences DataStore"
+    url: https://developer.android.com/codelabs/android-preferences-datastore
+  - title: 使用 Proto DataStore
+    url: https://developer.android.com/codelabs/android-proto-datastore

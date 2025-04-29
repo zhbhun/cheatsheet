@@ -245,6 +245,9 @@ async function complete(
       systemInstruction: instruction,
     },
   });
+  if (!response.text) {
+    console.error('Error:', JSON.stringify(response, null, 2));
+  }
   return response.text ?? '';
 }
 

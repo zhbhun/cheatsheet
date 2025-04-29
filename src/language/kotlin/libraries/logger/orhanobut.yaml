@@ -1,0 +1,1500 @@
+id: orhanobut
+title: Logger
+query: Android orhanobut Logger
+comment: 系统梳理 orhanobut:logger 日志库的用法，涵盖初始化、日志打印、格式定制、Tag 管理、异常捕捉、常见坑与项目最佳实践。
+description: orhanobut Logger 是一个为 Android 设计的日志库，旨在提供更美观、信息更丰富的日志输出，简化调试过程。它擅长格式化打印 Json、Xml、集合等数据结构，并允许自定义 Tag、线程信息、方法栈等。主要用于开发和调试阶段，替代或增强 Android 内置的 Logcat。
+outline:
+  - title: 安装
+    description: 导入 Logger 库及基础配置。
+  - title: 使用
+    description: Logger 核心用法，含各级别日志、Json、Xml、异常日志打印。
+    children:
+      - title: 打印日志
+        description: Logger.v()、Logger.d()、Logger.i()、Logger.w()、Logger.e()、Logger.wtf()
+      - title: 打印 Json
+        description: Logger.json(jsonString)
+      - title: 打印 Xml
+        description: Logger.xml(xmlString)
+      - title: 打印异常堆栈
+        description: Logger.e(throwable, message)
+      - title: 自定义 Tag
+        description: Logger.t(tag).d(message)
+      - title: 多参数拼接
+        description: Logger.d(obj1, obj2, ...)
+  - title: 配置
+    description: 全局配置日志适配器、格式器与 Tag 管理。
+    children:
+      - title: AndroidLogAdapter 配置
+      - title: PrettyFormatStrategy
+        description: 配置显示线程、方法栈、Tag、方法数
+      - title: 更换默认 Tag
+      - title: 日志开关控制（isLoggable）
+  - title: 异常处理
+    description: 日志库中常见异常及解决方案。
+    children:
+      - title: 大文本日志截断问题
+      - title: Json / Xml 格式错误
+      - title: Tag 重复冲突
+      - title: 日志写入文件异常（扩展场景）
+  - title: 常见问题与解决技巧
+    description: 项目开发中常见日志调试问题与优化技巧。
+    children:
+      - title: 发布版禁用日志策略
+      - title: 多 Module 日志统一管理
+      - title: 日志过滤无效排查
+      - title: 与 Timber、Logcat 配合技巧
+      - title: 日志输出顺序错乱问题
+  - title: 最佳实践
+    description: Logger 日志库项目实战推荐写法。
+    children:
+      - title: 封装 LoggerHelper 工具类
+      - title: 多环境日志开关（Debug/Release）
+      - title: Json/Xml 安全打印封装
+      - title: ViewModel + Logger + Flow 调试日志规范
+      - title: 大数据量分段打印策略
+usage:
+  - title: 安装
+    description: |
+      要在你的 Android 项目中使用 orhanobut Logger，首先需要添加相应的 Gradle 依赖，并在 `Application` 类中进行初始化。
+
+      **1. 添加 Gradle 依赖:**
+      在你的 app 模块的 `build.gradle` 或 `build.gradle.kts` 文件中添加依赖：
+      ```groovy
+      // Groovy (build.gradle)
+      dependencies {
+          implementation("com.orhanobut:logger:2.2.0") // 请检查最新版本
+      }
+      ```
+      ```kotlin
+      // Kotlin DSL (build.gradle.kts)
+      dependencies {
+          implementation("com.orhanobut:logger:2.2.0") // 请检查最新版本
+      }
+      ```
+      同步你的 Gradle 项目。
+
+      **2. 初始化 Logger:**
+      在你的自定义 `Application` 类的 `onCreate` 方法中初始化 Logger。这是推荐的做法，以确保 Logger 在整个应用生命周期内可用。
+    example: |
+      ```kotlin
+      import android.app.Application
+      import com.orhanobut.logger.AndroidLogAdapter
+      import com.orhanobut.logger.Logger
+      import com.orhanobut.logger.PrettyFormatStrategy // 可选，用于自定义格式
+      import com.yourpackage.BuildConfig // 引入你的 BuildConfig
+
+      class MyApp : Application() {
+
+          override fun onCreate() {
+              super.onCreate()
+
+              // 初始化 Logger
+              Logger.addLogAdapter(object : AndroidLogAdapter() {
+                  override fun isLoggable(priority: Int, tag: String?): Boolean {
+                      // 控制日志输出，例如只在 Debug 模式下打印
+                      return BuildConfig.DEBUG
+                  }
+              })
+
+              // 或者使用自定义格式进行初始化 (详见配置部分)
+              /*
+              val formatStrategy = PrettyFormatStrategy.newBuilder()
+                  .showThreadInfo(true)       // (Optional) Whether to show thread info or not. Default true
+                  .methodCount(2)             // (Optional) How many method line to show. Default 2
+                  .methodOffset(5)            // (Optional) Hides internal method calls up to offset. Default 5
+                  // .logStrategy(customLog)  // (Optional) Changes the log strategy to print out. Default LogCat
+                  .tag("MyCustomTag")         // (Optional) Global tag for every log. Default PRETTY_LOGGER
+                  .build()
+
+              Logger.addLogAdapter(object : AndroidLogAdapter(formatStrategy) {
+                  override fun isLoggable(priority: Int, tag: String?): Boolean {
+                      return BuildConfig.DEBUG
+                  }
+              })
+              */
+
+              Logger.d("Logger initialized in Application.")
+          }
+      }
+
+      // 别忘了在 AndroidManifest.xml 中注册你的 Application 类
+      // <application
+      //     android:name=".MyApp"
+      //     ...>
+      // </application>
+      ```
+  - title: 使用
+    description: Logger 提供了多种静态方法来打印不同级别和格式的日志。
+    children:
+      - title: 打印日志
+        description: |
+          Logger 提供了与 Android `Log` 类类似的日志级别方法，但输出格式更美观。
+          - `Logger.v(message)`: Verbose 级别
+          - `Logger.d(message)`: Debug 级别
+          - `Logger.i(message)`: Info 级别
+          - `Logger.w(message)`: Warn 级别
+          - `Logger.e(message)`: Error 级别 (仅打印消息)
+          - `Logger.wtf(message)`: What a Terrible Failure 级别 (通常用于不应发生的情况)
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          // ... 在某个方法中 ...
+          val userAction = "User clicked button"
+          val dataSize = 1024
+
+          Logger.v("Verbose log message: Checking state...")
+          Logger.d("Debug log message: $userAction") // 支持字符串模板
+          Logger.i("Info log message: Data size is $dataSize bytes")
+          Logger.w("Warn log message: Network connection slow.")
+          Logger.e("Error log message: Failed to load resource.")
+          Logger.wtf("WTF log message: This should never happen!")
+
+          // 输出会在 Logcat 中以格式化的形式展示，包含线程、方法栈等信息（取决于配置）
+          /* Logcat 输出示例 (格式可能因配置不同):
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:25)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ Debug log message: User clicked button                      │
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: 打印 Json
+        description: 使用 `Logger.json()` 方法可以自动格式化并美观地打印 JSON 字符串。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          val jsonString = """
+          {
+            "name": "Alice",
+            "age": 30,
+            "city": "New York",
+            "skills": ["Kotlin", "Android", "Java"]
+          }
+          """
+
+          // 打印 JSON 字符串
+          Logger.json(jsonString)
+
+          // 如果传入非标准 JSON 格式的字符串，Logger 会尝试打印，但可能不会格式化或报错
+          val invalidJson = "{name: Bob, age: 25}"
+          Logger.d("Attempting to print invalid JSON string:") // 先打个普通日志说明
+          Logger.json(invalidJson) // Logger 会尝试打印，但可能效果不佳或按普通字符串处理
+
+          /* Logcat 输出示例:
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:30)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ {                                                           │
+                         │   "name": "Alice",                                          │
+                         │   "age": 30,                                               │
+                         │   "city": "New York",                                       │
+                         │   "skills": [                                              │
+                         │     "Kotlin",                                               │
+                         │     "Android",                                              │
+                         │     "Java"                                                 │
+                         │   ]                                                        │
+                         │ }                                                           │
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: 打印 Xml
+        description: 使用 `Logger.xml()` 方法可以自动格式化并美观地打印 XML 字符串。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          val xmlString = """
+          <person>
+              <name>Bob</name>
+              <age>25</age>
+              <address>
+                  <street>123 Main St</street>
+                  <city>Anytown</city>
+              </address>
+          </person>
+          """
+
+          // 打印 XML 字符串
+          Logger.xml(xmlString)
+
+          // 如果传入非标准 XML 格式的字符串，行为类似 Logger.json()
+          val invalidXml = "<name>Charlie</age>"
+          Logger.d("Attempting to print invalid XML string:")
+          Logger.xml(invalidXml)
+
+          /* Logcat 输出示例 (类似 JSON 的格式化):
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:35)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ <person>                                                    │
+                         │   <name>Bob</name>                                         │
+                         │   <age>25</age>                                            │
+                         │   <address>                                                 │
+                         │     <street>123 Main St</street>                           │
+                         │     <city>Anytown</city>                                    │
+                         │   </address>                                                │
+                         │ </person>                                                   │
+                         └─────────────────────────────────────────────────────────────┘
+           */
+          ```
+      - title: 打印异常堆栈
+        description: 使用 `Logger.e(throwable, message)` 可以打印异常的堆栈跟踪信息，同时附带一条自定义消息。这对于调试错误非常有帮助。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+          import java.io.IOException
+
+          try {
+              // 模拟一个异常操作
+              throw IOException("File not found")
+          } catch (e: IOException) {
+              // 打印异常信息和堆栈
+              Logger.e(e, "Error occurred while reading file.")
+          } catch (e: Exception) {
+              // 也可以只打印异常，不带额外消息
+              Logger.e(e, "An unexpected error happened.") // 或者 Logger.e(e.message ?: "Unknown error", e) 如果想用异常消息
+              // Logger.log(Logger.ERROR, "TAG", "message", e); // 另一种方式
+          }
+
+          /* Logcat 输出示例 (会包含完整的堆栈跟踪):
+          E/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:40)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ Error occurred while reading file.                          │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ java.io.IOException: File not found                         │
+                         │     at com.yourpackage.MainActivity$onCreate$1.invoke(MainActivity.kt:38) │
+                         │     at com.yourpackage.MainActivity$onCreate$1.invoke(MainActivity.kt:20) │
+                         │     ... (其他堆栈信息)                                      │
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: 自定义 Tag
+        description: 默认情况下，Logger 使用 `PRETTY_LOGGER` 或你在配置中设置的全局 Tag。你可以使用 `Logger.t(tag)` 方法为单条日志指定一个临时的 Tag，方便在 Logcat 中过滤。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          // 使用默认 Tag (假设是 PRETTY_LOGGER 或全局设置的 Tag)
+          Logger.d("This uses the default tag.")
+
+          // 使用自定义 Tag "NetworkRequest"
+          Logger.t("NetworkRequest").d("Starting network request...")
+
+          val response = "{ \"status\": \"success\" }"
+          Logger.t("NetworkResponse").json(response) // 自定义 Tag 结合 Json 打印
+
+          // 下一条日志会恢复使用默认 Tag
+          Logger.i("Back to the default tag.")
+
+          /* Logcat 输出示例:
+          D/PRETTY_LOGGER: ... (默认 Tag 的日志) ...
+          D/NetworkRequest: ┌─────────────────────────────────────────────────────────────┐
+                          │ Thread: main                                                │
+                          ...
+                          │ Starting network request...                                 │
+                          └─────────────────────────────────────────────────────────────┘
+          D/NetworkResponse: ┌─────────────────────────────────────────────────────────────┐
+                           │ Thread: main                                                │
+                           ...
+                           │ {                                                           │
+                           │   "status": "success"                                       │
+                           │ }                                                           │
+                           └─────────────────────────────────────────────────────────────┘
+          I/PRETTY_LOGGER: ... (恢复默认 Tag 的日志) ...
+          */
+          ```
+      - title: 多参数拼接
+        description: Logger 的打印方法（如 `d`, `i` 等）支持接收多个参数。Logger 会将它们转换成字符串并用空格拼接起来。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          val userId = 123
+          val userName = "Charlie"
+          val isActive = true
+
+          // 打印多个变量，Logger 会自动拼接
+          Logger.d("User Info:", userId, userName, "Active:", isActive)
+
+          // 也可以打印集合或数组，Logger 会尝试格式化它们
+          val list = listOf("Apple", "Banana", "Cherry")
+          Logger.d("Fruits:", list)
+
+          val map = mapOf("key1" to "value1", "key2" to 100)
+          Logger.d("Settings:", map)
+
+          /* Logcat 输出示例:
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:50)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ User Info: 123 Charlie Active: true                         │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:53)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ Fruits: [Apple, Banana, Cherry]                             │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ MainActivity$onCreate$1.invoke (MainActivity.kt:56)         │
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ Settings: {key1=value1, key2=100}                          │
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+  - title: 配置
+    description: Logger 允许通过 `FormatStrategy` 和 `LogAdapter` 进行全局配置，以定制日志的输出格式、Tag 和行为。
+    children:
+      - title: AndroidLogAdapter 配置
+        description: |
+          `AndroidLogAdapter` 是 Logger 输出到 Android Logcat 的默认适配器。你可以在初始化 Logger 时提供一个自定义的 `AndroidLogAdapter` 实例来控制日志是否输出。
+
+          **主要用途:**
+          - **控制日志开关:** 通过重写 `isLoggable` 方法，可以根据优先级 (如 `Logger.DEBUG`) 和 Tag 来决定某条日志是否应该被打印。常用于在 Release 版本中禁用所有或部分日志。
+          - **关联格式策略:** 可以将自定义的 `FormatStrategy` (如 `PrettyFormatStrategy`) 传递给 `AndroidLogAdapter` 的构造函数，以应用自定义的格式设置。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.orhanobut.logger.FormatStrategy // Base interface
+          import com.orhanobut.logger.PrettyFormatStrategy // Default pretty format
+          import com.yourpackage.BuildConfig // 引入你的 BuildConfig
+
+          // 在 Application 的 onCreate 中配置
+
+          // 场景 1: 只在 Debug 模式下打印所有级别的日志
+          Logger.addLogAdapter(object : AndroidLogAdapter() {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // BuildConfig.DEBUG 通常在 debug 构建时为 true, release 构建时为 false
+                  return BuildConfig.DEBUG
+              }
+          })
+
+          // 场景 2: 在 Debug 模式下，只打印 DEBUG 及以上级别的日志
+          Logger.addLogAdapter(object : AndroidLogAdapter() {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 只在 Debug 模式下，并且日志级别 >= DEBUG 时打印
+                  return BuildConfig.DEBUG && priority >= Logger.DEBUG
+              }
+          })
+
+          // 场景 3: 结合自定义 FormatStrategy (详见下一节)
+          val customFormatStrategy: FormatStrategy = PrettyFormatStrategy.newBuilder()
+              .tag("MyAppLog") // 设置全局 Tag
+              .build()
+
+          Logger.addLogAdapter(object : AndroidLogAdapter(customFormatStrategy) {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 结合自定义格式和 Debug 开关
+                  return BuildConfig.DEBUG
+              }
+          })
+
+          // 注意: Logger.addLogAdapter() 可以多次调用以添加多个适配器 (例如，一个用于 Logcat，一个用于写入文件)
+          // 如果想替换掉默认的适配器，需要先调用 Logger.clearLogAdapters()
+          // Logger.clearLogAdapters() // 清除所有已添加的适配器
+          // Logger.addLogAdapter(...) // 添加新的适配器
+          ```
+      - title: PrettyFormatStrategy
+        description: |
+          `PrettyFormatStrategy` 是 Logger 默认使用的格式化策略，提供了丰富的配置选项来自定义日志输出的样式。通过 `PrettyFormatStrategy.newBuilder()` 创建一个构建器来进行配置。
+
+          **常用配置项:**
+          - `showThreadInfo(boolean show)`: 是否显示打印日志的线程信息。默认为 `true`。
+          - `methodCount(int methodCount)`: 显示调用栈的方法数量。默认为 `2`。设置为 `0` 则隐藏方法栈信息。
+          - `methodOffset(int offset)`: 隐藏调用栈顶部的若干层方法（用于隐藏 Logger 内部调用）。默认为 `5`。
+          - `tag(String tag)`: 设置全局的默认 Tag。默认为 `PRETTY_LOGGER`。如果设置了全局 Tag，`Logger.t()` 的临时 Tag 依然会覆盖它。
+          - `logStrategy(LogStrategy strategy)`: (高级) 更换日志打印策略，例如可以实现打印到文件或网络。默认使用 `LogcatLogStrategy`。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.orhanobut.logger.PrettyFormatStrategy
+          import com.yourpackage.BuildConfig
+
+          // 在 Application 的 onCreate 中配置
+
+          // 创建自定义的 PrettyFormatStrategy
+          val formatStrategy = PrettyFormatStrategy.newBuilder()
+              .showThreadInfo(false)       // 不显示线程信息
+              .methodCount(1)             // 只显示 1 层方法栈
+              .methodOffset(0)            // 显示所有方法栈（包括 Logger 内部调用，通常不建议设为0）
+              .tag("MyApp-DEBUG")         // 设置全局默认 Tag
+              .build()
+
+          // 将自定义的格式策略应用到 AndroidLogAdapter
+          Logger.addLogAdapter(object : AndroidLogAdapter(formatStrategy) {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 仍然可以结合日志开关
+                  return BuildConfig.DEBUG
+              }
+          })
+
+          // 现在调用 Logger.d("message") 会使用 "MyApp-DEBUG" Tag，不显示线程信息，只显示一层调用栈
+          Logger.d("Log with custom format strategy.")
+
+          /* 可能的 Logcat 输出示例 (注意 Tag 和格式变化):
+          D/MyApp-DEBUG: ┌─────────────────────────────────────────────────────────────┐
+                       │ MainActivity$onCreate$1.invoke (MainActivity.kt:60)         │ // 只有一层方法栈
+                       ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                       │ Log with custom format strategy.                            │
+                       └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: 更换默认 Tag
+        description: 可以通过 `PrettyFormatStrategy` 的 `tag()` 方法来设置一个全局的默认 Tag，替换掉 Logger 默认的 `PRETTY_LOGGER`。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.orhanobut.logger.PrettyFormatStrategy
+          import com.yourpackage.BuildConfig
+
+          // 在 Application 的 onCreate 中配置
+
+          val formatStrategy = PrettyFormatStrategy.newBuilder()
+              .tag("MyAwesomeApp") // 设置全局默认 Tag
+              .build()
+
+          Logger.addLogAdapter(object : AndroidLogAdapter(formatStrategy) {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  return BuildConfig.DEBUG
+              }
+          })
+
+          // 现在所有未使用 Logger.t() 指定 Tag 的日志都会使用 "MyAwesomeApp" 作为 Tag
+          Logger.i("This log uses the new default tag.")
+          Logger.t("SpecificTask").d("This log uses a temporary tag.")
+          Logger.w("This log also uses the new default tag.")
+
+          /* Logcat 输出示例:
+          I/MyAwesomeApp: ... (日志内容) ...
+          D/SpecificTask: ... (日志内容) ...
+          W/MyAwesomeApp: ... (日志内容) ...
+          */
+          ```
+      - title: 日志开关控制（isLoggable）
+        description: |
+          通过在自定义 `AndroidLogAdapter` 中重写 `isLoggable(priority: Int, tag: String?)` 方法，可以精确控制哪些日志应该被打印。这是实现 Debug/Release 环境下日志管理的关键。
+
+          `isLoggable` 方法返回 `true` 表示日志应该被打印，返回 `false` 则表示该条日志将被忽略。
+          你可以基于 `priority` (日志级别)、`tag` (日志标签) 以及外部条件 (如 `BuildConfig.DEBUG`) 来做判断。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.yourpackage.BuildConfig // 引入 BuildConfig
+
+          // 在 Application 的 onCreate 中配置
+
+          Logger.addLogAdapter(object : AndroidLogAdapter() {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 策略 1: 只在 Debug 构建时打印日志
+                  // return BuildConfig.DEBUG
+
+                  // 策略 2: 只在 Debug 构建时打印，且级别为 INFO 或更高
+                  // return BuildConfig.DEBUG && priority >= Logger.INFO
+
+                  // 策略 3: 在 Debug 构建时打印所有日志，但在 Release 构建时只打印 ERROR 和 WTF 日志
+                  if (BuildConfig.DEBUG) {
+                      return true // Debug 模式下全部打印
+                  } else {
+                      return priority >= Logger.ERROR // Release 模式下只打印 Error 及以上
+                  }
+
+                  // 策略 4: 基于 Tag 进行过滤 (例如，屏蔽特定 Tag 的日志)
+                  // if ("SensitiveDataTag" == tag && !BuildConfig.DEBUG) {
+                  //     return false // Release 模式下不打印敏感数据 Tag
+                  // }
+                  // return BuildConfig.DEBUG // 其他情况根据 Debug 模式决定
+              }
+          })
+
+          // --- 示例调用 ---
+
+          // 在 Debug 模式下:
+          Logger.v("Verbose message") // 会打印 (如果策略允许 V)
+          Logger.d("Debug message")   // 会打印 (如果策略允许 D)
+          Logger.e("Error message")   // 会打印 (如果策略允许 E)
+
+          // 在 Release 模式下 (假设使用策略 3):
+          Logger.v("Verbose message") // 不会打印
+          Logger.d("Debug message")   // 不会打印
+          Logger.e("Error message")   // 会打印
+          Logger.wtf("WTF message")   // 会打印
+          ```
+  - title: 异常处理
+    description: 在使用 Logger 时可能遇到的一些常见问题及其处理方式。
+    children:
+      - title: 大文本日志截断问题
+        description: |
+          Android Logcat 对单条日志的长度有限制（通常是 4KB 左右）。当打印非常长的字符串（如巨大的 JSON 或 Base64 数据）时，日志可能会被截断。
+
+          **Logger 的处理:** Logger 内置了分块打印机制。当检测到消息长度超过限制时，它会自动将消息分割成多个块进行打印，确保长消息能够完整输出，每个块都会带有原始的 Tag 和头部信息。
+
+          **注意事项:**
+          - 尽管 Logger 会分块，但如果日志量过大且打印频率过高，仍可能对性能产生影响，并可能淹没 Logcat 缓冲区。
+          - 在分析超长日志时，注意查看连续的、具有相同 Tag 和头信息的日志块。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          // 创建一个非常长的字符串 (超过 4KB)
+          val longStringBuilder = StringBuilder()
+          repeat(1000) {
+              longStringBuilder.append("This is a part of a very long log message. Line $it\n")
+          }
+          val veryLongMessage = longStringBuilder.toString()
+
+          // 打印长消息
+          Logger.d(veryLongMessage)
+
+          // Logcat 输出会看到多条连续的日志，每一条都是原始消息的一部分
+          /* Logcat 输出示例 (片段):
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ This is a part of a very long log message. Line 0           │
+                         │ This is a part of a very long log message. Line 1           │
+                         │ ... (前面一部分日志) ...                                    │
+                         │ This is a part of a very long log message. Line 80          │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ This is a part of a very long log message. Line 81          │
+                         │ ... (中间一部分日志) ...                                    │
+                         │ This is a part of a very long log message. Line 160         │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ This is a part of a very long log message. Line 998         │
+                         │ This is a part of a very long log message. Line 999         │
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: Json / Xml 格式错误
+        description: |
+          当使用 `Logger.json()` 或 `Logger.xml()` 打印非标准格式的字符串时，Logger 通常不会抛出异常。
+
+          **行为:**
+          - 它会尝试解析并格式化。如果字符串格式严重错误，导致解析失败，Logger 通常会回退到按普通字符串打印该内容，或者只打印部分可识别的结构，但不会导致应用崩溃。
+          - 输出可能看起来不像预期的那样格式化，或者直接显示原始的、未格式化的字符串。
+
+          **建议:**
+          - 在调用 `Logger.json()` 或 `Logger.xml()` 之前，如果可能，尽量确保传入的字符串是有效的 JSON 或 XML。
+          - 如果不确定字符串格式，可以先用 `Logger.d()` 打印原始字符串，或者将其包裹在 `try-catch` 块中自行处理可能的解析异常（尽管 Logger 本身通常不抛）。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          val invalidJson = "{\"name\": \"Missing Quote, age: 30}" // JSON 格式错误
+          val invalidXml = "<data><value>1</value><malformed>" // XML 格式错误
+          val notJsonOrXml = "This is just a plain string."
+
+          Logger.d("--- Printing invalid JSON ---")
+          Logger.json(invalidJson) // Logger 会尝试打印，但可能不会格式化
+
+          Logger.d("--- Printing invalid XML ---")
+          Logger.xml(invalidXml)   // Logger 会尝试打印，但可能不会格式化
+
+          Logger.d("--- Printing plain string with json() ---")
+          Logger.json(notJsonOrXml) // Logger 会按普通字符串打印
+
+          /* Logcat 输出示例 (具体表现可能因 Logger 版本和内容而异):
+          D/PRETTY_LOGGER: --- Printing invalid JSON ---
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ {"name": "Missing Quote, age: 30}                          │ // 可能按原样打印
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: --- Printing invalid XML ---
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ <data><value>1</value><malformed>                           │ // 可能按原样打印
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: --- Printing plain string with json() ---
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         ...
+                         ├┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┤
+                         │ This is just a plain string.                                │ // 按普通字符串打印
+                         └─────────────────────────────────────────────────────────────┘
+          */
+          ```
+      - title: Tag 重复冲突
+        description: |
+          如果在项目中（尤其是在多模块项目或引入了其他也使用日志的库时）不同的地方使用了相同的日志 Tag，可能会导致在 Logcat 中难以区分日志来源，或者过滤时出现混淆。
+
+          **Logger 的 Tag 机制:**
+          - **默认 Tag:** 如果不指定，使用 `PRETTY_LOGGER` 或通过 `PrettyFormatStrategy` 设置的全局 Tag。
+          - **临时 Tag:** `Logger.t("MyTag").d(...)` 会临时覆盖默认 Tag。
+
+          **解决方案:**
+          - **设置全局唯一 Tag:** 在 Application 初始化时，通过 `PrettyFormatStrategy.newBuilder().tag("MyAppUniqueTag").build()` 设置一个项目专属的全局 Tag。
+          - **使用临时 Tag:** 在特定的模块或功能中，使用 `Logger.t("FeatureModuleTag").d(...)` 来区分日志来源。
+          - **结合类名/方法名:** Logger 默认会打印调用位置信息，这也有助于区分来源。但如果需要更明确的区分，自定义 Tag 更佳。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.orhanobut.logger.PrettyFormatStrategy
+
+          // --- 在 Application 初始化时 ---
+          val formatStrategy = PrettyFormatStrategy.newBuilder()
+              .tag("MyAppBase") // 设置基础全局 Tag
+              .build()
+          Logger.addLogAdapter(AndroidLogAdapter(formatStrategy))
+
+          // --- 在模块 A 的代码中 ---
+          class ModuleA {
+              fun doWork() {
+                  Logger.d("Work started in Module A") // 使用全局 Tag "MyAppBase"
+                  Logger.t("ModuleA_Network").i("Fetching data...") // 使用临时 Tag
+              }
+          }
+
+          // --- 在模块 B 的代码中 ---
+          class ModuleB {
+              fun processData() {
+                  Logger.d("Processing data in Module B") // 使用全局 Tag "MyAppBase"
+                  Logger.t("ModuleB_Storage").w("Saving data failed.") // 使用临时 Tag
+              }
+          }
+
+          // 调用
+          ModuleA().doWork()
+          ModuleB().processData()
+
+          /* Logcat 输出示例:
+          D/MyAppBase: ... Work started in Module A ...
+          I/ModuleA_Network: ... Fetching data... ...
+          D/MyAppBase: ... Processing data in Module B ...
+          W/ModuleB_Storage: ... Saving data failed. ...
+          */
+          // 通过不同的 Tag (MyAppBase, ModuleA_Network, ModuleB_Storage) 可以清晰地区分日志来源。
+          ```
+      - title: 日志写入文件异常（扩展场景）
+        description: |
+          orhanobut Logger 本身的核心功能是美化 Logcat 输出，并不直接内置将日志写入文件的功能。如果需要将 Logger 的日志输出到文件，通常需要：
+
+          1.  **使用第三方 Adapter:** 社区提供了一些扩展 Logger 功能的 Adapter，例如 `CsvFormatStrategy` 配合自定义的 `LogAdapter` 可以实现写入 CSV 文件。或者寻找专门的文件日志库（如 Timber + File Logging Tree, Logback-Android等）并桥接 Logger 的输出。
+          2.  **自定义 LogAdapter:** 你可以自己实现 `LogAdapter` 接口，在其 `log` 方法中实现将日志写入文件的逻辑。
+
+          **可能遇到的异常及处理:**
+          - **文件权限:** 写入外部存储需要申请 `WRITE_EXTERNAL_STORAGE` 权限（在 Android 10 及以上版本有分区存储限制，建议写入应用专属目录）。写入应用内部存储通常不需要特殊权限。确保在写入前检查或申请权限。
+          - **IO 异常:** 文件创建失败、磁盘空间不足、写入过程中发生错误等都可能导致 `IOException`。需要在文件写入逻辑中添加 `try-catch` 块来捕获和处理这些异常，例如记录错误日志到 Logcat，或尝试切换日志文件。
+          - **线程安全:** 如果多个线程同时尝试写入日志文件，需要确保文件写入操作是线程安全的，例如使用同步块 (`synchronized`) 或线程安全的写入方式。
+        example: |
+          ```kotlin
+          // 注意：这是一个概念性示例，展示了自定义 LogAdapter 的思路。
+          // orhanobut:logger 本身不提供 DiskLogAdapter。你需要自己实现或找第三方库。
+
+          import android.content.Context
+          import com.orhanobut.logger.LogAdapter
+          import com.orhanobut.logger.Logger
+          import java.io.File
+          import java.io.FileWriter
+          import java.io.IOException
+          import java.text.SimpleDateFormat
+          import java.util.Date
+          import java.util.Locale
+
+          // 简化的自定义文件日志适配器示例 (非线程安全, 未处理权限)
+          class SimpleFileLogAdapter(context: Context) : LogAdapter {
+
+              private val logDirectory: File?
+              private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+
+              init {
+                  // 尝试在应用专属缓存目录创建日志文件夹
+                  val cacheDir = context.externalCacheDir ?: context.cacheDir
+                  logDirectory = File(cacheDir, "logs")
+                  if (logDirectory != null && !logDirectory.exists()) {
+                      logDirectory.mkdirs()
+                  }
+              }
+
+              // isLoggable 通常在 FormatStrategy 或更上层处理，这里简化为始终 true
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  return true // 实际应根据需求判断
+              }
+
+              override fun log(priority: Int, tag: String?, message: String) {
+                  if (logDirectory == null || !logDirectory.canWrite()) {
+                      // 如果目录无法写入，可以选择在 Logcat 打印错误
+                      android.util.Log.e("FileLogAdapter", "Cannot write to log directory.")
+                      return
+                  }
+
+                  val level = when (priority) {
+                      Logger.VERBOSE -> "V"
+                      Logger.DEBUG -> "D"
+                      Logger.INFO -> "I"
+                      Logger.WARN -> "W"
+                      Logger.ERROR -> "E"
+                      Logger.ASSERT -> "A" // WTF 对应 ASSERT
+                      else -> "?"
+                  }
+                  val timestamp = dateFormat.format(Date())
+                  val logLine = "$timestamp $level/${tag ?: "NoTag"}: $message\n"
+
+                  // !!! 简化写入，实际需要考虑线程安全、文件大小限制、错误处理 !!!
+                  try {
+                      val logFile = File(logDirectory, "app_log.txt")
+                      FileWriter(logFile, true).use { // true 表示追加模式
+                          it.append(logLine)
+                      }
+                  } catch (e: IOException) {
+                      android.util.Log.e("FileLogAdapter", "Error writing to log file", e)
+                      // 可以在这里处理 IO 异常，例如尝试重新打开文件或停止写入
+                  }
+              }
+          }
+
+          // --- 在 Application 初始化时添加自定义 Adapter ---
+          // Logger.addLogAdapter(SimpleFileLogAdapter(this))
+          // 同时也可以保留 AndroidLogAdapter 以便在 Logcat 查看
+          // Logger.addLogAdapter(AndroidLogAdapter())
+
+          // Logger.d("This message will be logged to file (and Logcat if added).")
+          ```
+  - title: 常见问题与解决技巧
+    description: 在项目开发过程中使用 Logger 经常会遇到的一些问题及其解决思路和技巧。
+    children:
+      - title: 发布版禁用日志策略
+        description: |
+          在发布（Release）版本的应用中通常需要禁用大部分或所有调试日志，以避免泄露敏感信息和影响性能。
+
+          **常用策略:**
+          1.  **使用 `BuildConfig.DEBUG`:** 这是最常见的方式。Android Gradle 插件会自动生成 `BuildConfig` 类，其中的 `DEBUG` 字段在 debug 构建时为 `true`，在 release 构建时为 `false`。在 `AndroidLogAdapter` 的 `isLoggable` 方法中检查此字段即可。
+          2.  **自定义构建类型或 Flavor:** 如果有更复杂的环境（如 Staging, Production），可以定义不同的构建类型或 Flavor，并在 `build.gradle` 中为它们设置不同的常量（通过 `buildConfigField`），然后在 `isLoggable` 中检查这些常量。
+          3.  **远程配置:** 对于需要动态控制日志开关的场景，可以通过远程配置（如 Firebase Remote Config）下发一个标志位，应用启动时读取该标志位来决定是否启用日志。
+
+          **实现 (基于 `BuildConfig.DEBUG`):**
+          见【配置】-【AndroidLogAdapter 配置】和【日志开关控制（isLoggable）】中的示例代码。核心是在 `isLoggable` 中返回 `BuildConfig.DEBUG` 或基于它的逻辑。
+        example: |
+          ```kotlin
+          // 在 Application 初始化时配置
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.yourpackage.BuildConfig // 确保引入正确的 BuildConfig
+
+          Logger.addLogAdapter(object : AndroidLogAdapter() {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 最简单的方式：只在 Debug 模式下打印日志
+                  return BuildConfig.DEBUG
+              }
+          })
+
+          // --- 调用 ---
+          // 在 Debug 构建中，这条日志会打印
+          Logger.d("This should only appear in Debug builds.")
+
+          // 在 Release 构建中，这条日志会被 isLoggable 拦截，不会打印
+          Logger.d("Sensitive debug info here.")
+          ```
+      - title: 多 Module 日志统一管理
+        description: |
+          在包含多个 Gradle Module 的 Android 项目中，如果希望所有模块都使用统一的 Logger 配置（相同的 Tag、格式、开关逻辑），最佳实践是在 `Application` 类中进行初始化。
+
+          **方法:**
+          1.  **在 App Module 中初始化:** 在主 `app` 模块的自定义 `Application` 类的 `onCreate` 方法中，按照【安装】和【配置】部分的说明初始化 `Logger` 并添加配置好的 `LogAdapter`。
+          2.  **在 Library Module 中直接使用:** 在其他 Library Module 中，只需要添加 Logger 的依赖，然后直接调用 `Logger.d()`, `Logger.json()` 等静态方法即可。它们会自动使用在 Application 中配置好的全局设置。
+
+          **注意事项:**
+          - 确保所有需要打印日志的 Module 都添加了 Logger 库的依赖。
+          - 不要在 Library Module 中再次调用 `Logger.addLogAdapter()` 或 `Logger.clearLogAdapters()`，除非你有意要覆盖或添加针对该模块的特殊日志行为（通常不推荐，容易造成混乱）。
+        example: |
+          ```kotlin
+          // --- In app module's Application class (e.g., MyApp.kt) ---
+          import android.app.Application
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.orhanobut.logger.PrettyFormatStrategy
+          import com.yourpackage.app.BuildConfig // App module's BuildConfig
+
+          class MyApp : Application() {
+              override fun onCreate() {
+                  super.onCreate()
+                  // 统一配置 Logger
+                  val formatStrategy = PrettyFormatStrategy.newBuilder().tag("MyMultiModuleApp").build()
+                  Logger.addLogAdapter(object : AndroidLogAdapter(formatStrategy) {
+                      override fun isLoggable(priority: Int, tag: String?): Boolean {
+                          return BuildConfig.DEBUG // 使用 App module 的 BuildConfig 控制开关
+                      }
+                  })
+                  Logger.i("Logger initialized for all modules.")
+              }
+          }
+
+          // --- In a library module (e.g., feature_login module) ---
+          // build.gradle.kts (feature_login)
+          // dependencies { implementation("com.orhanobut:logger:2.2.0") }
+
+          package com.yourpackage.feature_login
+
+          import com.orhanobut.logger.Logger
+
+          class LoginViewModel {
+              fun attemptLogin(user: String) {
+                  // 直接调用 Logger，它会使用 Application 中配置的 Adapter 和 Strategy
+                  Logger.d("Attempting login for user: $user")
+                  if (user == "test") {
+                      Logger.t("LoginFlow").i("Test user login successful.")
+                  } else {
+                      Logger.t("LoginFlow").w("Login failed for user: $user")
+                  }
+              }
+          }
+
+          // --- In another library module (e.g., feature_profile module) ---
+          // build.gradle.kts (feature_profile)
+          // dependencies { implementation("com.orhanobut:logger:2.2.0") }
+
+          package com.yourpackage.feature_profile
+
+          import com.orhanobut.logger.Logger
+
+          class ProfileRepository {
+              fun fetchProfile(userId: Int) {
+                  // 同样直接调用 Logger
+                  Logger.d("Fetching profile for user ID: $userId")
+                  val jsonData = "{ \"name\": \"Alice\", \"id\": $userId }"
+                  Logger.t("ProfileData").json(jsonData)
+              }
+          }
+
+          // 调用这些模块的代码时，日志会遵循 MyApp 中设置的统一格式、Tag ("MyMultiModuleApp" 或临时 Tag) 和开关逻辑。
+          ```
+      - title: 日志过滤无效排查
+        description: |
+          如果在 Logcat 中设置了过滤器（例如按 Tag、日志级别、包名或关键字过滤），但 Logger 的输出似乎没有被正确过滤，或者期望看到的日志没有出现，可以按以下步骤排查：
+
+          1.  **检查 Logcat 过滤器设置:**
+              *   **Tag:** 确认 Logcat 中过滤的 Tag 与 Logger 输出的 Tag（默认 Tag、全局 Tag 或 `Logger.t()` 设置的临时 Tag）完全匹配，注意大小写可能敏感（取决于 Logcat 工具）。
+              *   **日志级别:** 确认 Logcat 设置的日志级别（Verbose, Debug, Info, Warn, Error, Assert）不高于你希望看到的日志级别。例如，如果 Logcat 设置为 Info，那么 Debug 和 Verbose 级别的日志将不会显示。
+              *   **关键字/包名:** 确认过滤的关键字或包名没有错误，并且确实存在于你期望的日志条目中。
+              *   **过滤器组合:** 如果使用了多个过滤器条件（如 Tag 和关键字），确保它们之间的逻辑（AND/OR）符合预期。
+              *   **清除过滤器:** 尝试清除 Logcat 的所有过滤器，看看日志是否能正常输出。如果能，说明问题出在过滤器设置上。
+
+          2.  **检查 Logger 配置 (`isLoggable`):**
+              *   确认你在 `Application` 中配置的 `AndroidLogAdapter` 的 `isLoggable` 方法没有意外地将你想看的日志过滤掉（例如，错误的 `BuildConfig.DEBUG` 判断，或过于严格的级别/Tag 过滤逻辑）。尝试暂时让 `isLoggable` 返回 `true` 来测试。
+
+          3.  **检查 Logger 是否被初始化:**
+              *   确保 `Logger.addLogAdapter()` 在日志调用之前已经被执行，通常是在 `Application.onCreate()` 中。
+
+          4.  **检查 Logger 依赖和版本:**
+              *   确保项目中正确添加了 Logger 的依赖，并且没有版本冲突问题。
+
+          5.  **检查 Logcat 连接和设备/模拟器:**
+              *   确保你的开发设备或模拟器已正确连接，并且 Logcat 正在监听正确的进程。有时需要重启 ADB 或 Android Studio。
+        example: |
+          ```kotlin
+          // 假设你在 Logcat 中按 Tag "NetworkRequest" 过滤，但看不到日志
+
+          // --- 检查点 1: 代码中是否正确设置了 Tag? ---
+          // 错误示例: Tag 不匹配
+          // Logger.t("NETWORK_REQUEST").d("Starting...") // Logcat 过滤器是 "NetworkRequest"
+
+          // 正确示例: Tag 匹配
+          Logger.t("NetworkRequest").d("Starting network request...")
+
+          // --- 检查点 2: isLoggable 是否允许该日志? ---
+          // 假设 isLoggable 配置为只打印 INFO 及以上
+          override fun isLoggable(priority: Int, tag: String?): Boolean {
+              return BuildConfig.DEBUG && priority >= Logger.INFO
+          }
+          // 调用 Logger.d() 将被过滤掉，即使 Tag 匹配
+          Logger.t("NetworkRequest").d("This Debug log won't show if filter is INFO+")
+          // 调用 Logger.i() 或更高则会显示 (如果 Tag 匹配 Logcat 过滤器)
+          Logger.t("NetworkRequest").i("Network request initiated.")
+
+          // --- 检查点 3: Logcat 过滤器设置 ---
+          // 在 Android Studio Logcat 窗口:
+          // - 确保右上角的过滤器下拉菜单选择了 "Show only selected application"。
+          // - 在搜索框旁边的级别下拉菜单选择了 "Verbose" 或 "Debug" (如果你想看 D 级日志)。
+          // - 在搜索框中输入 `tag:NetworkRequest` (或仅输入 `NetworkRequest` 如果你的 Logcat 支持模糊匹配 Tag)。
+
+          // 通过以上步骤逐一排查，通常能定位过滤无效的原因。
+          ```
+      - title: 与 Timber、Logcat 配合技巧
+        description: |
+          Logger 可以与其他日志工具（如 Timber）或直接与原生 Logcat 配合使用。
+
+          **配合 Timber:**
+          *   **目的:** Timber 提供了更灵活的日志 API（如 `Timber.d(...)`），特别是在处理格式化字符串和自动获取 Tag 方面。你可以创建一个 Timber `Tree`，在其 `log` 方法内部调用 orhanobut Logger 的方法。这样，你可以享受 Timber 的 API 便利性，同时获得 Logger 的美观输出。
+          *   **实现:** 创建一个继承自 `Timber.Tree` 的类，重写 `log` 方法，在其中根据 `priority` 调用对应的 `Logger` 方法（`Logger.v`, `Logger.d` 等），可以传递 `tag` 和 `message`。然后在 Application 中 `Timber.plant()` 这个自定义 Tree。
+
+          **配合原生 Logcat (`android.util.Log`):**
+          *   **场景:** 有时你可能只想快速打印一些简单的、不需要 Logger 复杂格式的日志，或者在项目的某些部分（可能没有引入 Logger 的旧代码或第三方库）仍在使用原生 Log。
+          *   **技巧:**
+              *   **混合使用:** 你可以在同一个项目里同时使用 `Logger.d(...)` 和 `android.util.Log.d(...)`。它们会各自输出到 Logcat。
+              *   **统一 Tag:** 如果希望原生 Log 和 Logger 使用相似的 Tag 策略，可以为原生 Log 定义常量 Tag，并为 Logger 设置匹配的全局 Tag 或使用 `Logger.t()`。
+              *   **过滤:** 在 Logcat 中，你可以根据 Tag 或关键字过滤来自任一来源的日志。
+
+          **Logger 作为 Logcat 增强:**
+          *   将 Logger 视为对原生 Logcat 输出的一种“美颜”和“增强”。对于需要清晰查看结构化数据（JSON, XML, Collections）或调用栈信息的场景，优先使用 Logger。对于简单的文本日志，原生 Log 也能胜任。
+        example: |
+          ```kotlin
+          import timber.log.Timber
+          import com.orhanobut.logger.Logger
+          import android.util.Log // 原生 Log
+
+          // --- 1. 配合 Timber ---
+          // 自定义 Timber Tree 调用 Logger
+          class LoggerTree : Timber.DebugTree() { // 继承 DebugTree 以自动获取 Tag
+              override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+                  // 如果有异常，优先使用 Logger.e(throwable, message)
+                  if (t != null) {
+                      // 注意：Logger.e 只接受 Throwable 和可选消息，可能需要调整 message 格式
+                      val logMessage = message + (if (message.isNotEmpty()) "\n" else "") + Log.getStackTraceString(t)
+                      Logger.t(tag).log(priority, tag, logMessage, t) // 或 Logger.e(t, message) 如果适用
+                      return
+                  }
+
+                  // 根据 Timber 的优先级调用 Logger 的对应方法
+                  // 为了简单起见，这里只映射 D, I, W, E, WTF
+                  // 你可以根据需要映射所有级别
+                  when (priority) {
+                      Log.VERBOSE -> Logger.t(tag).v(message)
+                      Log.DEBUG -> Logger.t(tag).d(message)
+                      Log.INFO -> Logger.t(tag).i(message)
+                      Log.WARN -> Logger.t(tag).w(message)
+                      Log.ERROR -> Logger.t(tag).e(message) // Logger.e(message) 只打印消息，不处理 Throwable
+                      Log.ASSERT -> Logger.t(tag).wtf(message)
+                      // 其他级别可以映射到 Logger.d 或忽略
+                  }
+                  // 注意：这种映射可能丢失 Logger 对 JSON/XML/集合的特殊处理能力
+                  // 更完善的 Tree 可能需要检查 message 内容或使用更底层的 Logger API
+              }
+          }
+
+          // 在 Application.onCreate() 中 plant 这个 Tree
+          // if (BuildConfig.DEBUG) {
+          //     Timber.plant(LoggerTree())
+          // }
+
+          // 使用 Timber API，输出会通过 LoggerTree -> Logger
+          // Timber.d("Message logged via Timber, formatted by Logger.")
+          // Timber.tag("Network").i("Network request sent.")
+
+
+          // --- 2. 与原生 Logcat 配合 ---
+          val TAG = "MyActivity"
+
+          fun someFunction() {
+              // 使用 Logger 打印复杂数据
+              val data = mapOf("user" to "dave", "status" to "active")
+              Logger.d(data)
+
+              // 使用原生 Log 打印简单消息
+              Log.i(TAG, "Simple informational message.")
+
+              // 在 Logcat 中可以:
+              // - 按 Logger 的 Tag (如 PRETTY_LOGGER 或自定义的) 过滤 Logger 输出
+              // - 按 "MyActivity" Tag 过滤原生 Log 输出
+              // - 按关键字 "dave" 或 "Simple" 过滤
+          }
+
+          someFunction()
+          ```
+      - title: 日志输出顺序错乱问题
+        description: |
+          有时在 Logcat 中观察到的日志顺序可能与代码执行的直观顺序不完全一致，尤其是在涉及多线程或异步操作时。
+
+          **原因:**
+          1.  **多线程执行:** 如果日志是在不同的线程中打印的，它们的实际执行和输出到 Logcat 的时间点可能不是严格按照代码书写顺序。线程调度会影响执行时机。
+          2.  **Logcat 缓冲和处理:** Logcat 本身以及 Android Studio 的 Logcat 工具链有自己的缓冲机制和处理流程，极端情况下可能导致微小的顺序差异，尽管这种情况相对少见。
+          3.  **异步操作回调:** 在使用协程、RxJava、线程池等进行异步编程时，回调函数中的日志打印时机取决于异步任务何时完成，这通常与主流程代码的顺序不同。
+
+          **Logger 的帮助:**
+          *   **线程信息:** Logger 默认会打印每条日志所在的线程名称（可通过 `showThreadInfo(true)` 开启）。这对于判断日志是否来自不同线程非常有帮助，可以解释顺序问题。
+
+          **解决与排查:**
+          *   **关注线程信息:** 查看 Logger 输出的线程名，确认顺序不符合预期的日志是否来自不同的线程。
+          *   **添加同步点日志:** 在关键的同步点或流程转换处添加明确的日志（如 "Entering async block", "Callback received"），帮助理解执行流。
+          *   **简化测试:** 如果怀疑是 Logger 或环境问题，尝试在一个简单的单线程场景下打印连续日志，看顺序是否正常。
+          *   **考虑异步逻辑:** 重点检查异步代码块（`launch`, `async`, `subscribe`, `postDelayed` 等）内外的日志，理解它们的预期执行顺序。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+          import kotlinx.coroutines.*
+          import kotlin.concurrent.thread
+
+          fun testLogOrder() {
+              Logger.d("1. Main thread: Start test.")
+
+              // 启动一个新线程
+              thread {
+                  Logger.d("2. Background thread: Started.")
+                  Thread.sleep(50) // 模拟耗时
+                  Logger.d("3. Background thread: Finished.")
+              }
+
+              // 使用协程
+              GlobalScope.launch(Dispatchers.IO) {
+                  Logger.d("4. Coroutine (IO): Started.")
+                  delay(30) // 模拟挂起
+                  Logger.d("5. Coroutine (IO): Finished.")
+              }
+
+              // 主线程继续执行
+              Thread.sleep(10) // 给其他线程一点启动时间
+              Logger.d("6. Main thread: After launching async tasks.")
+
+              Logger.d("7. Main thread: End test.")
+          }
+
+          testLogOrder()
+
+          /* 可能的 Logcat 输出顺序 (注意线程名和时间点):
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │ <- 1
+                         ...
+                         │ 1. Main thread: Start test.                                 │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │ <- 6 (可能在后台线程启动前或后)
+                         ...
+                         │ 6. Main thread: After launching async tasks.                │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: main                                                │ <- 7
+                         ...
+                         │ 7. Main thread: End test.                                   │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: Thread-3                                            │ <- 2 (后台线程)
+                         ...
+                         │ 2. Background thread: Started.                              │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: DefaultDispatcher-worker-1                          │ <- 4 (协程 IO 线程)
+                         ...
+                         │ 4. Coroutine (IO): Started.                                 │
+                         └─────────────────────────────────────────────────────────────┘
+          D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: DefaultDispatcher-worker-1                          │ <- 5 (协程 IO 线程，在 delay 后)
+                         ...
+                         │ 5. Coroutine (IO): Finished.                                │
+                         └─────────────────────────────────────────────────────────────┘
+           D/PRETTY_LOGGER: ┌─────────────────────────────────────────────────────────────┐
+                         │ Thread: Thread-3                                            │ <- 3 (后台线程，在 sleep 后)
+                         ...
+                         │ 3. Background thread: Finished.                             │
+                         └─────────────────────────────────────────────────────────────┘
+          // 可以看到，由于多线程和延迟，日志顺序 (1, 6, 7, 2, 4, 5, 3) 与代码书写顺序 (1, 2, 3, 4, 5, 6, 7) 不同。
+          // Logger 的线程信息帮助理解了这一点。
+          */
+          ```
+  - title: 最佳实践
+    description: 一些在项目中使用 orhanobut Logger 的推荐做法和模式。
+    children:
+      - title: 封装 LoggerHelper 工具类
+        description: |
+          为了更方便地调用 Logger，并且可能在未来统一更换日志库或添加额外逻辑（如日志上报），可以创建一个简单的 Kotlin object 或 class 来封装 Logger 的调用。
+
+          **好处:**
+          - **简化调用:** 提供更短的方法名或符合项目规范的方法。
+          - **统一控制点:** 如果需要修改日志行为（如添加前缀、修改 Tag 逻辑），只需修改 Helper 类。
+          - **易于替换:** 未来如果更换日志库，主要修改 Helper 类即可，对业务代码影响较小。
+          - **附加功能:** 可以在 Helper 中添加特定于应用的逻辑，比如只在特定用户或条件下打印日志。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+          import org.json.JSONObject
+          import org.json.JSONArray
+
+          // 使用 Kotlin object 创建单例 LoggerHelper
+          object LogUtils {
+
+              // 控制总开关，可以从 SharedPreferences 或远程配置读取
+              var enabled = true // 简化示例，直接用变量控制
+
+              // 基础日志方法
+              fun v(message: String, tag: String? = null) {
+                  if (!enabled) return
+                  log(Logger.VERBOSE, tag, message, null)
+              }
+
+              fun d(message: String, tag: String? = null) {
+                  if (!enabled) return
+                  log(Logger.DEBUG, tag, message, null)
+              }
+
+              fun i(message: String, tag: String? = null) {
+                  if (!enabled) return
+                  log(Logger.INFO, tag, message, null)
+              }
+
+              fun w(message: String, tag: String? = null, throwable: Throwable? = null) {
+                  if (!enabled) return
+                  log(Logger.WARN, tag, message, throwable)
+              }
+
+              fun e(message: String, tag: String? = null, throwable: Throwable? = null) {
+                  if (!enabled) return
+                  log(Logger.ERROR, tag, message, throwable)
+              }
+
+              fun wtf(message: String, tag: String? = null, throwable: Throwable? = null) {
+                  if (!enabled) return
+                  log(Logger.ASSERT, tag, message, throwable)
+              }
+
+              // 特殊格式打印
+              fun json(json: String?, tag: String? = null) {
+                  if (!enabled || json == null) return
+                  getLogger(tag).json(json)
+              }
+
+               fun json(jsonObject: JSONObject?, tag: String? = null) {
+                  if (!enabled || jsonObject == null) return
+                  // indentSpaces = 4 for pretty printing
+                  getLogger(tag).json(jsonObject.toString(4))
+              }
+
+              fun json(jsonArray: JSONArray?, tag: String? = null) {
+                  if (!enabled || jsonArray == null) return
+                  getLogger(tag).json(jsonArray.toString(4))
+              }
+
+
+              fun xml(xml: String?, tag: String? = null) {
+                  if (!enabled || xml == null) return
+                  getLogger(tag).xml(xml)
+              }
+
+              // 内部辅助方法，处理 Tag 和调用 Logger
+              private fun log(priority: Int, tag: String?, message: String, throwable: Throwable?) {
+                  val logger = getLogger(tag)
+                  if (throwable != null) {
+                      // Logger.e/w 等方法不直接接受 Throwable 和 Message，需组合
+                      // 可以选择一种策略，例如将 message 作为附加信息打印
+                      // 或者使用 Logger 底层 log 方法
+                      // 这里简化处理：优先打印带异常的 Logger.e/wtf/w
+                      val combinedMessage = if (message.isNotEmpty()) "$message\n${android.util.Log.getStackTraceString(throwable)}" else android.util.Log.getStackTraceString(throwable)
+                       when (priority) {
+                           Logger.ERROR -> logger.e(throwable, message) // Logger.e 支持 throwable + message
+                           Logger.ASSERT -> logger.wtf(message + "\n" + android.util.Log.getStackTraceString(throwable)) // wtf 不直接支持，拼接
+                           Logger.WARN -> logger.w(message + "\n" + android.util.Log.getStackTraceString(throwable)) // w 不直接支持，拼接
+                           else -> logger.log(priority, tag, combinedMessage, throwable) // 使用底层 log
+                       }
+
+                  } else {
+                      logger.log(priority, tag, message, null)
+                  }
+              }
+
+              // 获取带临时 Tag 的 Logger 实例
+              private fun getLogger(tag: String?): com.orhanobut.logger.Logger.Companion {
+                  return if (tag != null) Logger.t(tag) else Logger
+              }
+          }
+
+          // --- 使用封装后的 Helper ---
+          // LogUtils.enabled = BuildConfig.DEBUG // 在 Application 中根据环境设置开关
+
+          // 调用简化
+          // LogUtils.d("User logged in.", tag = "Auth")
+          // LogUtils.json(someJsonObject, tag = "UserData")
+          // LogUtils.e("Failed to load config.", throwable = exception)
+
+          ```
+      - title: 多环境日志开关（Debug/Release）
+        description: |
+          利用 `BuildConfig.DEBUG` 字段结合 Logger 的 `isLoggable` 回调是实现 Debug 环境打印日志、Release 环境禁用日志的最标准和推荐的方式。
+
+          **核心实现:**
+          在 `Application` 中初始化 `Logger` 时，提供一个自定义的 `AndroidLogAdapter`，并在其 `isLoggable` 方法中返回 `BuildConfig.DEBUG`。
+
+          **扩展:**
+          如果需要更复杂的环境控制（例如 Staging 环境也需要打印部分日志），可以在 `build.gradle` 中定义不同的 `buildConfigField`，然后在 `isLoggable` 中根据这些字段进行判断。
+        example: |
+          ```kotlin
+          // --- In app/build.gradle or build.gradle.kts ---
+          android {
+              buildTypes {
+                  getByName("debug") {
+                      // DEBUG is true by default for debug build type
+                  }
+                  getByName("release") {
+                      isMinifyEnabled = true
+                      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                      // DEBUG is false by default for release build type
+                      buildConfigField("boolean", "ENABLE_LOGGING", "false") // 自定义 Release 开关 (可选)
+                  }
+                  create("staging") {
+                      initWith(getByName("debug")) // 基于 Debug 配置创建 Staging
+                      isMinifyEnabled = false
+                      // Staging 环境也允许日志
+                      buildConfigField("boolean", "ENABLE_LOGGING", "true") // 自定义 Staging 开关
+                      // applicationSuffix = ".staging" // 可选，用于区分包名
+                  }
+              }
+          }
+
+          // --- In Application.onCreate() ---
+          import com.orhanobut.logger.AndroidLogAdapter
+          import com.orhanobut.logger.Logger
+          import com.yourpackage.app.BuildConfig // 引入 App module 的 BuildConfig
+
+          // ...
+
+          Logger.addLogAdapter(object : AndroidLogAdapter() {
+              override fun isLoggable(priority: Int, tag: String?): Boolean {
+                  // 优先使用 BuildConfig.DEBUG (标准方式)
+                  // return BuildConfig.DEBUG
+
+                  // 或者使用自定义的 BuildConfig 字段 (适用于 Staging 等场景)
+                  return BuildConfig.ENABLE_LOGGING // 假设 Staging 和 Debug 返回 true, Release 返回 false
+
+                  // 也可以结合两者或更复杂的逻辑
+                  // return BuildConfig.DEBUG || (BuildConfig.BUILD_TYPE == "staging" && priority >= Logger.INFO)
+              }
+          })
+
+          // --- 调用 Logger ---
+          // Logger.d("This log's visibility depends on the build type and isLoggable logic.")
+          ```
+      - title: Json/Xml 安全打印封装
+        description: |
+          虽然 Logger 的 `json()` 和 `xml()` 方法通常能容忍格式错误，但如果希望在打印前确保内容是有效的，或者在无效时进行特定处理（如打印错误提示），可以在调用 Logger 前添加一层检查或 `try-catch`。
+
+          **方法:**
+          1.  **Try-Catch:** 将可能无效的 JSON/XML 字符串的解析操作（例如使用 `org.json.JSONObject` 或 `javax.xml.parsers`）放在 `try-catch` 块中。如果解析成功，再调用 `Logger.json()` 或 `Logger.xml()`。如果捕获到异常，可以打印一条错误日志和原始字符串。
+          2.  **封装到 Helper:** 将这种安全检查逻辑封装到前面提到的 `LoggerHelper` 中，提供如 `safeJson()`、`safeXml()` 这样的方法。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+          import org.json.JSONException
+          import org.json.JSONObject
+          import org.json.JSONArray
+          // import javax.xml.parsers.DocumentBuilderFactory // XML 解析相对复杂，这里用 JSON 举例
+
+          object LogUtils { // 扩展之前的 LogUtils
+
+              // ... (其他方法) ...
+
+              /**
+               * 安全地打印 JSON 字符串，如果格式无效则打印错误信息和原始字符串。
+               */
+              fun safeJson(jsonString: String?, tag: String? = null) {
+                  if (!enabled || jsonString.isNullOrBlank()) return
+
+                  try {
+                      // 尝试判断是 JSON Object 还是 JSON Array 并格式化
+                      val trimmed = jsonString.trim()
+                      if (trimmed.startsWith("{")) {
+                          val jsonObject = JSONObject(trimmed)
+                          json(jsonObject.toString(4), tag) // 使用前面封装的 json(JSONObject) 方法
+                      } else if (trimmed.startsWith("[")) {
+                          val jsonArray = JSONArray(trimmed)
+                          json(jsonArray.toString(4), tag) // 使用前面封装的 json(JSONArray) 方法
+                      } else {
+                          // 不是以 { 或 [ 开头，可能不是有效的 JSON
+                          throw JSONException("String does not start with { or [")
+                      }
+                  } catch (e: JSONException) {
+                      // JSON 格式错误，打印错误提示和原始字符串
+                      val logger = if (tag != null) Logger.t(tag) else Logger
+                      logger.e("Invalid JSON format: ${e.message}")
+                      logger.d("Original string: $jsonString") // 打印原始字符串以供调试
+                  }
+              }
+
+               // 假设已有 json(JSONObject) 和 json(JSONArray) 方法
+              fun json(jsonObject: JSONObject?, tag: String? = null) {
+                  if (!enabled || jsonObject == null) return
+                  val logger = if (tag != null) Logger.t(tag) else Logger
+                  logger.json(jsonObject.toString(4)) // 4 是缩进空格数
+              }
+
+              fun json(jsonArray: JSONArray?, tag: String? = null) {
+                 if (!enabled || jsonArray == null) return
+                  val logger = if (tag != null) Logger.t(tag) else Logger
+                  logger.json(jsonArray.toString(4))
+              }
+
+               var enabled = true // 开关
+          }
+
+          // --- 使用 ---
+          val validJson = "{ \"name\": \"Alice\", \"valid\": true }"
+          val invalidJson = "{ name: Bob, invalid }"
+          val notJson = "Just a string"
+
+          // LogUtils.safeJson(validJson, tag = "Data") // 会格式化打印 JSON
+          // LogUtils.safeJson(invalidJson, tag = "Data") // 会打印错误信息和原始字符串
+          // LogUtils.safeJson(notJson, tag = "Data") // 也会打印错误信息和原始字符串
+          ```
+      - title: ViewModel + Logger + Flow 调试日志规范
+        description: |
+          在现代 Android 开发（如 MVVM 架构配合 Kotlin Flow）中，有效地使用 Logger 来调试数据流和状态变化非常重要。
+
+          **规范建议:**
+          1.  **统一 Tag:** 在 ViewModel 或 Repository 层面，使用特定的 Tag（如 ViewModel 类名或 Repository 类名）来标识日志来源。可以通过 `Logger.t(TAG)` 或封装的 Helper 实现。
+          2.  **记录 Flow 事件:** 在 Flow 的关键操作符（`onStart`, `onEach`, `catch`, `onCompletion`）中添加日志，记录流的开始、每个元素的发射、错误捕获和流的完成。
+          3.  **记录状态变化:** 在 ViewModel 中，当 `StateFlow` 或 `SharedFlow` 发射新的状态或事件时，记录下新的状态值或事件内容。
+          4.  **区分数据源:** 如果数据来自不同源（网络、数据库、缓存），在日志中明确标注来源。
+          5.  **使用合适的级别:**
+              *   `DEBUG`: 用于记录详细的流程步骤、数据转换。
+              *   `INFO`: 用于记录关键的状态变化、流的生命周期事件。
+              *   `WARN`: 用于记录预期的但可能需要注意的情况（如缓存未命中）。
+              *   `ERROR`: 用于记录 `catch` 块中捕获到的异常。
+        example: |
+          ```kotlin
+          import androidx.lifecycle.ViewModel
+          import androidx.lifecycle.viewModelScope
+          import com.orhanobut.logger.Logger // 或者使用封装的 LogUtils
+          import kotlinx.coroutines.flow.*
+          import kotlinx.coroutines.launch
+
+          class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
+
+              private val _userState = MutableStateFlow<UserState>(UserState.Loading)
+              val userState: StateFlow<UserState> = _userState.asStateFlow()
+
+              companion object {
+                  private const val TAG = "UserViewModel" // ViewModel 的 Tag
+              }
+
+              init {
+                  loadUser("userId123")
+              }
+
+              fun loadUser(userId: String) {
+                  viewModelScope.launch {
+                      userRepository.getUser(userId)
+                          .onStart {
+                              Logger.t(TAG).i("Flow started: Loading user $userId")
+                              _userState.value = UserState.Loading // 记录状态变化
+                              Logger.t(TAG).d("State updated to Loading")
+                          }
+                          .onEach { user ->
+                              Logger.t(TAG).d("Flow emitted: Received user data: ${user.name}")
+                              _userState.value = UserState.Success(user) // 记录状态变化
+                              Logger.t(TAG).i("State updated to Success")
+                          }
+                          .catch { e ->
+                              Logger.t(TAG).e("Flow error: Failed to load user", throwable = e)
+                              _userState.value = UserState.Error(e.message ?: "Unknown error") // 记录状态变化
+                              Logger.t(TAG).w("State updated to Error")
+                          }
+                          .onCompletion {
+                              // completion 不区分是正常结束还是异常结束
+                              Logger.t(TAG).i("Flow completed for user $userId")
+                          }
+                          .collect() // 触发流的执行
+                  }
+              }
+          }
+
+          // --- UserRepository (示例) ---
+          class UserRepository {
+              companion object { private const val TAG = "UserRepository" }
+              suspend fun getUser(userId: String): Flow<User> = flow {
+                  Logger.t(TAG).d("Fetching user $userId from network...")
+                  // 模拟网络请求
+                  kotlinx.coroutines.delay(500)
+                  if (userId == "error") throw RuntimeException("Network failed")
+                  emit(User(userId, "Alice from Network"))
+              }
+          }
+
+          // --- UserState and User data class (示例) ---
+          sealed class UserState {
+              object Loading : UserState()
+              data class Success(val user: User) : UserState()
+              data class Error(val message: String) : UserState()
+          }
+          data class User(val id: String, val name: String)
+
+          // 使用这个 ViewModel 时，Logcat 中会清晰地展示 Flow 的生命周期、数据发射、状态更新以及可能的错误，
+          // 并且通过 Tag ("UserViewModel", "UserRepository") 可以区分日志来源。
+          ```
+      - title: 大数据量分段打印策略
+        description: |
+          虽然 Logger 内置了对超长日志（超过 Logcat 单条限制）的分块打印机制，但在处理极大数据量（如大型文件内容、非常复杂的对象转换的中间结果）时，主动进行分段打印可能更优，原因如下：
+
+          *   **性能考虑:** Logger 的自动分块仍然需要处理整个大字符串，可能消耗较多内存和 CPU。
+          *   **可读性:** 主动分段可以加入更有意义的上下文信息，比如 "Chunk 1/N:", "Processing items 100-199:"。
+          *   **避免淹没 Logcat:** 过多的自动分块日志可能迅速填满 Logcat 缓冲区，导致旧日志丢失。
+
+          **策略:**
+          1.  **迭代打印:** 如果是集合或数组，可以迭代处理，每处理 N 个元素打印一次摘要或当前处理的元素范围。
+          2.  **手动分块:** 对于超长字符串，可以按固定长度（比如 2000 字符）切割，并循环打印每一块，可以加上块编号。
+          3.  **摘要打印:** 对于复杂对象，不打印整个对象，而是选择性地打印关键属性或其摘要信息（如列表大小、对象 ID 等）。
+        example: |
+          ```kotlin
+          import com.orhanobut.logger.Logger
+
+          // 策略 1: 迭代打印大型列表摘要
+          fun logLargeListSummary(items: List<Any>, chunkSize: Int = 100, tag: String? = null) {
+              val logger = if (tag != null) Logger.t(tag) else Logger
+              logger.d("Processing large list with ${items.size} items.")
+              items.chunked(chunkSize).forEachIndexed { index, chunk ->
+                  val start = index * chunkSize
+                  val end = start + chunk.size - 1
+                  logger.d("Chunk ${index + 1}: Processing items $start - $end. First item: ${chunk.firstOrNull()}")
+                  // 在这里可以进行实际的处理逻辑
+              }
+              logger.d("Finished processing large list.")
+          }
+
+          // 策略 2: 手动分块打印长字符串
+          fun logLongStringManually(longText: String, chunkSize: Int = 2000, tag: String? = null) {
+              val logger = if (tag != null) Logger.t(tag) else Logger
+              if (longText.length <= chunkSize) {
+                  logger.d(longText) // 如果不长，直接打印
+                  return
+              }
+
+              logger.d("Printing long string (length: ${longText.length}) in chunks:")
+              var i = 0
+              while (i < longText.length) {
+                  val end = minOf(i + chunkSize, longText.length)
+                  val chunk = longText.substring(i, end)
+                  logger.d("Chunk [${i}-${end-1}]: $chunk")
+                  i += chunkSize
+              }
+               logger.d("End of long string.")
+          }
+
+          // --- 使用示例 ---
+          val hugeList = (1..1000).map { "Item $it" }
+          // logLargeListSummary(hugeList, chunkSize = 250, tag = "ListProcessing")
+
+          val veryLongContent = "abc".repeat(5000) // 15000 字符长的字符串
+          // logLongStringManually(veryLongContent, chunkSize = 4000, tag = "FileContent")
+
+          /* 手动分块的 Logcat 输出示例:
+          D/FileContent: Printing long string (length: 15000) in chunks:
+          D/FileContent: Chunk [0-3999]: abcabc... (前 4000 字符)
+          D/FileContent: Chunk [4000-7999]: abcabc... (中间 4000 字符)
+          D/FileContent: Chunk [8000-11999]: abcabc... (再 4000 字符)
+          D/FileContent: Chunk [12000-14999]: abcabc... (最后 3000 字符)
+          D/FileContent: End of long string.
+          */
+          ```

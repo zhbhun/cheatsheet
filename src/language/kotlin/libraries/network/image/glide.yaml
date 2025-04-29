@@ -1,0 +1,1059 @@
+id: glide
+title: Glide
+query: Android Glide
+comment: 全面整理 Glide 的使用方法，涵盖基础用法、缓存管理、加载配置、动画、异常处理、常见坑排查与实战技巧。
+description: Glide 是一个专注于 Android 平台的强大、高效且流行的图片加载和缓存库。它旨在使在 Android 应用中加载、显示和管理图片（包括网络图片、本地资源、文件系统图片等）变得尽可能简单流畅。Glide 提供了链式调用的 API（如 `Glide.with().load().into()`），自动处理图片的获取、解码、内存与磁盘缓存、图片变换（如裁剪、圆角）、GIF 动画播放以及与 Activity/Fragment 生命周期智能绑定等复杂任务，极大简化了开发者的工作。
+outline:
+  - title: 安装
+    description: 添加依赖
+  - title: 使用
+    description: Glide 核心图片加载与显示方法。
+    children:
+      - title: 基础加载
+        description: load(url/res/file) + into(imageView)
+      - title: 占位图与错误图
+        description: placeholder()、error()、fallback()
+      - title: 加载圆形、圆角图片
+        description: circleCrop()、transform(RoundedCorners())
+      - title: 动画效果
+        description: transition(withCrossFade())、自定义动画
+      - title: 缩略图
+        description: thumbnail() 实现占位预览
+      - title: GIF 加载
+        description: asGif()、diskCacheStrategy()
+  - title: 配置
+    description: Glide 配置选项与全局定制。
+    children:
+      - title: RequestOptions 配置
+        description: centerCrop()、override()、format()
+      - title: DiskCacheStrategy 配置
+        description: ALL、DATA、RESOURCE、NONE
+      - title: 自定义 AppGlideModule
+      - title: Glide 的 RequestManager 配置
+  - title: 缓存管理
+    description: Glide 默认磁盘 & 内存缓存策略与控制方法。
+    children:
+      - title: 清除缓存
+        description: clearMemory()、clearDiskCache()
+      - title: 禁用缓存
+        description: skipMemoryCache(true)、diskCacheStrategy(NONE)
+      - title: 自定义缓存目录与大小
+      - title: 获取缓存文件路径
+  - title: 异常处理
+    description: 图片加载异常与容错方法。
+    children:
+      - title: RequestListener 捕获加载异常
+      - title: 设置错误占位图
+      - title: 图片加载失败重试策略
+  - title: 常见问题与解决技巧
+    description: 开发高频问题与优化技巧。
+    children:
+      - title: RecyclerView 图片错位问题
+      - title: 占位图与 CrossFade 动画冲突
+      - title: 缓存清理不生效排查
+      - title: 多 Glide 实例导致内存暴涨
+      - title: WebP 图片兼容性
+  - title: 最佳实践
+    description: Glide 项目实战推荐写法与优化技巧。
+    children:
+      - title: 封装 GlideHelper 工具类
+      - title: 统一 RequestOptions 管理
+      - title: 图片加载日志调试
+      - title: 配合 ViewModel+LiveData/Flow 图片加载
+      - title: 配置 Glide 线程池大小与缓存优化
+usage:
+  - title: 安装
+    description: '要在你的 Android 项目中使用 Glide，首先需要在 `build.gradle` (Module: app) 文件中添加 Glide 的核心库和注解处理器依赖。'
+    example: |
+      ```groovy
+      // build.gradle (Module: app)
+
+      dependencies {
+          implementation 'com.github.bumptech.glide:glide:4.16.0' // 使用最新版本
+          kapt 'com.github.bumptech.glide:compiler:4.16.0'      // Kotlin 注解处理器
+          // annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0' // Java 注解处理器 (如果使用 Java)
+      }
+
+      // 确保在项目根目录的 build.gradle 中配置了 kapt 插件 (如果使用 Kotlin)
+      // plugins {
+      //     id 'kotlin-kapt'
+      // }
+      ```
+  - title: 使用
+    description: Glide 的核心功能是通过其流式 API 来加载和显示图片。
+    children:
+      - title: 基础加载
+        description: 使用 `Glide.with()` 获取与当前上下文（Activity, Fragment, Context）生命周期绑定的 `RequestManager`，然后调用 `load()` 指定图片来源（URL、资源 ID、文件路径、Uri 等），最后调用 `into()` 将图片加载到目标 `ImageView` 中。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.Glide
+          import android.widget.ImageView
+
+          // ... 在 Activity 或 Fragment 中 ...
+          val imageView: ImageView = findViewById(R.id.my_image_view)
+          val imageUrl = "https://via.placeholder.com/150"
+          val resourceId = R.drawable.local_image
+          val file = File("/path/to/your/image.jpg")
+
+          // 1. 加载网络图片 URL
+          Glide.with(this) // 'this' 通常是 Activity 或 Fragment
+              .load(imageUrl)
+              .into(imageView) // 指定目标 ImageView
+
+          // 2. 加载应用内资源图片
+          Glide.with(this)
+              .load(resourceId)
+              .into(imageView)
+
+          // 3. 加载本地文件图片
+          Glide.with(this)
+              .load(file)
+              .into(imageView)
+
+          // 4. 加载 Uri
+          // val imageUri: Uri = ...
+          // Glide.with(this)
+          //     .load(imageUri)
+          //     .into(imageView)
+          ```
+      - title: 占位图与错误图
+        description: |
+          在图片加载过程中或加载失败时，可以显示占位图 (placeholder) 或错误图 (error)。`fallback()` 用于当 `load()` 的参数为 `null` 时显示。
+          - `placeholder(resourceId: Int)` 或 `placeholder(drawable: Drawable)`: 设置加载中显示的占位图。
+          - `error(resourceId: Int)` 或 `error(drawable: Drawable)`: 设置加载失败时显示的错误图。
+          - `fallback(resourceId: Int)` 或 `fallback(drawable: Drawable)`: 设置当 `load()` 传入 `null` 时显示的图片。
+        example: |
+          ```kotlin
+          Glide.with(this)
+              .load(imageUrl)
+              .placeholder(R.drawable.placeholder_image) // 加载中显示 placeholder_image
+              .error(R.drawable.error_image)           // 加载失败显示 error_image
+              .fallback(R.drawable.fallback_image)     // 如果 imageUrl 为 null，显示 fallback_image
+              .into(imageView)
+          ```
+      - title: 加载圆形、圆角图片
+        description: |
+          Glide 提供了内置的变换来实现常见图片形状，如圆形和圆角。
+          - `circleCrop()`: 将图片裁剪为圆形。
+          - `transform(Transformation<Bitmap>)`: 应用一个或多个自定义或内置的变换。`RoundedCorners(radius: Int)` 是一个常用的内置变换，用于创建圆角图片。
+          - 注意：如果同时需要裁剪（如 `centerCrop`）和圆角，需要使用 `MultiTransformation` 组合它们。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.request.RequestOptions
+          import com.bumptech.glide.load.resource.bitmap.CircleCrop
+          import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+          import com.bumptech.glide.load.resource.bitmap.CenterCrop
+          import com.bumptech.glide.load.MultiTransformation
+
+          // 1. 加载圆形图片
+          Glide.with(this)
+              .load(imageUrl)
+              .apply(RequestOptions.bitmapTransform(CircleCrop())) // 使用 CircleCrop 变换
+              // 或者直接链式调用 (Glide 4.0+)
+              // .circleCrop()
+              .into(imageView)
+
+          // 2. 加载圆角图片 (简单圆角)
+          val radius = 30 // 圆角半径 (像素)
+          Glide.with(this)
+              .load(imageUrl)
+              .transform(RoundedCorners(radius)) // 应用圆角变换
+              .into(imageView)
+
+          // 3. 加载带 CenterCrop 的圆角图片
+          Glide.with(this)
+              .load(imageUrl)
+              .transform(MultiTransformation(CenterCrop(), RoundedCorners(radius))) // 组合 CenterCrop 和 RoundedCorners
+              .into(imageView)
+          ```
+      - title: 动画效果
+        description: |
+          Glide 支持在图片加载完成时应用过渡动画。
+          - `transition(DrawableTransitionOptions)`: 设置过渡动画。`DrawableTransitionOptions.withCrossFade()` 是最常用的，提供淡入淡出效果。
+          - `DrawableTransitionOptions.withCrossFade()`: 创建一个淡入淡出过渡效果。可以指定持续时间或使用默认值。
+          - `DrawableTransitionOptions.with(TransitionFactory)`: 使用自定义的过渡动画工厂。
+          - `dontAnimate()`: 禁用任何过渡动画。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+
+          // 1. 使用默认的淡入淡出效果
+          Glide.with(this)
+              .load(imageUrl)
+              .transition(DrawableTransitionOptions.withCrossFade()) // 应用淡入淡出动画
+              .into(imageView)
+
+          // 2. 自定义淡入淡出效果的持续时间
+          Glide.with(this)
+              .load(imageUrl)
+              .transition(DrawableTransitionOptions.withCrossFade(300)) // 持续时间 300ms
+              .into(imageView)
+
+          // 3. 禁用动画
+          Glide.with(this)
+              .load(imageUrl)
+              .dontAnimate() // 不使用动画
+              .into(imageView)
+          ```
+      - title: 缩略图
+        description: |
+          `thumbnail()` 方法允许你在加载完整尺寸图片的同时，先快速显示一个缩略图。这可以提升用户体验，特别是在网络较慢时。
+          - `thumbnail(sizeMultiplier: Float)`: 加载同一张图片的一个较小版本作为缩略图。例如 `0.1f` 表示加载原图 10% 尺寸的缩略图。
+          - `thumbnail(RequestManager)`: 加载一个完全不同的请求作为缩略图。例如，可以加载一个低分辨率的 URL。
+        example: |
+          ```kotlin
+          val thumbnailUrl = "https://via.placeholder.com/50" // 低分辨率缩略图 URL
+
+          // 1. 使用原图的较小版本作为缩略图
+          Glide.with(this)
+              .load(imageUrl)
+              .thumbnail(0.25f) // 加载原图 25% 尺寸的缩略图
+              .into(imageView)
+
+          // 2. 使用另一个独立的请求作为缩略图
+          val thumbnailRequest = Glide.with(this).load(thumbnailUrl) // 创建缩略图请求
+          Glide.with(this)
+              .load(imageUrl) // 加载原图
+              .thumbnail(thumbnailRequest) // 将缩略图请求传入
+              .into(imageView)
+          ```
+      - title: GIF 加载
+        description: |
+          Glide 默认支持加载和自动播放 GIF 动画。
+          - `asGif()`: 强制 Glide 将图片源作为 GIF 加载。如果源不是 GIF，加载会失败。
+          - `diskCacheStrategy()`: 对于 GIF，缓存策略可能需要调整。`DiskCacheStrategy.DATA` 或 `DiskCacheStrategy.SOURCE` 通常比 `RESOURCE` 更适合，因为 GIF 解码成本高，缓存原始数据更有效。默认的 `AUTOMATIC` 通常能很好地处理。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.load.engine.DiskCacheStrategy
+
+          val gifUrl = "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif"
+
+          // 1. 自动加载 GIF (Glide 会自动识别)
+          Glide.with(this)
+              .load(gifUrl)
+              .into(imageView) // ImageView 会自动播放 GIF
+
+          // 2. 强制作为 GIF 加载，并设置缓存策略
+          Glide.with(this)
+              .asGif() // 明确指定加载为 GIF
+              .load(gifUrl)
+              .diskCacheStrategy(DiskCacheStrategy.DATA) // 推荐缓存原始 GIF 数据
+              .placeholder(R.drawable.placeholder_gif)
+              .error(R.drawable.error_gif)
+              .into(imageView)
+
+          // 3. 如果只想显示 GIF 的第一帧（静态图）
+          Glide.with(this)
+              .asBitmap() // 将 GIF 作为静态 Bitmap 加载
+              .load(gifUrl)
+              .into(imageView)
+          ```
+  - title: 配置
+    description: Glide 提供了多种方式来定制其行为，包括单次请求的配置和全局配置。
+    children:
+      - title: RequestOptions 配置
+        description: |
+          `RequestOptions` 类用于封装一系列配置选项，可以应用于单个或多个加载请求。常用选项包括：
+          - `placeholder(Int/Drawable)`: 占位图。
+          - `error(Int/Drawable)`: 错误图。
+          - `fallback(Int/Drawable)`: Fallback 图。
+          - `centerCrop()`: 裁剪图片使其填充 ImageView，可能会裁剪掉部分图片。
+          - `fitCenter()`: 缩放图片使其完全显示在 ImageView 内，可能留有空白。
+          - `circleCrop()`: 圆形裁剪。
+          - `transform(Transformation)`: 应用变换。
+          - `override(width: Int, height: Int)`: 指定加载图片的精确尺寸。
+          - `skipMemoryCache(Boolean)`: 是否跳过内存缓存。
+          - `diskCacheStrategy(DiskCacheStrategy)`: 磁盘缓存策略。
+          - `format(DecodeFormat)`: 图片解码格式（如 `PREFER_RGB_565` 节省内存，`PREFER_ARGB_8888` 质量更高）。
+          - `timeout(Int)`: 网络请求超时时间（毫秒）。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.request.RequestOptions
+          import com.bumptech.glide.load.engine.DiskCacheStrategy
+          import com.bumptech.glide.load.DecodeFormat
+
+          // 1. 创建一个 RequestOptions 对象
+          val requestOptions = RequestOptions()
+              .placeholder(R.drawable.placeholder_image)
+              .error(R.drawable.error_image)
+              .centerCrop() // 应用 CenterCrop
+              .diskCacheStrategy(DiskCacheStrategy.ALL) // 设置磁盘缓存策略
+              .format(DecodeFormat.PREFER_RGB_565) // 使用 RGB_565 格式以节省内存
+              .override(300, 300) // 加载 300x300 像素的图片
+
+          // 2. 在加载请求中应用 RequestOptions
+          Glide.with(this)
+              .load(imageUrl)
+              .apply(requestOptions) // 应用配置好的 RequestOptions
+              .into(imageView)
+
+          // 3. 也可以直接链式调用配置方法 (效果同上)
+          Glide.with(this)
+              .load(imageUrl)
+              .placeholder(R.drawable.placeholder_image)
+              .error(R.drawable.error_image)
+              .centerCrop()
+              .diskCacheStrategy(DiskCacheStrategy.ALL)
+              .format(DecodeFormat.PREFER_RGB_565)
+              .override(300, 300)
+              .into(imageView)
+          ```
+      - title: DiskCacheStrategy 配置
+        description: |
+          `diskCacheStrategy()` 方法用于控制 Glide 如何将图片数据缓存到磁盘。不同的策略影响性能和存储空间。
+          - `DiskCacheStrategy.AUTOMATIC`: (默认) Glide 根据数据源和是否应用了变换来智能选择缓存策略。远程 URL 通常缓存原始数据和处理后数据。
+          - `DiskCacheStrategy.ALL`: 缓存所有版本的图片（原始数据和处理后的资源）。
+          - `DiskCacheStrategy.NONE`: 不缓存任何数据到磁盘。
+          - `DiskCacheStrategy.DATA`: 只缓存原始未处理的图片数据。对于经常需要应用不同变换的同一张图片比较有用。
+          - `DiskCacheStrategy.RESOURCE`: 只缓存最终处理过的图片资源。如果图片很少改变或者只以一种方式显示，这可能更节省空间。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.load.engine.DiskCacheStrategy
+
+          // 1. 使用 DATA 策略：只缓存原始图片
+          Glide.with(this)
+              .load(imageUrl)
+              .diskCacheStrategy(DiskCacheStrategy.DATA)
+              .into(imageView)
+
+          // 2. 使用 RESOURCE 策略：只缓存处理后的图片 (例如应用了 centerCrop)
+          Glide.with(this)
+              .load(imageUrl)
+              .centerCrop() // 应用了变换
+              .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+              .into(imageView)
+
+          // 3. 不使用磁盘缓存
+          Glide.with(this)
+              .load(imageUrl)
+              .diskCacheStrategy(DiskCacheStrategy.NONE)
+              .into(imageView)
+          ```
+      - title: 自定义 AppGlideModule
+        description: |
+          通过创建并注解一个继承自 `AppGlideModule` 的类，可以进行 Glide 的全局配置。这包括设置默认的 `RequestOptions`、缓存大小和位置、内存策略、解码格式、注册自定义组件等。
+          - 创建一个类，继承 `AppGlideModule`。
+          - 使用 `@GlideModule` 注解该类。
+          - 重写 `applyOptions(Context, GlideBuilder)` 方法来进行全局配置。
+          - 重写 `registerComponents(Context, Glide, Registry)` 方法来注册自定义的 `ModelLoader`、`ResourceDecoder` 等。
+          - **注意**: 应用中只能有一个 `AppGlideModule`。如果使用了库项目中的 `LibraryGlideModule`，Glide 会自动发现并合并它们。
+        example: |
+          ```kotlin
+          // MyAppGlideModule.kt
+          package com.example.myapp
+
+          import android.content.Context
+          import com.bumptech.glide.Glide
+          import com.bumptech.glide.GlideBuilder
+          import com.bumptech.glide.Registry
+          import com.bumptech.glide.annotation.GlideModule
+          import com.bumptech.glide.load.DecodeFormat
+          import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
+          import com.bumptech.glide.load.engine.cache.LruResourceCache
+          import com.bumptech.glide.module.AppGlideModule
+          import com.bumptech.glide.request.RequestOptions
+
+          @GlideModule
+          class MyAppGlideModule : AppGlideModule() {
+
+              override fun applyOptions(context: Context, builder: GlideBuilder) {
+                  // 1. 设置内存缓存大小 (例如 10MB)
+                  val memoryCacheSizeBytes = 1024 * 1024 * 10L // 10 MB
+                  builder.setMemoryCache(LruResourceCache(memoryCacheSizeBytes))
+
+                  // 2. 设置磁盘缓存大小和位置 (例如内部存储，100MB)
+                  val diskCacheSizeBytes = 1024 * 1024 * 100L // 100 MB
+                  val diskCacheFolderName = "my_glide_cache"
+                  builder.setDiskCache(
+                      InternalCacheDiskCacheFactory(context, diskCacheFolderName, diskCacheSizeBytes)
+                  )
+
+                  // 3. 设置默认的 RequestOptions
+                  val defaultRequestOptions = RequestOptions()
+                      .format(DecodeFormat.PREFER_RGB_565) // 默认使用 RGB_565 节约内存
+                      .placeholder(R.drawable.global_placeholder) // 全局默认占位图
+                      .error(R.drawable.global_error)         // 全局默认错误图
+                  builder.setDefaultRequestOptions(defaultRequestOptions)
+
+                  // 4. 设置日志级别 (调试时有用)
+                  // builder.setLogLevel(Log.VERBOSE)
+              }
+
+              override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+                  // 在这里注册自定义组件，例如自定义 ModelLoader
+                  // registry.append(MyCustomData::class.java, InputStream::class.java, MyCustomModelLoaderFactory())
+              }
+
+              // 可选：如果你希望 Glide 生成一个流式 API (GlideApp)，则需要设置这个
+              override fun isManifestParsingEnabled(): Boolean {
+                  return false // 推荐禁用清单解析，以避免潜在冲突
+              }
+          }
+
+          // --- 在应用代码中使用 GlideApp (如果生成了) ---
+          // GlideApp.with(this) // 使用生成的 GlideApp API
+          //     .load(imageUrl)
+          //     .into(imageView)
+          ```
+      - title: Glide 的 RequestManager 配置
+        description: |
+          `Glide.with()` 返回一个 `RequestManager` 实例。这个实例与传入的 `Context`（通常是 Activity 或 Fragment）的生命周期相绑定。这意味着 Glide 能够智能地在 Activity/Fragment 暂停时暂停请求，销毁时取消请求，从而避免内存泄漏和不必要的处理。
+          - `Glide.with(Activity)`: 与 Activity 生命周期绑定。
+          - `Glide.with(Fragment)`: 与 Fragment 生命周期绑定。
+          - `Glide.with(Context)`: 如果传入的是 ApplicationContext，请求将贯穿整个应用生命周期；如果传入的是 Activity/Service Context，效果类似 `with(Activity)`。推荐优先使用 Activity 或 Fragment 作为参数。
+          - `Glide.with(View)`: 从 View 获取 Context，并与合适的生命周期绑定（通常是所在的 Activity/Fragment）。
+          - `RequestManager` 也提供了一些配置方法，如 `setDefaultRequestOptions()` 可以为该 `RequestManager` 实例设置默认选项。
+        example: |
+          ```kotlin
+          // 在 Activity 中
+          class MyActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_my)
+                  val imageView = findViewById<ImageView>(R.id.my_image_view)
+
+                  // 获取与 MyActivity 生命周期绑定的 RequestManager
+                  val glideRequests = Glide.with(this)
+
+                  // 使用这个 RequestManager 加载图片
+                  glideRequests.load(imageUrl).into(imageView)
+
+                  // 当 MyActivity paused/stopped/destroyed 时，Glide 会自动管理请求
+              }
+          }
+
+          // 在 Fragment 中
+          class MyFragment : Fragment() {
+              override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+                  super.onViewCreated(view, savedInstanceState)
+                  val imageView = view.findViewById<ImageView>(R.id.my_image_view)
+
+                  // 获取与 MyFragment 生命周期绑定的 RequestManager
+                  Glide.with(this) // 'this' 指的是 MyFragment
+                      .load(imageUrl)
+                      .into(imageView)
+
+                  // 当 MyFragment paused/stopped/destroyed 时，Glide 会自动管理请求
+              }
+          }
+          ```
+  - title: 缓存管理
+    description: Glide 拥有两级缓存：内存缓存和磁盘缓存，以加速图片加载并减少网络请求。理解和管理缓存对于优化性能至关重要。
+    children:
+      - title: 清除缓存
+        description: |
+          可以手动清除 Glide 的内存缓存和磁盘缓存。
+          - `Glide.get(context).clearMemory()`: 清除 Glide 的内存缓存。**必须在主线程调用**。
+          - `Glide.get(context).clearDiskCache()`: 清除 Glide 的磁盘缓存。这是一个耗时操作，**必须在后台线程调用**。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+
+          // 1. 清除内存缓存 (在主线程)
+          fun clearGlideMemoryCache(context: Context) {
+              Glide.get(context).clearMemory()
+          }
+
+          // 2. 清除磁盘缓存 (在后台线程，例如使用 Coroutines)
+          fun clearGlideDiskCache(context: Context) {
+              // 使用协程切换到 IO 线程执行
+              CoroutineScope(Dispatchers.IO).launch {
+                  Glide.get(context).clearDiskCache()
+                  // 可以在这里添加回调或通知主线程清理完成
+                  // withContext(Dispatchers.Main) { /* 更新 UI 或提示 */ }
+              }
+          }
+
+          // --- 在 Activity/Fragment 中调用 ---
+          // clearGlideMemoryCache(this)
+          // clearGlideDiskCache(this)
+          ```
+      - title: 禁用缓存
+        description: |
+          可以针对单个请求或全局禁用缓存。
+          - `skipMemoryCache(true)`: 在单个请求中跳过内存缓存（读取和写入）。
+          - `diskCacheStrategy(DiskCacheStrategy.NONE)`: 在单个请求中跳过磁盘缓存（读取和写入）。
+          - 全局禁用缓存可以在 `AppGlideModule` 的 `applyOptions` 中通过设置缓存大小为 0 或配置相应的工厂实现，但不常见。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.load.engine.DiskCacheStrategy
+
+          // 1. 单个请求禁用内存缓存和磁盘缓存
+          Glide.with(this)
+              .load(imageUrl)
+              .skipMemoryCache(true) // 跳过内存缓存
+              .diskCacheStrategy(DiskCacheStrategy.NONE) // 跳过磁盘缓存
+              .into(imageView)
+
+          // 2. 单个请求仅禁用内存缓存
+          Glide.with(this)
+              .load(imageUrl)
+              .skipMemoryCache(true) // 仍然使用磁盘缓存 (如果策略允许)
+              .into(imageView)
+          ```
+      - title: 自定义缓存目录与大小
+        description: 通过在 `AppGlideModule` 的 `applyOptions` 方法中配置 `DiskCache.Factory` 和 `MemoryCache`，可以自定义磁盘缓存的位置、大小以及内存缓存的大小。
+        example: |
+          ```kotlin
+          // MyAppGlideModule.kt (已在上方展示过类似配置)
+          import android.content.Context
+          import com.bumptech.glide.GlideBuilder
+          import com.bumptech.glide.annotation.GlideModule
+          import com.bumptech.glide.load.engine.cache.ExternalPreferredCacheDiskCacheFactory
+          import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
+          import com.bumptech.glide.load.engine.cache.LruResourceCache
+          import com.bumptech.glide.module.AppGlideModule
+
+          @GlideModule
+          class MyAppGlideModule : AppGlideModule() {
+
+              override fun applyOptions(context: Context, builder: GlideBuilder) {
+                  // 设置内存缓存大小 (例如 15MB)
+                  val memoryCacheSizeBytes = 1024 * 1024 * 15L
+                  builder.setMemoryCache(LruResourceCache(memoryCacheSizeBytes))
+
+                  // 设置磁盘缓存大小和位置
+                  val diskCacheSizeBytes = 1024 * 1024 * 200L // 200MB
+
+                  // 选项 1: 使用内部存储缓存 (推荐，应用卸载时自动删除)
+                  builder.setDiskCache(
+                      InternalCacheDiskCacheFactory(context, "glide_cache_internal", diskCacheSizeBytes)
+                  )
+
+                  // 选项 2: 使用外部存储缓存 (需要存储权限，应用卸载时可能不删除)
+                  // builder.setDiskCache(
+                  //     ExternalPreferredCacheDiskCacheFactory(context, "glide_cache_external", diskCacheSizeBytes)
+                  // );
+              }
+              // ... (isManifestParsingEnabled 等)
+          }
+          ```
+      - title: 获取缓存文件路径
+        description: |
+          Glide 不直接提供稳定的公开 API 来根据 URL 获取其对应的缓存文件路径。缓存实现是内部细节。如果确实需要访问缓存文件（例如，分享图片），推荐的方法是：
+          1.  使用 `downloadOnly()` 或 `submit()` 获取文件。
+          2.  然后从返回的 `File` 对象中获取路径。
+          这种方式会触发下载（如果未缓存）并将文件放入缓存，然后返回缓存文件的引用。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.request.FutureTarget
+          import kotlinx.coroutines.*
+          import java.io.File
+
+          // 使用 Coroutines 获取缓存文件
+          fun getCachedFile(context: Context, imageUrl: String): Deferred<File?> =
+              CoroutineScope(Dispatchers.IO).async {
+                  var file: File? = null
+                  try {
+                      // downloadOnly 会将文件下载到缓存并返回 File 对象
+                      val futureTarget: FutureTarget<File> = Glide.with(context)
+                          .asFile() // 指定我们需要的是文件
+                          .load(imageUrl)
+                          .downloadOnly(-1, -1) // -1 表示原始尺寸
+
+                      // 同步获取结果 (在 IO 线程是安全的)
+                      file = futureTarget.get()
+
+                      // 清理 target (重要)
+                      Glide.with(context).clear(futureTarget)
+
+                  } catch (e: Exception) {
+                      // 处理异常，例如 InterruptedException, ExecutionException
+                      e.printStackTrace()
+                  }
+                  file // 返回文件或 null
+              }
+
+          // --- 在 Activity/Fragment 中调用 ---
+          // lifecycleScope.launch {
+          //     val cachedFile = getCachedFile(this@MyActivity, imageUrl).await()
+          //     if (cachedFile != null) {
+          //         val path = cachedFile.absolutePath
+          //         println("Cached file path: $path")
+          //         // 使用文件路径，例如分享
+          //     } else {
+          //         println("Failed to get cached file.")
+          //     }
+          // }
+          ```
+  - title: 异常处理
+    description: 处理图片加载过程中可能出现的错误，提供更好的用户体验。
+    children:
+      - title: RequestListener 捕获加载异常
+        description: |
+          `RequestListener` 接口允许你监听图片加载的生命周期事件，包括成功 (`onResourceReady`) 和失败 (`onLoadFailed`)。这对于记录错误、显示特定错误信息或触发重试逻辑非常有用。
+          - 实现 `RequestListener<Drawable>` (或特定类型如 `BitmapDrawable`, `GifDrawable`)。
+          - `onLoadFailed()`: 在加载失败时被调用。返回 `true` 表示你已经处理了事件，Glide 不应再调用 `error()` 或 `fallback()`。返回 `false` (默认) 则 Glide 会继续执行后续错误处理（如显示 error Drawable）。
+          - `onResourceReady()`: 在资源成功加载并准备好显示时调用。返回 `true` 表示你已处理事件，Glide 不应将资源设置到 Target。返回 `false` (默认) Glide 会将资源设置到 `into()` 指定的 Target。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.request.RequestListener
+          import com.bumptech.glide.load.engine.GlideException
+          import com.bumptech.glide.request.target.Target
+          import com.bumptech.glide.load.DataSource
+          import android.graphics.drawable.Drawable
+          import android.util.Log
+
+          val imageRequestListener = object : RequestListener<Drawable> {
+              override fun onLoadFailed(
+                  e: GlideException?,         // 异常信息
+                  model: Any?,                // 加载的模型 (URL, Uri 等)
+                  target: Target<Drawable>?, // 目标视图
+                  isFirstResource: Boolean    // 是否是第一个资源 (用于 thumbnail 等)
+              ): Boolean {
+                  Log.e("GlideApp", "Image load failed for model: $model", e)
+                  // 可以根据异常类型 e 进行特定处理
+                  // 返回 false，让 Glide 继续显示 error() 中设置的 Drawable
+                  return false
+              }
+
+              override fun onResourceReady(
+                  resource: Drawable?,        // 加载成功的 Drawable 资源
+                  model: Any?,
+                  target: Target<Drawable>?,
+                  dataSource: DataSource?,    // 数据来源 (MEMORY_CACHE, DISK_CACHE, REMOTE 等)
+                  isFirstResource: Boolean
+              ): Boolean {
+                  Log.d("GlideApp", "Image loaded successfully from: $dataSource")
+                  // 可以进行一些成功后的操作，例如启动动画
+                  // 返回 false，让 Glide 将 resource 设置到 ImageView
+                  return false
+              }
+          }
+
+          // --- 在加载请求中应用 Listener ---
+          Glide.with(this)
+              .load(imageUrl)
+              .listener(imageRequestListener) // 添加监听器
+              .error(R.drawable.error_image) // 即使有 listener，也建议设置 error 图
+              .into(imageView)
+          ```
+      - title: 设置错误占位图
+        description: '使用 `.error(resourceId: Int)` 或 `.error(drawable: Drawable)` 方法是处理加载失败的最简单方式。当图片无法加载时（例如网络错误、URL 无效、解码失败），Glide 会自动显示指定的错误图片。'
+        example: |
+          ```kotlin
+          Glide.with(this)
+              .load(invalidImageUrl) // 假设这个 URL 是无效的
+              .placeholder(R.drawable.placeholder_image)
+              .error(R.drawable.network_error_icon) // 指定一个清晰表示错误的图标或图片
+              .into(imageView)
+          ```
+      - title: 图片加载失败重试策略
+        description: Glide 本身不提供内置的自动重试机制。如果需要实现加载失败后的重试逻辑，通常结合 `RequestListener` 来完成。在 `onLoadFailed` 回调中，可以根据错误类型和网络状态决定是否以及何时重试加载。
+        example: |
+          ```kotlin
+          import kotlinx.coroutines.*
+          import android.os.Handler
+          import android.os.Looper
+
+          // 简化的重试逻辑示例 (非生产级)
+          var retryCount = 0
+          val maxRetries = 3
+          val retryDelayMs = 1000L // 1秒延迟
+
+          val retryRequestListener = object : RequestListener<Drawable> {
+              override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                  Log.e("GlideApp", "Load failed, retry count: $retryCount")
+                  if (retryCount < maxRetries) {
+                      retryCount++
+                      // 使用 Handler 或 Coroutine 延迟后重新加载
+                      Handler(Looper.getMainLooper()).postDelayed({
+                          // 重新发起 Glide 请求 (确保 model 和 target 有效)
+                          if (target?.request != null && model != null) {
+                              Glide.with(target.request!!.target!!.view.context)
+                                  .load(model)
+                                  .listener(this) // 继续使用此 listener 监听重试结果
+                                  .error(R.drawable.error_image) // 仍然设置 error 图
+                                  .into(target as Target<Drawable>) // 强制转换可能不安全，需谨慎
+                          }
+                      }, retryDelayMs * retryCount) // 可以增加延迟时间
+                      return true // 返回 true 表示我们处理了失败，Glide 不再显示 error 图
+                  } else {
+                      Log.e("GlideApp", "Max retries reached for $model")
+                      retryCount = 0 // 重置计数器以便下次加载
+                      return false // 达到最大次数，让 Glide 显示 error 图
+                  }
+              }
+
+              override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                  Log.d("GlideApp", "Load success after $retryCount retries.")
+                  retryCount = 0 // 成功后重置计数器
+                  return false // 让 Glide 显示图片
+              }
+          }
+
+          // --- 应用带重试逻辑的 Listener ---
+          // Glide.with(this)
+          //     .load(potentiallyFailingUrl)
+          //     .listener(retryRequestListener) // 使用带重试逻辑的 listener
+          //     .error(R.drawable.error_image)    // 最终失败时显示的图
+          //     .into(imageView)
+          ```
+          **注意:** 上述重试示例比较基础，实际应用中需要考虑更复杂的场景，如网络状态变化、避免无限重试循环、与生命周期管理结合等。使用 Coroutines 或 RxJava 可以更优雅地实现延迟和重试逻辑。
+  - title: 常见问题与解决技巧
+    description: 在使用 Glide 过程中可能遇到的一些常见问题及其解决方法。
+    children:
+      - title: RecyclerView 图片错位问题
+        description: |
+          **问题**: 在 RecyclerView 中快速滚动时，ImageView 可能短暂显示之前项的图片，或者显示错误的图片。
+          **原因**: RecyclerView 的 ViewHolder 复用机制。当 ViewHolder 被复用时，如果新的数据项还未加载图片，ImageView 可能仍然持有上一个数据项的 Glide 请求或图片。
+          **解决方法**:
+          1.  **在 `onBindViewHolder` 中清除旧请求**: 在加载新图片之前，调用 `Glide.with(context).clear(holder.imageView)` 来取消任何先前与该 ImageView 关联的加载请求。
+          2.  **始终设置占位图**: 使用 `.placeholder()` 可以确保在图片加载完成前有一个默认状态，减少看到旧图片的几率。
+          3.  **确保每次都调用 `into(imageView)`**: 即使 URL 相同，也应该在 `onBindViewHolder` 中为每个项调用 `Glide.with(...).load(...).into(holder.imageView)`。Glide 内部会处理重复请求的优化。
+        example: |
+          ```kotlin
+          // In RecyclerView.Adapter
+          override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+              val imageUrl = items[position].imageUrl
+              val context = holder.itemView.context
+
+              // 1. 清除之前的加载任务 (推荐)
+              Glide.with(context).clear(holder.imageView)
+
+              // 2. 加载新图片，并设置占位图
+              Glide.with(context)
+                  .load(imageUrl)
+                  .placeholder(R.drawable.item_placeholder)
+                  .error(R.drawable.item_error)
+                  .into(holder.imageView)
+          }
+
+          // ViewHolder Class
+          class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+              val imageView: ImageView = itemView.findViewById(R.id.recycler_image_view)
+          }
+          ```
+      - title: 占位图与 CrossFade 动画冲突
+        description: |
+          **问题**: 当设置了 `placeholder()` 后，使用 `transition(DrawableTransitionOptions.withCrossFade())` 时，动画可能不生效，或者从占位图到实际图片的过渡不是平滑的淡入淡出。
+          **原因**: Glide 的 CrossFade 默认行为可能与占位图的显示/隐藏逻辑冲突，特别是当占位图和最终图片尺寸差异较大或加载速度很快时。
+          **解决方法**:
+          1.  **使用 `CrossFadeFactory`**: 自定义 `DrawableCrossFadeFactory` 可以更精细地控制动画行为，例如通过 `setCrossFadeEnabled(false)` 在某些条件下禁用从占位图开始的动画。
+          2.  **禁用动画**: 如果淡入淡出不是必需的，直接使用 `.dontAnimate()` 禁用动画。
+          3.  **检查占位图**: 确保占位图尺寸与 ImageView 及其 `scaleType` 兼容，避免布局突变影响动画观感。
+          4.  **延迟动画 (不推荐)**: 有些复杂的 workaround 尝试延迟应用动画，但这通常会增加复杂性。
+        example: |
+          ```kotlin
+          import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
+          import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+
+          // 1. 使用 CrossFadeFactory 并可能禁用从占位图的淡入
+          val factory = DrawableCrossFadeFactory.Builder()
+              .setCrossFadeEnabled(false) // 禁用从占位图到实际图片的淡入效果
+              .build()
+
+          Glide.with(this)
+              .load(imageUrl)
+              .placeholder(R.drawable.placeholder_image)
+              .transition(DrawableTransitionOptions.with(factory)) // 使用自定义工厂
+              .into(imageView)
+
+          // 2. 或者简单地禁用动画
+          Glide.with(this)
+              .load(imageUrl)
+              .placeholder(R.drawable.placeholder_image)
+              .dontAnimate() // 完全禁用动画
+              .into(imageView)
+          ```
+      - title: 缓存清理不生效排查
+        description: |
+          **问题**: 调用 `clearMemoryCache()` 或 `clearDiskCache()` 后，图片似乎仍然从缓存加载。
+          **排查步骤**:
+          1.  **调用线程**: 确保 `clearMemoryCache()` 在主线程调用，`clearDiskCache()` 在后台线程调用。错误的线程调用会导致操作失败或崩溃。
+          2.  **缓存策略**: 检查加载图片时使用的 `diskCacheStrategy()`。如果使用了 `NONE`，则清理磁盘缓存无意义。同时，内存缓存的清理只影响内存，不影响后续从磁盘加载。
+          3.  **应用实例/进程**: 确保清理操作发生在正确的应用实例或进程中。如果应用有多个进程，或者 Glide 实例管理不当，可能清理的是非预期的缓存。
+          4.  **AppGlideModule 配置**: 确认 `AppGlideModule` 中的缓存配置（大小、路径）是否按预期生效。如果模块未被 Glide 正确识别，可能使用的是默认配置。
+          5.  **文件系统权限/状态**: 对于磁盘缓存，检查应用是否有写入/删除缓存目录的权限，以及设备存储空间是否充足。
+          6.  **活跃的请求**: 清理缓存不会中断正在进行的加载请求。
+          7.  **调试日志**: 开启 Glide 的 Verbose 日志 (`builder.setLogLevel(Log.VERBOSE)` in `AppGlideModule`)，观察缓存命中和清理操作的日志输出。
+        example: |
+          ```kotlin
+          // 确保后台线程调用 clearDiskCache
+          CoroutineScope(Dispatchers.IO).launch {
+              Glide.get(applicationContext).clearDiskCache()
+              withContext(Dispatchers.Main) {
+                  // 通知 UI 清理完成
+                  Toast.makeText(applicationContext, "Disk cache cleared", Toast.LENGTH_SHORT).show()
+
+                  // 重新加载图片，检查是否不再从磁盘缓存加载 (可能仍从内存)
+                  Glide.with(this@MyActivity) // 使用 Activity Context
+                      .load(imageUrl)
+                      .skipMemoryCache(true) // 跳过内存缓存以测试磁盘缓存
+                      .diskCacheStrategy(DiskCacheStrategy.NONE) // 确保不写入磁盘，观察是否重新下载
+                      .placeholder(R.drawable.placeholder_image)
+                      .into(imageView)
+              }
+          }
+
+          // 在主线程调用 clearMemoryCache
+          Glide.get(applicationContext).clearMemory()
+          // 重新加载图片，检查是否不再从内存缓存加载
+          Glide.with(this)
+              .load(imageUrl)
+              .skipMemoryCache(false) // 允许写入内存缓存
+              .placeholder(R.drawable.placeholder_image)
+              .into(imageView) // 第一次加载会从网络/磁盘获取，第二次应从内存
+          ```
+      - title: 多 Glide 实例导致内存暴涨
+        description: |
+          **问题**: 应用内存占用异常高，分析发现 Glide 相关对象过多。
+          **原因**: 频繁地使用 `Glide.with(ApplicationContext)` 或在不合适的时机创建 `RequestManager`，导致 Glide 实例（及其关联的内存缓存、Bitmap 池等）无法随 Activity/Fragment 销毁而释放。每个独立的 Glide 实例都有自己的资源池。
+          **解决方法**:
+          1.  **优先使用 Activity/Fragment Context**: 总是尝试使用 `Glide.with(activity)` 或 `Glide.with(fragment)`，让 Glide 自动管理生命周期。
+          2.  **避免 Application Context (除非必要)**: 仅在需要在应用全局范围或 Service 等没有 UI 生命周期的地方加载时，才使用 `ApplicationContext`。意识到这会创建常驻内存的 Glide 实例。
+          3.  **单例或依赖注入**: 如果需要在非 Activity/Fragment 类中使用 Glide，考虑通过依赖注入（如 Hilt, Koin）或单例模式提供与 Application Context 绑定的 `RequestManager`，而不是每次都 `Glide.with(applicationContext)`。
+          4.  **检查库依赖**: 检查使用的第三方库是否也在内部不恰当地创建了 Glide 实例。
+        example: |
+          ```kotlin
+          // 推荐做法: 在 Activity/Fragment 中使用
+          Glide.with(this) // 'this' 是 Activity 或 Fragment
+              .load(imageUrl)
+              .into(imageView)
+
+          // 不推荐做法: 在 Activity/Fragment 中频繁使用 Application Context
+          // Glide.with(applicationContext).load(imageUrl).into(imageView) // 可能导致内存问题
+
+          // 在需要 Application Context 的地方 (例如 Service, Application 类)
+          // 可以获取一次 RequestManager 并复用
+          class MyApplication : Application() {
+              lateinit var appGlideRequests: RequestManager
+              override fun onCreate() {
+                  super.onCreate()
+                  appGlideRequests = Glide.with(this) // 在 Application 创建时获取一次
+              }
+          }
+          // 在 Service 中使用
+          // val glide = (application as MyApplication).appGlideRequests
+          // glide.load(imageUrl).into(...) // 使用共享的 RequestManager
+          ```
+      - title: WebP 图片兼容性
+        description: |
+          **问题**: WebP 格式的图片（特别是动画 WebP）在某些设备或 Android 版本上无法显示或显示异常。
+          **Glide 支持**:
+          - **静态 WebP**: Android 4.0 (API 14) 及以上原生支持，Glide 默认支持。
+          - **带透明度的 WebP**: Android 4.3 (API 18) 及以上原生支持，Glide 默认支持。
+          - **动画 WebP**: Android 9.0 (API 28) 及以上原生支持。Glide 4.8.0+ 结合 Android P+ 可以直接支持动画 WebP。对于 Android 4.3 到 8.1 (API 18-27)，Glide 需要额外的集成库（如 `glide-webp-decoder`）来支持动画 WebP，但这通常需要自己编译或寻找第三方维护的版本，官方已不直接提供。
+          **解决方法**:
+          1.  **了解目标平台**: 确认你的应用 `minSdkVersion`。如果低于 API 28 且需要动画 WebP，需要寻找或实现 WebP 解码器集成。
+          2.  **服务器端适配**: 如果可能，让服务器根据客户端 User-Agent 或 API Level 提供兼容格式（如 GIF 或 MP4）替代动画 WebP。
+          3.  **使用最新 Glide**: 确保使用较新版本的 Glide，以获得最佳的原生平台支持。
+          4.  **测试**: 在不同 Android 版本的设备上充分测试 WebP 图片的显示情况。
+        example: |
+          ```kotlin
+          // 加载 WebP 图片与加载其他格式无异
+          val webpImageUrl = "https://www.gstatic.com/webp/gallery/1.webp" // 静态 WebP
+          val animatedWebpImageUrl = "https://mathiasbynens.be/demo/animated-webp-supported.webp" // 动画 WebP
+
+          Glide.with(this)
+              .load(webpImageUrl)
+              .placeholder(R.drawable.placeholder_image)
+              .error(R.drawable.error_image)
+              .into(imageViewStaticWebp)
+
+          // 对于动画 WebP，Glide 会根据平台能力自动处理
+          Glide.with(this)
+              .load(animatedWebpImageUrl)
+              .placeholder(R.drawable.placeholder_animated)
+              .error(R.drawable.error_animated)
+              .into(imageViewAnimatedWebp) // 在 API 28+ 会播放动画
+
+          // 如果需要在旧版本支持动画 WebP，需要集成额外解码库 (此处不展示具体集成代码)
+          // 并在 AppGlideModule 中注册解码器
+          ```
+  - title: 最佳实践
+    description: 一些推荐的做法和技巧，以更高效、健壮地在项目中使用 Glide。
+    children:
+      - title: 封装 GlideHelper 工具类
+        description: 创建一个单例或通过依赖注入提供的工具类（如 `GlideHelper`），封装通用的 Glide 加载逻辑。这有助于统一图片加载入口、管理默认配置、简化调用代码，并方便未来修改和维护。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import android.widget.ImageView
+          import com.bumptech.glide.Glide
+          import com.bumptech.glide.request.RequestOptions
+          import com.bumptech.glide.load.engine.DiskCacheStrategy
+
+          object GlideHelper {
+
+              // 预设通用的 RequestOptions
+              private val defaultOptions = RequestOptions()
+                  .placeholder(R.drawable.default_placeholder)
+                  .error(R.drawable.default_error)
+                  .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC) // 默认缓存策略
+
+              private val circleOptions = RequestOptions()
+                  .placeholder(R.drawable.default_placeholder)
+                  .error(R.drawable.default_error)
+                  .circleCrop() // 圆形图片选项
+                  .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+
+              fun loadImage(context: Context, url: String?, imageView: ImageView) {
+                  Glide.with(context)
+                      .load(url)
+                      .apply(defaultOptions) // 应用默认选项
+                      .into(imageView)
+              }
+
+              fun loadCircleImage(context: Context, url: String?, imageView: ImageView) {
+                  Glide.with(context)
+                      .load(url)
+                      .apply(circleOptions) // 应用圆形图片选项
+                      .into(imageView)
+              }
+
+              // 可以添加更多方法，例如加载带圆角的图片、指定尺寸等
+              // fun loadImageWithCorners(context: Context, url: String?, imageView: ImageView, radius: Int) { ... }
+          }
+
+          // --- 在 Activity/Fragment 中使用 ---
+          // GlideHelper.loadImage(this, imageUrl, myImageView)
+          // GlideHelper.loadCircleImage(this, avatarUrl, avatarImageView)
+          ```
+      - title: 统一 RequestOptions 管理
+        description: 定义几种常用的 `RequestOptions` 实例（如默认、圆形、无缓存等），并在需要时复用它们。可以将这些实例放在 `GlideHelper`、常量文件或通过 `AppGlideModule` 设置为默认选项。这能确保 UI 风格统一，并减少重复代码。
+        example: |
+          ```kotlin
+          // 在 GlideHelper 或常量类中定义
+          object GlideOptions {
+              val defaultOptions = RequestOptions()
+                  .placeholder(R.drawable.placeholder)
+                  .error(R.drawable.error)
+                  .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+
+              val circleOptions = RequestOptions.circleCropTransform()
+                  .placeholder(R.drawable.placeholder_circle)
+                  .error(R.drawable.error_circle)
+                  .diskCacheStrategy(DiskCacheStrategy.ALL) // 圆形图可能缓存处理后的结果
+
+              val noCacheOptions = RequestOptions()
+                  .skipMemoryCache(true)
+                  .diskCacheStrategy(DiskCacheStrategy.NONE)
+          }
+
+          // --- 使用预定义的 Options ---
+          Glide.with(context)
+              .load(imageUrl)
+              .apply(GlideOptions.defaultOptions) // 应用默认选项
+              .into(imageView)
+
+          Glide.with(context)
+              .load(avatarUrl)
+              .apply(GlideOptions.circleOptions) // 应用圆形选项
+              .into(avatarView)
+          ```
+      - title: 图片加载日志调试
+        description: 在开发和调试阶段，开启 Glide 的日志可以帮助你理解加载流程、缓存命中情况以及排查问题。在 `AppGlideModule` 的 `applyOptions` 方法中使用 `setLogLevel()` 设置日志级别。
+        example: |
+          ```kotlin
+          // MyAppGlideModule.kt
+          import android.util.Log
+          import com.bumptech.glide.GlideBuilder
+          import com.bumptech.glide.annotation.GlideModule
+          import com.bumptech.glide.module.AppGlideModule
+
+          @GlideModule
+          class MyAppGlideModule : AppGlideModule() {
+              override fun applyOptions(context: Context, builder: GlideBuilder) {
+                  // 在开发构建时开启 Verbose 日志，在发布构建时关闭或设为 Error
+                  if (BuildConfig.DEBUG) {
+                      builder.setLogLevel(Log.VERBOSE)
+                  } else {
+                      builder.setLogLevel(Log.ERROR)
+                  }
+                  // ... 其他配置
+              }
+              // ...
+          }
+          ```
+          **注意**: Verbose 日志会输出大量信息，可能影响性能，务必在发布版本中关闭或降低级别。
+      - title: 配合 ViewModel+LiveData/Flow 图片加载
+        description: 在 MVVM 架构中，ViewModel 负责准备图片 URL 或标识符，并通过 LiveData 或 Flow 将其暴露给 View (Activity/Fragment)。View 层观察这些数据变化，然后调用 Glide 进行图片加载。这种方式能更好地分离关注点，并利用 ViewModel 的生命周期管理数据。
+        example: |
+          ```kotlin
+          // --- ViewModel ---
+          class UserProfileViewModel : ViewModel() {
+              private val _avatarUrl = MutableLiveData<String?>()
+              val avatarUrl: LiveData<String?> = _avatarUrl
+
+              fun loadUserProfile(userId: String) {
+                  viewModelScope.launch {
+                      // 模拟从仓库获取用户数据
+                      val user = userRepository.getUser(userId)
+                      _avatarUrl.postValue(user?.avatarUrl)
+                  }
+              }
+          }
+
+          // --- Activity/Fragment ---
+          class UserProfileFragment : Fragment() {
+              private lateinit var viewModel: UserProfileViewModel
+              private lateinit var avatarImageView: ImageView
+
+              override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+                  super.onViewCreated(view, savedInstanceState)
+                  avatarImageView = view.findViewById(R.id.avatar_image_view)
+                  viewModel = ViewModelProvider(this).get(UserProfileViewModel::class.java)
+
+                  // 观察 ViewModel 中的头像 URL LiveData
+                  viewModel.avatarUrl.observe(viewLifecycleOwner) { url ->
+                      // 当 URL 变化时，使用 Glide 加载图片
+                      GlideHelper.loadCircleImage(requireContext(), url, avatarImageView)
+                      // 或者直接调用 Glide
+                      // Glide.with(this)
+                      //     .load(url)
+                      //     .apply(GlideOptions.circleOptions)
+                      //     .into(avatarImageView)
+                  }
+
+                  // 触发加载用户数据
+                  viewModel.loadUserProfile("someUserId")
+              }
+          }
+          ```
+      - title: 配置 Glide 线程池大小与缓存优化
+        description: 对于需要处理大量图片或特定性能需求的应用，可以在 `AppGlideModule` 中调整 Glide 内部使用的线程池（用于磁盘 IO、图片解码等）和缓存实现（如 Bitmap 池）。这属于高级优化，需要根据具体性能分析结果进行调整。
+        example: |
+          ```kotlin
+          // MyAppGlideModule.kt
+          import com.bumptech.glide.GlideBuilder
+          import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool
+          import com.bumptech.glide.load.engine.cache.MemorySizeCalculator
+          import com.bumptech.glide.load.engine.executor.GlideExecutor
+          import com.bumptech.glide.annotation.GlideModule
+          import com.bumptech.glide.module.AppGlideModule
+
+          @GlideModule
+          class MyAppGlideModule : AppGlideModule() {
+
+              override fun applyOptions(context: Context, builder: GlideBuilder) {
+                  // 1. 调整内存缓存和 Bitmap 池大小 (基于设备计算)
+                  val calculator = MemorySizeCalculator.Builder(context)
+                      .setMemoryCacheScreens(2f)  // 内存缓存能存储约 2 屏的图片
+                      .setBitmapPoolScreens(3f)   // Bitmap 池能存储约 3 屏的 Bitmap
+                      .build()
+                  builder.setMemoryCacheSize(calculator.memoryCacheSize.toLong())
+                  builder.setBitmapPool(LruBitmapPool(calculator.bitmapPoolSize.toLong()))
+
+                  // 2. 调整磁盘缓存读取线程池大小 (默认是 GlideExecutor.DEFAULT_DISK_CACHE_EXECUTOR)
+                  // val diskCacheExecutor = GlideExecutor.newDiskCacheExecutor(
+                  //     4, // 例如增加到 4 个线程
+                  //     "custom_disk_cache_executor",
+                  //     GlideExecutor.UncaughtThrowableStrategy.DEFAULT
+                  // )
+                  // builder.setDiskCacheExecutor(diskCacheExecutor)
+
+                  // 3. 调整图片解码/转换线程池大小 (默认是 GlideExecutor.DEFAULT_SOURCE_EXECUTOR)
+                  // val sourceExecutor = GlideExecutor.newSourceExecutor(
+                  //     GlideExecutor.calculateBestThreadCount(), // 根据 CPU 核心数计算
+                  //     "custom_source_executor",
+                  //     GlideExecutor.UncaughtThrowableStrategy.DEFAULT
+                  // )
+                  // builder.setSourceExecutor(sourceExecutor)
+
+                  // ... 其他配置
+              }
+              // ...
+          }
+          ```
+          **注意**: 调整线程池和缓存大小需要谨慎，不当的配置可能导致性能下降或内存溢出。建议基于性能剖析 (Profiling) 结果进行优化。

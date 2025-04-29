@@ -11,6 +11,5 @@ children:
   - "null"
   - optional
   - alias
-  - unit
   - nothing
   - any

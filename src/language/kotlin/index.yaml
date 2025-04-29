@@ -9,6 +9,7 @@ ignores:
 children:
   - syntax
   - gui
+  - libraries
 outlines:
   - id: syntax
     title: 语法
@@ -43,9 +44,7 @@ outlines:
             title: 可空
           - id: alias
             title: 别名
-          - id: void
-            title: 无返回值
-          - id: nothing
+          - id: never
             title: 永不返回
           - id: any
             title: 任意
@@ -222,10 +221,10 @@ outlines:
                 title: RelativeLayout
               - id: frame
                 title: FrameLayout
-              - id: constraint
-                title: ConstraintLayout
               - id: linear
                 title: LinearLayout
+              - id: constraint
+                title: ConstraintLayout
           - id: container
             title: 滚动
             children:
@@ -347,3 +346,46 @@ outlines:
         children:
           - id: flow
             title: Flow
+  - id: libraries
+    title: 库
+    children:
+      - id: json
+        title: JSON
+        children:
+          - id: gson
+            title: Gson
+      - id: logger
+        title: 日志
+        children:
+          - id: orhanobut
+            title: Logger
+      - id: network
+        title: 网络
+        children:
+          - id: http
+            title: HTTP
+            children:
+              - id: okhttp3
+                title: OkHttp3
+          - id: image
+            title: 图片加载
+            children:
+              - id: glide
+                title: Glide
+      - id: storage
+        title: 存储
+        children:
+          - id: shared-preferences
+            title: SharedPreferences
+          - id: data-store
+            title: DataStore
+          - id: room
+            title: Room
+      - id: ui
+        title: UI
+        children:
+          - id: pull-refresh
+            title: Pull Refresh
+            children:
+              - id: smart-refresh
+                title: SmartRefreshLayout

@@ -1,0 +1,1821 @@
+id: gson
+title: Gson
+query: Android Gson
+comment: 全面梳理 Gson 的序列化、反序列化、配置选项、泛型解析、异常处理与常见坑，配合 Retrofit、OkHttp 实战技巧。
+description: Gson 是一个强大的 Java 库，广泛应用于 Android 开发中，用于实现 Java/Kotlin 对象与 JSON 数据格式之间的相互转换。它简化了网络请求响应解析、本地数据存储等场景下的 JSON 处理流程。主要通过 `Gson` 实例的 `toJson()` 和 `fromJson()` 方法进行操作，并可通过 `GsonBuilder` 进行灵活配置。
+outline:
+  - title: 安装
+    description: 导入 Gson 库与基础配置。
+  - title: 使用
+    description: 核心用法，含对象与 JSON 的互转。
+    children:
+      - title: 创建 Gson 实例
+        description: Gson() 或 GsonBuilder() 配置
+      - title: 序列化对象为 Json
+        description: toJson(obj)
+      - title: 反序列化 Json 为对象
+        description: fromJson(json, Class)
+      - title: 反序列化 Json 为 List
+        description: TypeToken<List<T>>() 实现泛型
+      - title: Json 字符串转 Map
+      - title: 复杂嵌套结构解析
+      - title: 动态解析 JsonObject / JsonArray
+  - title: 配置
+    description: GsonBuilder 配置项与定制化。
+    children:
+      - title: setPrettyPrinting()
+        description: 美化输出
+      - title: setDateFormat()
+        description: 统一时间格式
+      - title: excludeFieldsWithoutExposeAnnotation()
+      - title: disableHtmlEscaping()
+      - title: serializeNulls()
+      - title: registerTypeAdapter()
+        description: 自定义序列化/反序列化规则
+  - title: 泛型与复杂类型
+    description: Gson 泛型解析技巧。
+    children:
+      - title: TypeToken 获取泛型类型
+      - title: 泛型嵌套对象解析
+      - title: List、Map 多层嵌套解析
+      - title: 动态字段与 JsonObject 混合解析
+  - title: 异常处理
+    description: 常见解析异常及排查技巧。
+    children:
+      - title: JsonSyntaxException
+      - title: 类型转换异常
+      - title: 空字段与默认值处理
+      - title: 时间格式异常
+      - title: NullPointer 检查与容错策略
+  - title: 常见问题与解决技巧
+    description: 开发高频问题总结。
+    children:
+      - title: 序列化空值丢失
+      - title: Json 字段名与实体变量不一致
+      - title: 时间戳与日期互转
+      - title: 字段混淆导致解析失败
+      - title: Retrofit + GsonConverterFactory 特殊配置
+      - title: Gson 与 Moshi/fastjson 协同策略
+  - title: 最佳实践
+    description: Gson 项目实战推荐写法与规范。
+    children:
+      - title: 单例 Gson 实例封装
+      - title: Retrofit + Gson 配置封装
+      - title: 自定义 JsonAdapter + 注解支持
+      - title: 大型 Json 数据分段解析
+      - title: 泛型安全封装工具类
+usage:
+  - title: 安装
+    description: '要在 Kotlin Android 项目中使用 Gson，首先需要在项目的 `build.gradle` (Module: app 或对应模块) 文件中的 `dependencies` 代码块添加 Gson 库依赖。'
+    example: |
+      ```groovy
+      // build.gradle (Module: app)
+
+      dependencies {
+          // ... 其他依赖
+
+          // 添加 Gson 依赖
+          implementation("com.google.code.gson:gson:2.10.1") // 建议使用最新稳定版本
+      }
+      ```
+  - title: 使用
+    description: Gson 的核心功能是将 Kotlin/Java 对象序列化为 JSON 字符串，以及将 JSON 字符串反序列化为对应的 Kotlin/Java 对象。
+    children:
+      - title: 创建 Gson 实例
+        description: |
+          可以通过 `Gson()` 直接创建默认配置的 Gson 实例，或使用 `GsonBuilder()` 进行自定义配置后调用 `create()` 创建实例。
+
+          - **`Gson()`**: 创建一个具有默认配置的 Gson 实例。适用于简单场景。
+          - **`GsonBuilder()`**: 提供链式调用方法来配置 Gson，例如设置日期格式、排除字段、注册自定义类型适配器等。配置完成后，调用 `create()` 方法生成 Gson 实例。推荐在需要定制化行为时使用 `GsonBuilder`。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.GsonBuilder
+
+          // 1. 创建默认配置的 Gson 实例
+          val gsonDefault = Gson()
+
+          // 2. 使用 GsonBuilder 进行配置并创建实例
+          val gsonCustom = GsonBuilder()
+              .setPrettyPrinting() // 配置：美化输出 JSON
+              .serializeNulls()    // 配置：序列化 null 值字段
+              .setDateFormat("yyyy-MM-dd HH:mm:ss") // 配置：设置日期格式
+              // ... 其他配置
+              .create() // 创建配置好的 Gson 实例
+
+          // 使用创建的实例
+          // val jsonString = gsonCustom.toJson(someObject)
+          // val myObject = gsonCustom.fromJson(jsonString, MyClass::class.java)
+          ```
+      - title: 序列化对象为 Json
+        description: 使用 Gson 实例的 `toJson(obj)` 方法可以将任何 Kotlin/Java 对象（包括 data class、普通类、List、Map 等）转换为其 JSON 字符串表示形式。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+
+          // 定义一个 Kotlin data class
+          data class User(val name: String, val age: Int, val email: String?)
+
+          fun main() {
+              val gson = Gson()
+              val user = User("Alice", 30, "alice@example.com")
+
+              // 将 User 对象序列化为 JSON 字符串
+              val jsonString = gson.toJson(user)
+
+              // 输出 JSON 字符串
+              println(jsonString) // 输出：{"name":"Alice","age":30,"email":"alice@example.com"}
+
+              val userWithNullEmail = User("Bob", 25, null)
+              val jsonStringNull = gson.toJson(userWithNullEmail)
+              // 默认配置下，null 值字段会被忽略
+              println(jsonStringNull) // 输出：{"name":"Bob","age":25}
+          }
+          ```
+      - title: 反序列化 Json 为对象
+        description: 使用 Gson 实例的 `fromJson(jsonString, Class<T>)` 方法可以将 JSON 字符串解析为指定类型的 Kotlin/Java 对象。需要提供 JSON 字符串和目标对象的 `Class`。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+
+          // 定义与 JSON 结构匹配的 Kotlin data class
+          data class Product(val id: Int, val name: String, val price: Double)
+
+          fun main() {
+              val gson = Gson()
+              val jsonString = """
+              {
+                "id": 101,
+                "name": "Laptop",
+                "price": 1200.50
+              }
+              """
+
+              // 将 JSON 字符串反序列化为 Product 对象
+              val product = gson.fromJson(jsonString, Product::class.java)
+
+              // 访问对象的属性
+              println("Product ID: ${product.id}")       // 输出：Product ID: 101
+              println("Product Name: ${product.name}")     // 输出：Product Name: Laptop
+              println("Product Price: ${product.price}")   // 输出：Product Price: 1200.5
+          }
+          ```
+      - title: 反序列化 Json 为 List
+        description: |
+          当需要将 JSON 数组反序列化为 Kotlin 的 `List` 时，由于 Java 的类型擦除机制，直接使用 `List::class.java` 会丢失元素的具体类型信息。必须使用 Gson 的 `TypeToken` 来捕获完整的泛型类型。
+
+          - **`TypeToken<List<T>>(){}.type`**: 通过创建一个 `TypeToken` 的匿名子类实例，并访问其 `.type` 属性，可以获取到一个准确表示 `List<T>`（其中 T 是具体的元素类型）的 `java.lang.reflect.Type` 对象。这个 `Type` 对象随后被传递给 `fromJson` 方法，确保 Gson 能够正确地将 JSON 数组中的每个元素反序列化为指定的 `T` 类型。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.reflect.TypeToken
+
+          // 定义 List 中元素的 data class
+          data class Item(val itemId: String, val quantity: Int)
+
+          fun main() {
+              val gson = Gson()
+              val jsonArrayString = """
+              [
+                {"itemId": "A1", "quantity": 5},
+                {"itemId": "B2", "quantity": 10}
+              ]
+              """
+
+              // 创建 TypeToken 来指定目标类型为 List<Item>
+              val listType = object : TypeToken<List<Item>>() {}.type
+
+              // 将 JSON 数组字符串反序列化为 List<Item>
+              val itemList: List<Item> = gson.fromJson(jsonArrayString, listType)
+
+              // 遍历 List 并访问元素
+              itemList.forEach { item ->
+                  println("Item ID: ${item.itemId}, Quantity: ${item.quantity}")
+                  // 输出：
+                  // Item ID: A1, Quantity: 5
+                  // Item ID: B2, Quantity: 10
+              }
+          }
+          ```
+      - title: Json 字符串转 Map
+        description: 与解析 List 类似，将 JSON 对象反序列化为 Map 时，特别是当 Map 的值类型是泛型或复杂对象时，也需要使用 `TypeToken` 来精确指定键（Key）和值（Value）的类型。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.reflect.TypeToken
+
+          fun main() {
+              val gson = Gson()
+              val jsonObjectString = """
+              {
+                "user1": {"name": "Charlie", "score": 95},
+                "user2": {"name": "David", "score": 88}
+              }
+              """
+
+              // 定义 Map 的 Value 类型
+              data class UserScore(val name: String, val score: Int)
+
+              // 创建 TypeToken 来指定目标类型为 Map<String, UserScore>
+              val mapType = object : TypeToken<Map<String, UserScore>>() {}.type
+
+              // 将 JSON 对象字符串反序列化为 Map<String, UserScore>
+              val userScoresMap: Map<String, UserScore> = gson.fromJson(jsonObjectString, mapType)
+
+              // 访问 Map 中的元素
+              println(userScoresMap["user1"]?.name) // 输出: Charlie
+              println(userScoresMap["user2"]?.score) // 输出: 88
+
+              // 解析为 Map<String, Any> (值类型不确定时)
+              val anyMapType = object : TypeToken<Map<String, Any>>() {}.type
+              val anyMap: Map<String, Any> = gson.fromJson(jsonObjectString, anyMapType)
+              // 注意：访问 Any 类型的值时可能需要类型转换
+              val user1Data = anyMap["user1"] as? Map<*, *>
+              println(user1Data?.get("name")) // 输出: Charlie
+          }
+          ```
+      - title: 复杂嵌套结构解析
+        description: 对于包含嵌套 JSON 对象或 JSON 数组的复杂结构，只需定义相应的嵌套 Kotlin data class。Gson 会自动递归地进行序列化和反序列化。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+
+          // 定义嵌套的 data class 结构
+          data class Address(val street: String, val city: String)
+          data class Company(val name: String, val address: Address)
+          data class Employee(val id: Int, val name: String, val company: Company, val projects: List<String>)
+
+          fun main() {
+              val gson = Gson()
+              val jsonString = """
+              {
+                "id": 1,
+                "name": "Eve",
+                "company": {
+                  "name": "TechCorp",
+                  "address": {
+                    "street": "123 Main St",
+                    "city": "Anytown"
+                  }
+                },
+                "projects": ["Project Alpha", "Project Beta"]
+              }
+              """
+
+              // 反序列化包含嵌套结构的 JSON
+              val employee = gson.fromJson(jsonString, Employee::class.java)
+
+              // 访问嵌套对象的属性
+              println("Employee Name: ${employee.name}")                   // 输出: Eve
+              println("Company City: ${employee.company.address.city}")   // 输出: Anytown
+              println("First Project: ${employee.projects.firstOrNull()}") // 输出: Project Alpha
+
+              // 序列化嵌套对象
+              val newJson = gson.toJson(employee)
+              println(newJson) // 输出与输入结构一致的 JSON 字符串
+          }
+          ```
+      - title: 动态解析 JsonObject / JsonArray
+        description: |
+          当 JSON 结构不固定、未知，或者只需要访问其中的部分数据而不想定义完整的 data class 时，可以使用 Gson 提供的 `com.google.gson.JsonObject` 和 `com.google.gson.JsonArray` 类进行动态解析。
+
+          - **`JsonParser.parseString(jsonString)`**: (推荐方式) 将 JSON 字符串解析成一个 `JsonElement`。这个 `JsonElement` 可以是 `JsonObject`、`JsonArray`、`JsonPrimitive`（表示字符串、数字、布尔值）或 `JsonNull`。
+          - **`JsonElement.getAsJsonObject()` / `getAsJsonArray()`**: 将 `JsonElement` 转换为 `JsonObject` 或 `JsonArray`（如果类型匹配）。
+          - **`JsonObject.get(key)` / `JsonArray.get(index)`**: 获取指定键或索引处的 `JsonElement`。
+          - **`JsonObject.has(key)`**: 检查 `JsonObject` 是否包含某个键。
+          - **`JsonElement.getAsString()` / `getAsInt()` / `getAsDouble()` / `getAsBoolean()` etc**: 将 `JsonElement` 转换为具体的原始类型值。使用这些方法前最好先通过 `isJsonPrimitive`, `isJsonObject`, `isJsonArray` 等检查类型。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonObject
+          import com.google.gson.JsonParser
+
+          fun main() {
+              val gson = Gson() // Gson 实例在这里可能不需要，JsonParser 即可
+              val jsonString = """
+              {
+                "id": 10,
+                "name": "Dynamic Data",
+                "enabled": true,
+                "config": {
+                  "retries": 3,
+                  "timeout": 5000
+                },
+                "tags": ["urgent", "server"]
+              }
+              """
+
+              // 使用 JsonParser 解析 JSON 字符串
+              val jsonElement = JsonParser.parseString(jsonString)
+
+              // 检查根元素是否为 JsonObject
+              if (jsonElement.isJsonObject) {
+                  val rootObject: JsonObject = jsonElement.asJsonObject
+
+                  // 获取基本类型的值
+                  val id = if (rootObject.has("id")) rootObject.get("id").asInt else -1
+                  val name = rootObject.get("name")?.asString ?: "Default Name"
+                  val enabled = rootObject.get("enabled")?.asBoolean ?: false
+
+                  println("ID: $id, Name: $name, Enabled: $enabled") // 输出: ID: 10, Name: Dynamic Data, Enabled: true
+
+                  // 获取嵌套的 JsonObject
+                  if (rootObject.has("config") && rootObject.get("config").isJsonObject) {
+                      val configObject = rootObject.getAsJsonObject("config")
+                      val retries = configObject.get("retries")?.asInt ?: 0
+                      println("Retries: $retries") // 输出: Retries: 3
+                  }
+
+                  // 获取 JsonArray
+                  if (rootObject.has("tags") && rootObject.get("tags").isJsonArray) {
+                      val tagsArray = rootObject.getAsJsonArray("tags")
+                      tagsArray.forEach { tagElement ->
+                          println("Tag: ${tagElement.asString}")
+                          // 输出:
+                          // Tag: urgent
+                          // Tag: server
+                      }
+                  }
+              }
+          }
+          ```
+  - title: 配置
+    description: 通过 `GsonBuilder` 可以对 Gson 的序列化和反序列化行为进行详细配置，以适应不同的数据格式和业务需求。
+    children:
+      - title: setPrettyPrinting()
+        description: 配置 Gson 在调用 `toJson()` 序列化对象时，输出格式化（带缩进和换行）的 JSON 字符串，使其更易于人工阅读和调试。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+
+          data class Point(val x: Int, val y: Int)
+
+          fun main() {
+              val gsonPretty = GsonBuilder()
+                  .setPrettyPrinting() // 启用美化输出
+                  .create()
+
+              val point = Point(10, 20)
+              val prettyJson = gsonPretty.toJson(point)
+
+              println(prettyJson)
+              /* 输出:
+              {
+                "x": 10,
+                "y": 20
+              }
+              */
+
+              val gsonDefault = GsonBuilder().create() // 默认不美化
+              val compactJson = gsonDefault.toJson(point)
+              println(compactJson) // 输出: {"x":10,"y":20}
+          }
+          ```
+      - title: setDateFormat()
+        description: |
+          指定在序列化 `java.util.Date` 对象到 JSON 字符串，以及从 JSON 字符串反序列化为 `java.util.Date` 对象时所使用的日期时间格式。
+
+          - **参数**:
+            - `String pattern`: 一个遵循 `java.text.SimpleDateFormat` 规则的日期格式字符串，例如 `"yyyy-MM-dd HH:mm:ss"` 或 `"yyyy-MM-dd'T'HH:mm:ss.SSSZ"`。
+            - `int style`: 使用 `java.text.DateFormat` 中定义的预设样式常量，如 `DateFormat.DEFAULT`, `DateFormat.SHORT`, `DateFormat.MEDIUM`, `DateFormat.LONG`, `DateFormat.FULL`。可以分别设置日期和时间样式，例如 `setDateFormat(DateFormat.LONG, DateFormat.SHORT)`。
+
+          注意：此方法主要针对 `java.util.Date`。对于 Java 8 的 `java.time` 类型（如 `LocalDate`, `LocalDateTime`），通常需要注册自定义的 `TypeAdapter`。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+          import java.util.Date
+          import java.text.SimpleDateFormat
+          import java.util.Locale
+
+          data class Event(val name: String, val timestamp: Date)
+
+          fun main() {
+              // 配置特定的日期格式字符串
+              val gsonWithFormat = GsonBuilder()
+                  .setDateFormat("yyyy/MM/dd") // 指定格式
+                  .create()
+
+              val event = Event("Meeting", SimpleDateFormat("yyyy/MM/dd", Locale.US).parse("2024/07/15"))
+
+              // 序列化 Date 对象
+              val jsonString = gsonWithFormat.toJson(event)
+              println(jsonString) // 输出: {"name":"Meeting","timestamp":"2024/07/15"}
+
+              // 反序列化 Date 对象
+              val jsonInput = """{"name":"Conference","timestamp":"2024/08/20"}"""
+              val deserializedEvent = gsonWithFormat.fromJson(jsonInput, Event::class.java)
+              println(deserializedEvent.timestamp) // 输出 Date 对象对应的时间
+
+              // 使用预设样式
+              val gsonWithStyle = GsonBuilder()
+                  .setDateFormat(java.text.DateFormat.LONG) // 使用长日期格式
+                  .create()
+              println(gsonWithStyle.toJson(event)) // 输出可能类似: {"name":"Meeting","timestamp":"July 15, 2024"} (格式依赖 Locale)
+          }
+          ```
+      - title: excludeFieldsWithoutExposeAnnotation()
+        description: |
+          配置 Gson 只序列化和反序列化那些显式使用了 `@com.google.gson.annotations.Expose` 注解标记的字段。没有被 `@Expose` 注解的字段将被忽略。
+
+          - **`@Expose` 注解属性**:
+            - `serialize`: boolean 类型，默认为 `true`。如果为 `false`，该字段在序列化时会被排除。
+            - `deserialize`: boolean 类型，默认为 `true`。如果为 `false`，该字段在反序列化时会被排除。
+
+          使用此配置项可以更精确地控制哪些字段参与 JSON 转换，常用于区分内部状态和需要对外暴露的数据。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+          import com.google.gson.annotations.Expose
+
+          data class Credentials(
+              @Expose val username: String, // 序列化和反序列化
+
+              @Expose(serialize = false)
+              val password: String, // 只参与反序列化，不参与序列化
+
+              @Expose(deserialize = false)
+              val token: String?, // 只参与序列化，不参与反序列化
+
+              val internalCounter: Int // 没有 @Expose 注解，会被忽略
+          )
+
+          fun main() {
+              val gson = GsonBuilder()
+                  .excludeFieldsWithoutExposeAnnotation() // 启用注解过滤
+                  .create()
+
+              val credentials = Credentials("user1", "pass123", "abc-token", 10)
+
+              // 序列化：只包含 username 和 token
+              val jsonOutput = gson.toJson(credentials)
+              println("Serialized: $jsonOutput")
+              // 输出: Serialized: {"username":"user1","token":"abc-token"}
+
+              // 反序列化：只接受 username 和 password
+              val jsonInput = """{"username":"user2","password":"new_password","token":"ignored-token","internalCounter":20}"""
+              val deserialized = gson.fromJson(jsonInput, Credentials::class.java)
+              println("Deserialized Username: ${deserialized.username}") // 输出: user2
+              println("Deserialized Password: ${deserialized.password}") // 输出: new_password
+              println("Deserialized Token: ${deserialized.token}")       // 输出: null (因为 deserialize = false)
+              // deserialized.internalCounter 会是默认值或者构造函数值，因为没有被反序列化
+          }
+          ```
+      - title: disableHtmlEscaping()
+        description: 默认情况下，Gson 会对 JSON 字符串中的 HTML 特殊字符进行转义（例如，`<` 转为 `<`，`>` 转为 `>`，`&` 转为 `&`，`=` 转为 `=`，`'` 转为 `'`）。调用此方法可以禁用这种 HTML 安全转义，使得输出的 JSON 字符串包含原始的 HTML 字符。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+
+          data class HtmlContent(val html: String)
+
+          fun main() {
+              val content = HtmlContent("<p>Hello & Welcome!</p>")
+
+              // 默认 Gson (启用 HTML 转义)
+              val gsonDefault = GsonBuilder().create()
+              val jsonEscaped = gsonDefault.toJson(content)
+              println("Escaped: $jsonEscaped")
+              // 输出: Escaped: {"html":"\u003cp\u003eHello \u0026 Welcome!\u003c/p\u003e"}
+
+              // 禁用 HTML 转义
+              val gsonNoEscape = GsonBuilder()
+                  .disableHtmlEscaping()
+                  .create()
+              val jsonRaw = gsonNoEscape.toJson(content)
+              println("Raw: $jsonRaw")
+              // 输出: Raw: {"html":"<p>Hello & Welcome!</p>"}
+          }
+          ```
+      - title: serializeNulls()
+        description: 默认情况下，Gson 在序列化 Kotlin/Java 对象时会忽略那些值为 `null` 的字段，即这些字段不会出现在最终的 JSON 输出中。调用 `serializeNulls()` 方法可以改变这个行为，强制 Gson 将值为 `null` 的字段也包含在 JSON 输出中，其对应的值为 JSON `null`。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+
+          data class Profile(val name: String, val website: String?, val bio: String?)
+
+          fun main() {
+              val profile = Profile("Grace", null, "Software Engineer")
+
+              // 默认 Gson (忽略 null 值)
+              val gsonDefault = GsonBuilder().create()
+              val jsonDefault = gsonDefault.toJson(profile)
+              println("Default: $jsonDefault")
+              // 输出: Default: {"name":"Grace","bio":"Software Engineer"} (website 字段被忽略)
+
+              // 配置为序列化 null 值
+              val gsonSerializeNulls = GsonBuilder()
+                  .serializeNulls()
+                  .create()
+              val jsonWithNulls = gsonSerializeNulls.toJson(profile)
+              println("With Nulls: $jsonWithNulls")
+              // 输出: With Nulls: {"name":"Grace","website":null,"bio":"Software Engineer"} (website 字段输出为 null)
+          }
+          ```
+      - title: registerTypeAdapter()
+        description: |
+          允许为特定的 Java/Kotlin 类型注册自定义的序列化器 (`JsonSerializer<T>`)、反序列化器 (`JsonDeserializer<T>`) 或类型适配器 (`TypeAdapter<T>`)。这提供了对特定类型如何与 JSON 相互转换的完全控制，非常适用于以下场景：
+          - 处理非标准的 JSON 格式。
+          - 为接口或抽象类提供具体的序列化/反序列化逻辑。
+          - 实现自定义的数据校验或转换逻辑。
+          - 优化特定类型的性能。
+
+          - **`JsonSerializer<T>`**: 实现 `serialize(T src, Type typeOfSrc, JsonSerializationContext context)` 方法，将类型 `T` 的对象转换为 `JsonElement`。
+          - **`JsonDeserializer<T>`**: 实现 `deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)` 方法，将 `JsonElement` 转换为类型 `T` 的对象。
+          - **`TypeAdapter<T>`**: 更底层的接口，需要同时实现 `write(JsonWriter out, T value)` 和 `read(JsonReader in)` 方法。通常性能更好，因为它直接操作 JSON 流。`TypeAdapterFactory` 则可以基于类型动态地创建 `TypeAdapter`。
+
+          注册时需要提供目标类型 (`Class<T>` 或 `Type`) 和对应的适配器实例。
+        example: |
+          ```kotlin
+          import com.google.gson.*
+          import com.google.gson.stream.JsonReader
+          import com.google.gson.stream.JsonWriter
+          import java.io.IOException
+          import java.time.LocalDateTime
+          import java.time.format.DateTimeFormatter
+
+          // 示例：为 Java 8 LocalDateTime 提供自定义 TypeAdapter
+          class LocalDateTimeAdapter : TypeAdapter<LocalDateTime>() {
+              private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+              @Throws(IOException::class)
+              override fun write(out: JsonWriter, value: LocalDateTime?) {
+                  if (value == null) {
+                      out.nullValue()
+                  } else {
+                      out.value(formatter.format(value))
+                  }
+              }
+
+              @Throws(IOException::class)
+              override fun read(`in`: JsonReader): LocalDateTime? {
+                  return if (`in`.peek() == com.google.gson.stream.JsonToken.NULL) {
+                      `in`.nextNull()
+                      null
+                  } else {
+                      LocalDateTime.parse(`in`.nextString(), formatter)
+                  }
+              }
+          }
+
+          data class Schedule(val event: String, val time: LocalDateTime)
+
+          fun main() {
+              val gson = GsonBuilder()
+                   // 注册 LocalDateTime 的自定义适配器
+                  .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
+                  .setPrettyPrinting()
+                  .create()
+
+              val schedule = Schedule("Team Sync", LocalDateTime.of(2024, 7, 15, 10, 30, 0))
+
+              // 序列化：使用自定义适配器格式化 LocalDateTime
+              val jsonOutput = gson.toJson(schedule)
+              println("Serialized:\n$jsonOutput")
+              /* 输出:
+              Serialized:
+              {
+                "event": "Team Sync",
+                "time": "2024-07-15T10:30:00"
+              }
+              */
+
+              // 反序列化：使用自定义适配器解析 LocalDateTime 字符串
+              val jsonInput = """{"event":"Review","time":"2024-07-16T14:00:00"}"""
+              val deserializedSchedule = gson.fromJson(jsonInput, Schedule::class.java)
+              println("\nDeserialized time: ${deserializedSchedule.time}")
+              // 输出: Deserialized time: 2024-07-16T14:00
+          }
+          ```
+  - title: 泛型与复杂类型
+    description: Gson 提供了处理泛型集合（如 List, Map）和复杂嵌套数据结构的机制，关键在于使用 `TypeToken` 来保留和传递完整的泛型类型信息。
+    children:
+      - title: TypeToken 获取泛型类型
+        description: |
+          `com.google.gson.reflect.TypeToken` 是 Gson 解决 Java 类型擦除问题的核心工具。当你需要反序列化一个泛型类型（例如 `List<User>` 或 `Map<String, List<Product>>`）时，不能直接传入 `List.class` 或 `Map.class`，因为这会丢失 `<User>` 或 `<String, List<Product>>` 这些具体的类型参数信息。
+
+          通过创建一个 `TypeToken` 的匿名子类，例如 `object : TypeToken<List<User>>() {}`，其内部机制可以在运行时捕获到完整的泛型类型 `List<User>`。然后，通过访问这个匿名子类实例的 `.type` 属性，可以获得一个 `java.lang.reflect.Type` 对象，该对象精确地代表了所需的泛型类型。将这个 `Type` 对象传递给 `gson.fromJson()` 方法，Gson 就能正确地反序列化 JSON 数据到具有正确泛型参数的集合或对象中。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.reflect.TypeToken
+
+          data class User(val id: Int, val name: String)
+
+          fun main() {
+              val gson = Gson()
+              val jsonUsers = """[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]"""
+              val jsonScores = """{"Alice": 100, "Bob": 95}"""
+
+              // 1. 反序列化 List<User>
+              // 创建 TypeToken 来表示 List<User> 类型
+              val userListType = object : TypeToken<List<User>>() {}.type
+              val users: List<User> = gson.fromJson(jsonUsers, userListType)
+              println("Users List: $users") // 输出: Users List: [User(id=1, name=Alice), User(id=2, name=Bob)]
+
+              // 2. 反序列化 Map<String, Int>
+              // 创建 TypeToken 来表示 Map<String, Int> 类型
+              val scoreMapType = object : TypeToken<Map<String, Int>>() {}.type
+              val scores: Map<String, Int> = gson.fromJson(jsonScores, scoreMapType)
+              println("Scores Map: $scores") // 输出: Scores Map: {Alice=100, Bob=95}
+
+              // 如果不使用 TypeToken，尝试用 List::class.java 会失败或得到错误类型
+              // val wrongUsers: List<*> = gson.fromJson(jsonUsers, List::class.java) // 得到 List<LinkedTreeMap> 而不是 List<User>
+          }
+          ```
+      - title: 泛型嵌套对象解析
+        description: 当需要解析的目标对象本身就是泛型类，并且其类型参数可能是另一个复杂类型（如 `List` 或自定义泛型类）时，同样需要使用 `TypeToken` 来指定完整的嵌套泛型结构。例如，解析一个通用的 API 响应结构 `ApiResponse<T>`，其中 `T` 可能是 `User`、`List<Product>` 等。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.reflect.TypeToken
+
+          // 定义一个泛型包装类
+          data class ApiResponse<T>(val status: String, val data: T?, val error: String?)
+          data class Product(val productId: String, val price: Double)
+
+          fun main() {
+              val gson = Gson()
+
+              // 场景 1: 解析 ApiResponse<Product>
+              val jsonProductResponse = """
+              {
+                "status": "success",
+                "data": {"productId": "P123", "price": 49.99},
+                "error": null
+              }
+              """
+              val productResponseType = object : TypeToken<ApiResponse<Product>>() {}.type
+              val apiResponseProduct: ApiResponse<Product> = gson.fromJson(jsonProductResponse, productResponseType)
+              println("Product Name: ${apiResponseProduct.data?.productId}") // 输出: P123
+
+              // 场景 2: 解析 ApiResponse<List<Product>>
+              val jsonProductListResponse = """
+              {
+                "status": "success",
+                "data": [
+                  {"productId": "P123", "price": 49.99},
+                  {"productId": "P456", "price": 79.99}
+                ],
+                "error": null
+              }
+              """
+              // 注意 TypeToken 的嵌套
+              val productListResponseType = object : TypeToken<ApiResponse<List<Product>>>() {}.type
+              val apiResponseProductList: ApiResponse<List<Product>> = gson.fromJson(jsonProductListResponse, productListResponseType)
+              println("Number of products: ${apiResponseProductList.data?.size}") // 输出: 2
+              println("First product price: ${apiResponseProductList.data?.firstOrNull()?.price}") // 输出: 49.99
+          }
+          ```
+      - title: List、Map 多层嵌套解析
+        description: 对于具有多层嵌套的复杂 `List` 和 `Map` 结构，例如 `List<Map<String, List<Int>>>` 或 `Map<String, Map<String, Any>>`，依然是使用 `TypeToken` 来精确定义整个数据结构。只需在 `TypeToken` 的泛型参数中按照实际结构正确嵌套即可。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.reflect.TypeToken
+
+          fun main() {
+              val gson = Gson()
+
+              // 示例 1: 解析 List<Map<String, Int>>
+              val jsonListOfMaps = """
+              [
+                {"a": 1, "b": 2},
+                {"c": 3, "d": 4}
+              ]
+              """
+              val listOfMapsType = object : TypeToken<List<Map<String, Int>>>() {}.type
+              val listOfMaps: List<Map<String, Int>> = gson.fromJson(jsonListOfMaps, listOfMapsType)
+              println("First map, value of 'a': ${listOfMaps[0]["a"]}") // 输出: 1
+
+              // 示例 2: 解析 Map<String, List<String>>
+              val jsonMapOfLists = """
+              {
+                "group1": ["apple", "banana"],
+                "group2": ["orange", "grape"]
+              }
+              """
+              val mapOfListsType = object : TypeToken<Map<String, List<String>>>() {}.type
+              val mapOfLists: Map<String, List<String>> = gson.fromJson(jsonMapOfLists, mapOfListsType)
+              println("group2, second item: ${mapOfLists["group2"]?.get(1)}") // 输出: grape
+
+              // 示例 3: 解析更复杂的嵌套 List<Map<String, List<Int>>>
+              val jsonComplexNested = """
+              [
+                { "data": [1, 2], "meta": [3] },
+                { "data": [4, 5, 6], "meta": [7, 8] }
+              ]
+              """
+              // 注意：JSON 结构是 List<Map<String, List<Int>>>
+              // TypeToken 也需要精确匹配
+              val complexNestedType = object : TypeToken<List<Map<String, List<Int>>>>() {}.type
+              val complexNestedData: List<Map<String, List<Int>>> = gson.fromJson(jsonComplexNested, complexNestedType)
+              println("Second map, data list: ${complexNestedData[1]["data"]}") // 输出: [4, 5, 6]
+          }
+          ```
+      - title: 动态字段与 JsonObject 混合解析
+        description: |
+          在某些场景下，JSON 对象的结构可能包含一部分固定字段和一部分动态变化的字段（键名不确定或数量不定）。处理这种情况有几种策略：
+
+          1.  **使用 `Map<String, Any>` 或 `JsonObject` 字段**: 在你的 Kotlin data class 中，为动态部分定义一个类型为 `Map<String, Any>` 或 `com.google.gson.JsonObject` 的字段。Gson 会将 JSON 中未匹配到其他固定字段的键值对填充到这个 Map 或 JsonObject 中。
+          2.  **先解析为 `JsonObject`，再手动处理**: 先将整个 JSON 字符串解析为一个 `JsonObject`。然后，从中提取固定字段的值赋给 data class 的实例，同时保留 `JsonObject` 用于访问动态字段。
+          3.  **自定义 `TypeAdapter`**: 编写一个自定义的 `TypeAdapter`，在 `read()` 方法中根据逻辑判断处理固定字段和动态字段。
+
+          使用 `Map<String, Any>` 或 `JsonObject` 字段通常是比较直接的方式。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonObject
+          import com.google.gson.annotations.SerializedName
+
+          // 使用 Map<String, Any> 接收动态字段
+          data class ConfigDataMap(
+              val id: Int,
+              val type: String,
+              // 使用 @JsonAdapter(RawJsonAdapter::class) 可能更好，但这里用 Map 演示
+              // @SerializedName 注解可以省略，如果 map 字段名与 json 中动态部分的容器名一致
+              // 或者使用 @JsonAnySetter (需要额外库或自定义实现)
+              // 这里假设动态字段直接在顶层，用 Map<String, Any> 接收
+              // 为了更清晰，通常将动态部分放在一个嵌套对象里，如 "properties": {...}
+              // 这里简化处理，假设动态字段与固定字段同级，Gson 默认不直接支持此方式
+              // 需要特殊处理或自定义适配器。
+
+              // 更常见的方式：动态部分在一个已知键下
+              @SerializedName("properties")
+              val properties: Map<String, Any>?
+          )
+
+          // 使用 JsonObject 接收动态字段
+          data class ConfigDataJson(
+              val id: Int,
+              val type: String,
+              @SerializedName("properties")
+              val properties: JsonObject?
+          )
+
+          fun main() {
+              val gson = Gson()
+              val jsonString = """
+              {
+                "id": 101,
+                "type": "sensor",
+                "properties": {
+                  "location": "Room A",
+                  "threshold": 25.5,
+                  "active": true,
+                  "extra_info": {"code": "xyz"}
+                }
+              }
+              """
+
+              // 解析到 ConfigDataMap
+              val configMap = gson.fromJson(jsonString, ConfigDataMap::class.java)
+              println("Map - Location: ${configMap.properties?.get("location")}") // 输出: Room A
+              // 注意：Map 的值是 Any 类型，可能需要类型转换
+              val threshold = configMap.properties?.get("threshold") as? Double
+              println("Map - Threshold: $threshold") // 输出: 25.5
+
+              // 解析到 ConfigDataJson
+              val configJson = gson.fromJson(jsonString, ConfigDataJson::class.java)
+              println("Json - Location: ${configJson.properties?.get("location")?.asString}") // 输出: Room A
+              println("Json - Threshold: ${configJson.properties?.get("threshold")?.asDouble}") // 输出: 25.5
+              // JsonObject 提供类型安全的 getAs... 方法
+              val extraCode = configJson.properties?.getAsJsonObject("extra_info")?.get("code")?.asString
+              println("Json - Extra Code: $extraCode") // 输出: xyz
+          }
+          ```
+  - title: 异常处理
+    description: 在使用 Gson 进行 JSON 解析（反序列化）时，可能会遇到各种异常。了解这些常见异常及其发生的原因，有助于快速定位问题并实现更健壮的代码。
+    children:
+      - title: JsonSyntaxException
+        description: |
+          这是 Gson 解析时最常见的异常，表示输入的 JSON 字符串在语法上无效，不符合 JSON 规范。
+
+          **常见原因**:
+          - 括号 (`{`, `}`, `[`, `]`) 不匹配或缺失。
+          - 键值对之间缺少逗号 (`,`)。
+          - 字符串没有用双引号 (`"`) 正确闭合。
+          - 使用了单引号 (`'`) 而不是双引号。
+          - 非法的控制字符或转义序列。
+          - JSON 结构与预期不符（例如，期望对象 `{}`, 实际是数组 `[]`）。
+
+          **解决方法**:
+          - 检查 JSON 源数据是否完整、格式是否正确。可以使用在线 JSON 校验工具进行验证。
+          - 在代码中对接收到的 JSON 字符串进行初步的非空和基本格式检查。
+          - 使用 `try-catch` 块捕获 `JsonSyntaxException`，并记录错误日志或向用户反馈。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonSyntaxException
+
+          data class SimpleData(val key: String)
+
+          fun main() {
+              val gson = Gson()
+              // 格式错误的 JSON (缺少闭合引号)
+              val invalidJson = """{"key": "value}"""
+
+              try {
+                  val data = gson.fromJson(invalidJson, SimpleData::class.java)
+                  println("Data: $data")
+              } catch (e: JsonSyntaxException) {
+                  println("Error parsing JSON: ${e.message}")
+                  // 输出类似：Error parsing JSON: com.google.gson.stream.MalformedJsonException: Unterminated string at line 1 column 16 path $.key
+                  e.printStackTrace() // 打印详细堆栈信息用于调试
+              }
+
+              // 另一个错误：期望对象，得到数组
+              val jsonArray = """[1, 2, 3]"""
+              try {
+                  val data = gson.fromJson(jsonArray, SimpleData::class.java)
+              } catch (e: JsonSyntaxException) {
+                   println("\nError parsing array as object: ${e.message}")
+                   // 输出类似: Error parsing array as object: java.lang.IllegalStateException: Expected BEGIN_OBJECT but was BEGIN_ARRAY at line 1 column 2 path $
+              }
+          }
+          ```
+      - title: 类型转换异常
+        description: |
+          当 JSON 中某个字段的值类型与目标 Kotlin/Java 对象中对应字段的声明类型不兼容，且 Gson 无法自动完成转换时，会发生类型转换相关的异常。这通常不是直接抛出 `TypeCastException`，而是被 Gson 包装在 `JsonSyntaxException` 或其他运行时异常（如 `NumberFormatException`）中。
+
+          **常见原因**:
+          - JSON 中是字符串 (`"123"`)，目标字段是数字类型 (`Int`, `Double`)。
+          - JSON 中是数字 (`123`)，目标字段是字符串 (`String`)（Gson 通常能处理这个）。
+          - JSON 中是 `null`，目标字段是 Kotlin 的非空类型 (`String`, `Int`)。
+          - JSON 中是对象 (`{}`) 或数组 (`[]`)，目标字段是基本类型或字符串。
+
+          **解决方法**:
+          - **确保数据模型与 JSON 结构严格匹配**: 检查 data class 的字段类型是否与 JSON 中对应的值类型一致。
+          - **使用可空类型**: 如果 JSON 中字段可能为 `null`，将 Kotlin 字段声明为可空类型 (`String?`, `Int?`)。
+          - **提供默认值**: 为 Kotlin data class 的字段提供默认值 (`val count: Int = 0`)，但这只在构造对象时有效，对 `null` 值解析无效。
+          - **自定义 `TypeAdapter` 或 `JsonDeserializer`**: 对需要特殊转换逻辑的字段（如将 `"true"`/`"false"` 字符串转为 Boolean）注册自定义适配器。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonSyntaxException
+
+          data class DataWithType(val name: String, val count: Int)
+
+          fun main() {
+              val gson = Gson()
+              // JSON 中 count 是字符串，而类中是 Int
+              val jsonStringCount = """{"name": "Item A", "count": "5"}"""
+
+              try {
+                  val data = gson.fromJson(jsonStringCount, DataWithType::class.java)
+                  println("Data: $data")
+              } catch (e: JsonSyntaxException) {
+                  // 异常信息会指出类型不匹配，通常是 NumberFormatException 被包装
+                  println("Error (String to Int): ${e.message}")
+                  // 输出可能包含: java.lang.NumberFormatException: For input string: "5"
+              }
+
+              // JSON 中 count 是 null，而类中是 Int (非空)
+              val jsonNullCount = """{"name": "Item B", "count": null}"""
+              try {
+                  // 对于 Kotlin 非空基本类型，Gson 遇到 null 会尝试赋 JVM 的默认值 (0 for Int)
+                  // 但如果目标是对象类型且非空，则可能抛异常或行为取决于 Gson 版本和配置
+                  // 最佳实践是使用可空类型 Int?
+                  val data = gson.fromJson(jsonNullCount, DataWithType::class.java)
+                   println("Data with null (parsed to default): $data") // 可能输出 Data(name=Item B, count=0)
+              } catch (e: Exception) { // 捕获更通用的异常以防万一
+                   println("Error (Null to Int): ${e.message}")
+              }
+
+               // 使用可空类型更安全
+               data class SafeData(val name: String, val count: Int?)
+               val safeData = gson.fromJson(jsonNullCount, SafeData::class.java)
+               println("Safe Data with null: $safeData") // 输出: SafeData(name=Item B, count=null)
+          }
+          ```
+      - title: 空字段与默认值处理
+        description: |
+          处理 JSON 中字段缺失或值为 `null` 的情况是常见的需求。
+
+          **问题**:
+          1.  **字段缺失**: 如果 JSON 字符串中缺少 data class 中定义的某个字段，Gson 在反序列化时：
+              - 对于**可空类型** (`String?`, `Int?` 等) 或**有默认值**的字段，会使用 `null` 或默认值。
+              - 对于**非空类型** (`String`, `Int`) 且**没有默认值**的字段，如果该字段是构造函数参数，可能会导致构造失败或运行时错误（取决于 Kotlin 版本和 JVM 行为，可能为 `NullPointerException` 或初始化错误）。
+          2.  **字段值为 `null`**: 如果 JSON 中字段值为 `null`：
+              - 对于**可空类型** (`String?`, `Int?`)，字段会被赋值为 `null`。
+              - 对于**非空类型** (`String`, `Int`)，行为比较复杂：
+                  - 对于基本类型 (`Int`, `Boolean` 等)，Gson 可能会尝试赋 JVM 的默认值（`0`, `false`）。
+                  - 对于对象类型 (`String`)，尝试赋 `null` 给非空类型通常会导致 `NullPointerException` 或错误，尤其是在 Kotlin 中。
+
+          **最佳实践**:
+          - **优先使用可空类型**: 在 data class 中，对于 JSON 中可能不存在或可能为 `null` 的字段，总是使用可空类型 (`?`)。
+          - **提供默认值**: 为非空字段提供有意义的默认值 (`val status: String = "pending"`) 可以处理字段缺失的情况，但不能处理 `null` 值赋给非空类型的问题。
+          - **结合使用**: 可空类型 + 默认值 (`val count: Int? = 0`) 可以同时处理缺失和 `null`。
+          - **自定义适配器**: 对于需要更复杂默认逻辑（如基于其他字段值）的情况，使用 `JsonDeserializer` 或 `TypeAdapter`。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+
+          // 推荐的 Data Class 定义，结合可空类型和默认值
+          data class UserProfile(
+              val id: String, // 假设 id 总是存在且非空
+              val name: String?, // name 可能缺失或为 null
+              val email: String? = "no-email@example.com", // email 可能缺失或为 null，提供默认值
+              val age: Int = 18 // age 可能缺失，提供默认值 (假设 age 不会是 null)
+          )
+
+          fun main() {
+              val gson = Gson()
+
+              // 1. JSON 中缺少 name 和 email, age
+              val jsonMissingFields = """{"id": "user1"}"""
+              val profile1 = gson.fromJson(jsonMissingFields, UserProfile::class.java)
+              println("Profile 1: $profile1")
+              // 输出: Profile 1: UserProfile(id=user1, name=null, email=no-email@example.com, age=18)
+
+              // 2. JSON 中 name 为 null, email 存在, age 缺失
+              val jsonNullAndPresent = """{"id": "user2", "name": null, "email": "user2@example.com"}"""
+              val profile2 = gson.fromJson(jsonNullAndPresent, UserProfile::class.java)
+              println("Profile 2: $profile2")
+              // 输出: Profile 2: UserProfile(id=user2, name=null, email=user2@example.com, age=18)
+
+              // 3. 完整 JSON
+              val jsonComplete = """{"id": "user3", "name": "Charlie", "email": "charlie@sample.org", "age": 30}"""
+              val profile3 = gson.fromJson(jsonComplete, UserProfile::class.java)
+              println("Profile 3: $profile3")
+              // 输出: Profile 3: UserProfile(id=user3, name=Charlie, email=charlie@sample.org, age=30)
+          }
+          ```
+      - title: 时间格式异常
+        description: |
+          当 JSON 字符串中的日期/时间格式与 Gson 解析 `java.util.Date` 或其他时间相关类型时所期望的格式不匹配时，会发生解析异常。这通常表现为 `java.text.ParseException`，并被 Gson 包装在 `JsonSyntaxException` 中。
+
+          **原因**:
+          - JSON 中的日期字符串格式（如 `"2024-07-15"`, `"15/07/2024 10:30"`, `"2024-07-15T10:30:00Z"`）与 Gson 实例配置的 `DateFormat` 不符。
+          - 没有为 Gson 配置 `DateFormat`，导致其使用默认的、可能不匹配的格式。
+          - 尝试解析 Java 8 时间 API 类型 (`LocalDate`, `LocalDateTime` 等) 但没有注册相应的自定义 `TypeAdapter`。
+
+          **解决方法**:
+          - **使用 `GsonBuilder().setDateFormat(pattern)`**: 在创建 Gson 实例时，明确指定与 JSON 中日期字符串完全匹配的格式模式。
+          - **处理多种格式**: 如果 JSON 可能包含多种日期格式，需要编写自定义 `JsonDeserializer` 或 `TypeAdapter`，在其中尝试解析多种格式。
+          - **支持 Java 8 时间 API**: 为 `LocalDate`, `LocalDateTime`, `ZonedDateTime`, `Instant` 等类型注册自定义 `TypeAdapter`，使用 `java.time.format.DateTimeFormatter` 进行解析。
+          - **处理时间戳**: 如果 JSON 中是 Unix 时间戳（数字），确保目标字段是 `Long` 或 `Int`，或者编写 `TypeAdapter` 将时间戳数字转换为 `Date` 或 `LocalDateTime` 对象（注意区分秒和毫秒）。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+          import com.google.gson.JsonSyntaxException
+          import java.util.Date
+          import java.text.SimpleDateFormat
+          import java.util.Locale
+
+          data class LogEntry(val message: String, val timestamp: Date)
+
+          fun main() {
+              // JSON 使用 "yyyy-MM-dd HH:mm:ss" 格式
+              val jsonInput = """{"message":"System start","timestamp":"2024-07-15 14:30:00"}"""
+
+              // 1. 尝试用默认 Gson 解析 (可能失败，取决于 Locale 和默认格式)
+              val gsonDefault = GsonBuilder().create()
+              try {
+                  gsonDefault.fromJson(jsonInput, LogEntry::class.java)
+              } catch (e: JsonSyntaxException) {
+                  println("Default Gson parse error (expected): ${e.message}")
+              }
+
+              // 2. 使用正确的 DateFormat 配置 Gson
+              val gsonFormatted = GsonBuilder()
+                  .setDateFormat("yyyy-MM-dd HH:mm:ss") // 指定匹配的格式
+                  .create()
+
+              try {
+                  val logEntry = gsonFormatted.fromJson(jsonInput, LogEntry::class.java)
+                  // 使用 SimpleDateFormat 格式化回来看是否正确解析
+                  val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+                  println("Parsed timestamp: ${formatter.format(logEntry.timestamp)}")
+                  // 输出: Parsed timestamp: 2024-07-15 14:30:00
+              } catch (e: JsonSyntaxException) {
+                  println("Formatted Gson parse error (unexpected): ${e.message}")
+              }
+
+              // 3. JSON 格式与配置不匹配
+              val jsonWrongFormat = """{"message":"Error","timestamp":"15/07/2024"}"""
+               try {
+                  gsonFormatted.fromJson(jsonWrongFormat, LogEntry::class.java)
+              } catch (e: JsonSyntaxException) {
+                  println("\nWrong format error: ${e.message}")
+                   // 输出类似: Wrong format error: java.text.ParseException: Unparseable date: "15/07/2024"
+              }
+          }
+          ```
+      - title: NullPointer 检查与容错策略
+        description: |
+          在 Kotlin 中使用 Gson 时，由于 Kotlin 的空安全特性，需要特别注意处理潜在的 `NullPointerException` (NPE)，尤其是在与 Java 库交互或处理可能包含 `null` 的 JSON 数据时。
+
+          **主要风险点**:
+          - 将 `null` 值反序列化给 Kotlin 的非空类型 (`String`, `Int` 等)。
+          - 访问 data class 中声明为非空但实际可能被 Gson 赋予 `null`（或 JVM 默认值如 0）的属性。
+          - 在自定义 `TypeAdapter` 或 `JsonDeserializer` 中没有正确处理 `null` 情况。
+
+          **容错策略**:
+          1.  **声明可空类型**: 最重要的一点，对于 JSON 中可能为 `null` 或缺失的字段，始终在 Kotlin data class 中使用可空类型 (`String?`, `List<Item>?` 等)。
+          2.  **安全调用 (`?.`)**: 在访问可能为 `null` 的属性或调用其方法时，使用安全调用操作符 `?.`。
+          3.  **Elvis 操作符 (`?:`)**: 为可能为 `null` 的表达式提供一个非空的默认值。`val name = user.name ?: "Guest"`。
+          4.  **`let` 函数**: 对非空值执行操作：`user.email?.let { sendEmail(it) }`。
+          5.  **`try-catch` 块**: 包裹 `gson.fromJson()` 调用，捕获 `JsonSyntaxException` 和其他潜在的运行时异常。
+          6.  **输入校验**: 在解析前对输入的 JSON 字符串进行基本的非空或格式检查。
+          7.  **默认值**: 为 data class 的属性提供合理的默认值（但这不能防止 `null` 被赋给非空类型的问题）。
+          8.  **单元测试**: 编写测试用例覆盖各种 JSON 输入，包括 `null` 值和缺失字段。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonSyntaxException
+
+          // 使用可空类型是关键
+          data class Item(val id: Int?, val description: String?)
+
+          fun processJson(json: String?, gson: Gson): Item? {
+              if (json.isNullOrBlank()) {
+                  println("Input JSON is null or blank.")
+                  return null
+              }
+
+              return try {
+                  // 使用 TypeToken 如果是解析 List<Item> 等泛型
+                  val item = gson.fromJson(json, Item::class.java)
+
+                  // 使用解析后的数据前进行检查或安全调用
+                  val idValue = item.id ?: -1 // Elvis 操作符提供默认值
+                  val descLength = item.description?.length ?: 0 // 安全调用和 Elvis
+
+                  println("Parsed Item ID (or default): $idValue")
+                  println("Description length (or default): $descLength")
+
+                  item // 返回解析成功的 Item
+
+              } catch (e: JsonSyntaxException) {
+                  println("Failed to parse JSON: ${e.message}")
+                  null // 返回 null 表示失败
+              } catch (e: Exception) {
+                  // 捕获其他潜在异常
+                  println("An unexpected error occurred: ${e.message}")
+                  null
+              }
+          }
+
+          fun main() {
+              val gson = Gson()
+              val validJson = """{"id": 10, "description": "Sample Item"}"""
+              val jsonWithNull = """{"id": null, "description": null}"""
+              val invalidJson = """{"id": 20, "description": }""" // 语法错误
+              val emptyJson = ""
+
+              println("--- Processing valid JSON ---")
+              processJson(validJson, gson)
+
+              println("\n--- Processing JSON with nulls ---")
+              processJson(jsonWithNull, gson)
+
+              println("\n--- Processing invalid JSON ---")
+              processJson(invalidJson, gson)
+
+              println("\n--- Processing empty JSON ---")
+              processJson(emptyJson, gson)
+          }
+          ```
+  - title: 常见问题与解决技巧
+    description: 总结 Gson 在 Android 和 Kotlin 开发实践中经常遇到的一些问题及其对应的解决方案和技巧。
+    children:
+      - title: 序列化空值丢失
+        description: |
+          **问题**: 默认情况下，当使用 Gson 将 Kotlin/Java 对象序列化为 JSON 时，值为 `null` 的字段会被忽略，不会出现在输出的 JSON 字符串中。
+          **解决**: 如果需要将 `null` 值的字段也显式地包含在 JSON 输出中（表示为 `"fieldName": null`），需要在创建 Gson 实例时使用 `GsonBuilder` 并调用 `serializeNulls()` 方法。
+        example: |
+          ```kotlin
+          import com.google.gson.GsonBuilder
+
+          data class DataWithNull(val id: Int, val value: String?, val note: String?)
+
+          fun main() {
+              val data = DataWithNull(1, null, "Important")
+
+              // 默认 Gson
+              val gsonDefault = GsonBuilder().create()
+              println("Default JSON: ${gsonDefault.toJson(data)}")
+              // 输出: Default JSON: {"id":1,"note":"Important"} (value 字段丢失)
+
+              // 配置 serializeNulls()
+              val gsonSerializeNulls = GsonBuilder()
+                  .serializeNulls() // 启用 null 值序列化
+                  .create()
+              println("JSON with nulls: ${gsonSerializeNulls.toJson(data)}")
+              // 输出: JSON with nulls: {"id":1,"value":null,"note":"Important"} (value 字段输出为 null)
+          }
+          ```
+      - title: Json 字段名与实体变量不一致
+        description: |
+          **问题**: JSON 数据源中的字段名（通常是下划线命名法，如 `user_id`, `first_name`）与 Kotlin 代码中遵循驼峰命名法（`userId`, `firstName`）的 data class 属性名不一致。
+          **解决**: 使用 Gson 提供的 `@com.google.gson.annotations.SerializedName` 注解。将此注解添加到 data class 的属性上，并指定其在 JSON 中对应的字段名。Gson 在序列化和反序列化时会使用 `@SerializedName` 中提供的名称进行映射。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.annotations.SerializedName
+
+          // Kotlin data class 使用驼峰命名
+          data class UserInfo(
+              @SerializedName("user_id") // 映射 JSON 中的 user_id
+              val userId: Int,
+
+              @SerializedName("first_name") // 映射 JSON 中的 first_name
+              val firstName: String,
+
+              // 如果 JSON 字段名与属性名一致，则无需注解
+              val email: String?
+          )
+
+          fun main() {
+              val gson = Gson()
+              val jsonInput = """
+              {
+                "user_id": 123,
+                "first_name": "Alice",
+                "email": "alice@example.com"
+              }
+              """
+
+              // 反序列化：Gson 根据 @SerializedName 找到对应的 Kotlin 属性
+              val userInfo = gson.fromJson(jsonInput, UserInfo::class.java)
+              println("User ID: ${userInfo.userId}") // 输出: 123
+              println("First Name: ${userInfo.firstName}") // 输出: Alice
+
+              // 序列化：Gson 根据 @SerializedName 生成对应的 JSON 字段名
+              val jsonOutput = gson.toJson(userInfo)
+              println("Serialized JSON: $jsonOutput")
+              // 输出: Serialized JSON: {"user_id":123,"first_name":"Alice","email":"alice@example.com"}
+          }
+          ```
+      - title: 时间戳与日期互转
+        description: |
+          **问题**: JSON 中包含的是 Unix 时间戳（通常是一个长整型数字，表示自 UTC 1970年1月1日以来的秒数或毫秒数），而 Kotlin 代码中希望使用更易于处理的 `java.util.Date` 或 Java 8 的 `java.time.LocalDateTime` / `Instant` 对象。
+          **解决**: 主要有两种方法：
+          1.  **自定义 `TypeAdapter` 或 `JsonSerializer`/`JsonDeserializer`**: 这是最灵活和推荐的方式。创建一个适配器，在 `read` (反序列化) 时将 Long 型时间戳转换为 `Date` 或 `LocalDateTime` 对象（注意乘以 1000 如果是秒级时间戳），在 `write` (序列化) 时将 `Date` 或 `LocalDateTime` 转换回 Long 型时间戳。然后使用 `GsonBuilder().registerTypeAdapter()` 注册这个适配器。
+          2.  **使用中间字段和计算属性**: 在 data class 中保留一个 `Long` 类型的字段来直接接收或存储时间戳。然后添加一个 Kotlin 的计算属性（`get()`）或一个非持久化的 (`@Transient`) 字段，在这个属性的 getter 中进行时间戳到日期对象的转换。这种方法避免了复杂的 Gson 配置，但日期对象不是直接由 Gson 创建的。
+        example: |
+          ```kotlin
+          import com.google.gson.*
+          import com.google.gson.stream.JsonReader
+          import com.google.gson.stream.JsonToken
+          import com.google.gson.stream.JsonWriter
+          import java.io.IOException
+          import java.time.Instant
+          import java.time.LocalDateTime
+          import java.time.ZoneOffset
+
+          // --- 方法 1: 使用 TypeAdapter (推荐) ---
+          class InstantTimestampAdapter : TypeAdapter<Instant>() {
+              @Throws(IOException::class)
+              override fun write(out: JsonWriter, value: Instant?) {
+                  if (value == null) {
+                      out.nullValue()
+                  } else {
+                      // 假设序列化为秒级时间戳
+                      out.value(value.epochSecond)
+                  }
+              }
+
+              @Throws(IOException::class)
+              override fun read(`in`: JsonReader): Instant? {
+                  if (`in`.peek() == JsonToken.NULL) {
+                      `in`.nextNull()
+                      return null
+                  }
+                  // 假设 JSON 中是秒级时间戳
+                  val timestampSeconds = `in`.nextLong()
+                  return Instant.ofEpochSecond(timestampSeconds)
+              }
+          }
+
+          data class EventUsingAdapter(val name: String, val time: Instant)
+
+          // --- 方法 2: 使用中间字段和计算属性 ---
+          data class EventUsingComputed(
+              val name: String,
+              // 直接接收时间戳 (假设是秒)
+              val timestampSeconds: Long
+          ) {
+              // 计算属性，将时间戳转换为 Instant
+              val time: Instant
+                  get() = Instant.ofEpochSecond(timestampSeconds)
+
+              // 如果需要 LocalDateTime (需要时区)
+              val localTime: LocalDateTime
+                  get() = LocalDateTime.ofInstant(time, ZoneOffset.UTC) // 或者用系统默认时区 ZoneId.systemDefault()
+          }
+
+          fun main() {
+              // --- 测试方法 1 ---
+              val gsonWithAdapter = GsonBuilder()
+                  .registerTypeAdapter(Instant::class.java, InstantTimestampAdapter())
+                  .create()
+
+              val jsonTimestamp = """{"name":"Launch","time":1678886400}""" // time 是秒级时间戳
+              val event1 = gsonWithAdapter.fromJson(jsonTimestamp, EventUsingAdapter::class.java)
+              println("Adapter - Event time: ${event1.time}") // 输出 Instant 对象
+
+              val eventToSerialize = EventUsingAdapter("Shutdown", Instant.now())
+              println("Adapter - Serialized: ${gsonWithAdapter.toJson(eventToSerialize)}") // 输出包含秒级时间戳的 JSON
+
+              println("\n--- 测试方法 2 ---")
+              val gsonDefault = Gson() // 不需要特殊配置
+              val event2 = gsonDefault.fromJson(jsonTimestamp, EventUsingComputed::class.java)
+              println("Computed - Timestamp field: ${event2.timestampSeconds}") // 输出 Long 时间戳
+              println("Computed - Instant property: ${event2.time}") // 输出 Instant 对象
+              println("Computed - LocalDateTime property: ${event2.localTime}") // 输出 LocalDateTime
+
+              val eventToSerialize2 = EventUsingComputed("Backup", Instant.now().epochSecond)
+              println("Computed - Serialized: ${gsonDefault.toJson(eventToSerialize2)}") // 输出包含 timestampSeconds 的 JSON
+          }
+          ```
+      - title: 字段混淆导致解析失败
+        description: |
+          **问题**: 在 Android 项目中启用代码混淆（Proguard 或 R8）后，data class 的类名和/或字段名可能被重命名（混淆），导致 Gson 在运行时无法通过反射找到预期的类或字段，从而解析失败（通常表现为反序列化结果为 `null` 或默认值，且不抛出异常，或者在极端情况下抛出 `ClassNotFoundException` 或 `NoSuchFieldException` 等）。
+          **解决**: 需要确保 Gson 需要访问的类和成员（字段、构造函数）不被混淆。有以下几种主要方法：
+          1.  **使用 `@Keep` 注解**: 在 data class 类本身以及所有需要参与序列化/反序列化的字段上添加 AndroidX 的 `@androidx.annotation.Keep` 注解。这是最直接的方式，告诉混淆工具保留这些元素。
+          2.  **配置 Proguard/R8 规则**: 在 `proguard-rules.pro` 文件中添加 `-keep` 规则来保留模型类及其成员。一个通用的规则是：
+              ```proguard
+              # 保留所有在 com.yourpackage.model 包下的类及其所有成员（字段和方法）
+              -keep class com.yourpackage.model.** { *; }
+              # 保留泛型签名，这对于 TypeToken 工作是必需的
+              -keepattributes Signature
+              # 保留注解，因为 Gson 可能依赖 @SerializedName 等注解
+              -keepattributes *Annotation*
+              # 如果你的模型类有无参构造函数之外的构造函数被 Gson 使用，也需要保留
+              # -keepclassmembers public class com.yourpackage.model.** { public <init>(...); }
+              ```
+              确保将 `com.yourpackage.model.**` 替换为你实际的模型类所在的包名。
+          3.  **始终使用 `@SerializedName`**: 如果你为 data class 的所有字段都使用了 `@SerializedName` 注解，那么即使字段名本身被混淆了，Gson 仍然可以根据注解中的字符串值（不会被混淆）来正确映射 JSON 字段。但这并不能防止类名本身被混淆，所以通常还是需要配合 `@Keep` 或 Proguard 规则来保留类。
+
+          **推荐**: 结合使用 Proguard/R8 规则（提供包级别的保护）和 `@SerializedName`（提供字段级别的映射健壮性）。对于特别重要的模型类，也可以额外添加 `@Keep` 注解。
+        example: |
+          ```kotlin
+          // build.gradle (Module: app)
+          // android {
+          //     buildTypes {
+          //         release {
+          //             minifyEnabled true
+          //             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+          //         }
+          //     }
+          // }
+
+          // proguard-rules.pro 文件内容示例
+          /*
+          # 保留你的数据模型类所在的包及其所有内容
+          # 把 com.example.myapp.data.models 替换成你项目实际的包名
+          -keep class com.example.myapp.data.models.** { *; }
+
+          # 保留泛型信息，这对于 Gson 解析 List<T>, Map<K, V> 等至关重要
+          -keepattributes Signature
+
+          # 保留注解，Gson 的 @SerializedName, @Expose 等注解需要保留
+          -keepattributes *Annotation*
+
+          # 如果使用了 Kotlin Coroutines 或其他需要特定保留规则的库，也需添加它们的规则
+          # -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+          */
+
+
+          // Kotlin Data Class 示例 (可以配合 Proguard 规则)
+          package com.example.myapp.data.models
+
+          import com.google.gson.annotations.SerializedName
+          // import androidx.annotation.Keep // 如果需要，可以添加 @Keep
+
+          // @Keep // 可以选择在这里添加 Keep 注解
+          data class ProductModel(
+              // 使用 @SerializedName 可以增加混淆后的健壮性
+              @SerializedName("product_id")
+              val productId: String,
+
+              @SerializedName("product_name")
+              val productName: String,
+
+              val price: Double // 如果 Proguard 规则已保留此类，此字段也会被保留
+          )
+
+          // 使用时，确保 Proguard/R8 配置正确，Gson 就能正常工作
+          // val gson = Gson()
+          // val product = gson.fromJson(jsonString, ProductModel::class.java)
+          ```
+      - title: Retrofit + GsonConverterFactory 特殊配置
+        description: |
+          **问题**: 当使用流行的网络库 Retrofit 配合 `retrofit2.converter.gson.GsonConverterFactory` 来自动处理 JSON 请求体和响应体的转换时，可能需要应用一些自定义的 Gson 配置（例如，设置特定的日期格式、启用 `serializeNulls`、注册自定义 `TypeAdapter` 等），而不是使用默认的 Gson 实例。
+          **解决**: `GsonConverterFactory` 提供了一个重载的 `create()` 方法，允许你传入一个预先配置好的 `Gson` 实例。
+
+          **步骤**:
+          1.  使用 `GsonBuilder` 创建并配置你需要的 `Gson` 实例。
+          2.  在创建 `Retrofit` 实例时，调用 `addConverterFactory()` 方法，并传入 `GsonConverterFactory.create(yourCustomGsonInstance)`。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.GsonBuilder
+          import retrofit2.Retrofit
+          import retrofit2.converter.gson.GsonConverterFactory
+          import java.time.LocalDateTime // 假设需要自定义 LocalDateTime 适配器
+          // import com.example.myapp.utils.LocalDateTimeAdapter // 假设已定义
+
+          object NetworkClient {
+
+              // 1. 创建自定义配置的 Gson 实例
+              private val customGson: Gson = GsonBuilder()
+                  .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ") // 例如，设置 ISO 8601 日期格式
+                  .serializeNulls() // 例如，序列化 null 值
+                  // .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter()) // 例如，注册自定义适配器
+                  .setPrettyPrinting() // 可以添加其他配置
+                  .create()
+
+              // 2. 创建 Retrofit 实例时，传入自定义 Gson 实例
+              val retrofit: Retrofit = Retrofit.Builder()
+                  .baseUrl("https://api.example.com/")
+                  // 使用 GsonConverterFactory.create() 并传入自定义 Gson 实例
+                  .addConverterFactory(GsonConverterFactory.create(customGson))
+                  // 可以添加 OkHttp Client, CallAdapterFactory 等其他配置
+                  // .client(okHttpClient)
+                  // .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+                  .build()
+
+              // 3. 创建 API Service 接口实例
+              // inline fun <reified T> createApiService(): T = retrofit.create(T::class.java)
+              // val userService = createApiService<UserService>()
+          }
+
+          // 使用示例:
+          // val apiService = NetworkClient.retrofit.create(MyApiService::class.java)
+          // val call = apiService.getData()
+          // ...
+          ```
+      - title: Gson 与 Moshi/fastjson 协同策略
+        description: |
+          **问题**: 在一个大型项目或长期维护的项目中，可能由于历史原因或特定需求，同时存在 Gson 和其他 JSON 库（如 Square 的 Moshi、Alibaba 的 fastjson、Jackson 等）。需要考虑如何在这些库之间进行协调。
+          **解决**:
+          1.  **明确使用场景与边界**: 尽量为项目的不同模块或层次规定使用哪种 JSON 库。例如，新功能推荐使用性能更好、对 Kotlin 支持更完善的 Moshi，而旧的、依赖 Gson 的模块则继续维护 Gson。避免在同一个数据处理流程中频繁切换库。
+          2.  **Retrofit 多 Converter**: 如果使用 Retrofit，它可以支持添加多个 `Converter.Factory`。Retrofit 会按照添加的顺序依次尝试使用每个 Factory 进行转换。确保你的主力 JSON 库的 Factory 放在前面。例如：
+              ```kotlin
+              Retrofit.Builder()
+                  .baseUrl(...)
+                  .addConverterFactory(MoshiConverterFactory.create(moshi)) // 优先使用 Moshi
+                  .addConverterFactory(GsonConverterFactory.create(gson)) // 然后尝试 Gson
+                  .build()
+              ```
+              注意，模型类需要与对应的 Converter 兼容（例如，Moshi 使用 `@Json` 注解，Gson 使用 `@SerializedName`）。
+          3.  **避免模型类混用注解**: 一个 data class 最好只使用一种 JSON 库的注解。如果一个类需要同时被 Gson 和 Moshi 处理，可能会导致注解冲突或行为不一致。可以考虑创建不同的 DTO (Data Transfer Object) 类，或者只用一套注解并确保两个库都能识别（某些情况下可能，但不推荐）。
+          4.  **数据转换**: 如果确实需要在不同库处理的对象之间传递数据，最简单（但效率较低）的方法是通过中间的 JSON 字符串进行转换：`ObjectA (Gson) -> toJsonString -> fromJsonString -> ObjectB (Moshi)`。尽量避免这种操作，尤其是在性能敏感的场景。
+          5.  **依赖管理**: 注意管理好不同 JSON 库及其依赖的版本，避免版本冲突。
+
+          **总结**: 优先选择一个主力 JSON 库（对于新 Kotlin 项目，Moshi 通常是更好的选择），尽量保持一致性。如果必须共存，要划清界限，小心处理 Retrofit 配置和模型类注解。
+        example: |
+          ```kotlin
+          // 概念性示例：Retrofit 配置多 Converter Factory
+
+          // import com.squareup.moshi.Moshi
+          // import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+          // import retrofit2.converter.moshi.MoshiConverterFactory
+          // import com.google.gson.Gson
+          // import retrofit2.converter.gson.GsonConverterFactory
+          // import retrofit2.Retrofit
+
+          // // 假设已创建 Moshi 和 Gson 实例
+          // val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+          // val gson = Gson()
+
+          // val retrofit = Retrofit.Builder()
+          //     .baseUrl("https://api.example.com/")
+          //     // 添加 Converter Factory 的顺序很重要
+          //     // Retrofit 会先尝试用 MoshiConverterFactory 处理
+          //     .addConverterFactory(MoshiConverterFactory.create(moshi))
+          //     // 如果 Moshi 不能处理（例如，返回值类型没有对应的 Moshi Adapter），
+          //     // Retrofit 会接着尝试用 GsonConverterFactory
+          //     .addConverterFactory(GsonConverterFactory.create(gson))
+          //     .build()
+
+          // // 定义 API 接口时，其返回值类型需要能被至少一个 Converter Factory 处理
+          // interface ApiService {
+          //     @GET("data/moshi")
+          //     suspend fun getDataForMoshi(): MoshiDataModel // Moshi 会处理这个
+
+          //     @GET("data/gson")
+          //     suspend fun getDataForGson(): GsonDataModel // Moshi 失败后，Gson 会处理这个
+          // }
+          ```
+  - title: 最佳实践
+    description: 遵循一些推荐的实践方法可以帮助你在 Kotlin Android 项目中更高效、更健壮地使用 Gson，并提高代码的可维护性。
+    children:
+      - title: 单例 Gson 实例封装
+        description: |
+          创建 `Gson` 实例（尤其是通过 `GsonBuilder` 配置的实例）是有一定开销的，因为它涉及到初始化内部的类型适配器缓存等。在应用程序中频繁地创建新的 `Gson` 实例会影响性能。
+
+          **最佳实践**: 推荐在你的应用程序中创建一个**单例**的、配置好的 `Gson` 实例，并在所有需要进行 JSON 操作的地方共享使用这个单例。
+
+          **实现方式**:
+          - **使用 `object` (Kotlin 单例)**: 如果 Gson 配置简单且全局通用，可以直接用 `object` 定义一个 Gson 提供者。
+          - **使用依赖注入 (DI)**: 在 Android 开发中，强烈推荐使用 Hilt 或 Koin 等依赖注入框架来管理 `Gson` 实例的生命周期。在 DI 模块中提供一个 `@Singleton` 或类似作用域的 `Gson` 实例。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.GsonBuilder
+          // import javax.inject.Singleton // 如果使用 Hilt/Dagger
+          // import dagger.Module
+          // import dagger.Provides
+          // import dagger.hilt.InstallIn
+          // import dagger.hilt.components.SingletonComponent
+
+          // --- 方法 1: 使用 Kotlin object (简单场景) ---
+          object GsonProvider {
+              val instance: Gson by lazy {
+                  GsonBuilder()
+                      // 添加你需要的全局配置
+                      .serializeNulls()
+                      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                      // .registerTypeAdapter(...) // 注册全局 TypeAdapter
+                      .create()
+              }
+          }
+          // 使用: val gson = GsonProvider.instance
+
+
+          // --- 方法 2: 使用 Hilt (推荐的 Android 实践) ---
+          /*
+          @Module
+          @InstallIn(SingletonComponent::class) // 提供应用级别的单例
+          object GsonModule {
+
+              @Provides
+              @Singleton // 标记为单例
+              fun provideGson(): Gson {
+                  return GsonBuilder()
+                      // ... 同样的配置 ...
+                      .serializeNulls()
+                      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                      .create()
+              }
+          }
+          */
+          // 在需要 Gson 的地方通过 @Inject 注入:
+          // @Inject lateinit var gson: Gson
+          ```
+      - title: Retrofit + Gson 配置封装
+        description: |
+          将 Retrofit 客户端的创建和配置（包括其依赖的 OkHttpClient 和 GsonConverterFactory/Gson 实例）封装在一个集中的地方（例如，一个 `NetworkModule` 或 `ApiClient` 类）是一种良好的实践。这使得网络层的配置统一、易于管理和修改。
+
+          **好处**:
+          - **配置集中**: Base URL、超时设置、拦截器、转换器等网络相关配置都在一个地方。
+          - **易于维护**: 修改网络配置时只需改动一处。
+          - **方便测试**: 可以方便地替换为测试用的 Retrofit 或 OkHttpClient 实例。
+          - **提供单例**: 通常 Retrofit 和 OkHttpClient 实例也应该是单例的，封装类有助于实现这一点。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.GsonBuilder
+          import okhttp3.OkHttpClient
+          import okhttp3.logging.HttpLoggingInterceptor
+          import retrofit2.Retrofit
+          import retrofit2.converter.gson.GsonConverterFactory
+          import java.util.concurrent.TimeUnit
+          // import javax.inject.Inject // 使用 DI
+          // import javax.inject.Singleton
+
+          // --- 使用 Hilt/Dagger 的封装示例 ---
+          /*
+          @Module
+          @InstallIn(SingletonComponent::class)
+          object NetworkModule {
+
+              @Provides
+              @Singleton
+              fun provideGson(): Gson {
+                  return GsonBuilder()
+                      .serializeNulls()
+                      // ... 其他 Gson 配置 ...
+                      .create()
+              }
+
+              @Provides
+              @Singleton
+              fun provideOkHttpClient(): OkHttpClient {
+                  val loggingInterceptor = HttpLoggingInterceptor().apply {
+                      level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+                  }
+                  return OkHttpClient.Builder()
+                      .addInterceptor(loggingInterceptor)
+                      // .addInterceptor(AuthInterceptor()) // 添加其他拦截器
+                      .connectTimeout(30, TimeUnit.SECONDS)
+                      .readTimeout(30, TimeUnit.SECONDS)
+                      .build()
+              }
+
+              @Provides
+              @Singleton
+              fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
+                  return Retrofit.Builder()
+                      .baseUrl("https://api.example.com/")
+                      .client(okHttpClient) // 使用提供的 OkHttpClient
+                      .addConverterFactory(GsonConverterFactory.create(gson)) // 使用提供的 Gson
+                      .build()
+              }
+
+              // 提供 ApiService
+              @Provides
+              @Singleton
+              fun provideMyApiService(retrofit: Retrofit): MyApiService {
+                  return retrofit.create(MyApiService::class.java)
+              }
+          }
+
+          interface MyApiService {
+              // API 方法定义...
+          }
+          */
+
+          // --- 不使用 DI 的简单封装示例 ---
+          object ApiClient {
+              private const val BASE_URL = "https://api.example.com/"
+
+              private val gson: Gson by lazy {
+                  GsonBuilder().serializeNulls().create()
+              }
+
+              private val okHttpClient: OkHttpClient by lazy {
+                   OkHttpClient.Builder()
+                      .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                      .build()
+              }
+
+              private val retrofit: Retrofit by lazy {
+                   Retrofit.Builder()
+                      .baseUrl(BASE_URL)
+                      .client(okHttpClient)
+                      .addConverterFactory(GsonConverterFactory.create(gson))
+                      .build()
+              }
+
+              // 提供创建 Service 的方法
+              fun <T> createService(serviceClass: Class<T>): T {
+                  return retrofit.create(serviceClass)
+              }
+          }
+          // 使用: val service = ApiClient.createService(MyApiService::class.java)
+          ```
+      - title: 自定义 JsonAdapter + 注解支持
+        description: |
+          对于一些通用的、跨多个 data class 的复杂序列化/反序列化逻辑（例如，处理特定格式的日期、枚举与特定字符串/数字的映射、对某些字段进行加密/解密等），仅仅在 `GsonBuilder` 中 `registerTypeAdapter` 可能不够灵活或导致配置臃肿。
+
+          **进阶实践**:
+          1.  **创建自定义 `TypeAdapter` 或 `TypeAdapterFactory`**: 实现具体的转换逻辑。`TypeAdapterFactory` 允许你根据字段的类型或注解动态地创建 `TypeAdapter`。
+          2.  **创建自定义注解**: 定义一个 Kotlin 注解，例如 `@Encrypt`, `@FormattedDate(pattern="...")`, `@EnumAsString` 等。
+          3.  **结合使用**: 在 `TypeAdapterFactory` 的 `create()` 方法中，检查字段或类型是否带有你的自定义注解。如果带有，则返回处理该注解逻辑的 `TypeAdapter` 实例；否则返回 `null` 让 Gson 继续使用默认或其他适配器。
+          4.  **注册 Factory**: 使用 `GsonBuilder().registerTypeAdapterFactory(yourFactory)` 将工厂注册到 Gson 实例中。
+          5.  **在 data class 中使用注解**: 在需要特殊处理的字段上添加你的自定义注解。
+
+          这种方式使得 data class 的定义更清晰地表达了字段的特殊处理需求，并将处理逻辑封装在可重用的 Adapter/Factory 中。
+        example: |
+          ```kotlin
+          import com.google.gson.*
+          import com.google.gson.reflect.TypeToken
+          import com.google.gson.stream.JsonReader
+          import com.google.gson.stream.JsonToken
+          import com.google.gson.stream.JsonWriter
+          import java.io.IOException
+          import java.lang.annotation.Retention
+          import java.lang.annotation.RetentionPolicy
+
+          // 1. 定义自定义注解
+          @Retention(RetentionPolicy.RUNTIME) // 确保注解在运行时可用
+          @Target(AnnotationTarget.FIELD)    // 注解用于字段
+          annotation class TrimmedString
+
+          // 2. 创建处理该注解的 TypeAdapterFactory
+          class TrimmedStringAdapterFactory : TypeAdapterFactory {
+              override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+                  // 检查类型是否为 String
+                  if (type.rawType != String::class.java) {
+                      return null // 不是 String 类型，不由本 Factory 处理
+                  }
+
+                  // 检查字段是否有 @TrimmedString 注解
+                  // 注意：获取字段注解通常需要在 Factory 中访问 Field 对象，这使得实现更复杂。
+                  // 一个简化的（但不完全准确）方法是假设如果请求的是 String 类型就应用。
+                  // 更健壮的方法是让 Gson 在序列化/反序列化时传递字段信息，但这不直接支持。
+                  //
+                  // **替代方案/简化处理**:
+                  // 通常 TypeAdapterFactory 用于基于 *类型* 创建适配器，而不是基于字段注解。
+                  // 如果要基于字段注解，更常见的是：
+                  // a) 创建一个处理特定注解的 TypeAdapter<String>。
+                  // b) 在 GsonBuilder 中为 String.class 注册一个 *总的* TypeAdapter，
+                  //    该 Adapter 内部检查字段注解（但这需要更复杂的反射）。
+                  // c) 使用如 Moshi 这样对注解驱动适配器支持更好的库。
+
+                  // **这里展示一个简化的、基于类型的适配器，模拟效果**
+                  // （实际应用中，如果要严格基于注解，实现会更复杂）
+                  // 返回一个总是 Trim 字符串的 String 适配器
+                  // 如果想让它只对带 @TrimmedString 注解的字段生效，需要更高级的技术
+
+                  val stringAdapter = gson.getAdapter(String::class.java) // 获取默认的 String 适配器
+
+                  val trimmingAdapter = object : TypeAdapter<String>() {
+                      @Throws(IOException::class)
+                      override fun write(out: JsonWriter, value: String?) {
+                           // 写入时可以不处理，或也 trim
+                          stringAdapter.write(out, value)
+                      }
+
+                      @Throws(IOException::class)
+                      override fun read(`in`: JsonReader): String? {
+                          if (`in`.peek() == JsonToken.NULL) {
+                              `in`.nextNull()
+                              return null
+                          }
+                          // 读取时 trim 字符串
+                          return stringAdapter.read(`in`)?.trim()
+                      }
+                  }.nullSafe() // 处理 null 值
+
+                  // 类型转换警告是正常的，因为我们确定 T 是 String
+                  @Suppress("UNCHECKED_CAST")
+                  return trimmingAdapter as TypeAdapter<T>
+              }
+          }
+
+
+          // 3. Data class 中使用注解
+          data class UserInput(
+              val username: String,
+              @TrimmedString val comment: String // 希望这个字段的值在反序列化时被 trim
+          )
+
+          fun main() {
+              // 4. 注册 Factory 并创建 Gson 实例
+              val gson = GsonBuilder()
+                  // 注册自定义 Factory
+                  // **注意**：如上所述，这个简化的 Factory 会 trim *所有* String
+                  // 而不是仅限 @TrimmedString 注解的字段。
+                  // 要实现基于注解的精确控制，需要更复杂的 Factory 或不同的策略。
+                  .registerTypeAdapterFactory(TrimmedStringAdapterFactory())
+                  .create()
+
+              // 5. 测试
+              val jsonInput = """{"username": "  Bob  ", "comment": "  Needs trimming!  "}"""
+              val userInput = gson.fromJson(jsonInput, UserInput::class.java)
+
+              println("Username: '${userInput.username}'") // 输出: '  Bob  ' (因为简化 Factory 对所有 String 都 trim 了)
+              println("Comment: '${userInput.comment}'")   // 输出: 'Needs trimming!' (这个是期望效果)
+
+              // 理想情况下，只有 comment 被 trim。这需要更复杂的 Factory 实现。
+          }
+          ```
+          **注意**: 实现精确的基于字段注解的 `TypeAdapterFactory` 可能比较复杂，涉及到反射获取字段信息。对于这种场景，考虑使用 Moshi 库可能更直接，因为它对注解驱动的代码生成有更好的原生支持。
+      - title: 大型 Json 数据分段解析
+        description: |
+          **问题**: 当处理非常大的 JSON 文件或网络响应（例如，包含成千上万条记录的数组）时，一次性将整个 JSON 加载到内存中并使用 `gson.fromJson()` 进行反序列化，可能会消耗大量内存，甚至导致 `OutOfMemoryError` (OOM)。
+          **解决**: 使用 Gson 的流式 API (`com.google.gson.stream.JsonReader` 和 `com.google.gson.stream.JsonWriter`)。流式 API 允许你逐个令牌（token，如 `BEGIN_OBJECT`, `END_OBJECT`, `BEGIN_ARRAY`, `END_ARRAY`, `NAME`, `STRING`, `NUMBER` 等）地读取或写入 JSON 数据，而无需将整个 JSON 结构一次性载入内存。
+
+          **使用 `JsonReader` (反序列化)**:
+          1.  创建一个 `JsonReader` 实例，传入一个 `Reader` (例如 `InputStreamReader` 读取文件或网络流)。
+          2.  使用 `beginArray()`, `beginObject()`, `hasNext()`, `nextName()`, `nextString()`, `nextInt()`, `skipValue()` 等方法手动遍历 JSON 结构。
+          3.  当读取到一个完整的对象或所需数据片段时，可以调用 `gson.fromJson(reader, YourClass::class.java)` (注意：这里传入的是 `JsonReader`) 将当前位置的 JSON 片段反序列化为对象，或者手动构建对象。
+          4.  处理完一个对象后，继续读取下一个，直到流结束 (`endArray()` 或 `endObject()`)。
+
+          这种方式内存占用低，但代码通常比直接 `fromJson` 更复杂。
+
+          **结合 Okio**: 可以结合 Square 的 Okio 库提供的 `BufferedSource` 来更高效地处理输入流。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.stream.JsonReader
+          import java.io.StringReader // 实际应用中会是 FileReader 或 InputStreamReader
+
+          data class Record(val id: Int, val data: String)
+
+          fun main() {
+              val gson = Gson()
+              // 模拟一个非常大的 JSON 数组字符串
+              val largeJsonArray = """
+              [
+                {"id": 1, "data": "Record one data..."},
+                {"id": 2, "data": "Record two data..."},
+                {"id": 3, "data": "Record three data..."},
+                {"id": 4, "data": "Record four data..."}
+                // ... 假设这里有成千上万条记录 ...
+              ]
+              """
+
+              val reader = JsonReader(StringReader(largeJsonArray))
+              val records = mutableListOf<Record>()
+
+              try {
+                  // 开始读取数组
+                  reader.beginArray()
+
+                  // 循环读取数组中的每个对象
+                  while (reader.hasNext()) {
+                      // 使用 Gson 从 reader 的当前位置解析单个 Record 对象
+                      // 这比读取整个 List<Record> 更节省内存
+                      val record: Record = gson.fromJson(reader, Record::class.java)
+                      records.add(record)
+
+                      // 在这里可以处理单个 record，例如存入数据库、更新 UI (注意线程)
+                      println("Processed record: ${record.id}")
+
+                      // 如果内存仍然有压力，可以在处理完一批后清理 records 列表
+                      // if (records.size >= BATCH_SIZE) { processBatch(records); records.clear() }
+                  }
+
+                  // 结束读取数组
+                  reader.endArray()
+
+              } catch (e: Exception) {
+                  println("Error during streaming parse: ${e.message}")
+                  e.printStackTrace()
+              } finally {
+                  reader.close() // 确保关闭 reader
+              }
+
+              println("\nFinished processing ${records.size} records.")
+          }
+          ```
+      - title: 泛型安全封装工具类
+        description: |
+          每次需要解析泛型类型（如 `List<T>` 或 `Map<K, V>`）时，都需要编写 `object : TypeToken<...>() {}.type` 这样略显冗长的代码。为了简化调用并提高代码可读性，可以创建一些封装了 `TypeToken` 逻辑的 Kotlin 扩展函数或工具函数。
+
+          **实践**:
+          - 创建 `inline` 的 Kotlin 扩展函数，利用 `reified` 类型参数来自动捕获泛型信息，从而在函数内部构造 `TypeToken`。
+          - 提供例如 `Gson.fromJson<T>(json: String)` 用于普通对象，`Gson.fromJsonList<T>(json: String)` 用于列表，`Gson.fromJsonMap<K, V>(json: String)` 用于 Map 等。
+        example: |
+          ```kotlin
+          import com.google.gson.Gson
+          import com.google.gson.JsonSyntaxException
+          import com.google.gson.reflect.TypeToken
+          import java.lang.reflect.Type
+
+          // --- 扩展函数封装 ---
+
+          // 封装基础的 fromJson，使其更 Kotlin 风格 (处理 null 和异常)
+          inline fun <reified T> Gson.fromJsonSafe(json: String?): T? {
+              if (json.isNullOrBlank()) return null
+              return try {
+                  fromJson(json, T::class.java)
+              } catch (e: JsonSyntaxException) {
+                  // Log error e
+                  null
+              }
+          }
+
+          // 封装解析 List<T> 的逻辑
+          // 使用 reified 类型参数 T，可以直接在函数内部获取 T 的 Type
+          inline fun <reified T> Gson.fromJsonList(json: String?): List<T>? {
+              if (json.isNullOrBlank()) return null
+              return try {
+                  // 利用 reified T 构造 TypeToken
+                  val listType: Type = object : TypeToken<List<T>>() {}.type
+                  fromJson(json, listType)
+              } catch (e: JsonSyntaxException) {
+                  // Log error e
+                  null
+              }
+          }
+
+          // 封装解析 Map<K, V> 的逻辑 (需要两个 reified 参数，Kotlin 不直接支持)
+          // 需要传入 Key 和 Value 的 Class 或 Type
+          // 替代方案：封装特定 Key 类型的 Map，例如 Map<String, T>
+          inline fun <reified V> Gson.fromJsonStringMap(json: String?): Map<String, V>? {
+               if (json.isNullOrBlank()) return null
+              return try {
+                  val mapType: Type = object : TypeToken<Map<String, V>>() {}.type
+                  fromJson(json, mapType)
+              } catch (e: JsonSyntaxException) {
+                   // Log error e
+                  null
+              }
+          }
+          // 对于更通用的 Map<K, V>，可能需要传递 K 和 V 的 Type，封装稍微复杂
+
+          // --- 使用封装的函数 ---
+          data class Item(val name: String, val value: Int)
+
+          fun main() {
+              val gson = Gson()
+              val itemJson = """{"name":"Apple","value":10}"""
+              val listJson = """[{"name":"Banana","value":5},{"name":"Cherry","value":20}]"""
+              val mapJson = """{"fruit1":{"name":"Date","value":15},"fruit2":{"name":"Fig","value":25}}"""
+              val invalidJson = "{"
+
+              // 使用封装函数解析单个对象
+              val item: Item? = gson.fromJsonSafe<Item>(itemJson)
+              println("Parsed item: $item")
+
+              // 使用封装函数解析列表
+              val itemList: List<Item>? = gson.fromJsonList<Item>(listJson)
+              println("Parsed list size: ${itemList?.size}")
+
+              // 使用封装函数解析 Map<String, Item>
+              val itemMap: Map<String, Item>? = gson.fromJsonStringMap<Item>(mapJson)
+              println("Parsed map keys: ${itemMap?.keys}")
+
+              // 处理无效 JSON
+              val failedParse: Item? = gson.fromJsonSafe<Item>(invalidJson)
+              println("Failed parse result: $failedParse")
+          }
+          ```

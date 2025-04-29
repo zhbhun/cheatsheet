@@ -1,94 +1,935 @@
 id: frame
 title: FrameLayout
-query: Kotlin Android FrameLayout attributes usage
-comment: 介绍 FrameLayout 的不同属性及场景使用
-description: |
-  FrameLayout 是 Android 中的一种布局容器，通常用于堆叠子视图。它会将所有子视图放置在布局的同一区域，后添加的子视图覆盖在前面的子视图上。适合用于简单的叠加布局，比如在图片上叠加文本或按钮。尽管 FrameLayout 支持添加多个子视图，但每个子视图的布局位置只能通过 `android:layout_gravity` 控制，因此不适合用于复杂的界面布局。
+query: Android FrameLayout
+comment: 系统梳理 FrameLayout 的用法，涵盖基本属性、子视图叠加控制、动态添加移除、常见布局方案、嵌套滚动冲突与实战技巧。
+description: FrameLayout 是 Android 布局系统中最简单的布局容器之一。它的主要特点是将所有子视图（children）按照添加的顺序堆叠在布局的左上角。后添加的子视图会默认覆盖在先添加的子视图之上。FrameLayout 非常适用于需要视图重叠显示的场景，例如：显示加载指示器覆盖内容、在图片上放置按钮或标签、作为 Fragment 容器、实现简单的自定义视图底层结构以及作为动画效果的容器等。实现方式主要通过在 XML 布局文件中声明或在 Kotlin 代码中动态创建 FrameLayout 实例。
+outline:
+  - title: 构建
+    description: 布局中声明 FrameLayout 与常见嵌套结构。
+    children:
+      - title: 布局文件定义
+      - title: 动态创建 FrameLayout
+        description: new FrameLayout(context)
+  - title: 使用
+    description: 常用 XML 属性配置。
+    children:
+      - title: 内边距
+      - title: 前景视图
+        description: 在所有子视图之上的 Drawable
+      - title: 溢出裁减
+        description: android:clipChildren
+      - title: 测量范围
+        description: android:measureAllChildren
+      - title: 子视图对齐方式
+        description: android:layout_gravity
+      - title: 子视图外边距
+      - title: 多个子视图叠加顺序
+        description: 后添加的在上层显示
+  - title: 最佳实践
+    description: 高频开发问题总结。
+    children:
+      - title: 子控件点击穿透问题
+        description: isClickable / isFocusable 配置
+      - title: FrameLayout 实现圆角背景与阴影
+      - title: FrameLayout + ImageView 实现背景图遮罩
+      - title: FrameLayout + DialogFragment 圆角+阴影冲突
+      - title: Loading、Empty、Error、Content 多视图控制
+      - title: FrameLayout 实现视频播放封面 + 播放按钮叠加
+      - title: FrameLayout + 动态添加动画控件效果
+      - title: FrameLayout 配合 MotionLayout 做动效容器
+      - title: FrameLayout + FrameLayout 多层嵌套优化
+usage:
+  - title: 构建
+    description: 介绍如何在 XML 布局文件中定义 FrameLayout 以及如何在 Kotlin 代码中动态创建它。
+    children:
+      - title: 布局文件定义
+        description: 在 XML 布局文件中使用 `<FrameLayout>` 标签来声明一个 FrameLayout 容器。子视图会默认堆叠在左上角。
+        example: |
+          ```xml
+          <!-- activity_main.xml -->
+          <FrameLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/frameLayoutContainer"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
 
-example:
-  - title: 基础 FrameLayout 示例
-    content: |
-      ```xml
-      <FrameLayout
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
+              <!-- 第一个子视图，在底层 -->
+              <ImageView
+                  android:id="@+id/backgroundImage"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:src="@drawable/ic_background"
+                  android:scaleType="centerCrop" />
 
-          <!-- 底层图片 -->
-          <ImageView
+              <!-- 第二个子视图，覆盖在 ImageView 之上 -->
+              <TextView
+                  android:id="@+id/overlayText"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Overlay Text"
+                  android:textSize="24sp"
+                  android:textColor="@android:color/white"
+                  android:background="#80000000"
+                  android:padding="8dp"
+                  android:layout_gravity="center" />
+
+          </FrameLayout>
+          ```
+      - title: 动态创建 FrameLayout
+        description: 在 Kotlin 代码中，可以通过 `FrameLayout(context)` 构造函数来创建一个 FrameLayout 实例，并可以动态添加子视图。
+        example: |
+          ```kotlin
+          import android.os.Bundle
+          import android.view.ViewGroup
+          import android.widget.FrameLayout
+          import android.widget.ImageView
+          import android.widget.TextView
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.content.ContextCompat
+          import androidx.core.view.setMargins // 需要 ktx 库
+
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  // 创建 FrameLayout 实例
+                  val frameLayout = FrameLayout(this).apply {
+                      layoutParams = ViewGroup.LayoutParams(
+                          ViewGroup.LayoutParams.MATCH_PARENT,
+                          ViewGroup.LayoutParams.MATCH_PARENT
+                      )
+                      id = R.id.dynamicFrameLayout // 可以在 ids.xml 中定义 id
+                  }
+
+                  // 创建 ImageView
+                  val imageView = ImageView(this).apply {
+                      layoutParams = FrameLayout.LayoutParams(
+                          FrameLayout.LayoutParams.MATCH_PARENT,
+                          FrameLayout.LayoutParams.MATCH_PARENT
+                      )
+                      setImageResource(R.drawable.ic_background) // 假设存在此 drawable
+                      scaleType = ImageView.ScaleType.CENTER_CROP
+                  }
+
+                  // 创建 TextView
+                  val textView = TextView(this).apply {
+                      // 设置 FrameLayout.LayoutParams 来控制位置和大小
+                      val lp = FrameLayout.LayoutParams(
+                          FrameLayout.LayoutParams.WRAP_CONTENT,
+                          FrameLayout.LayoutParams.WRAP_CONTENT
+                      ).apply {
+                          gravity = android.view.Gravity.CENTER // 居中显示
+                          // 使用 KTX 设置外边距
+                          // setMargins(16, 16, 16, 16) // 单位是像素
+                      }
+                      layoutParams = lp
+                      text = "Dynamic Overlay"
+                      textSize = 24f
+                      setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                      setBackgroundColor(0x80000000.toInt()) // 半透明黑色背景
+                      setPadding(16, 16, 16, 16) // 单位是像素
+                  }
+
+                  // 将子视图添加到 FrameLayout
+                  frameLayout.addView(imageView) // 先添加背景
+                  frameLayout.addView(textView)  // 后添加文本，覆盖在背景上
+
+                  // 将 FrameLayout 设置为 Activity 的 ContentView
+                  setContentView(frameLayout)
+              }
+          }
+
+          // 需要在 res/values/ids.xml 中定义 id (如果需要通过 id 访问)
+          // <resources>
+          //     <item type="id" name="dynamicFrameLayout" />
+          // </resources>
+
+          // 假设 res/drawable/ic_background.xml 存在
+          ```
+  - title: 使用
+    description: 介绍 FrameLayout 的常用 XML 属性及其效果。
+    children:
+      - title: 内边距
+        description: 使用 `android:padding` 属性（或 `paddingStart`, `paddingEnd`, `paddingTop`, `paddingBottom`）来设置 FrameLayout 内部边缘与其子视图之间的空间。内边距会影响所有子视图的位置。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp"
+              android:background="#CCCCCC"
+              android:padding="20dp"> <!-- 设置所有方向的内边距为 20dp -->
+
+              <View
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#FF0000" />
+              <!-- 红色 View 会位于灰色 FrameLayout 内部，距离四边各 20dp -->
+
+          </FrameLayout>
+          ```
+      - title: 前景视图
+        description: 使用 `android:foreground` 属性可以设置一个 Drawable，这个 Drawable 会绘制在 FrameLayout 所有子视图的最顶层。常用于实现点击效果（水波纹）或半透明遮罩。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp"
+              android:clickable="true"
+              android:focusable="true"
+              android:foreground="?android:attr/selectableItemBackground"> <!-- 设置前景为 стандартная 水波纹效果 -->
+
+              <ImageView
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:src="@drawable/ic_launcher_background" />
+              <!-- 点击 FrameLayout 时，水波纹效果会出现在 ImageView 上方 -->
+
+          </FrameLayout>
+
+          <!-- 示例：自定义前景遮罩 -->
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp"
+              android:foreground="#80FF0000"> <!-- 半透明红色前景遮罩 -->
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Content"
+                  android:layout_gravity="center"
+                  android:textSize="20sp"/>
+              <!-- "Content" 文本会被半透明红色遮罩覆盖 -->
+          </FrameLayout>
+          ```
+      - title: 溢出裁减
+        description: '`android:clipChildren` 属性决定是否将子视图的绘制限制在 FrameLayout 的边界内。默认值为 `true`，即超出边界的部分会被裁剪掉。设置为 `false` 则允许子视图绘制到父布局之外（但仍然受父布局的父布局裁剪限制）。'
+        example: |
+          ```xml
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal">
+
+              <!-- clipChildren=true (默认) -->
+              <FrameLayout
+                  android:layout_width="100dp"
+                  android:layout_height="100dp"
+                  android:background="#DDDDDD"
+                  android:clipChildren="true">
+                  <View
+                      android:layout_width="150dp"
+                      android:layout_height="50dp"
+                      android:background="#FF0000"
+                      android:layout_gravity="center" />
+                  <!-- 红色 View 的宽度超出 FrameLayout，左右两边会被裁剪 -->
+              </FrameLayout>
+
+              <!-- clipChildren=false -->
+              <FrameLayout
+                  android:layout_width="100dp"
+                  android:layout_height="100dp"
+                  android:layout_marginStart="20dp"
+                  android:background="#DDDDDD"
+                  android:clipChildren="false"> <!-- 允许子视图绘制到边界外 -->
+                  <View
+                      android:layout_width="150dp"
+                      android:layout_height="50dp"
+                      android:background="#00FF00"
+                      android:layout_gravity="center" />
+                  <!-- 绿色 View 的宽度超出 FrameLayout，但不会被此 FrameLayout 裁剪 -->
+              </FrameLayout>
+          </LinearLayout>
+          ```
+      - title: 测量范围
+        description: '`android:measureAllChildren` 属性决定 FrameLayout 在测量自身尺寸时是否考虑所有子视图，包括那些 `visibility` 为 `GONE` 的子视图。默认值为 `false`，即不测量 GONE 状态的子视图。如果设置为 `true`，即使子视图是 GONE，FrameLayout 也会在测量时将其尺寸考虑进去，这可能影响 FrameLayout 最终的尺寸（特别是当 FrameLayout 的 `layout_width` 或 `layout_height` 设置为 `wrap_content` 时）。该属性通常在需要根据隐藏内容预留空间或在某些特殊动画场景下使用，但一般情况下保持默认值即可。'
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="wrap_content" <!-- 宽度包裹内容 -->
+              android:layout_height="wrap_content"
+              android:background="#CCCCCC"
+              android:measureAllChildren="true"> <!-- 测量所有子视图，包括 GONE 的 -->
+
+              <TextView
+                  android:id="@+id/visibleText"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Visible"
+                  android:textSize="20sp"
+                  android:background="#00FF00"/>
+
+              <TextView
+                  android:id="@+id/goneText"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Gone Text Bigger"
+                  android:textSize="30sp"
+                  android:background="#FF0000"
+                  android:visibility="gone" /> <!-- 此视图 GONE -->
+
+              <!-- FrameLayout 的宽度会考虑 goneText 的宽度，因此会比仅显示 visibleText 时更宽 -->
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 在代码中设置
+          // frameLayout.measureAllChildren = true
+          ```
+      - title: 子视图对齐方式
+        description: 通过在子视图上设置 `android:layout_gravity` 属性，可以控制该子视图在 FrameLayout 中的对齐方式。默认是 `top|start`（左上角）。可以使用 `center`, `center_horizontal`, `center_vertical`, `top`, `bottom`, `start`, `end` (或 `left`, `right`) 及其组合（用 `|` 分隔）。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="match_parent"
+              android:layout_height="200dp"
+              android:background="#CCCCCC">
+
+              <!-- 默认，左上角 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="TopStart"
+                  android:background="#FF0000"/>
+
+              <!-- 居中 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Center"
+                  android:background="#00FF00"
+                  android:layout_gravity="center" />
+
+              <!-- 右下角 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="BottomEnd"
+                  android:background="#0000FF"
+                  android:layout_gravity="bottom|end" />
+
+              <!-- 底部水平居中 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="BottomCenter"
+                  android:background="#FFFF00"
+                  android:layout_gravity="bottom|center_horizontal" />
+
+          </FrameLayout>
+          ```
+      - title: 子视图外边距
+        description: 外边距是针对 FrameLayout 的 **子视图** 设置的，使用 `android:layout_margin` 属性（或 `layout_marginStart`, `layout_marginEnd`, `layout_marginTop`, `layout_marginBottom`）。它定义了子视图与其父布局（FrameLayout）或其他子视图（如果适用）之间的距离。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp"
+              android:background="#CCCCCC">
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Margin Text"
+                  android:background="#00FF00"
+                  android:layout_margin="30dp" /> <!-- 设置此 TextView 相对于 FrameLayout 的外边距 -->
+              <!-- 绿色 TextView 会距离 FrameLayout 四边各 30dp -->
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="No Margin"
+                  android:background="#0000FF"
+                  android:layout_gravity="bottom|end"/>
+              <!-- 蓝色 TextView 在右下角，无外边距 -->
+
+          </FrameLayout>
+          ```
+      - title: 多个子视图叠加顺序
+        description: FrameLayout 中的子视图按其在 XML 中声明的顺序或通过 `addView()` 方法添加的顺序进行堆叠。后添加的子视图会显示在先添加的子视图之上。可以通过调整 XML 中的顺序或在代码中使用 `bringToFront()` 方法来改变某个子视图的层级，将其移动到最顶层。
+        example: |
+          ```xml
+          <!-- XML 顺序决定叠加 -->
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp">
+
+              <!-- View 1: 底层 -->
+              <View
+                  android:id="@+id/view1"
+                  android:layout_width="150dp"
+                  android:layout_height="150dp"
+                  android:background="#FF0000" />
+
+              <!-- View 2: 叠加在 View 1 之上 -->
+              <View
+                  android:id="@+id/view2"
+                  android:layout_width="100dp"
+                  android:layout_height="100dp"
+                  android:background="#00FF00"
+                  android:layout_gravity="center" />
+
+              <!-- View 3: 叠加在 View 2 之上 -->
+              <View
+                  android:id="@+id/view3"
+                  android:layout_width="50dp"
+                  android:layout_height="50dp"
+                  android:background="#0000FF"
+                  android:layout_gravity="bottom|end" />
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 在代码中改变层级
+          val frameLayout = findViewById<FrameLayout>(R.id.frameLayoutContainer) // 获取 FrameLayout
+          val view1 = findViewById<View>(R.id.view1) // 获取底层 View
+
+          // 假设有个 Button 点击事件
+          button.setOnClickListener {
+              // 将 view1 移动到最顶层
+              view1.bringToFront()
+              // 现在 view1 会覆盖 view2 和 view3
+              // 注意：bringToFront() 会请求重新布局和绘制
+          }
+
+          // 动态添加时，顺序决定层级
+          val view4 = View(this).apply { /* ... setup ... */ background = ColorDrawable(Color.YELLOW) }
+          val view5 = View(this).apply { /* ... setup ... */ background = ColorDrawable(Color.CYAN) }
+
+          frameLayout.addView(view4) // view4 在当前最上层
+          frameLayout.addView(view5) // view5 添加后，覆盖 view4
+          ```
+  - title: 最佳实践
+    description: 总结 FrameLayout 在实际开发中的常见问题、解决方案和应用技巧。
+    children:
+      - title: 子控件点击穿透问题
+        description: 当 FrameLayout 中有多个重叠的视图时，顶层的视图如果可以响应点击（例如 Button），它会消费掉点击事件。如果顶层视图不消费事件（例如透明的 View 或设置了 `clickable=false` 的 ViewGroup），点击事件可能会“穿透”到下一层的视图。**解决方法**：如果希望某个覆盖层（即使是透明的）拦截点击事件，阻止事件传递到下层，需要给该覆盖层设置 `android:clickable="true"`。有时也需要同时设置 `android:focusable="true"`。给视图设置背景（即使是透明色 `#00000000`）通常也会使其默认变为 clickable。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="200dp">
+
+              <!-- 底层按钮 -->
+              <Button
+                  android:id="@+id/bottomButton"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:text="Bottom Button (Clickable)"
+                  android:onClick="onBottomClick"/>
+
+              <!-- 覆盖层 View -->
+              <View
+                  android:id="@+id/overlayView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#8000FF00" /> <!-- 半透明背景 -->
+              <!-- 点击此区域，事件会穿透到下面的 Button -->
+
+              <!-- 阻止穿透的覆盖层 -->
+              <!--
+              <View
+                  android:id="@+id/blockingOverlayView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#80FF0000"
+                  android:clickable="true" />
+              -->
+              <!-- 设置 clickable="true" 后，点击此红色区域不会触发底层 Button -->
+
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 在 Activity 或 Fragment 中处理点击
+          fun onBottomClick(view: View) {
+              Log.d("FrameLayout", "Bottom Button Clicked!")
+              // 如果 overlayView 没有设置 clickable="true"，点击 overlayView 区域时，此方法会被调用
+              // 如果 blockingOverlayView (设置了 clickable="true") 显示在最上层，则点击它时，此方法不会被调用
+          }
+
+          // 在代码中设置
+          // overlayView.isClickable = true
+          ```
+      - title: FrameLayout 实现圆角背景与阴影
+        description: 可以通过为 FrameLayout 设置一个带有圆角的 Shape Drawable 背景，并结合 `android:elevation` 属性（API 21+）来实现圆角和阴影效果。注意，如果需要内容也被裁剪成圆角，可能需要额外的处理（例如使用 CardView，或者在代码中设置 `outlineProvider` 和 `clipToOutline=true`）。
+        example: |
+          ```xml
+          <!-- res/drawable/rounded_corner_background.xml -->
+          <shape xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:shape="rectangle">
+              <solid android:color="#FFFFFF" /> <!-- 背景色 -->
+              <corners android:radius="16dp" /> <!-- 圆角半径 -->
+          </shape>
+
+          <!-- layout file -->
+          <FrameLayout
+              android:layout_width="200dp"
+              android:layout_height="100dp"
+              android:layout_margin="16dp"
+              android:background="@drawable/rounded_corner_background" <!-- 应用圆角背景 -->
+              android:elevation="8dp" <!-- 设置阴影（API 21+） -->
+              android:clipToPadding="false"> <!-- 防止 padding 影响阴影 -->
+
+              <!-- FrameLayout 的内容 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Rounded & Shadow"
+                  android:layout_gravity="center"/>
+
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 对于内容裁剪成圆角 (API 21+)
+          // frameLayout.outlineProvider = ViewOutlineProvider.BACKGROUND
+          // frameLayout.clipToOutline = true
+          ```
+      - title: FrameLayout + ImageView 实现背景图遮罩
+        description: 将 ImageView 作为底层显示背景图，在其上层再放置一个 View（或另一个 ImageView）作为半透明遮罩层。调整遮罩层的背景色（通常是带有 alpha 通道的颜色）来实现遮罩效果。
+        example: |
+          ```xml
+          <FrameLayout
+              android:layout_width="match_parent"
+              android:layout_height="200dp">
+
+              <!-- 背景图片 -->
+              <ImageView
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:src="@drawable/your_background_image"
+                  android:scaleType="centerCrop" />
+
+              <!-- 半透明黑色遮罩 -->
+              <View
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:background="#66000000" /> <!-- 40% 透明度的黑色 -->
+
+              <!-- 可以在遮罩上再添加其他内容 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Text on Mask"
+                  android:textColor="@android:color/white"
+                  android:layout_gravity="center"
+                  android:textSize="20sp"/>
+
+          </FrameLayout>
+          ```
+      - title: FrameLayout + DialogFragment 圆角+阴影冲突
+        description: 在 DialogFragment 中，如果根布局是设置了圆角背景和阴影的 FrameLayout，可能会出现阴影被 Dialog 的 Window 背景裁剪掉的问题。**解决方案**：1. 在 DialogFragment 的 `onStart` 或 `onCreateDialog` 中，获取 Dialog 的 Window，将其背景设置为透明 (`dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)`)，这样 FrameLayout 的阴影就能显示出来。2. 确保 FrameLayout 或其父容器没有设置 `clipChildren=true` 或 `clipToPadding=true` 阻止阴影绘制。3. 有时也需要给 FrameLayout 设置合适的 `layout_margin`，为阴影留出空间。
+        example: |
+          ```kotlin
+          import android.graphics.Color
+          import android.graphics.drawable.ColorDrawable
+          import android.os.Bundle
+          import android.view.LayoutInflater
+          import android.view.View
+          import android.view.ViewGroup
+          import androidx.fragment.app.DialogFragment
+          // import R.layout.dialog_custom_layout // 假设布局文件存在
+
+          class CustomDialogFragment : DialogFragment() {
+
+              override fun onCreateView(
+                  inflater: LayoutInflater, container: ViewGroup?,
+                  savedInstanceState: Bundle?
+              ): View? {
+                  // Inflate the layout that contains the FrameLayout with rounded corners and elevation
+                  return inflater.inflate(R.layout.dialog_custom_layout, container, false)
+              }
+
+              override fun onStart() {
+                  super.onStart()
+                  dialog?.window?.let { window ->
+                      // 设置 Window 背景透明，以显示 FrameLayout 的阴影
+                      window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                      // 可选：设置 Dialog 尺寸
+                      val width = (resources.displayMetrics.widthPixels * 0.85).toInt()
+                      window.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
+                  }
+              }
+          }
+
+          // R.layout.dialog_custom_layout.xml 可能像这样:
+          /*
+          <FrameLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="16dp" <!-- 为阴影留出空间 -->
+              android:background="@drawable/rounded_corner_background" <!-- 圆角背景 -->
+              android:elevation="8dp"> <!-- 阴影 -->
+
+              <!-- Dialog 内容 -->
+              <TextView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:padding="20dp"
+                  android:text="Dialog Content"
+                  android:gravity="center"/>
+
+          </FrameLayout>
+          */
+          ```
+      - title: Loading、Empty、Error、Content 多视图控制
+        description: FrameLayout 非常适合用作容器来管理不同状态（如加载中、空数据、错误、正常内容）的视图。将这几个状态对应的 View/ViewGroup 都放入 FrameLayout 中，然后根据当前应用状态，通过控制各视图的 `visibility` 属性 (`View.VISIBLE`, `View.GONE`, `View.INVISIBLE`) 来显示对应的状态视图，隐藏其他视图。
+        example: |
+          ```xml
+          <FrameLayout
+              android:id="@+id/contentFrame"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <!-- 内容视图 (例如 RecyclerView) -->
+              <androidx.recyclerview.widget.RecyclerView
+                  android:id="@+id/recyclerViewContent"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:visibility="gone" /> <!-- 初始隐藏 -->
+
+              <!-- 加载中视图 -->
+              <ProgressBar
+                  android:id="@+id/progressBarLoading"
+                  style="?android:attr/progressBarStyle"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center"
+                  android:visibility="visible" /> <!-- 初始显示加载 -->
+
+              <!-- 空状态视图 -->
+              <TextView
+                  android:id="@+id/textViewEmpty"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="No data available."
+                  android:layout_gravity="center"
+                  android:visibility="gone" /> <!-- 初始隐藏 -->
+
+              <!-- 错误状态视图 -->
+              <LinearLayout
+                  android:id="@+id/layoutError"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:layout_gravity="center"
+                  android:gravity="center"
+                  android:visibility="gone"> <!-- 初始隐藏 -->
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="An error occurred."/>
+                  <Button
+                      android:id="@+id/buttonRetry"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Retry"/>
+              </LinearLayout>
+
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 在 Kotlin 代码中根据状态切换视图
+          private lateinit var content: View
+          private lateinit var loading: View
+          private lateinit var empty: View
+          private lateinit var error: View
+
+          // ... in onCreate or onViewCreated ...
+          // content = findViewById(R.id.recyclerViewContent)
+          // loading = findViewById(R.id.progressBarLoading)
+          // empty = findViewById(R.id.textViewEmpty)
+          // error = findViewById(R.id.layoutError)
+
+          fun showLoading() {
+              content.visibility = View.GONE
+              loading.visibility = View.VISIBLE
+              empty.visibility = View.GONE
+              error.visibility = View.GONE
+          }
+
+          fun showContent() {
+              content.visibility = View.VISIBLE
+              loading.visibility = View.GONE
+              empty.visibility = View.GONE
+              error.visibility = View.GONE
+          }
+
+          fun showEmpty() {
+              content.visibility = View.GONE
+              loading.visibility = View.GONE
+              empty.visibility = View.VISIBLE
+              error.visibility = View.GONE
+          }
+
+          fun showError() {
+              content.visibility = View.GONE
+              loading.visibility = View.GONE
+              empty.visibility = View.GONE
+              error.visibility = View.VISIBLE
+          }
+
+          // 初始调用
+          // showLoading()
+          // 加载数据... 成功后调用 showContent(), 失败调用 showError(), 数据为空调用 showEmpty()
+          ```
+      - title: FrameLayout 实现视频播放封面 + 播放按钮叠加
+        description: 这是 FrameLayout 的经典用法。底层放置一个 ImageView 用于显示视频封面图，上层放置一个 ImageButton 或 Button 作为播放按钮，通常居中显示。点击播放按钮后，可以隐藏封面和按钮，然后显示或添加 VideoView/PlayerView。
+        example: |
+          ```xml
+          <FrameLayout
+              android:id="@+id/videoPlayerContainer"
+              android:layout_width="match_parent"
+              android:layout_height="200dp" <!-- Or specific aspect ratio -->
+              android:background="@android:color/black">
+
+              <!-- 视频封面 -->
+              <ImageView
+                  android:id="@+id/imageViewThumbnail"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:src="@drawable/video_thumbnail"
+                  android:scaleType="centerCrop"
+                  android:visibility="visible"/>
+
+              <!-- 播放按钮 -->
+              <ImageButton
+                  android:id="@+id/buttonPlay"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:src="@drawable/ic_play_arrow" <!-- Standard play icon -->
+                  android:background="?attr/selectableItemBackgroundBorderless" <!-- Ripple effect -->
+                  android:layout_gravity="center"
+                  android:visibility="visible"/>
+
+              <!-- 视频播放器视图 (例如 ExoPlayer 的 PlayerView) -->
+              <!--
+              <com.google.android.exoplayer2.ui.PlayerView
+                  android:id="@+id/playerView"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:visibility="gone"/>
+              -->
+
+          </FrameLayout>
+          ```
+          ```kotlin
+          // 点击播放按钮的逻辑
+          val playButton = findViewById<ImageButton>(R.id.buttonPlay)
+          val thumbnail = findViewById<ImageView>(R.id.imageViewThumbnail)
+          // val playerView = findViewById<PlayerView>(R.id.playerView) // 获取播放器视图
+
+          playButton.setOnClickListener {
+              // 隐藏封面和播放按钮
+              thumbnail.visibility = View.GONE
+              playButton.visibility = View.GONE
+
+              // 显示并准备播放器
+              // playerView.visibility = View.VISIBLE
+              // initializeAndPlayVideo() // 调用播放视频的函数
+          }
+          ```
+      - title: FrameLayout + 动态添加动画控件效果
+        description: FrameLayout 可以作为动态添加和移除执行动画（如粒子效果、点赞动画、飘屏弹幕等）的 View 的容器。因为 FrameLayout 对子视图的位置和大小管理很简单，所以适合临时添加、执行动画、然后移除的场景。
+        example: |
+          ```kotlin
+          import android.animation.Animator
+          import android.animation.AnimatorListenerAdapter
+          import android.animation.ObjectAnimator
+          import android.content.Context
+          import android.graphics.Color
+          import android.os.Bundle
+          import android.view.View
+          import android.widget.Button
+          import android.widget.FrameLayout
+          import androidx.appcompat.app.AppCompatActivity
+          import kotlin.random.Random
+
+          class AnimationActivity : AppCompatActivity() {
+
+              private lateinit var container: FrameLayout
+              private lateinit var addButton: Button
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  // Assume layout has a FrameLayout with id 'animationContainer' and a Button 'btnAddAnimation'
+                  setContentView(R.layout.activity_animation_example) // 假设存在此布局
+
+                  container = findViewById(R.id.animationContainer)
+                  addButton = findViewById(R.id.btnAddAnimation)
+
+                  addButton.setOnClickListener {
+                      addAnimationView(this)
+                  }
+              }
+
+              private fun addAnimationView(context: Context) {
+                  val animatedView = View(context).apply {
+                      // 创建一个小的彩色方块
+                      val size = (50 * resources.displayMetrics.density).toInt()
+                      val lp = FrameLayout.LayoutParams(size, size)
+                      // 随机初始位置 (在容器内)
+                      lp.leftMargin = Random.nextInt(0, container.width - size)
+                      lp.topMargin = Random.nextInt(0, container.height - size)
+                      layoutParams = lp
+                      setBackgroundColor(Color.rgb(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256)))
+                  }
+
+                  // 添加到容器
+                  container.addView(animatedView)
+
+                  // 创建一个简单的向上漂移并消失的动画
+                  val animator = ObjectAnimator.ofFloat(animatedView, "translationY", 0f, -container.height.toFloat()).apply {
+                      duration = 1500 // 动画时长
+                      addListener(object : AnimatorListenerAdapter() {
+                          override fun onAnimationEnd(animation: Animator) {
+                              // 动画结束后从容器中移除 View
+                              container.removeView(animatedView)
+                          }
+                      })
+                  }
+                  // 可以添加其他动画，如 Alpha
+                  ObjectAnimator.ofFloat(animatedView, "alpha", 1f, 0f).setDuration(1500).start()
+
+                  animator.start()
+              }
+          }
+
+          // activity_animation_example.xml:
+          /*
+          <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/animationContainer"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:src="@drawable/sample_image" />
+              android:background="#F0F0F0">
 
-          <!-- 覆盖在图片上的文本 -->
-          <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Hello World!"
-              android:textSize="24sp"
-              android:textColor="#FFFFFF"
-              android:layout_gravity="center" />
-      </FrameLayout>
-      ```
-      **说明**: 该示例展示了如何在 FrameLayout 中堆叠视图，`ImageView` 作为底层视图，`TextView` 通过 `layout_gravity="center"` 居中显示在图片上。
-
-  - title: 使用 FrameLayout 实现按钮覆盖效果
-    content: |
-      ```xml
-      <FrameLayout
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
-
-          <!-- 底层图片 -->
-          <ImageView
+              <Button
+                  android:id="@+id/btnAddAnimation"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Add Animation"
+                  android:layout_gravity="bottom|center_horizontal"
+                  android:layout_marginBottom="16dp"/>
+          </FrameLayout>
+          */
+          ```
+      - title: FrameLayout 配合 MotionLayout 做动效容器
+        description: 虽然 MotionLayout 本身可以处理复杂的布局和动画，但有时你可能只想对界面的一部分应用 MotionLayout 效果。可以将 FrameLayout 作为 MotionLayout 的子视图，MotionLayout 控制 FrameLayout 的整体位置、大小、旋转等属性变化。而 FrameLayout 内部的子视图布局和叠加关系则由 FrameLayout 自身管理。这种方式可以将复杂的动画限制在特定的区域内。
+        example: |
+          ```xml
+          <!-- activity_motion.xml -->
+          <androidx.constraintlayout.motion.widget.MotionLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/motionLayout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:src="@drawable/background_image"
-              android:scaleType="centerCrop" />
+              app:layoutDescription="@xml/scene_example"> <!-- 引用场景文件 -->
 
-          <!-- 覆盖的按钮，位于底部居中 -->
-          <Button
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Click Me"
-              android:layout_gravity="center_horizontal|bottom"
-              android:layout_marginBottom="16dp" />
-      </FrameLayout>
-      ```
-      **说明**: 这个例子展示了如何在 `FrameLayout` 中实现按钮覆盖在图片上的效果，按钮通过 `layout_gravity="center_horizontal|bottom"` 实现底部居中对齐。
+              <!-- FrameLayout 作为 MotionLayout 的子元素被控制 -->
+              <FrameLayout
+                  android:id="@+id/animatedFrame"
+                  android:layout_width="100dp"
+                  android:layout_height="100dp"
+                  android:background="@color/purple_500"
+                  app:layout_constraintTop_toTopOf="parent"
+                  app:layout_constraintStart_toStartOf="parent">
+                  <!-- FrameLayout 内部的子视图 -->
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Inside"
+                      android:textColor="@android:color/white"
+                      android:layout_gravity="center"/>
+              </FrameLayout>
 
-  - title: 使用 foreground 属性添加前景
-    content: |
-      ```xml
-      <FrameLayout
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:foreground="?android:attr/selectableItemBackground"
-          android:foregroundGravity="center">
+              <!-- 其他 MotionLayout 控制的视图 -->
 
-          <ImageView
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:src="@drawable/sample_background" />
+          </androidx.constraintlayout.motion.widget.MotionLayout>
 
-          <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Foreground Example"
-              android:textColor="#FFFFFF"
-              android:layout_gravity="center" />
-      </FrameLayout>
-      ```
-      **说明**: 通过 `android:foreground` 添加前景图层，可以设置前景内容的对齐方式，示例中使用 `foregroundGravity="center"` 实现前景居中对齐。
+          <!-- res/xml/scene_example.xml -->
+          <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:motion="http://schemas.android.com/apk/res-auto">
 
+              <Transition
+                  motion:constraintSetEnd="@+id/end"
+                  motion:constraintSetStart="@+id/start"
+                  motion:duration="1000">
+                  <OnClick motion:targetId="@id/animatedFrame" /> <!-- 点击 Frame 触发动画 -->
+              </Transition>
+
+              <ConstraintSet android:id="@+id/start">
+                  <Constraint
+                      android:id="@id/animatedFrame"
+                      android:layout_width="100dp"
+                      android:layout_height="100dp"
+                      motion:layout_constraintTop_toTopOf="parent"
+                      motion:layout_constraintStart_toStartOf="parent"
+                      android:layout_marginTop="20dp"
+                      android:layout_marginStart="20dp"
+                      android:alpha="1.0" />
+              </ConstraintSet>
+
+              <ConstraintSet android:id="@+id/end">
+                  <Constraint
+                      android:id="@id/animatedFrame"
+                      android:layout_width="200dp" <!-- 宽度变大 -->
+                      android:layout_height="200dp" <!-- 高度变大 -->
+                      motion:layout_constraintBottom_toBottomOf="parent"
+                      motion:layout_constraintEnd_toEndOf="parent"
+                      android:layout_marginBottom="20dp"
+                      android:layout_marginEnd="20dp"
+                      android:rotation="360" <!-- 旋转 -->
+                      android:alpha="0.5"/> <!-- 透明度变化 -->
+              </ConstraintSet>
+
+          </MotionScene>
+          ```
+      - title: FrameLayout + FrameLayout 多层嵌套优化
+        description: 过度嵌套 FrameLayout（或其他布局）会增加布局层级深度，导致测量（measure）和布局（layout）过程耗时增加，可能引起性能问题，尤其是过度绘制（Overdraw）。**优化建议**：1. **扁平化布局**：尽可能使用 ConstraintLayout 来替代多层嵌套，因为它设计的目的就是创建扁平且复杂的布局。2. **使用 `<merge>` 标签**：如果自定义 View 的根布局是 FrameLayout，并且这个自定义 View 总是被包含在另一个 FrameLayout 中，可以使用 `<merge>` 标签作为自定义 View 布局的根元素，减少一层嵌套。3. **使用 `<include>` 标签**：重用布局文件时，`<include>` 默认会将被包含布局的根节点添加到当前布局中。结合 `<merge>` 可以有效减少层级。4. **检查布局边界和背景**：确保没有不必要的背景设置在被覆盖的视图上，减少过度绘制。使用 Android Studio 的 Layout Inspector 和 Debug GPU Overdraw 工具来分析和优化布局层级。
+        example: |
+          ```xml
+          <!-- 不推荐的嵌套方式 -->
+          <FrameLayout ... >
+              <FrameLayout ... >
+                  <ImageView ... />
+                  <TextView ... />
+              </FrameLayout>
+              <Button ... />
+          </FrameLayout>
+
+          <!-- 使用 ConstraintLayout 优化 -->
+          <androidx.constraintlayout.widget.ConstraintLayout ... >
+              <ImageView
+                  android:id="@+id/image" ...
+                  app:layout_constraintTop_toTopOf="parent"
+                  app:layout_constraintStart_toStartOf="parent"/>
+              <TextView ...
+                  app:layout_constraintTop_toBottomOf="@id/image"
+                  app:layout_constraintStart_toStartOf="parent"/>
+              <Button ...
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"/>
+          </androidx.constraintlayout.widget.ConstraintLayout>
+
+          <!-- 使用 <merge> 优化自定义 View -->
+          <!-- custom_view_layout.xml -->
+          <merge xmlns:android="http://schemas.android.com/apk/res/android">
+              <!-- 这个布局将被直接添加到包含它的 FrameLayout 中 -->
+              <ImageView ... />
+              <TextView ... />
+          </merge>
+
+          <!-- main_layout.xml -->
+          <FrameLayout ... >
+              <!-- 使用 include 引入，merge 会生效 -->
+              <include layout="@layout/custom_view_layout"/>
+              <Button ... />
+          </FrameLayout>
+          ```
 references:
-  - title: "FrameLayout in Android - Developer Guide"
+  - title: FrameLayout in Android - Developer Guide
     url: https://developer.android.com/guide/topics/ui/layout/frame-layout
-  - title: "Android FrameLayout Tutorial with Examples"
+  - title: Android FrameLayout Tutorial with Examples
     url: https://tutorial.eyehunts.com/android/android-framelayout-tutorial-with-example-kotlin/
-  - title: "FrameLayout in Android with Kotlin"
+  - title: FrameLayout in Android with Kotlin
     url: https://www.devanddep.com/android-framelayout-with-examples
-  - title: "Android Tutorial - FrameLayout"
+  - title: Android Tutorial - FrameLayout
     url: https://riptutorial.com/android/example/27626/framelayout

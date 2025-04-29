@@ -1,107 +1,496 @@
 id: relative
 title: RelativeLayout
-query: Kotlin Android RelativeLayout usage example
-comment: 介绍 Kotlin 中 RelativeLayout 的使用，包含常见的布局属性及示例。
-description: |
-  RelativeLayout 是 Android 中的一种布局容器，它允许子视图根据父容器或其他子视图的相对位置进行布局。相比 LinearLayout，RelativeLayout 更灵活，适用于需要避免嵌套布局的复杂界面布局。它提供了多种布局属性，例如 `layout_alignParentTop`、`layout_below`、`layout_toRightOf` 等，可以让开发者轻松地指定子视图之间的相对位置关系。Kotlin 与 XML 配合使用可以更清晰地组织界面元素。
-example:
-  - title: 相对布局的简单示例
-    content: |
-      ```xml
-      <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:padding="10dp">
+query: Android RelativeLayout
+comment: 全面梳理 RelativeLayout 的基本用法、布局属性、控件相对位置设置、嵌套冲突、动态操作及高频开发技巧。
+description: RelativeLayout 是 Android 中的一个经典布局容器 (`ViewGroup`)，它允许子视图（Widgets）根据彼此之间或相对于父容器的相对位置进行定位。适用于需要精确控制视图间位置关系的场景，例如按钮A在按钮B的右侧，标题在图片的下方等。通过在子视图的 XML 布局参数中设置 `layout_...` 相关的属性来实现定位。
+outline:
+  - title: 构建
+    description: RelativeLayout 基本用法，布局定义与动态创建。
+    children:
+      - title: 布局文件定义
+      - title: 动态创建 RelativeLayout
+  - title: 使用
+    description: RelativeLayout 常用属性配置。
+    children:
+      - title: 内边距
+      - title: 对齐方式
+      - title: 是否裁减
+      - title: 子视图相对于父视图属性
+        description: layout_alignParentTop、layout_alignParentBottom、layout_alignParentStart、layout_alignParentEnd、layout_alignParentLeft、layout_alignParentRight、layout_centerInParent、layout_centerHorizontal、layout_centerVertical
+      - title: 子视图相对于兄弟视图
+        description: layout_above、layout_below、layout_toStartOf、layout_toEndOf、layout_toLeftOf、layout_toRightOf、layout_alignTop、layout_alignBottom、layout_alignLeft、layout_alignRight、layout_alignBaseline
+      - title: 子视图外边距
+  - title: 最佳实践
+    description: RelativeLayout 项目内实战推荐写法。
+    children:
+      - title: 相对定位多按钮导航栏
+      - title: 图片+文字+按钮卡片布局
+      - title: 动态添加控件链式排布
+      - title: RelativeLayout + 动画控件组合效果
+usage:
+  - title: 构建 RelativeLayout
+    description: 可以通过 XML 布局文件或在 Kotlin 代码中动态创建 `RelativeLayout`。
+    children:
+      - title: 布局文件定义
+        description: 在 XML 布局文件中，使用 `<RelativeLayout>` 标签作为根元素或嵌套元素。子视图通过 `android:layout_...` 属性指定其相对位置。需要为被引用的兄弟视图指定 `android:id`。
+        example: |
+          ```xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="16dp">
 
-          <!-- 顶部的文本视图 -->
-          <TextView
-              android:id="@+id/tv_label"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="标题"
-              android:textSize="20sp"
-              android:layout_alignParentTop="true"
-              android:layout_centerHorizontal="true" />
+              <TextView
+                  android:id="@+id/textViewTitle"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Title"
+                  android:textSize="20sp"
+                  android:layout_alignParentTop="true"      <!-- 对齐父容器顶部 -->
+                  android:layout_centerHorizontal="true"/> <!-- 水平居中于父容器 -->
 
-          <!-- 在标题下方的输入框 -->
-          <EditText
-              android:id="@+id/et_input"
+              <EditText
+                  android:id="@+id/editTextContent"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:hint="Enter content here"
+                  android:layout_below="@id/textViewTitle" <!-- 位于 textViewTitle 的下方 -->
+                  android:layout_marginTop="8dp"/>         <!-- 与 textViewTitle 的顶部间距 -->
+
+              <Button
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Submit"
+                  android:layout_alignParentBottom="true"  <!-- 对齐父容器底部 -->
+                  android:layout_alignParentEnd="true"/>   <!-- 对齐父容器右/结束边 (考虑RTL) -->
+
+          </RelativeLayout>
+          ```
+      - title: 动态创建 RelativeLayout
+        description: 在 Kotlin 代码中，可以实例化 `RelativeLayout` 对象，并为其子视图创建 `RelativeLayout.LayoutParams` 来设置布局规则，然后通过 `addView()` 添加子视图。
+        example: |
+          ```kotlin
+          import android.os.Bundle
+          import android.view.View
+          import android.widget.Button
+          import android.widget.EditText
+          import android.widget.RelativeLayout
+          import android.widget.TextView
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.view.setMargins // 需要 ktx 依赖
+
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  // 1. 创建 RelativeLayout 实例
+                  val relativeLayout = RelativeLayout(this).apply {
+                      layoutParams = RelativeLayout.LayoutParams(
+                          RelativeLayout.LayoutParams.MATCH_PARENT,
+                          RelativeLayout.LayoutParams.MATCH_PARENT
+                      )
+                      setPadding(16.dpToPx(), 16.dpToPx(), 16.dpToPx(), 16.dpToPx()) // 设置内边距
+                  }
+
+                  // 2. 创建子视图 TextView
+                  val titleTextView = TextView(this).apply {
+                      id = View.generateViewId() // 生成唯一 ID
+                      text = "Dynamic Title"
+                      textSize = 20f
+                  }
+                  // 创建 TextView 的布局参数
+                  val titleParams = RelativeLayout.LayoutParams(
+                      RelativeLayout.LayoutParams.WRAP_CONTENT,
+                      RelativeLayout.LayoutParams.WRAP_CONTENT
+                  ).apply {
+                      addRule(RelativeLayout.ALIGN_PARENT_TOP)      // 对齐父容器顶部
+                      addRule(RelativeLayout.CENTER_HORIZONTAL)   // 水平居中
+                  }
+                  relativeLayout.addView(titleTextView, titleParams) // 添加 TextView
+
+                  // 3. 创建子视图 EditText
+                  val contentEditText = EditText(this).apply {
+                      id = View.generateViewId()
+                      hint = "Dynamic content"
+                  }
+                  // 创建 EditText 的布局参数
+                  val contentParams = RelativeLayout.LayoutParams(
+                      RelativeLayout.LayoutParams.MATCH_PARENT,
+                      RelativeLayout.LayoutParams.WRAP_CONTENT
+                  ).apply {
+                      addRule(RelativeLayout.BELOW, titleTextView.id) // 位于 titleTextView 下方
+                      setMargins(0, 8.dpToPx(), 0, 0) // 设置顶部外边距
+                  }
+                  relativeLayout.addView(contentEditText, contentParams) // 添加 EditText
+
+                  // 4. 创建子视图 Button
+                  val submitButton = Button(this).apply {
+                       id = View.generateViewId()
+                       text = "Dynamic Submit"
+                  }
+                  // 创建 Button 的布局参数
+                  val buttonParams = RelativeLayout.LayoutParams(
+                      RelativeLayout.LayoutParams.WRAP_CONTENT,
+                      RelativeLayout.LayoutParams.WRAP_CONTENT
+                  ).apply {
+                      addRule(RelativeLayout.ALIGN_PARENT_BOTTOM) // 对齐父容器底部
+                      addRule(RelativeLayout.ALIGN_PARENT_END)    // 对齐父容器结束边
+                  }
+                  relativeLayout.addView(submitButton, buttonParams) // 添加 Button
+
+                  // 5. 设置 Activity 的内容视图
+                  setContentView(relativeLayout)
+              }
+
+              // 辅助函数：将 dp 转换为像素
+              fun Int.dpToPx(): Int {
+                  return (this * resources.displayMetrics.density).toInt()
+              }
+          }
+          ```
+  - title: 使用 RelativeLayout 属性
+    description: 通过设置 `RelativeLayout` 自身及其子视图的属性来控制布局外观和行为。
+    children:
+      - title: 内边距 (Padding)
+        description: '设置 `RelativeLayout` 内容区域与其边界之间的空间。应用于 `RelativeLayout` 自身。 *   `android:padding`: 同时设置四个方向的内边距。 *   `android:paddingTop`, `android:paddingBottom`, `android:paddingLeft`, `android:paddingRight`: 分别设置上、下、左、右的内边距。 *   `android:paddingStart`, `android:paddingEnd`: 分别设置开始、结束方向的内边距（支持 RTL 布局）。'
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:hint="输入内容"
-              android:layout_below="@id/tv_label"
-              android:layout_marginTop="16dp" />
+              android:padding="16dp"> <!-- 所有方向内边距为 16dp -->
 
-          <!-- 右侧的按钮 -->
-          <Button
-              android:id="@+id/btn_submit"
-              android:layout_width="wrap_content"
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Content"/>
+          </RelativeLayout>
+          ```
+      - title: 对齐方式 (Gravity)
+        description: 设置 `RelativeLayout` 内部所有子视图的默认对齐方式，但这通常会被子视图具体的 `layout_...` 规则覆盖。它主要影响那些尺寸小于 `RelativeLayout` 且未被相对定位规则完全约束位置的子视图集合的整体摆放。对于精确控制，子视图的 `layout_...` 属性更为常用和有效。
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="200dp"
+              android:gravity="center"> <!-- 尝试将未完全约束的子视图组居中 -->
+
+              <!-- 如果只有一个子视图且没有其他对齐父容器的规则, gravity=center 会使其居中 -->
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Centered via Gravity (if possible)"/>
+          </RelativeLayout>
+          ```
+      - title: 是否裁减 (Clipping)
+        description: '控制子视图是否可以在 `RelativeLayout` 的边界之外绘制。 *   `android:clipChildren` (boolean): 默认为 `true`。如果设为 `false`，子视图可以绘制到父布局边界之外。 *   `android:clipToPadding` (boolean): 默认为 `true`。如果设为 `false`，子视图可以绘制到父布局的内边距（Padding）区域。'
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="100dp"
+              android:layout_height="100dp"
+              android:clipChildren="false" <!-- 允许子视图超出边界绘制 -->
+              android:background="#ccc">
+
+              <View
+                  android:layout_width="50dp"
+                  android:layout_height="50dp"
+                  android:layout_alignParentEnd="true"
+                  android:layout_alignParentBottom="true"
+                  android:layout_marginEnd="-25dp" <!-- 部分移出右边界 -->
+                  android:layout_marginBottom="-25dp" <!-- 部分移出下边界 -->
+                  android:background="#f00"/>
+          </RelativeLayout>
+          ```
+      - title: 子视图相对于父视图属性
+        description: |
+          这些属性定义子视图如何与父 `RelativeLayout` 的边界或中心对齐。值为 `true` 或 `false`。
+
+          **属性列表:**
+          *   `android:layout_alignParentTop`: `true` 则将子视图顶部与父容器顶部对齐。
+          *   `android:layout_alignParentBottom`: `true` 则将子视图底部与父容器底部对齐。
+          *   `android:layout_alignParentLeft`: `true` 则将子视图左边与父容器左边对齐。
+          *   `android:layout_alignParentRight`: `true` 则将子视图右边与父容器右边对齐。
+          *   `android:layout_alignParentStart`: `true` 则将子视图起始边（考虑LRT/RTL）与父容器起始边对齐。推荐使用。
+          *   `android:layout_alignParentEnd`: `true` 则将子视图结束边（考虑LRT/RTL）与父容器结束边对齐。推荐使用。
+          *   `android:layout_centerInParent`: `true` 则将子视图在父容器中水平和垂直居中。
+          *   `android:layout_centerHorizontal`: `true` 则将子视图在父容器中水平居中。
+          *   `android:layout_centerVertical`: `true` 则将子视图在父容器中垂直居中。
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <Button
+                  android:id="@+id/button_top_start"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Top Start"
+                  android:layout_alignParentTop="true"    <!-- 顶部对齐 -->
+                  android:layout_alignParentStart="true"/> <!-- 起始边对齐 -->
+
+              <Button
+                  android:id="@+id/button_center"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Center"
+                  android:layout_centerInParent="true"/> <!-- 完全居中 -->
+
+              <Button
+                  android:id="@+id/button_bottom_end"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Bottom End"
+                  android:layout_alignParentBottom="true" <!-- 底部对齐 -->
+                  android:layout_alignParentEnd="true"/>   <!-- 结束边对齐 -->
+
+          </RelativeLayout>
+          ```
+      - title: 子视图相对于兄弟视图属性
+        description: |
+          这些属性定义子视图如何相对于具有指定 ID (`@id/...`) 的其他兄弟视图进行定位或对齐。
+
+          **属性列表:**
+          *   `android:layout_above="@id/..."`: 将子视图底部置于目标视图的顶部之上。
+          *   `android:layout_below="@id/..."`: 将子视图顶部置于目标视图的底部之下。
+          *   `android:layout_toLeftOf="@id/..."`: 将子视图右边置于目标视图的左边。
+          *   `android:layout_toRightOf="@id/..."`: 将子视图左边置于目标视图的右边。
+          *   `android:layout_toStartOf="@id/..."`: 将子视图结束边置于目标视图的起始边。推荐使用。
+          *   `android:layout_toEndOf="@id/..."`: 将子视图起始边置于目标视图的结束边。推荐使用。
+          *   `android:layout_alignTop="@id/..."`: 将子视图顶部与目标视图的顶部对齐。
+          *   `android:layout_alignBottom="@id/..."`: 将子视图底部与目标视图的底部对齐。
+          *   `android:layout_alignLeft="@id/..."`: 将子视图左边与目标视图的左边对齐。
+          *   `android:layout_alignRight="@id/..."`: 将子视图右边与目标视图的右边对齐。
+          *   `android:layout_alignStart="@id/..."`: 将子视图起始边与目标视图的起始边对齐。推荐使用。
+          *   `android:layout_alignEnd="@id/..."`: 将子视图结束边与目标视图的结束边对齐。推荐使用。
+          *   `android:layout_alignBaseline="@id/..."`: 将子视图的文本基线与目标视图（通常是 TextView 或 Button）的文本基线对齐。
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+              <TextView
+                  android:id="@+id/labelName"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Name:"
+                  android:layout_alignParentStart="true"
+                  android:layout_centerVertical="true"/> <!-- 标签垂直居中 -->
+
+              <EditText
+                  android:id="@+id/editTextName"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_toEndOf="@id/labelName"   <!-- 在标签的右边 -->
+                  android:layout_alignBaseline="@id/labelName" <!-- 文本基线与标签对齐 -->
+                  android:layout_marginStart="8dp"/>      <!-- 与标签的间距 -->
+
+              <Button
+                  android:id="@+id/buttonSave"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Save"
+                  android:layout_below="@id/editTextName" <!-- 在输入框下方 -->
+                  android:layout_alignParentEnd="true"   <!-- 对齐父容器右侧 -->
+                  android:layout_marginTop="16dp"/>     <!-- 与输入框的间距 -->
+
+          </RelativeLayout>
+          ```
+      - title: 子视图外边距 (Margin)
+        description: '设置 `RelativeLayout` 中 *子视图* 与其周围元素（父容器边界或其他子视图）之间的空间。应用于子视图的 `LayoutParams`。 *   `android:layout_margin`: 同时设置四个方向的外边距。 *   `android:layout_marginTop`, `android:layout_marginBottom`, `android:layout_marginLeft`, `android:layout_marginRight`: 分别设置上、下、左、右的外边距。 *   `android:layout_marginStart`, `android:layout_marginEnd`: 分别设置开始、结束方向的外边距（支持 RTL 布局）。'
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <TextView
+                  android:id="@+id/tv1"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="TV1"
+                  android:layout_margin="10dp"/> <!-- 所有方向外边距 10dp -->
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="TV2"
+                  android:layout_below="@id/tv1"
+                  android:layout_marginTop="20dp"/> <!-- 距离 tv1 顶部 20dp -->
+          </RelativeLayout>
+          ```
+  - title: 最佳实践与技巧
+    description: 虽然 `ConstraintLayout` 在性能和灵活性上通常更优，但在某些场景或维护旧代码时，掌握 `RelativeLayout` 的实践技巧仍然有用。
+    children:
+      - title: 相对定位多按钮导航栏
+        description: 使用 `alignParentStart`, `alignParentEnd`, `centerInParent` 以及 `toStartOf`/`toEndOf` 来排列底部或顶部导航栏的按钮。
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="?attr/actionBarSize" <!-- 固定高度 -->
+              android:background="#eee">
+
+              <ImageButton
+                  android:id="@+id/button_back"
+                  android:layout_width="wrap_content"
+                  android:layout_height="match_parent"
+                  android:src="@android:drawable/ic_media_previous"
+                  android:layout_alignParentStart="true" <!-- 左侧按钮 -->
+                  android:layout_centerVertical="true"
+                  android:paddingStart="16dp"
+                  android:paddingEnd="16dp"
+                  android:background="?attr/selectableItemBackgroundBorderless"/>
+
+              <ImageButton
+                  android:id="@+id/button_next"
+                  android:layout_width="wrap_content"
+                  android:layout_height="match_parent"
+                  android:src="@android:drawable/ic_media_next"
+                  android:layout_alignParentEnd="true" <!-- 右侧按钮 -->
+                  android:layout_centerVertical="true"
+                  android:paddingStart="16dp"
+                  android:paddingEnd="16dp"
+                  android:background="?attr/selectableItemBackgroundBorderless"/>
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Page Title"
+                  android:layout_centerInParent="true"/> <!-- 中间标题 -->
+
+          </RelativeLayout>
+          ```
+      - title: 图片+文字+按钮卡片布局
+        description: 经典的卡片布局，元素之间通过 `layout_below`, `layout_alignStart`, `alignParentBottom` 等属性关联。
+        example: |
+          ```xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="提交"
-              android:layout_alignParentRight="true"
-              android:layout_below="@id/et_input"
-              android:layout_marginTop="16dp" />
+              android:padding="16dp"
+              android:background="@drawable/card_background"> <!-- 自定义卡片背景 -->
 
-      </RelativeLayout>
-      ```
+              <ImageView
+                  android:id="@+id/card_image"
+                  android:layout_width="match_parent"
+                  android:layout_height="150dp"
+                  android:scaleType="centerCrop"
+                  android:src="@drawable/placeholder_image"
+                  android:layout_alignParentTop="true"/> <!-- 图片在顶部 -->
 
-  - title: Kotlin 代码动态生成 RelativeLayout
-    content: |
-      ```kotlin
-      val relativeLayout = RelativeLayout(this).apply {
-          layoutParams = RelativeLayout.LayoutParams(
-              RelativeLayout.LayoutParams.MATCH_PARENT,
-              RelativeLayout.LayoutParams.MATCH_PARENT
-          )
-      }
+              <TextView
+                  android:id="@+id/card_title"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Card Title"
+                  android:textSize="18sp"
+                  android:textStyle="bold"
+                  android:layout_below="@id/card_image" <!-- 标题在图片下方 -->
+                  android:layout_marginTop="8dp"/>
 
-      val textView = TextView(this).apply {
-          id = View.generateViewId()
-          text = "标题"
-          textSize = 20f
-          val params = RelativeLayout.LayoutParams(
-              RelativeLayout.LayoutParams.WRAP_CONTENT,
-              RelativeLayout.LayoutParams.WRAP_CONTENT
-          )
-          params.addRule(RelativeLayout.ALIGN_PARENT_TOP)
-          params.addRule(RelativeLayout.CENTER_HORIZONTAL)
-          layoutParams = params
-      }
+              <TextView
+                  android:id="@+id/card_description"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:text="Card description text goes here."
+                  android:layout_below="@id/card_title" <!-- 描述在标题下方 -->
+                  android:layout_marginTop="4dp"/>
 
-      val editText = EditText(this).apply {
-          id = View.generateViewId()
-          hint = "输入内容"
-          val params = RelativeLayout.LayoutParams(
-              RelativeLayout.LayoutParams.MATCH_PARENT,
-              RelativeLayout.LayoutParams.WRAP_CONTENT
-          )
-          params.addRule(RelativeLayout.BELOW, textView.id)
-          layoutParams = params
-      }
+              <Button
+                  android:id="@+id/card_button"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Action"
+                  android:layout_below="@id/card_description" <!-- 按钮在描述下方 -->
+                  android:layout_alignParentEnd="true"    <!-- 按钮在右下角 -->
+                  android:layout_marginTop="12dp"/>
 
-      val button = Button(this).apply {
-          text = "提交"
-          val params = RelativeLayout.LayoutParams(
-              RelativeLayout.LayoutParams.WRAP_CONTENT,
-              RelativeLayout.LayoutParams.WRAP_CONTENT
-          )
-          params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-          params.addRule(RelativeLayout.BELOW, editText.id)
-          layoutParams = params
-      }
+          </RelativeLayout>
+          ```
+      - title: 动态添加控件链式排布
+        description: 在代码中循环创建视图，并使用 `addRule(RelativeLayout.BELOW, previousViewId)` 将新视图定位在前一个视图的下方，形成垂直链。
+        example: |
+          ```kotlin
+          // (在 Activity 或 Fragment 中)
+          val containerLayout = findViewById<RelativeLayout>(R.id.myRelativeLayout) // 获取容器
+          var previousViewId = RelativeLayout.LayoutParams.PARENT_ID // 初始锚点为父容器顶部
 
-      relativeLayout.addView(textView)
-      relativeLayout.addView(editText)
-      relativeLayout.addView(button)
+          for (i in 1..5) {
+              val textView = TextView(this).apply {
+                  id = View.generateViewId() // 重要：生成唯一 ID
+                  text = "Item $i"
+                  layoutParams = RelativeLayout.LayoutParams(
+                      RelativeLayout.LayoutParams.MATCH_PARENT,
+                      RelativeLayout.LayoutParams.WRAP_CONTENT
+                  ).apply {
+                      addRule(RelativeLayout.BELOW, previousViewId) // 定位在前一个视图下方
+                      setMargins(0, 8.dpToPx(), 0, 0) // 添加顶部间距
+                  }
+              }
+              containerLayout.addView(textView) // 添加到布局
+              previousViewId = textView.id // 更新 previousViewId 以便下一个视图引用
+          }
 
-      setContentView(relativeLayout)
-      ```
+          // 辅助函数 dpToPx() 如前例所示
+          ```
+      - title: RelativeLayout + 动画控件组合效果
+        description: '`RelativeLayout` 本身不直接处理复杂动画，但其子视图可以应用标准 Android 动画（如 `ViewPropertyAnimator`, `ObjectAnimator`）。相对布局规则在动画结束后仍然有效，确保最终位置正确。例如，可以实现一个从屏幕外滑入的侧边栏。'
+        example: |
+          ```xml
+          <!-- 布局定义一个初始在屏幕外的视图 -->
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/root_layout"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <!-- 主要内容区域 -->
+              <FrameLayout
+                  android:id="@+id/main_content"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"/>
+
+              <!-- 侧边栏，初始在屏幕左侧外 -->
+              <LinearLayout
+                  android:id="@+id/sidebar"
+                  android:layout_width="240dp"
+                  android:layout_height="match_parent"
+                  android:orientation="vertical"
+                  android:background="#FFF"
+                  android:layout_alignParentStart="true"
+                  android:translationX="-240dp"> <!-- 使用 translationX 将其移出屏幕 -->
+                  <!-- 侧边栏内容 -->
+              </LinearLayout>
+
+          </RelativeLayout>
+          ```
+          ```kotlin
+          // (在 Activity 或 Fragment 中控制动画)
+          val sidebar = findViewById<LinearLayout>(R.id.sidebar)
+          var isSidebarVisible = false
+
+          fun toggleSidebar() {
+              val targetTranslationX = if (isSidebarVisible) -sidebar.width.toFloat() else 0f
+              sidebar.animate()
+                  .translationX(targetTranslationX)
+                  .setDuration(300) // 动画时长 300ms
+                  .start()
+              isSidebarVisible = !isSidebarVisible
+              // RelativeLayout 确保 sidebar 在动画过程中及结束后
+              // 仍然保持 alignParentStart 的约束（尽管它的视觉位置因 translationX 改变）
+          }
+
+          // 在合适的时机调用 toggleSidebar()，例如按钮点击
+          ```
 references:
-  - title: "Relative Layout | Android Developers"
+  - title: Relative Layout | Android Developers
     url: https://developer.android.com/guide/topics/ui/layout/relative
-  - title: "Android RelativeLayout Example | Tutlane"
+  - title: Android RelativeLayout Example | Tutlane
     url: https://www.tutlane.com/tutorial/android/android-relativelayout-with-examples
-  - title: "RelativeLayout in Android | StackTips"
+  - title: RelativeLayout in Android | StackTips
     url: https://stacktips.com/tutorials/android/android-relativelayout-example
-  - title: "Android RelativeLayout Tutorial with Example | EyeHunts"
+  - title: Android RelativeLayout Tutorial with Example | EyeHunts
     url: https://tutorial.eyehunts.com/android/android-relativelayout-example-kotlin/

@@ -6,3 +6,4 @@ children:
   - resource
   - event
   - animation
+  - state
