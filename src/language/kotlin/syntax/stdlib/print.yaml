@@ -1,4 +1,4 @@
-id: log
+id: print
 title: 打印
 query: 打印日志
 comment: print, println, 日志库
