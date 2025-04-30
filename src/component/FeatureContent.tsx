@@ -83,7 +83,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
       return [];
     }
     if (typeof feature.usage === 'string') {
-      return [];
+      return feature.usage;
     }
     return feature.usage?.map(parseUsage) ?? [];
   }, [feature]);
