@@ -2,72 +2,67 @@ id: room
 title: Room
 query: Android Kotlin Room
 comment: 全面介绍 Android 中 Room 数据库的用法，涵盖数据库构建、DAO 操作、查询语法、关系映射、协程与 Flow 配合、迁移、异常处理与常见坑解决技巧。
+description: Room 是 Android Jetpack 组件库的一部分，它在 SQLite 数据库之上提供了一个抽象层，使得数据库访问更加健壮、易用，并能充分利用 SQLite 的强大功能。主要用于在 Android 应用中实现本地数据的持久化存储，如用户信息、应用配置、缓存等结构化数据。实现 Room 主要依赖三个核心组件：@Entity (定义数据表结构)、@Dao (定义数据访问方法) 和 @Database (定义数据库实例及配置)。
 outline:
   - title: 安装
     description: 添加依赖
   - title: 创建
-    description: "Room 基于 SQLite，需定义 Entity、DAO 和 Database 类。"
+    description: Room 基于 SQLite，需定义 Entity、DAO 和 Database 类。
     children:
       - title: 定义 Entity
-        description: "@Entity，@PrimaryKey，@ColumnInfo，嵌套对象、类型转换"
+        description: '@Entity，@PrimaryKey，@ColumnInfo，嵌套对象、类型转换'
       - title: 定义 Database
-        description: "@Database，单例实例，buildDatabase"
+        description: '@Database，单例实例，buildDatabase'
       - title: 定义 DAO
-        description: "@Dao，@Insert，@Update，@Delete，@Query"
-
+        description: '@Dao，@Insert，@Update，@Delete，@Query'
   - title: 使用
-    description: "Room 核心操作：增删改查、事务、异步协程配合。"
+    description: Room 核心操作：增删改查、事务、异步协程配合。
     children:
       - title: 插入数据
-        description: "@Insert 单条、多条、冲突策略"
+        description: '@Insert 单条、多条、冲突策略'
       - title: 更新数据
-        description: "@Update 使用说明"
+        description: '@Update 使用说明'
       - title: 删除数据
-        description: "@Delete 单条、多条"
+        description: '@Delete 单条、多条'
       - title: 查询数据
-        description: "@Query、Flow 查询、LiveData 查询、suspend 查询"
+        description: '@Query、Flow 查询、LiveData 查询、suspend 查询'
       - title: 事务处理
-        description: "@Transaction 注解、多个 DAO 联合事务"
+        description: '@Transaction 注解、多个 DAO 联合事务'
       - title: Flow 配合
-        description: "返回 Flow<T>、collect 实时监听数据变化"
+        description: 返回 Flow<T>、collect 实时监听数据变化
       - title: 协程调度
-        description: "withContext、Dispatchers.IO"
-
+        description: withContext、Dispatchers.IO
   - title: 配置
-    description: "Gradle 配置、kapt 设置、TypeConverter 定制。"
+    description: Gradle 配置、kapt 设置、TypeConverter 定制。
     children:
       - title: Gradle kapt 配置
       - title: 自定义 TypeConverter
       - title: Database 版本管理
-
   - title: 表关联与复杂查询
-    description: "一对一、一对多、多对多关系映射与联合查询。"
+    description: 一对一、一对多、多对多关系映射与联合查询。
     children:
       - title: 一对多
-        description: "@Relation 使用"
+        description: '@Relation 使用'
       - title: 多对多
-        description: "中间表实现"
+        description: 中间表实现
       - title: 联合查询
-        description: "JOIN 查询、多表返回数据类"
-
+        description: JOIN 查询、多表返回数据类
   - title: 数据迁移
-    description: "Database 升级与降级处理。"
+    description: Database 升级与降级处理。
     children:
       - title: AutoMigration（自动迁移）
       - title: 自定义 Migration 实现
       - title: 数据备份与恢复技巧
-
   - title: 异常处理
-    description: "常见异常与修复策略。"
+    description: 常见异常与修复策略。
     children:
       - title: 协程线程切换问题
       - title: 数据库版本不匹配
       - title: 表字段缺失崩溃
       - title: TypeConverter 忽略问题
       - title: 主键冲突异常
-
   - title: 常见问题与解决技巧
-    description: "开发中高频遇到的问题排查与优化。"
+    description: 开发中高频遇到的问题排查与优化。
     children:
       - title: 查询结果为空处理
       - title: 数据实时同步异常
@@ -75,13 +70,1917 @@ outline:
       - title: 删除无效记录
       - title: Flow collect 重复订阅
       - title: 预置数据库导入
-
   - title: 最佳实践
-    description: "Room 项目实战中的标准写法。"
+    description: Room 项目实战中的标准写法。
     children:
       - title: 多个数据库实例拆分
       - title: DAO 单一职责划分
       - title: ViewModel 中封装 Repository
       - title: 数据库调试打印日志
       - title: 协程 + Flow + Room 架构整合
+usage:
+  - title: 安装
+    description: 要在项目中使用 Room，需要在 `app/build.gradle` 文件中添加相应的依赖。请确保使用最新稳定版本。
+    example: |
+      ```groovy
+      // app/build.gradle
 
+      plugins {
+          id 'com.android.application'
+          id 'kotlin-android'
+          id 'kotlin-kapt' // 应用 kapt 插件
+      }
+
+      android {
+          // ...
+      }
+
+      dependencies {
+          def room_version = "2.6.1" // 使用最新的 Room 版本
+
+          implementation "androidx.room:room-runtime:$room_version"
+          annotationProcessor "androidx.room:room-compiler:$room_version"
+
+          // 可选 - Kotlin 扩展和协程支持 for Room
+          implementation "androidx.room:room-ktx:$room_version"
+
+          // 可选 - RxJava3 支持 for Room
+          implementation "androidx.room:room-rxjava3:$room_version"
+
+          // 可选 - Test helpers
+          testImplementation "androidx.room:room-testing:$room_version"
+
+          // 可选 - Paging 3 Integration
+          implementation "androidx.room:room-paging:$room_version"
+
+          // Kotlin 注解处理工具 (kapt)
+          kapt "androidx.room:room-compiler:$room_version"
+      }
+      ```
+  - title: 创建
+    description: 使用 Room 需要定义三个主要组件：Entity（数据库表）、DAO（数据访问对象）和 Database（数据库持有者）。
+    children:
+      - title: 定义 Entity
+        description: |
+          使用 `@Entity` 注解标记一个类作为数据库表。
+          - `@Entity(tableName = "users")`: 指定表名，默认为类名。
+          - `@PrimaryKey`: 标记主键字段。`autoGenerate = true` 表示自增长。
+          - `@ColumnInfo(name = "user_name")`: 指定列名，默认为字段名。可以设置 `defaultValue`。
+          - `@Ignore`: 标记不需要持久化的字段。
+          - `@Embedded`: 用于将嵌套对象的字段直接映射到当前表的列中。
+          - `@TypeConverters`: 用于指定类型转换器，将不支持直接存储的类型（如 Date、Bitmap、自定义对象列表）转换为 Room 支持的类型（如 Long、String）。
+        example: |
+          ```kotlin
+          import androidx.room.*
+          import java.util.Date
+
+          // 定义地址类，用于嵌套
+          data class Address(
+              val street: String?,
+              val city: String?,
+              val postcode: String?
+          )
+
+          // 定义日期类型转换器
+          class Converters {
+              @TypeConverter
+              fun fromTimestamp(value: Long?): Date? {
+                  return value?.let { Date(it) }
+              }
+
+              @TypeConverter
+              fun dateToTimestamp(date: Date?): Long? {
+                  return date?.time
+              }
+          }
+
+          // 定义 User 实体
+          @Entity(tableName = "users", indices = [Index(value = ["last_name"])]) // 添加索引
+          @TypeConverters(Converters::class) // 应用类型转换器
+          data class User(
+              @PrimaryKey(autoGenerate = true) val uid: Int = 0, // 自增长主键
+              @ColumnInfo(name = "first_name") val firstName: String?,
+              @ColumnInfo(name = "last_name") val lastName: String?,
+              val age: Int,
+              @Embedded // 嵌套对象，其字段会成为 users 表的列
+              val address: Address?,
+              val registrationDate: Date? // 使用了 TypeConverter 的字段
+              //@Ignore var picture: Bitmap? // 标记不存入数据库的字段
+          )
+          ```
+      - title: 定义 Database
+        description: |
+          使用 `@Database` 注解标记一个抽象类，该类继承自 `RoomDatabase`。
+          - `entities`: 数组，列出数据库包含的所有 Entity 类。
+          - `version`: 整数，表示数据库的版本号。每次数据库结构变更时需要增加版本号并提供迁移策略。
+          - `exportSchema`: 布尔值，是否导出数据库结构 Schema 到指定目录（默认为 true，建议保持开启并纳入版本控制）。
+          - 需要提供一个抽象方法，返回每个 DAO 接口的实例。
+          - 通常实现为单例模式，以确保全局只有一个数据库实例。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import androidx.room.*
+
+          @Database(entities = [User::class], version = 1, exportSchema = true)
+          @TypeConverters(Converters::class) // 也可以在 Database 级别声明全局 TypeConverter
+          abstract class AppDatabase : RoomDatabase() {
+
+              abstract fun userDao(): UserDao // 提供 UserDao 的获取方法
+
+              companion object {
+                  @Volatile // 保证 instance 对所有线程可见
+                  private var INSTANCE: AppDatabase? = null
+
+                  fun getDatabase(context: Context): AppDatabase {
+                      // 如果 INSTANCE 不为 null，直接返回；否则，创建一个新的数据库实例
+                      return INSTANCE ?: synchronized(this) {
+                          val instance = Room.databaseBuilder(
+                              context.applicationContext,
+                              AppDatabase::class.java,
+                              "app_database" // 数据库文件名
+                          )
+                          // .fallbackToDestructiveMigration() // 如果没有提供 Migration，允许破坏性迁移（会清空数据）
+                          // .addMigrations(MIGRATION_1_2) // 添加迁移策略
+                          .build()
+                          INSTANCE = instance
+                          // 返回实例
+                          instance
+                      }
+                  }
+              }
+          }
+          ```
+      - title: 定义 DAO
+        description: |
+          使用 `@Dao` 注解标记一个接口或抽象类，用于定义数据库访问方法。
+          - `@Insert`: 插入数据。可以接受单个或多个实体，或实体列表。`onConflict` 策略定义冲突处理方式：
+            - `OnConflictStrategy.REPLACE`: 替换旧数据。
+            - `OnConflictStrategy.ABORT`: 中止事务（默认）。
+            - `OnConflictStrategy.IGNORE`: 忽略新数据。
+          - `@Update`: 更新数据。根据实体的主键匹配并更新记录。
+          - `@Delete`: 删除数据。根据实体的主键匹配并删除记录。
+          - `@Query`: 执行自定义 SQL 查询。用于读取数据或执行更复杂的插入、更新、删除操作。
+        example: |
+          ```kotlin
+          import androidx.room.*
+          import kotlinx.coroutines.flow.Flow
+
+          @Dao
+          interface UserDao {
+              // 插入单个用户，如果冲突则替换
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertUser(user: User): Long // suspend 表示在协程中执行, 返回新插入行的 rowId
+
+              // 插入多个用户
+              @Insert
+              suspend fun insertAll(vararg users: User)
+
+              // 更新用户
+              @Update
+              suspend fun updateUser(user: User): Int // 返回受影响的行数
+
+              // 删除用户
+              @Delete
+              suspend fun deleteUser(user: User): Int // 返回受影响的行数
+
+              // 根据 ID 查询用户
+              @Query("SELECT * FROM users WHERE uid = :userId")
+              suspend fun getUserById(userId: Int): User? // suspend 查询
+
+              // 查询所有用户，返回 Flow 实现响应式更新
+              @Query("SELECT * FROM users ORDER BY last_name ASC")
+              fun getAllUsersFlow(): Flow<List<User>> // 返回 Flow
+
+              // 查询特定姓氏的用户
+              @Query("SELECT * FROM users WHERE last_name LIKE :lastName")
+              fun findUsersByLastName(lastName: String): List<User>
+
+              // 删除所有用户
+              @Query("DELETE FROM users")
+              suspend fun deleteAllUsers()
+          }
+          ```
+  - title: 使用
+    description: 获取 DAO 实例后，即可调用其方法执行数据库的增删改查操作。推荐结合 Kotlin 协程和 Flow 进行异步处理和数据监听。
+    children:
+      - title: 插入数据
+        description: 使用 `@Insert` 注解的方法插入数据。可以插入单个或多个实体。`onConflict` 策略决定主键冲突时的行为（REPLACE, ABORT, IGNORE）。
+        example: |
+          ```kotlin
+          // 获取 DAO 实例 (假设已在 ViewModel 或 Repository 中获取 db.userDao())
+          val userDao = AppDatabase.getDatabase(context).userDao()
+
+          // 创建用户对象
+          val user1 = User(firstName = "John", lastName = "Doe", age = 30, address = null, registrationDate = Date())
+          val user2 = User(firstName = "Jane", lastName = "Smith", age = 25, address = null, registrationDate = Date())
+
+          // 在协程中执行插入操作
+          viewModelScope.launch(Dispatchers.IO) {
+              // 插入单个用户
+              val userId1 = userDao.insertUser(user1) // 返回新行的 ID
+              println("Inserted user with ID: $userId1")
+
+              // 插入多个用户
+              userDao.insertAll(user2, User(firstName = "Peter", lastName = "Jones", age = 40, address = null, registrationDate = Date()))
+              println("Inserted multiple users.")
+          }
+          ```
+      - title: 更新数据
+        description: 使用 `@Update` 注解的方法更新数据。Room 会根据传入实体的主键找到对应记录并更新其所有字段。
+        example: |
+          ```kotlin
+          // 获取 DAO 实例
+          val userDao = AppDatabase.getDatabase(context).userDao()
+
+          // 在协程中执行更新操作
+          viewModelScope.launch(Dispatchers.IO) {
+              // 先查询一个用户
+              val userToUpdate = userDao.getUserById(1) // 假设 ID 为 1 的用户存在
+
+              if (userToUpdate != null) {
+                  // 修改用户信息
+                  val updatedUser = userToUpdate.copy(age = 31) // 使用 copy 创建修改后的副本
+
+                  // 更新数据库中的记录
+                  val rowsAffected = userDao.updateUser(updatedUser) // 返回受影响的行数
+                  println("Updated $rowsAffected user(s).")
+              } else {
+                  println("User with ID 1 not found.")
+              }
+          }
+          ```
+      - title: 删除数据
+        description: 使用 `@Delete` 注解的方法删除数据。可以传入单个或多个实体，Room 会根据实体的主键删除对应记录。
+        example: |
+          ```kotlin
+          // 获取 DAO 实例
+          val userDao = AppDatabase.getDatabase(context).userDao()
+
+          // 在协程中执行删除操作
+          viewModelScope.launch(Dispatchers.IO) {
+              // 查询要删除的用户
+              val userToDelete = userDao.getUserById(2) // 假设 ID 为 2 的用户存在
+
+              if (userToDelete != null) {
+                  // 删除单个用户
+                  val rowsAffected = userDao.deleteUser(userToDelete) // 返回受影响的行数
+                  println("Deleted $rowsAffected user(s).")
+              }
+
+              // 也可以直接构造一个只包含主键的实体来删除
+              // val userToDeleteById = User(uid = 3) // 只需提供主键
+              // userDao.deleteUser(userToDeleteById)
+
+              // 删除所有用户 (使用 @Query 定义的方法)
+              // userDao.deleteAllUsers()
+          }
+          ```
+      - title: 查询数据
+        description: |
+          使用 `@Query` 注解定义查询方法。
+          - 可以返回单个实体、实体列表、LiveData 或 Flow。
+          - 使用 `suspend` 关键字将查询方法标记为挂起函数，以便在协程中安全调用。
+          - 使用 `:paramName` 语法在 SQL 语句中绑定方法参数。
+          - 返回 `Flow<T>` 可以实现数据的响应式更新，当数据库内容变化时，Flow 会自动发射新的数据。
+          - 返回 `LiveData<T>` 也可以实现响应式更新，适用于仍在使用 LiveData 的场景。
+        example: |
+          ```kotlin
+          // 获取 DAO 实例
+          val userDao = AppDatabase.getDatabase(context).userDao()
+
+          // 1. suspend 查询单个用户 (在协程中调用)
+          viewModelScope.launch(Dispatchers.IO) {
+              val user = userDao.getUserById(1)
+              if (user != null) {
+                  println("Found user: ${user.firstName}")
+              } else {
+                  println("User not found.")
+              }
+          }
+
+          // 2. 查询返回 List (同步查询，需要在 IO 线程执行)
+          viewModelScope.launch(Dispatchers.IO) {
+               val smithUsers = userDao.findUsersByLastName("Smith")
+               println("Found ${smithUsers.size} users with last name Smith.")
+          }
+
+
+          // 3. 查询返回 Flow (在 ViewModel 或 UI 层 collect)
+          // 在 ViewModel 中:
+          val allUsersFlow: Flow<List<User>> = userDao.getAllUsersFlow()
+
+          // 在 Activity/Fragment 中观察 Flow:
+          lifecycleScope.launch {
+              allUsersFlow.collect { userList ->
+                  // 每当用户表数据变化时，这里会收到最新的用户列表
+                  println("User list updated: ${userList.size} users")
+                  // 更新 UI
+              }
+          }
+
+          // 4. 查询返回 LiveData (需要添加 LiveData 依赖，并在 Activity/Fragment 中 observe)
+          /*
+          // DAO 中定义:
+          @Query("SELECT * FROM users WHERE uid = :userId")
+          fun getUserByIdLiveData(userId: Int): LiveData<User?>
+
+          // ViewModel 中:
+          fun getUserLiveData(userId: Int): LiveData<User?> {
+              return userDao.getUserByIdLiveData(userId)
+          }
+
+          // Activity/Fragment 中观察:
+          viewModel.getUserLiveData(1).observe(viewLifecycleOwner) { user ->
+              if (user != null) {
+                  // 更新 UI
+              }
+          }
+          */
+          ```
+      - title: 事务处理
+        description: 使用 `@Transaction` 注解标记 DAO 中的方法，确保该方法内的所有数据库操作在一个事务中执行。要么全部成功，要么全部失败回滚。常用于需要保证原子性的多个操作，或查询关联数据（如 `@Relation`）。
+        example: |
+          ```kotlin
+          @Dao
+          interface UserDao {
+              @Insert
+              suspend fun insertUser(user: User)
+
+              @Update
+              suspend fun updateUser(user: User)
+
+              // 使用 @Transaction 注解保证原子性
+              @Transaction
+              suspend fun insertAndUpdateInTransaction(newUser: User, userToUpdate: User) {
+                  insertUser(newUser)
+                  // 如果这里抛出异常，上面的 insertUser 操作会回滚
+                  updateUser(userToUpdate)
+              }
+
+              // @Query 也可以与 @Transaction 结合
+              @Transaction
+              @Query("SELECT * FROM users WHERE uid = :userId")
+              suspend fun getUserWithTransaction(userId: Int): User?
+          }
+
+          // 调用事务方法
+          viewModelScope.launch(Dispatchers.IO) {
+              val newUser = User(firstName = "Tx", lastName = "Test", age = 50, address = null, registrationDate = Date())
+              val existingUser = userDao.getUserById(1)?.copy(age = 35) // 获取并准备更新的用户
+
+              if (existingUser != null) {
+                  try {
+                      userDao.insertAndUpdateInTransaction(newUser, existingUser)
+                      println("Transaction successful.")
+                  } catch (e: Exception) {
+                      println("Transaction failed: ${e.message}")
+                      // 异常发生，操作已回滚
+                  }
+              }
+          }
+
+          // 跨多个 DAO 的事务: 需要在 Database 类中提供 runInTransaction 方法
+          /*
+          // AppDatabase.kt
+          suspend fun runTransaction(block: suspend () -> Unit) {
+              withContext(Dispatchers.IO) { // 确保在 IO 线程
+                  this@AppDatabase.runInTransaction { // Room 提供的 runInTransaction
+                      runBlocking { // 在事务块内运行挂起函数
+                          block()
+                      }
+                  }
+              }
+          }
+
+          // 调用
+          viewModelScope.launch {
+              database.runTransaction {
+                  // 调用不同 DAO 的方法
+                  userDao.insertUser(...)
+                  orderDao.insertOrder(...)
+              }
+          }
+          */
+          ```
+      - title: Flow 配合
+        description: 当 DAO 方法返回 `Flow<T>` 时，Room 会在相关表的数据发生变化（插入、更新、删除）时自动查询并发出最新的数据。这使得 UI 可以轻松地响应数据库的变化。在 Coroutine Scope (如 `lifecycleScope` 或 `viewModelScope`) 中使用 `collect` 操作符来监听 Flow。
+        example: |
+          ```kotlin
+          // UserDao.kt (已在上面定义)
+          // @Query("SELECT * FROM users ORDER BY last_name ASC")
+          // fun getAllUsersFlow(): Flow<List<User>>
+
+          // Repository.kt (可选，推荐)
+          class UserRepository(private val userDao: UserDao) {
+              val allUsers: Flow<List<User>> = userDao.getAllUsersFlow()
+                  .flowOn(Dispatchers.IO) // 确保查询在 IO 线程执行
+          }
+
+          // ViewModel.kt
+          class UserViewModel(private val repository: UserRepository) : ViewModel() {
+              val users: StateFlow<List<User>> = repository.allUsers
+                  .stateIn(
+                      scope = viewModelScope,
+                      started = SharingStarted.WhileSubscribed(5000L), // UI 可见时开始收集，停止 5 秒后取消
+                      initialValue = emptyList() // 初始值
+                  )
+          }
+
+          // Activity/Fragment (UI Layer)
+          // (确保已添加 lifecycle-runtime-ktx 依赖)
+          lifecycleScope.launch {
+              viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { // 在 STARTED 状态时收集
+                  viewModel.users.collect { userList ->
+                      // 当数据库用户表变化时，这里会收到新列表
+                      Log.d("Room Flow", "User list updated: ${userList.size}")
+                      // 更新 RecyclerView Adapter 或其他 UI 组件
+                      adapter.submitList(userList)
+                  }
+              }
+          }
+          ```
+      - title: 协程调度
+        description: 数据库操作属于 I/O 密集型任务，不应在主线程执行，否则可能导致 ANR (Application Not Responding)。Room 的 `suspend` DAO 方法本身并不指定执行线程，需要调用者确保在后台线程执行。推荐使用 `withContext(Dispatchers.IO)` 将数据库操作切换到 IO 线程池执行。
+        example: |
+          ```kotlin
+          // 获取 DAO 实例
+          val userDao = AppDatabase.getDatabase(context).userDao()
+
+          // 在 ViewModel 中使用 viewModelScope 启动协程
+          class MyViewModel(private val userDao: UserDao) : ViewModel() {
+
+              fun addUser(user: User) {
+                  viewModelScope.launch { // 默认在主线程启动，但内部切换
+                      try {
+                          // 使用 withContext 切换到 IO 线程执行数据库操作
+                          val userId = withContext(Dispatchers.IO) {
+                              userDao.insertUser(user) // 调用 suspend 函数
+                          }
+                          Log.d("Coroutine", "User inserted with ID: $userId on ${Thread.currentThread().name}")
+                          // 如果需要更新 UI，切换回主线程 (viewModelScope 默认就在主线程上下文)
+                          // _insertResult.value = Result.success(userId)
+                      } catch (e: Exception) {
+                          Log.e("Coroutine", "Error inserting user", e)
+                          // 处理错误
+                          // _insertResult.value = Result.failure(e)
+                      }
+                  }
+              }
+
+               fun getUser(userId: Int) {
+                   viewModelScope.launch {
+                       val user = withContext(Dispatchers.IO) {
+                            userDao.getUserById(userId) // 调用 suspend 函数
+                       }
+                       Log.d("Coroutine", "Fetched user: $user on ${Thread.currentThread().name}")
+                       // 更新 UI 或 LiveData/StateFlow
+                       // _userData.value = user
+                   }
+               }
+          }
+
+          // 注意: 如果 DAO 方法返回 Flow，通常在 Flow 构建时使用 .flowOn(Dispatchers.IO) 指定上游操作（查询）的线程，
+          // 而 collect 操作则在调用方的 CoroutineScope (如 viewModelScope 或 lifecycleScope) 的上下文中执行。
+          // val usersFlow = userDao.getAllUsersFlow().flowOn(Dispatchers.IO)
+          ```
+  - title: 配置
+    description: Room 的一些高级配置，包括 Gradle 构建设置、自定义数据类型转换和数据库版本管理。
+    children:
+      - title: Gradle kapt 配置
+        description: Room 使用注解处理器在编译时生成代码。需要在 `app/build.gradle` 中应用 `kotlin-kapt` 插件，并添加 Room 的编译器依赖 (`room-compiler`) 到 `kapt` 配置中。
+        example: |
+          ```groovy
+          // app/build.gradle
+
+          plugins {
+              id 'com.android.application'
+              id 'kotlin-android'
+              id 'kotlin-kapt' // 1. 应用 kapt 插件
+          }
+
+          android {
+              // ...
+              // Java 1.8+ is required for Room
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+              kotlinOptions {
+                  jvmTarget = '1.8'
+              }
+          }
+
+          dependencies {
+              def room_version = "2.6.1"
+
+              implementation "androidx.room:room-runtime:$room_version"
+              // 2. 添加 Room 编译器依赖到 kapt
+              kapt "androidx.room:room-compiler:$room_version"
+
+              // Kotlin 扩展和协程支持
+              implementation "androidx.room:room-ktx:$room_version"
+
+              // ... other dependencies
+          }
+          ```
+      - title: 自定义 TypeConverter
+        description: 当需要在数据库中存储 Room 本身不支持的数据类型（如 `Date`, `Bitmap`, `List<String>` 等复杂对象）时，可以创建 `TypeConverter`。定义一个类，包含带有 `@TypeConverter` 注解的方法，用于在自定义类型和 Room 支持的基本类型（如 `Long`, `String`, `Int`）之间进行转换。然后使用 `@TypeConverters` 注解将转换器关联到 `Database` 类、`Entity` 类或特定的 DAO 方法/字段。
+        example: |
+          ```kotlin
+          import androidx.room.TypeConverter
+          import androidx.room.TypeConverters
+          import java.util.Date
+          import com.google.gson.Gson // 使用 Gson 进行 List<String> 转换示例
+          import com.google.gson.reflect.TypeToken
+
+          // 1. 定义 TypeConverter 类
+          class Converters {
+              // Date <-> Long
+              @TypeConverter
+              fun fromTimestamp(value: Long?): Date? {
+                  return value?.let { Date(it) }
+              }
+
+              @TypeConverter
+              fun dateToTimestamp(date: Date?): Long? {
+                  return date?.time
+              }
+
+              // List<String> <-> String (using JSON)
+              @TypeConverter
+              fun fromStringList(value: String?): List<String>? {
+                  if (value == null) {
+                      return null
+                  }
+                  val listType = object : TypeToken<List<String>>() {}.type
+                  return Gson().fromJson(value, listType)
+              }
+
+              @TypeConverter
+              fun toStringList(list: List<String>?): String? {
+                  if (list == null) {
+                      return null
+                  }
+                  return Gson().toJson(list)
+              }
+          }
+
+          // 2. 在 Database 或 Entity 中应用 TypeConverter
+          @Database(entities = [Event::class], version = 1)
+          @TypeConverters(Converters::class) // 应用到整个数据库
+          abstract class AppDatabase : RoomDatabase() {
+              abstract fun eventDao(): EventDao
+          }
+
+          @Entity
+          // @TypeConverters(Converters::class) // 也可以只应用到这个 Entity
+          data class Event(
+              @PrimaryKey(autoGenerate = true) val id: Int = 0,
+              val name: String,
+              val eventDate: Date?, // 使用 Date <-> Long 转换器
+              val tags: List<String>? // 使用 List<String> <-> String 转换器
+          )
+
+          @Dao
+          interface EventDao {
+              @Insert
+              suspend fun insertEvent(event: Event)
+
+              @Query("SELECT * FROM Event WHERE id = :id")
+              suspend fun getEventById(id: Int): Event?
+          }
+          ```
+      - title: Database 版本管理
+        description: 在 `@Database` 注解中通过 `version` 属性指定数据库的版本。当数据库的 Schema (表结构、字段等) 发生变化时，必须增加 `version` 号，并提供一个 `Migration` 对象来告诉 Room 如何从旧版本迁移到新版本，否则应用会崩溃。`Migration` 定义了在版本升级期间需要执行的 SQL 语句。
+        example: |
+          ```kotlin
+          import androidx.room.Database
+          import androidx.room.Room
+          import androidx.room.RoomDatabase
+          import androidx.room.migration.Migration
+          import androidx.sqlite.db.SupportSQLiteDatabase
+          import android.content.Context
+
+          // 假设这是版本 1 的数据库定义
+          // @Database(entities = [User::class], version = 1)
+          // abstract class AppDatabase : RoomDatabase() { ... }
+
+          // 版本 2：给 User 表添加了 'email' 字段
+          @Database(entities = [User::class, Product::class /*新增Product表*/], version = 3 /*升级到版本3*/)
+          abstract class AppDatabaseV3 : RoomDatabase() {
+              abstract fun userDao(): UserDao
+              abstract fun productDao(): ProductDao // 新增 DAO
+
+              companion object {
+                  // 迁移：从版本 1 升级到版本 2 (添加 email 列)
+                  val MIGRATION_1_2 = object : Migration(1, 2) {
+                      override fun migrate(db: SupportSQLiteDatabase) {
+                          db.execSQL("ALTER TABLE users ADD COLUMN email TEXT")
+                      }
+                  }
+
+                  // 迁移：从版本 2 升级到版本 3 (创建 Product 表)
+                  val MIGRATION_2_3 = object : Migration(2, 3) {
+                      override fun migrate(db: SupportSQLiteDatabase) {
+                           db.execSQL("CREATE TABLE IF NOT EXISTS `Product` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `price` REAL NOT NULL)")
+                      }
+                  }
+
+
+                  @Volatile private var INSTANCE: AppDatabaseV3? = null
+
+                  fun getDatabase(context: Context): AppDatabaseV3 {
+                      return INSTANCE ?: synchronized(this) {
+                          val instance = Room.databaseBuilder(
+                              context.applicationContext,
+                              AppDatabaseV3::class.java,
+                              "app_database_v3"
+                          )
+                          // 添加所有需要的迁移策略
+                          .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                          // 如果允许丢失数据的破坏性迁移 (仅在开发或特定场景使用)
+                          // .fallbackToDestructiveMigration()
+                          .build()
+                          INSTANCE = instance
+                          instance
+                      }
+                  }
+              }
+          }
+
+          // User Entity (版本 2 及以后)
+          @Entity(tableName = "users")
+          data class User(
+              @PrimaryKey(autoGenerate = true) val uid: Int = 0,
+              @ColumnInfo(name = "first_name") val firstName: String?,
+              @ColumnInfo(name = "last_name") val lastName: String?,
+              val age: Int,
+              val email: String? // 新增字段 (版本 2)
+          )
+
+          // Product Entity (版本 3 新增)
+          @Entity
+          data class Product(
+              @PrimaryKey(autoGenerate = true) val id: Int = 0,
+              val name: String?,
+              val price: Float
+          )
+
+          @Dao interface ProductDao { /* ... Product 相关操作 ... */ }
+          ```
+  - title: 表关联与复杂查询
+    description: Room 支持定义实体之间的关系（一对一、一对多、多对多）并查询关联数据，以及执行复杂的 JOIN 查询。
+    children:
+      - title: 一对多
+        description: 使用 `@Relation` 注解实现一对多或一对一关系查询。在一个 Pojo 类中，用 `@Embedded` 标记父实体，用 `@Relation` 标记子实体列表（或单个子实体）。`parentColumn` 指向父实体的列（通常是主键），`entityColumn` 指向子实体中引用父实体的那一列（外键）。Room 会自动执行两次查询并将结果组合起来。
+        example: |
+          ```kotlin
+          import androidx.room.*
+
+          // 父实体：用户
+          @Entity
+          data class User(
+              @PrimaryKey val userId: Int,
+              val name: String
+          )
+
+          // 子实体：宠物，包含指向用户的外键 ownerId
+          @Entity(foreignKeys = [ForeignKey(entity = User::class,
+                                            parentColumns = ["userId"],
+                                            childColumns = ["ownerId"],
+                                            onDelete = ForeignKey.CASCADE)]) // 定义外键约束
+          data class Pet(
+              @PrimaryKey val petId: Int,
+              val name: String,
+              val ownerId: Int // 外键，关联 User 的 userId
+          )
+
+          // Pojo 类用于封装查询结果：一个用户和他/她所有的宠物
+          data class UserWithPets(
+              @Embedded // 嵌入父实体 User 的所有列
+              val user: User,
+
+              @Relation(
+                  parentColumn = "userId", // User 表中的关联列 (User 的主键)
+                  entityColumn = "ownerId", // Pet 表中的关联列 (Pet 的外键)
+                  entity = Pet::class // 指定子实体类 (可选，如果 List 类型参数是 Pet 则可省略)
+              )
+              val pets: List<Pet> // 子实体列表
+          )
+
+          @Dao
+          interface UserDao {
+              @Transaction // 查询关联数据时推荐使用 @Transaction 保证原子性
+              @Query("SELECT * FROM User") // 查询父实体
+              suspend fun getUsersWithPets(): List<UserWithPets> // Room 会自动处理关联查询
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertUser(user: User)
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertPet(pet: Pet)
+          }
+
+          // 使用示例
+          viewModelScope.launch(Dispatchers.IO) {
+              // 插入数据
+              userDao.insertUser(User(1, "Alice"))
+              userDao.insertPet(Pet(101, "Buddy", 1))
+              userDao.insertPet(Pet(102, "Lucy", 1))
+              userDao.insertUser(User(2, "Bob"))
+              userDao.insertPet(Pet(103, "Max", 2))
+
+              // 查询带有关联数据的用户
+              val usersAndPets = userDao.getUsersWithPets()
+              usersAndPets.forEach { userWithPets ->
+                  println("User: ${userWithPets.user.name} has pets: ${userWithPets.pets.map { it.name }}")
+                  // 输出:
+                  // User: Alice has pets: [Buddy, Lucy]
+                  // User: Bob has pets: [Max]
+              }
+          }
+          ```
+      - title: 多对多
+        description: 多对多关系通常通过一个中间表（也称为连接表或交叉引用表）来实现。这个中间表包含两个外键，分别指向相关的两个实体的主键。查询时，定义一个包含 `@Relation` 的 Pojo 类，`associateBy` 属性用于指定连接表。
+        example: |
+          ```kotlin
+          import androidx.room.*
+
+          // 实体 1: 播放列表
+          @Entity
+          data class Playlist(
+              @PrimaryKey val playlistId: Int,
+              val name: String
+          )
+
+          // 实体 2: 歌曲
+          @Entity
+          data class Song(
+              @PrimaryKey val songId: Int,
+              val title: String,
+              val artist: String
+          )
+
+          // 中间表：连接 Playlist 和 Song
+          @Entity(
+              primaryKeys = ["playlistId", "songId"], // 复合主键
+              foreignKeys = [
+                  ForeignKey(entity = Playlist::class, parentColumns = ["playlistId"], childColumns = ["playlistId"], onDelete = ForeignKey.CASCADE),
+                  ForeignKey(entity = Song::class, parentColumns = ["songId"], childColumns = ["songId"], onDelete = ForeignKey.CASCADE)
+              ]
+          )
+          data class PlaylistSongCrossRef(
+              val playlistId: Int,
+              @ColumnInfo(index = true) // 为外键添加索引提高查询性能
+              val songId: Int
+          )
+
+          // Pojo 类：一个播放列表及其包含的所有歌曲
+          data class PlaylistWithSongs(
+              @Embedded val playlist: Playlist,
+              @Relation(
+                  parentColumn = "playlistId", // Playlist 的主键
+                  entityColumn = "songId", // Song 的主键
+                  associateBy = Junction(PlaylistSongCrossRef::class) // 指定中间表
+              )
+              val songs: List<Song>
+          )
+
+          // Pojo 类：一首歌曲及其所属的所有播放列表 (反向关系)
+          data class SongWithPlaylists(
+              @Embedded val song: Song,
+              @Relation(
+                  parentColumn = "songId", // Song 的主键
+                  entityColumn = "playlistId", // Playlist 的主键
+                  associateBy = Junction(PlaylistSongCrossRef::class) // 指定中间表
+              )
+              val playlists: List<Playlist>
+          )
+
+          @Dao
+          interface PlaylistDao {
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertPlaylist(playlist: Playlist)
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertSong(song: Song)
+
+              @Insert(onConflict = OnConflictStrategy.IGNORE) // 忽略已存在的关联
+              suspend fun insertPlaylistSongCrossRef(crossRef: PlaylistSongCrossRef)
+
+              @Transaction
+              @Query("SELECT * FROM Playlist WHERE playlistId = :playlistId")
+              suspend fun getPlaylistWithSongs(playlistId: Int): PlaylistWithSongs?
+
+              @Transaction
+              @Query("SELECT * FROM Song WHERE songId = :songId")
+              suspend fun getSongWithPlaylists(songId: Int): SongWithPlaylists?
+          }
+
+          // 使用示例
+          viewModelScope.launch(Dispatchers.IO) {
+              // 插入数据
+              playlistDao.insertPlaylist(Playlist(1, "Rock Classics"))
+              playlistDao.insertPlaylist(Playlist(2, "Chill Vibes"))
+              playlistDao.insertSong(Song(101, "Bohemian Rhapsody", "Queen"))
+              playlistDao.insertSong(Song(102, "Stairway to Heaven", "Led Zeppelin"))
+              playlistDao.insertSong(Song(103, "Weightless", "Marconi Union"))
+
+              // 创建关联
+              playlistDao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(1, 101))
+              playlistDao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(1, 102))
+              playlistDao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(2, 103))
+              playlistDao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(2, 101)) // 同一首歌可以在多个播放列表
+
+              // 查询播放列表及其歌曲
+              val rockPlaylist = playlistDao.getPlaylistWithSongs(1)
+              println("${rockPlaylist?.playlist?.name} songs: ${rockPlaylist?.songs?.map { it.title }}")
+              // 输出: Rock Classics songs: [Bohemian Rhapsody, Stairway to Heaven]
+
+              // 查询歌曲及其所在播放列表
+              val bohemian = playlistDao.getSongWithPlaylists(101)
+              println("${bohemian?.song?.title} playlists: ${bohemian?.playlists?.map { it.name }}")
+              // 输出: Bohemian Rhapsody playlists: [Rock Classics, Chill Vibes]
+          }
+          ```
+      - title: 联合查询
+        description: 对于 `@Relation` 无法满足的复杂查询需求（例如需要连接多个表、使用聚合函数、或者返回非实体类型的自定义结果），可以在 `@Query` 中直接编写 SQL 的 JOIN 语句。需要定义一个新的数据类（Pojo）来接收查询结果的列。
+        example: |
+          ```kotlin
+          import androidx.room.*
+
+          // 假设已有 User 和 Order 实体
+          @Entity
+          data class User(
+              @PrimaryKey val userId: Int,
+              val name: String,
+              val city: String
+          )
+
+          @Entity(foreignKeys = [ForeignKey(entity = User::class, parentColumns = ["userId"], childColumns = ["customerId"])])
+          data class Order(
+              @PrimaryKey val orderId: Int,
+              val customerId: Int,
+              val amount: Double,
+              val orderDate: Long // 使用时间戳
+          )
+
+          // 定义 Pojo 类来接收 JOIN 查询的结果
+          data class UserOrderSummary(
+              val userName: String, // 来自 User 表
+              val orderId: Int,     // 来自 Order 表
+              val orderAmount: Double // 来自 Order 表
+          )
+
+          @Dao
+          interface OrderDao {
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertUser(user: User)
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertOrder(order: Order)
+
+              // JOIN 查询：获取特定城市用户的订单信息
+              @Query("""
+                  SELECT u.name AS userName, o.orderId, o.amount AS orderAmount
+                  FROM User u
+                  INNER JOIN `Order` o ON u.userId = o.customerId
+                  WHERE u.city = :cityName
+                  ORDER BY u.name, o.orderDate DESC
+              """)
+              suspend fun getUserOrderSummariesInCity(cityName: String): List<UserOrderSummary>
+
+              // 聚合查询示例：获取每个用户的订单总金额
+              @Query("""
+                  SELECT u.name AS userName, SUM(o.amount) AS totalAmount
+                  FROM User u
+                  LEFT JOIN `Order` o ON u.userId = o.customerId
+                  GROUP BY u.userId
+                  ORDER BY totalAmount DESC
+              """)
+              suspend fun getUserTotalOrderAmount(): List<UserTotalAmount> // 需要定义 UserTotalAmount Pojo
+          }
+
+          // Pojo for aggregation result
+          data class UserTotalAmount(
+              val userName: String,
+              val totalAmount: Double
+          )
+
+
+          // 使用示例
+          viewModelScope.launch(Dispatchers.IO) {
+              // 插入数据
+              orderDao.insertUser(User(1, "Alice", "New York"))
+              orderDao.insertUser(User(2, "Bob", "London"))
+              orderDao.insertUser(User(3, "Charlie", "New York"))
+              orderDao.insertOrder(Order(101, 1, 50.0, System.currentTimeMillis()))
+              orderDao.insertOrder(Order(102, 3, 75.5, System.currentTimeMillis() - 10000))
+              orderDao.insertOrder(Order(103, 1, 25.0, System.currentTimeMillis() - 20000))
+              orderDao.insertOrder(Order(104, 2, 120.0, System.currentTimeMillis() - 5000))
+
+              // 执行 JOIN 查询
+              val nyOrders = orderDao.getUserOrderSummariesInCity("New York")
+              println("Orders in New York:")
+              nyOrders.forEach { println("  User: ${it.userName}, Order ID: ${it.orderId}, Amount: ${it.orderAmount}") }
+              // 输出:
+              // Orders in New York:
+              //   User: Alice, Order ID: 101, Amount: 50.0
+              //   User: Alice, Order ID: 103, Amount: 25.0
+              //   User: Charlie, Order ID: 102, Amount: 75.5
+
+              // 执行聚合查询
+              val totals = orderDao.getUserTotalOrderAmount()
+              println("\nUser Total Order Amounts:")
+              totals.forEach { println("  User: ${it.userName}, Total: ${it.totalAmount}")}
+              // 输出:
+              // User Total Order Amounts:
+              //   User: Bob, Total: 120.0
+              //   User: Alice, Total: 75.0
+              //   User: Charlie, Total: 75.5
+          }
+          ```
+  - title: 数据迁移
+    description: 当数据库 Schema 发生变化（如添加/删除表、添加/删除/修改列）时，需要升级 `@Database` 注解中的 `version` 并提供迁移路径 (`Migration`)，以保留用户现有数据。
+    children:
+      - title: AutoMigration（自动迁移）
+        description: |
+          从 Room 2.4.0 开始，引入了自动迁移功能。对于一些简单的 Schema 更改（如添加列、添加新表、重命名字段/表 - 需要 `@AutoMigration` 的 `spec` 属性配合），Room 可以自动生成迁移 SQL。
+          - 在 `@Database` 注解中，使用 `autoMigrations` 属性声明自动迁移。
+          - 需要提供 `from` (旧版本号) 和 `to` (新版本号)。
+          - 对于重命名或删除表/列等更复杂的操作，需要实现 `AutoMigrationSpec` 接口，并通过 `@AutoMigration(from = ..., to = ..., spec = ...)` 指定。
+          - 需要在 build.gradle 中配置 `exportSchema = true`，Room 会在编译时比较导出的 schema 文件来生成迁移代码。
+        example: |
+          ```kotlin
+          import androidx.room.*
+          import androidx.room.migration.AutoMigrationSpec
+          import android.content.Context
+
+          // --- 版本 1 Schema (假设已导出 schema/1.json) ---
+          // @Database(entities = [UserV1::class], version = 1, exportSchema = true)
+          // abstract class AppDatabaseV1 : RoomDatabase() { abstract fun userDaoV1(): UserDaoV1 }
+          // @Entity data class UserV1(@PrimaryKey val id: Int, val name: String)
+
+          // --- 版本 2 Schema (添加了 age 列) ---
+          @Entity
+          data class UserV2(
+              @PrimaryKey val id: Int,
+              val name: String,
+              @ColumnInfo(defaultValue = "0") // 为新列提供默认值，便于自动迁移
+              val age: Int
+          )
+
+          // --- 版本 3 Schema (重命名 UserV2 表为 Person，重命名 name 列为 full_name) ---
+          @Entity(tableName = "Person") // 重命名表
+          data class PersonV3(
+              @PrimaryKey val id: Int,
+              @ColumnInfo(name = "full_name") // 重命名列
+              val fullName: String,
+              val age: Int
+          )
+
+          // 定义用于重命名的 AutoMigrationSpec
+          @RenameTable(fromTableName = "UserV2", toTableName = "Person")
+          @RenameColumn(tableName = "UserV2", fromColumnName = "name", toColumnName = "full_name")
+          class Migration2To3Spec : AutoMigrationSpec
+
+          // 在 Database 定义中声明自动迁移
+          @Database(
+              entities = [PersonV3::class], // 使用最新的 Entity
+              version = 3, // 当前最新版本
+              autoMigrations = [
+                  AutoMigration (from = 1, to = 2), // 简单添加列，Room 自动处理
+                  AutoMigration (from = 2, to = 3, spec = Migration2To3Spec::class) // 复杂重命名，使用 Spec
+              ],
+              exportSchema = true // 必须为 true
+          )
+          abstract class AppDatabaseV3 : RoomDatabase() {
+              abstract fun personDao(): PersonDaoV3 // 使用最新的 DAO
+
+              companion object {
+                  @Volatile private var INSTANCE: AppDatabaseV3? = null
+                  fun getDatabase(context: Context): AppDatabaseV3 {
+                      return INSTANCE ?: synchronized(this) {
+                           Room.databaseBuilder(context, AppDatabaseV3::class.java, "app_db_auto")
+                              // 不再需要手动 addMigrations()
+                              // .fallbackToDestructiveMigration() // 仍然可以设置 fallback
+                              .build()
+                              .also { INSTANCE = it }
+                      }
+                  }
+              }
+          }
+
+          @Dao interface PersonDaoV3 { /* ... */ }
+
+          // 注意:
+          // 1. 确保 app/build.gradle 中配置了 schemaLocation
+          // android { defaultConfig { javaCompileOptions { annotationProcessorOptions { arguments = ["room.schemaLocation": "$projectDir/schemas".toString()] } } } }
+          // 2. 每次升级版本后，编译项目会生成新的 schema 文件 (e.g., schemas/app_db_auto/2.json, schemas/app_db_auto/3.json)
+          // 3. 将这些 schema 文件纳入版本控制。
+          ```
+      - title: 自定义 Migration 实现
+        description: 对于自动迁移无法处理的复杂 Schema 变更（例如，数据转换、拆分/合并列、复杂约束变更等），或者希望完全控制迁移过程，需要手动实现 `Migration` 类。在 `Migration` 的 `migrate()` 方法中编写 SQL 语句来执行必要的数据库结构和数据转换。
+        example: |
+          ```kotlin
+          import androidx.room.*
+          import androidx.room.migration.Migration
+          import androidx.sqlite.db.SupportSQLiteDatabase
+          import android.content.Context
+
+          // --- 版本 1 ---
+          // @Database(entities = [ItemV1::class], version = 1)
+          // @Entity data class ItemV1(@PrimaryKey val id: String, val value: Int)
+
+          // --- 版本 2: 将 value 列类型从 INT 改为 TEXT，并添加 timestamp 列 ---
+          @Entity
+          data class ItemV2(
+              @PrimaryKey val id: String,
+              val value: String, // 类型改变
+              @ColumnInfo(defaultValue = "0")
+              val timestamp: Long // 新增列
+          )
+
+          @Database(entities = [ItemV2::class], version = 2, exportSchema = false) // exportSchema = false 只是示例，推荐 true
+          abstract class AppDatabaseV2 : RoomDatabase() {
+              abstract fun itemDao(): ItemDaoV2
+
+              companion object {
+                  // 手动定义 Migration 1 -> 2
+                  val MIGRATION_1_2 = object : Migration(1, 2) {
+                      override fun migrate(db: SupportSQLiteDatabase) {
+                          // 1. 创建一个符合新 Schema 的临时表
+                          db.execSQL("""
+                              CREATE TABLE Item_new (
+                                  id TEXT PRIMARY KEY NOT NULL,
+                                  value TEXT NOT NULL,
+                                  timestamp INTEGER NOT NULL DEFAULT 0
+                              )
+                          """)
+
+                          // 2. 将旧表数据复制并转换到新表
+                          // 注意：将旧的 INT 类型 value 转换为 TEXT
+                          db.execSQL("""
+                              INSERT INTO Item_new (id, value, timestamp)
+                              SELECT id, CAST(value AS TEXT), ${System.currentTimeMillis()}
+                              FROM ItemV1
+                          """)
+                          // 如果需要更复杂的数据转换逻辑，可能需要查询旧数据，处理后再插入新表
+
+                          // 3. 删除旧表
+                          db.execSQL("DROP TABLE ItemV1")
+
+                          // 4. 将新表重命名为原始表名
+                          db.execSQL("ALTER TABLE Item_new RENAME TO ItemV2")
+                          // 注意：Room 内部通常使用 Entity 类名作为表名，如果 @Entity 指定了 tableName，则使用 tableName
+                          // 这里假设表名是 ItemV2 (类名)
+                      }
+                  }
+
+                  @Volatile private var INSTANCE: AppDatabaseV2? = null
+                  fun getDatabase(context: Context): AppDatabaseV2 {
+                      return INSTANCE ?: synchronized(this) {
+                           Room.databaseBuilder(context, AppDatabaseV2::class.java, "app_db_manual")
+                              .addMigrations(MIGRATION_1_2) // 添加手动 Migration
+                              .build()
+                              .also { INSTANCE = it }
+                      }
+                  }
+              }
+          }
+
+          @Dao interface ItemDaoV2 { /* ... */ }
+          ```
+      - title: 数据备份与恢复技巧
+        description: |-
+          Room 本身不直接提供内置的备份恢复 API。常见的策略包括：
+          1.  **文件复制:** Room 数据库本质上是 SQLite 文件。可以通过 `Context.getDatabasePath(DATABASE_NAME)` 获取数据库文件的路径，然后将其复制到外部存储或其他安全位置进行备份。恢复时，在 Room 实例创建 *之前* 将备份文件复制回原路径。
+          2.  **导出/导入数据:** 查询数据库中的所有数据，将其序列化为某种格式（如 JSON, CSV），然后保存到文件。恢复时，读取文件，反序列化数据，并通过 DAO 方法将数据重新插入数据库（可能需要先清空表）。
+          3.  **Android Auto Backup:** 对于应用设置等非敏感数据，可以利用 Android 的自动备份功能（需要在 Manifest 中配置），系统会自动备份应用数据（包括数据库文件）到用户的 Google Drive。但这不适用于大型数据库或需要手动控制的场景。
+        example: |
+          ```kotlin
+          import android.content.Context
+          import java.io.File
+          import java.io.FileInputStream
+          import java.io.FileOutputStream
+          import java.io.IOException
+
+          const val DATABASE_NAME = "app_database" // 与 Room.databaseBuilder 中使用的名称一致
+          const val BACKUP_FILE_NAME = "app_database_backup.db"
+
+          // --- 文件复制备份 ---
+          fun backupDatabase(context: Context): Boolean {
+              val dbFile = context.getDatabasePath(DATABASE_NAME)
+              val backupDir = context.getExternalFilesDir("backups") // 存储在应用专属外部目录
+              if (backupDir == null || !dbFile.exists()) {
+                  Log.e("Backup", "Database file not found or backup directory unavailable.")
+                  return false
+              }
+              if (!backupDir.exists()) {
+                  backupDir.mkdirs()
+              }
+              val backupFile = File(backupDir, BACKUP_FILE_NAME)
+
+              try {
+                  FileInputStream(dbFile).channel.use { source ->
+                      FileOutputStream(backupFile).channel.use { destination ->
+                          destination.transferFrom(source, 0, source.size())
+                          Log.i("Backup", "Database backed up successfully to ${backupFile.absolutePath}")
+                          return true
+                      }
+                  }
+              } catch (e: IOException) {
+                  Log.e("Backup", "Error backing up database", e)
+                  return false
+              }
+          }
+
+          // --- 文件复制恢复 ---
+          // **警告:** 恢复操作会覆盖当前数据库，必须在 Room 实例初始化之前执行。
+          // 通常在应用启动的早期阶段检查是否需要恢复。
+          fun restoreDatabase(context: Context): Boolean {
+              val dbFile = context.getDatabasePath(DATABASE_NAME)
+              val backupDir = context.getExternalFilesDir("backups")
+               if (backupDir == null) return false
+              val backupFile = File(backupDir, BACKUP_FILE_NAME)
+
+              if (!backupFile.exists()) {
+                  Log.e("Restore", "Backup file not found at ${backupFile.absolutePath}")
+                  return false
+              }
+
+              // 如果数据库实例已存在，尝试关闭它 (这比较复杂，最好在初始化前恢复)
+              // AppDatabase.getDatabase(context).close() // 可能需要一个显式的 close 方法或管理单例
+
+              try {
+                  // 确保目标目录存在
+                  dbFile.parentFile?.mkdirs()
+
+                  FileInputStream(backupFile).channel.use { source ->
+                      FileOutputStream(dbFile).channel.use { destination -> // 覆盖现有数据库文件
+                          destination.transferFrom(source, 0, source.size())
+                          Log.i("Restore", "Database restored successfully from backup.")
+                          // 删除备份文件（可选）
+                          // backupFile.delete()
+                          return true
+                      }
+                  }
+              } catch (e: IOException) {
+                  Log.e("Restore", "Error restoring database", e)
+                  // 如果恢复失败，可能需要删除损坏的 db 文件
+                  // dbFile.delete()
+                  return false
+              }
+          }
+
+          // --- 导出/导入 JSON (简化示例) ---
+          /*
+          suspend fun exportToJson(context: Context, userDao: UserDao): Boolean {
+              val users = userDao.getAllUsersNonFlow() // 需要一个非 Flow 的查询方法
+              val json = Gson().toJson(users)
+              try {
+                  val file = File(context.getExternalFilesDir("exports"), "users_export.json")
+                  file.writeText(json)
+                  return true
+              } catch (e: IOException) { return false }
+          }
+
+          suspend fun importFromJson(context: Context, userDao: UserDao): Boolean {
+              try {
+                  val file = File(context.getExternalFilesDir("exports"), "users_export.json")
+                  if (!file.exists()) return false
+                  val json = file.readText()
+                  val listType = object : TypeToken<List<User>>() {}.type
+                  val users: List<User> = Gson().fromJson(json, listType)
+
+                  userDao.deleteAllUsers() // 清空旧数据
+                  userDao.insertAll(*users.toTypedArray()) // 插入新数据
+                  return true
+              } catch (e: Exception) { return false } // 包括 IOException, JsonSyntaxException
+          }
+          */
+          ```
+  - title: 异常处理
+    description: 在使用 Room 时可能遇到的一些常见异常及其原因和处理策略。
+    children:
+      - title: 协程线程切换问题
+        description: 在主线程执行数据库 I/O 操作会导致 `android.os.NetworkOnMainThreadException` (虽然名字是 Network，但 I/O 操作都适用) 或 ANR。**原因:** 未将 Room 的 DAO 调用放在后台线程。**解决:** 使用 `withContext(Dispatchers.IO)` 将 suspend DAO 调用包裹起来，或使用 `Flow.flowOn(Dispatchers.IO)`。
+        example: |
+          ```kotlin
+          // 错误示例 (可能导致 ANR 或异常)
+          fun badInsert(user: User) {
+             viewModelScope.launch { // 默认在主线程
+                 userDao.insertUser(user) // 直接调用 suspend 方法
+             }
+          }
+
+          // 正确示例
+          fun goodInsert(user: User) {
+             viewModelScope.launch {
+                 try {
+                    withContext(Dispatchers.IO) { // 切换到 IO 线程
+                        userDao.insertUser(user)
+                    }
+                    // 在主线程处理成功结果 (如果需要)
+                 } catch (e: Exception) {
+                    // 在主线程处理错误
+                 }
+             }
+          }
+
+          // 对于 Flow
+          val usersFlow = userDao.getAllUsersFlow()
+                             .flowOn(Dispatchers.IO) // 查询在 IO 线程执行
+                             // .catch { emit(emptyList()) } // 处理流中的异常
+                             // collect 操作在调用方的 CoroutineScope 上下文执行
+          ```
+      - title: 数据库版本不匹配
+        description: 应用启动时 Room 检查数据库版本，如果设备上的数据库版本低于 `@Database` 注解中定义的 `version`，且没有提供相应的 `Migration` 或 `fallbackToDestructiveMigration()`，会抛出 `IllegalStateException`。**原因:** 升级了 `version` 但未提供迁移路径。**解决:** 增加 `version` 时，必须通过 `.addMigrations(MIGRATION_X_Y)` 提供 `Migration` 对象，或者（不推荐，会丢失数据）使用 `.fallbackToDestructiveMigration()`，或者提供 `AutoMigration`。
+        example: |
+          ```kotlin
+          // 发生异常的情况:
+          // @Database(version = 2) // 版本升级到 2
+          // ...
+          // Room.databaseBuilder(...)
+          //     // .addMigrations(MIGRATION_1_2) // 没有提供迁移
+          //     // .fallbackToDestructiveMigration() // 也没有提供回退
+          //     .build() // -> Crash with IllegalStateException
+
+          // 解决方法 1: 添加 Migration
+          val MIGRATION_1_2 = object : Migration(1, 2) { /* ... migrate ... */ }
+          Room.databaseBuilder(...)
+              .addMigrations(MIGRATION_1_2) // 提供迁移路径
+              .build()
+
+          // 解决方法 2: 允许破坏性迁移 (数据会丢失!)
+          Room.databaseBuilder(...)
+              .fallbackToDestructiveMigration() // 允许删除旧数据库并重建
+              .build()
+
+          // 解决方法 3: 使用 AutoMigration
+          // @Database(version = 2, autoMigrations = [AutoMigration(from=1, to=2)])
+          // ...
+          Room.databaseBuilder(...) // 不需要 addMigrations 或 fallback
+               .build()
+          ```
+      - title: 表字段缺失崩溃
+        description: 如果在 `Migration` 中忘记添加新列，或者 `Entity` 定义与实际数据库表结构不符（例如，手动修改了数据库文件，或迁移逻辑错误），查询或写入时可能因找不到列而抛出 `SQLiteException` (e.g., `no such column`)。**原因:** `Entity` 类与数据库 Schema 不一致。**解决:** 仔细检查 `Migration` 中的 SQL 语句是否正确创建/修改了所有必需的列。使用 Android Studio 的 Database Inspector 检查设备上的实际表结构。确保 `Entity` 类定义准确反映了目标版本的 Schema。
+        example: |
+          ```kotlin
+          // 假设 Migration 1 -> 2 应该添加 email 列
+          val MIGRATION_1_2_WRONG = object : Migration(1, 2) {
+              override fun migrate(db: SupportSQLiteDatabase) {
+                  // 错误：忘记添加 email 列
+                  // db.execSQL("ALTER TABLE User ADD COLUMN email TEXT")
+                  Log.w("Migration", "Forgot to add email column in migration 1 to 2!")
+              }
+          }
+
+          // 如果使用了这个错误的 Migration，后续操作 User(..., email="...") 会失败
+          // val db = Room.databaseBuilder(...).addMigrations(MIGRATION_1_2_WRONG).build()
+          // db.userDao().insertUser(User(..., email="test@example.com")) // -> SQLiteException: no such column: email
+
+          // 正确的 Migration
+          val MIGRATION_1_2_CORRECT = object : Migration(1, 2) {
+              override fun migrate(db: SupportSQLiteDatabase) {
+                  db.execSQL("ALTER TABLE User ADD COLUMN email TEXT") // 正确添加列
+              }
+          }
+          ```
+      - title: TypeConverter 忽略问题
+        description: 如果定义了 `TypeConverter` 但忘记使用 `@TypeConverters` 注解将其关联到 `Database`、`Entity` 或特定字段/方法，Room 将不知道如何处理该自定义类型，导致编译错误或运行时异常 (通常是无法找到合适的类型适配器)。**原因:** 未正确注册 `TypeConverter`。**解决:** 确保在需要使用转换器的地方（通常是 `@Database` 或 `@Entity` 级别）添加 `@TypeConverters(YourConverter::class)` 注解。
+        example: |
+          ```kotlin
+          class DateConverter {
+              @TypeConverter fun fromTimestamp(value: Long?): Date? { /* ... */ }
+              @TypeConverter fun dateToTimestamp(date: Date?): Long? { /* ... */ }
+          }
+
+          // 错误: Entity 使用了 Date 类型，但没有关联 Converter
+          @Entity
+          data class EventWrong(
+              @PrimaryKey val id: Int,
+              val eventDate: Date? // Room 不知道如何存储 Date
+          )
+          // @Database(entities = [EventWrong::class], version = 1) // 编译或运行时会出错
+
+          // 正确: 在 Database 或 Entity 层面添加 @TypeConverters
+          @Entity
+          @TypeConverters(DateConverter::class) // 在 Entity 级别关联
+          data class EventCorrect(
+              @PrimaryKey val id: Int,
+              val eventDate: Date?
+          )
+          // 或者
+          // @Database(entities = [Event::class], version = 1, typeConverters = [DateConverter::class]) // 在 Database 级别关联
+          // abstract class AppDatabase : RoomDatabase() { ... }
+          ```
+      - title: 主键冲突异常
+        description: |-
+          当尝试插入一条记录，其主键值已在表中存在时，根据 `@Insert` 注解的 `onConflict` 策略，可能抛出 `SQLiteConstraintException` (如果策略是 `OnConflictStrategy.ABORT` 或未指定，默认是 ABORT)。**原因:** 插入了重复的主键。**解决:** 
+          1.  在 `@Insert` 中指定合适的冲突策略：`OnConflictStrategy.REPLACE` (覆盖旧记录) 或 `OnConflictStrategy.IGNORE` (保留旧记录，忽略新插入)。
+          2.  在插入前检查主键是否已存在。
+          3.  如果主键是自增长的 (`autoGenerate=true`)，插入时不要手动指定主键值 (将其设为 0 或默认值)。
+        example: |
+          ```kotlin
+          @Dao
+          interface UserDao {
+              // 默认策略是 ABORT，插入重复主键会崩溃
+              @Insert
+              suspend fun insertUserAbort(user: User)
+
+              // 策略是 REPLACE，插入重复主键会覆盖
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertUserReplace(user: User)
+
+              // 策略是 IGNORE，插入重复主键会被忽略
+              @Insert(onConflict = OnConflictStrategy.IGNORE)
+              suspend fun insertUserIgnore(user: User): Long // 返回 -1 表示忽略
+
+              @Query("SELECT * FROM User WHERE uid = :id")
+              suspend fun getUserById(id: Int): User?
+          }
+
+          // 使用示例
+          viewModelScope.launch(Dispatchers.IO) {
+              val user1 = User(uid = 1, name = "Alice", ...)
+              val user1_updated = User(uid = 1, name = "Alice Updated", ...)
+
+              // 1. 使用 ABORT (默认)
+              userDao.insertUserAbort(user1) // 第一次 OK
+              try {
+                  userDao.insertUserAbort(user1_updated) // 第二次插入相同 uid=1 -> SQLiteConstraintException
+              } catch (e: SQLiteConstraintException) {
+                  println("ABORT: Constraint exception caught: ${e.message}")
+              }
+
+              // 2. 使用 REPLACE
+              userDao.insertUserReplace(user1) // 插入 Alice
+              userDao.insertUserReplace(user1_updated) // 插入 Alice Updated，覆盖了之前的记录
+              val userAfterReplace = userDao.getUserById(1)
+              println("REPLACE: User name is ${userAfterReplace?.name}") // 输出: REPLACE: User name is Alice Updated
+
+              // 3. 使用 IGNORE
+              val user2 = User(uid = 2, name = "Bob", ...)
+              val user2_ignored = User(uid = 2, name = "Bob Ignored", ...)
+              userDao.insertUserIgnore(user2) // 插入 Bob
+              val result = userDao.insertUserIgnore(user2_ignored) // 尝试插入 Bob Ignored (相同 uid=2)
+              val userAfterIgnore = userDao.getUserById(2)
+              println("IGNORE: Insert result = $result, User name is ${userAfterIgnore?.name}") // 输出: IGNORE: Insert result = -1, User name is Bob
+          }
+          ```
+  - title: 常见问题与解决技巧
+    description: 开发过程中经常遇到的一些问题及其解决方案和优化技巧。
+    children:
+      - title: 查询结果为空处理
+        description: |-
+          查询方法（非 Flow/LiveData）可能返回 `null` (查询单个实体) 或空 `List` (查询多个实体)。**问题:** 未处理 null 或空列表导致 `NullPointerException` 或逻辑错误。**技巧:** 
+          1.  对于返回单个实体的方法，使用可空类型 (`User?`) 并进行 null 检查。
+          2.  对于返回列表的方法，使用 `isNullOrEmpty()` 检查。
+          3.  在 Flow 或 LiveData 中，可以通过操作符（如 `map`, `filter`）提供默认值或处理空状态。
+        example: |
+          ```kotlin
+          suspend fun processUser(userId: Int) {
+              // 1. 处理单个结果 null
+              val user: User? = userDao.getUserById(userId) // 返回 User?
+              if (user != null) {
+                  println("User found: ${user.name}")
+              } else {
+                  println("User with ID $userId not found.")
+              }
+              // 或者使用 ?. 安全调用
+              println("User city: ${user?.address?.city ?: "Unknown"}")
+
+              // 2. 处理空列表
+              val users: List<User> = userDao.findUsersByLastName("NonExistent") // 返回 List<User>
+              if (users.isNotEmpty()) { // 或者 !users.isNullOrEmpty()
+                  println("Found ${users.size} users.")
+              } else {
+                  println("No users found with that last name.")
+              }
+          }
+
+          // 3. Flow 处理空状态 (示例)
+          val userFlow: Flow<User?> = userDao.getUserByIdFlow(userId) // 假设返回 Flow<User?>
+          userFlow.map { it ?: getDefaultUser() } // 提供默认用户
+                  .collect { user -> /* 处理 user (永不为 null) */ }
+
+          val userListFlow: Flow<List<User>> = userDao.getAllUsersFlow()
+          userListFlow.map { if (it.isEmpty()) listOf(createEmptyStateUser()) else it } // 用特殊对象表示空状态
+                      .collect { users -> /* 处理列表 */ }
+          ```
+      - title: 数据实时同步异常
+        description: |-
+          使用 `Flow` 或 `LiveData` 时，UI 没有按预期更新。**原因:** 
+          1.  `collect` 或 `observe` 的生命周期管理不当（例如，在 `onCreate` 中启动 `collect` 而未使用 `repeatOnLifecycle`，导致后台更新丢失）。
+          2.  数据库操作未触发 Room 的更新通知（例如，使用了 `@Query` 执行了更新/删除操作，但 Room 未能自动检测到变化 - 这种情况较少见）。
+          3.  Flow/LiveData 链中的转换操作符 (`map`, `filter` 等) 逻辑错误。 
+          4.  更新操作发生在不同的线程，但 Flow 没有正确配置 `flowOn`。**技巧:** 
+          1.  在 Fragment/Activity 中，使用 `viewLifecycleOwner.lifecycleScope.launch { viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { flow.collect { ... } } }` 来安全地收集 Flow。
+          2.  确保修改数据的操作是通过 Room DAO 的 `@Insert`, `@Update`, `@Delete` 方法执行，或 `@Query` 返回 Flow/LiveData。
+          3.  仔细检查 Flow/LiveData 的转换逻辑。
+          4.  使用 `flowOn(Dispatchers.IO)` 确保查询发生在后台，`collect` 发生在主线程。
+        example: |
+          ```kotlin
+          // Fragment 中正确收集 Flow
+          override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+              super.onViewCreated(view, savedInstanceState)
+
+              viewLifecycleOwner.lifecycleScope.launch {
+                  // 当 Fragment 至少处于 STARTED 状态时收集，并在 STOPPED 时取消
+                  viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                      viewModel.usersFlow.collect { userList ->
+                          // UI 更新逻辑
+                          adapter.submitList(userList)
+                          Log.d("FlowCollect", "User list updated in UI")
+                      }
+                  }
+                  // 当 repeatOnLifecycle 块结束时 (Fragment STOPPED), collect 会自动取消
+              }
+          }
+
+          // ViewModel 中确保 Flow 正确暴露
+          class MyViewModel(userDao: UserDao) : ViewModel() {
+              val usersFlow: StateFlow<List<User>> = userDao.getAllUsersFlow()
+                  .flowOn(Dispatchers.IO) // 确保查询在 IO 线程
+                  // 可选：添加 catch 处理异常
+                  .catch { exception -> Log.e("FlowError", "Error in user flow", exception); emit(emptyList()) }
+                  // 转换为 StateFlow 以便 UI 订阅和获取最新状态
+                  .stateIn(
+                      scope = viewModelScope,
+                      started = SharingStarted.WhileSubscribed(5000), // UI 订阅时启动，停止5秒后取消
+                      initialValue = emptyList() // 初始值
+                  )
+          }
+          ```
+      - title: 并发读写冲突
+        description: |-
+          多个线程或协程同时读写数据库可能导致数据不一致或冲突。**原因:** 未加控制的并发访问。**技巧:** 
+          1.  **使用事务 (`@Transaction`):** 将需要原子性执行的多个操作（尤其是读后写）放在一个用 `@Transaction` 注解的 DAO 方法中。
+          2.  **合理使用 `onConflict` 策略:** 对于插入操作，选择 `REPLACE` 或 `IGNORE` 可以避免因主键冲突导致事务失败。
+          3.  **单例数据库实例:** 确保整个应用使用同一个 `RoomDatabase` 实例，Room 内部会对写操作进行排队。
+          4.  **尽量使用 Flow/LiveData:** Room 的响应式查询是线程安全的，并且能自动处理并发更新通知。
+        example: |
+          ```kotlin
+          @Dao
+          interface CounterDao {
+              @Query("SELECT value FROM counter WHERE id = :id")
+              suspend fun getValue(id: String): Int?
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun updateCounter(counter: Counter)
+
+              // 容易出问题的读后写操作（未使用事务）
+              suspend fun incrementCounterUnsafe(id: String) {
+                  val currentValue = getValue(id) ?: 0
+                  // --- 在这里，其他线程可能已经修改了 counter ---
+                  updateCounter(Counter(id, currentValue + 1))
+              }
+
+              // 使用 @Transaction 保证原子性
+              @Transaction
+              suspend fun incrementCounterSafe(id: String) {
+                  val currentValue = getValue(id) ?: 0
+                  updateCounter(Counter(id, currentValue + 1))
+                  // 整个操作在一个事务内完成
+              }
+          }
+
+          @Entity data class Counter(@PrimaryKey val id: String, val value: Int)
+
+          // 并发调用 incrementCounterUnsafe 可能导致计数不准确
+          // 并发调用 incrementCounterSafe 则能保证每次增量都基于最新的值
+          ```
+      - title: 删除无效记录
+        description: |-
+          调用 `@Delete` 方法后，发现记录并未从数据库中删除。**原因:** 
+          1.  传入 `@Delete` 的实体对象的主键值不正确或为 null/0 (如果主键是自增的，传入0可能匹配不到任何记录)。Room 通过主键来定位要删除的记录。
+          2.  传入的实体对象不是从数据库查询出来的，而是手动创建的，但主键没对上。
+          3.  在事务中执行删除，但事务最终回滚了。**技巧:** 
+          1.  确保传递给 `@Delete` 的实体对象包含正确的主键值。
+          2.  最好先查询到要删除的实体，再将其传递给 `@Delete` 方法。
+          3.  检查 `@Delete` 方法的返回值（受影响的行数），如果为 0，表示没有记录被删除。
+          4.  如果是 `@Query` 实现的删除，检查 SQL 语句的 WHERE 条件是否正确。
+        example: |
+          ```kotlin
+          suspend fun deleteUserById(userId: Int) {
+              // 错误方式：手动创建 User 对象，主键可能不对或未设置
+              // val userToDelete = User(uid = userId, name = "Doesn't matter") // 名字不重要，主键重要
+              // val rowsAffectedWrong = userDao.deleteUser(userToDelete)
+              // if (rowsAffectedWrong == 0) println("Wrong delete failed, user not found?")
+
+              // 正确方式 1: 先查询，再删除
+              val userFound = userDao.getUserById(userId)
+              if (userFound != null) {
+                  val rowsAffected = userDao.deleteUser(userFound) // 使用查到的对象
+                  println("Deleted $rowsAffected user(s).")
+              } else {
+                  println("User $userId not found, cannot delete.")
+              }
+
+              // 正确方式 2: 如果 DAO 接受主键进行删除 (需要自定义 @Query)
+              /*
+              @Dao interface UserDao {
+                  @Query("DELETE FROM User WHERE uid = :userId")
+                  suspend fun deleteUserByIdQuery(userId: Int): Int // 返回删除的行数
+              }
+              val rowsDeleted = userDao.deleteUserByIdQuery(userId)
+              println("Deleted $rowsDeleted user(s) via query.")
+              */
+          }
+          ```
+      - title: Flow collect 重复订阅
+        description: |-
+          每次配置更改（如屏幕旋转）或 Fragment 重建时，Flow 被重新收集，可能导致不必要的资源消耗或逻辑重复执行。**原因:** 在 UI 控制器的生命周期方法（如 `onViewCreated`）中直接启动 Flow 收集，没有正确地与 View 的生命周期绑定。**技巧:** 
+          1.  使用 `viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED)` 来确保 Flow 仅在 View 可见时收集，并在 View 销毁时自动取消。
+          2.  在 ViewModel 中使用 `stateIn` 或 `shareIn` 将冷 Flow 转换为热 StateFlow 或 SharedFlow，这样 UI 只需要订阅一次，并且可以在配置更改后恢复状态。
+        example: |
+          ```kotlin
+          // Fragment 中推荐的收集方式 (已在“数据实时同步异常”中展示)
+          override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+              super.onViewCreated(view, savedInstanceState)
+              viewLifecycleOwner.lifecycleScope.launch {
+                  viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                      viewModel.userStateFlow.collect { user -> /* 更新 UI */ }
+                  }
+              }
+          }
+
+          // ViewModel 中将 Flow 转换为 StateFlow
+          class UserViewModel(userDao: UserDao) : ViewModel() {
+              private val userIdFlow = MutableStateFlow<Int?>(null)
+
+              // 使用 flatMapLatest 响应 userIdFlow 的变化，查询数据库
+              // 使用 stateIn 转换为 StateFlow
+              val userStateFlow: StateFlow<User?> = userIdFlow
+                  .filterNotNull() // 只有当 userId 不为 null 时才继续
+                  .flatMapLatest { id -> // 当 id 变化时，取消上一个查询，开始新查询
+                      userDao.getUserByIdFlow(id) // 假设返回 Flow<User?>
+                         .flowOn(Dispatchers.IO)
+                  }
+                  .stateIn(
+                      scope = viewModelScope,
+                      started = SharingStarted.WhileSubscribed(5000L),
+                      initialValue = null // 初始状态为 null
+                  )
+
+              fun loadUser(id: Int) {
+                  userIdFlow.value = id // 更新 userId 触发新的查询
+              }
+          }
+          ```
+      - title: 预置数据库导入
+        description: |-
+          希望在应用首次安装时，包含一个预先填充好数据的数据库文件。**技巧:** 
+          1.  将预置的 SQLite 数据库文件（`.db` 文件）放在 `app/src/main/assets/` 目录下。
+          2.  在创建 `RoomDatabase` 实例时，使用 `Room.databaseBuilder(...).createFromAsset("your_database_file.db")` 方法。
+          3.  **注意:** `createFromAsset` 只会在数据库文件 *不存在* 时（即首次创建时）从 asset 复制。如果数据库已存在，即使版本不同，它也不会覆盖。
+          4.  如果需要在应用更新时也使用预置数据库（会覆盖用户数据），需要手动处理：先检查版本，如果需要，删除旧数据库文件，然后让 `createFromAsset` 生效。
+          5.  预置数据库的 Schema 和版本必须与代码中定义的 `Entity` 和 `@Database(version=...)` 匹配，否则会出错。
+        example: |
+          ```kotlin
+          // 假设在 assets 目录下有一个名为 'prefilled_data.db' 的数据库文件
+          // 其 Schema 和版本 (例如 version = 1) 与 AppDatabaseV1 定义一致
+
+          // @Database(entities = [InitialData::class], version = 1)
+          // abstract class AppDatabaseV1 : RoomDatabase() { /* ... */ }
+
+          fun getDatabaseWithPrepopulatedData(context: Context): AppDatabaseV1 {
+              return Room.databaseBuilder(
+                  context.applicationContext,
+                  AppDatabaseV1::class.java,
+                  "app_database_prefilled" // 数据库文件名
+              )
+              .createFromAsset("databases/prefilled_data.db") // 指定 assets 目录下的路径和文件名
+              // 可选：如果预置数据库版本低于当前代码版本，添加迁移
+              // .addMigrations(MIGRATION_1_2, ...)
+              // 可选：如果希望在迁移失败时从 asset 重新创建 (会丢失数据)
+              // .fallbackToDestructiveMigrationFrom(1) // 指定从哪个版本开始允许破坏性迁移
+              .build()
+          }
+
+          // ---- 如果需要在更新时强制使用新的预置数据库 (谨慎使用，会丢失用户数据) ----
+          /*
+          val PREBUILT_DB_VERSION = 2 // 假设新的预置数据库是版本 2
+          val DB_NAME = "app_database_force_prebuilt"
+
+          fun getDbForcePrebuilt(context: Context): AppDatabaseV2 {
+              val prefs = context.getSharedPreferences("db_prefs", Context.MODE_PRIVATE)
+              val currentDbVersion = prefs.getInt("db_version", 0)
+
+              if (currentDbVersion < PREBUILT_DB_VERSION) {
+                   // 版本需要更新，强制从 asset 导入 (删除旧库)
+                   context.getDatabasePath(DB_NAME).delete()
+                   Log.i("DBSetup", "Old DB deleted, will create from asset.")
+              }
+
+              val db = Room.databaseBuilder(context, AppDatabaseV2::class.java, DB_NAME)
+                  .createFromAsset("databases/prefilled_data_v2.db") // 使用新版本的 asset 文件
+                  // ... 可能仍然需要后续版本的迁移 ...
+                  .build()
+
+              // 更新 SharedPreferences 中的版本记录 (仅在成功打开数据库后)
+              // 注意：Room 内部会管理版本，这里只是为了演示强制更新逻辑
+              prefs.edit().putInt("db_version", PREBUILT_DB_VERSION).apply()
+
+              return db
+          }
+          */
+          ```
+  - title: 最佳实践
+    description: 在项目中使用 Room 时推荐遵循的一些最佳实践，以提高代码质量、可维护性和性能。
+    children:
+      - title: 多个数据库实例拆分
+        description: |-
+          对于大型应用，如果包含多个相对独立的业务模块，且它们的数据不需要频繁关联查询，可以考虑为每个模块创建独立的 Room Database 实例。**优点:** 
+          -   模块解耦，每个模块只依赖自己的数据库。
+          -   减小单个数据库文件的大小。
+          -   迁移更独立，一个模块的 Schema 变更不强制要求其他模块也更新数据库版本。
+          **缺点:** 
+          -   跨数据库实例的查询和事务变得困难或不可能。
+          -   需要管理多个数据库实例的创建和生命周期。
+          **适用场景:** 功能模块化明显，数据隔离性强的应用。
+        example: |
+          ```kotlin
+          // --- 用户模块数据库 ---
+          @Database(entities = [User::class, Profile::class], version = 1)
+          abstract class UserDatabase : RoomDatabase() {
+              abstract fun userDao(): UserDao
+              abstract fun profileDao(): ProfileDao
+              // Companion object for singleton instance...
+          }
+
+          // --- 产品模块数据库 ---
+          @Database(entities = [Product::class, Category::class], version = 1)
+          abstract class ProductDatabase : RoomDatabase() {
+              abstract fun productDao(): ProductDao
+              abstract fun categoryDao(): CategoryDao
+              // Companion object for singleton instance...
+          }
+
+          // --- 在依赖注入或服务定位器中提供不同的实例 ---
+          /* Hilt/Dagger/Koin Example
+          @Provides @Singleton
+          fun provideUserDatabase(app: Application): UserDatabase {
+              return Room.databaseBuilder(app, UserDatabase::class.java, "user_db").build()
+          }
+
+          @Provides @Singleton
+          fun provideProductDatabase(app: Application): ProductDatabase {
+              return Room.databaseBuilder(app, ProductDatabase::class.java, "product_db").build()
+          }
+
+          // Repository 只注入自己需要的数据库
+          class UserRepository @Inject constructor(private val userDb: UserDatabase) {
+              private val userDao = userDb.userDao()
+              // ...
+          }
+          class ProductRepository @Inject constructor(private val productDb: ProductDatabase) {
+              private val productDao = productDb.productDao()
+              // ...
+          }
+          */
+          ```
+      - title: DAO 单一职责划分
+        description: |-
+          遵循单一职责原则，让每个 DAO 接口专注于一个或一组紧密相关的实体 (`@Entity`) 的数据库操作。避免创建一个包含所有实体操作的巨大 DAO (`God DAO`)。**优点:** 
+          -   代码更清晰，易于理解和维护。
+          -   提高可测试性。
+          -   促进代码复用。
+          **实践:** 
+          -   一个 `@Entity` 通常对应一个 `@Dao`。
+          -   如果多个实体总是需要一起操作（例如通过事务），可以放在同一个 DAO 中，或者在 Repository 层组合调用多个 DAO 的方法。
+        example: |
+          ```kotlin
+          // --- 不推荐：一个 DAO 处理多种不相关实体 ---
+          /*
+          @Dao
+          interface EverythingDao {
+              @Insert fun insertUser(user: User)
+              @Query("SELECT * FROM Product WHERE id = :id") fun getProductById(id: Int): Product?
+              @Delete fun deleteOrder(order: Order)
+              // ... more unrelated methods ...
+          }
+          */
+
+          // --- 推荐：每个实体或相关实体组对应一个 DAO ---
+          @Dao
+          interface UserDao {
+              @Insert suspend fun insertUser(user: User)
+              @Query("SELECT * FROM User WHERE uid = :userId") suspend fun getUserById(userId: Int): User?
+              // ... other User related methods ...
+          }
+
+          @Dao
+          interface ProductDao {
+              @Insert suspend fun insertProduct(product: Product)
+              @Query("SELECT * FROM Product") fun getAllProductsFlow(): Flow<List<Product>>
+              // ... other Product related methods ...
+          }
+
+          @Dao
+          interface OrderDao {
+              // 可能包含 Order 和 OrderItem 的操作，因为它们紧密相关
+              @Insert suspend fun insertOrder(order: Order)
+              @Insert suspend fun insertOrderItems(items: List<OrderItem>)
+
+              @Transaction
+              @Query("SELECT * FROM `Order` WHERE orderId = :orderId")
+              suspend fun getOrderWithItems(orderId: Int): OrderWithItems // 假设定义了关联 Pojo
+              // ...
+          }
+          ```
+      - title: ViewModel 中封装 Repository
+        description: |-
+          遵循 Android 推荐的应用架构，在 ViewModel 和 DAO 之间引入 Repository 层。Repository 负责处理数据操作逻辑，决定是从网络获取数据还是从本地数据库（Room）获取，并处理线程切换。ViewModel 只与 Repository 交互，不直接访问 DAO。**优点:** 
+          -   **分离关注点:** ViewModel 关注 UI 状态，Repository 关注数据来源和操作。
+          -   **提高可测试性:** 可以方便地 mock Repository 进行 ViewModel 测试。
+          -   **数据来源抽象:** ViewModel 不需要关心数据是来自网络、缓存还是数据库。
+          -   **线程管理:** Repository 内部使用 `Dispatchers.IO` 处理数据库/网络操作，ViewModel 可以安全地在 `viewModelScope` (主线程) 调用 Repository 方法。
+        example: |
+          ```kotlin
+          // --- DAO (Data Layer) ---
+          @Dao interface UserDao { /* ... suspend fun getUserById(id: Int): User? ... */ }
+
+          // --- Repository (Data Layer / Domain Layer) ---
+          class UserRepository(private val userDao: UserDao, private val userApiService: UserApiService) {
+
+              // 提供给 ViewModel 的方法
+              suspend fun getUser(userId: Int): Result<User> {
+                  return try {
+                      // 尝试从数据库获取
+                      val userFromDb = withContext(Dispatchers.IO) { // 切换到 IO 线程
+                          userDao.getUserById(userId)
+                      }
+                      if (userFromDb != null) {
+                          Result.success(userFromDb)
+                      } else {
+                          // 如果数据库没有，尝试从网络获取 (伪代码)
+                          // val userFromApi = userApiService.fetchUser(userId)
+                          // withContext(Dispatchers.IO) { userDao.insertUser(userFromApi) } // 存入数据库
+                          // Result.success(userFromApi)
+                           Result.failure(Exception("User not found anywhere")) // 示例简化
+                      }
+                  } catch (e: Exception) {
+                      Log.e("UserRepository", "Error getting user", e)
+                      Result.failure(e)
+                  }
+              }
+
+              // 提供 Flow 示例
+              fun getUsersStream(): Flow<List<User>> {
+                  return userDao.getAllUsersFlow() // Room Flow 已在后台查询
+                          .flowOn(Dispatchers.IO) // 确保上游在 IO (虽然 Room Flow 通常自己处理)
+                          // .map { ... } // 可以在这里添加业务逻辑转换
+              }
+          }
+
+          // --- ViewModel (UI Layer) ---
+          class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
+              private val _userState = MutableStateFlow<User?>(null)
+              val userState: StateFlow<User?> = _userState
+
+              private val _errorState = MutableStateFlow<String?>(null)
+              val errorState: StateFlow<String?> = _errorState
+
+              fun loadUser(userId: Int) {
+                  viewModelScope.launch { // 在主线程启动协程
+                      val result = userRepository.getUser(userId) // 调用 Repository 方法 (内部已处理线程)
+                      result.onSuccess { user ->
+                          _userState.value = user
+                          _errorState.value = null
+                      }.onFailure { exception ->
+                          _userState.value = null
+                          _errorState.value = exception.message ?: "Unknown error"
+                      }
+                  }
+              }
+
+              val allUsers: StateFlow<List<User>> = userRepository.getUsersStream()
+                  .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+          }
+          ```
+      - title: 数据库调试打印日志
+        description: |-
+          在开发和调试阶段，查看 Room 执行的实际 SQL 语句和参数非常有帮助。**技巧:** 
+          1.  **使用 `setQueryCallback`:** 在构建 `RoomDatabase` 实例时，调用 `.setQueryCallback(callback, executor)`。回调会在每个查询执行时被调用，可以记录 SQL 和参数。
+          2.  **Android Studio Database Inspector:** 这是最推荐的方式。在 Android Studio (Bumblebee 及更高版本) 的 App Inspection 窗口中，可以实时查看应用数据库的表、数据，并执行查询。无需添加额外代码。
+          3.  **启用 SQLite 日志:** 通过 ADB 命令 `adb shell setprop log.tag.SQLiteLog V` 和 `adb shell setprop log.tag.SQLiteStatements V` (可能需要 root 或 debuggable 应用) 可以看到更底层的 SQLite 日志，但不直接显示 Room 生成的语句。
+        example: |
+          ```kotlin
+          import androidx.room.RoomDatabase
+          import androidx.sqlite.db.SupportSQLiteDatabase
+          import java.util.concurrent.Executors
+
+          // --- 使用 setQueryCallback ---
+          fun getDatabaseWithLogging(context: Context): AppDatabase {
+              return Room.databaseBuilder(context, AppDatabase::class.java, "app_db_logged")
+                  .setQueryCallback(object : RoomDatabase.QueryCallback {
+                      override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
+                          Log.d("RoomQuery", "SQL Query: $sqlQuery | Args: $bindArgs")
+                      }
+                  }, Executors.newSingleThreadExecutor()) // 提供一个执行回调的 Executor
+                  .build()
+          }
+
+          // --- 使用 Android Studio Database Inspector ---
+          // 1. 运行你的应用 (模拟器或连接的设备)。
+          // 2. 打开 Android Studio。
+          // 3. 底部工具栏选择 "App Inspection"。
+          // 4. 在下拉列表中选择你的应用进程。
+          // 5. 选择 "Database Inspector" 标签页。
+          // 6. 左侧会列出你的数据库和表，点击表可以查看数据。
+          // 7. 可以选择 "Open New Query tab" 来手动执行 SQL 查询。
+          // 8. 勾选 "Live updates" 可以实时看到数据变化（如果应用正在修改数据库）。
+          // (无需修改应用代码)
+          ```
+      - title: 协程 + Flow + Room 架构整合
+        description: |-
+          结合使用 Kotlin 协程、Flow 和 Room 是现代 Android 开发中处理数据持久化和异步操作的推荐模式。**核心思想:** 
+          -   **DAO:** 方法使用 `suspend` 关键字进行一次性操作（Insert, Update, Delete, 单次 Query），或者返回 `Flow<T>` 进行响应式数据流查询。
+          -   **Repository:** 封装 DAO 调用。对于 suspend 方法，使用 `withContext(Dispatchers.IO)` 切换线程；对于 Flow 方法，使用 `.flowOn(Dispatchers.IO)` 指定查询线程。可以添加业务逻辑、数据转换或组合来自不同数据源的数据。
+          -   **ViewModel:** 持有 Repository 实例。使用 `viewModelScope` 启动协程调用 Repository 的 suspend 方法。将 Repository 返回的 Flow 通过 `stateIn` 或 `shareIn` 转换为 `StateFlow` 或 `SharedFlow`，供 UI 观察。
+          -   **UI (Activity/Fragment):** 使用 `lifecycleScope` 和 `repeatOnLifecycle` 安全地 `collect` ViewModel 暴露的 `StateFlow` 或 `SharedFlow` 来更新 UI。
+        example: |
+          ```kotlin
+          // --- DAO ---
+          @Dao interface TaskDao {
+              @Query("SELECT * FROM tasks ORDER BY dueDate DESC")
+              fun getAllTasksFlow(): Flow<List<Task>> // 响应式查询
+
+              @Insert(onConflict = OnConflictStrategy.REPLACE)
+              suspend fun insertTask(task: Task) // 一次性操作
+
+              @Query("DELETE FROM tasks WHERE id = :taskId")
+              suspend fun deleteTaskById(taskId: String): Int // 一次性操作
+          }
+
+          // --- Repository ---
+          class TaskRepository(private val taskDao: TaskDao) {
+              val tasksStream: Flow<List<Task>> = taskDao.getAllTasksFlow()
+                  .flowOn(Dispatchers.IO) // 确保查询在 IO 线程
+
+              suspend fun addTask(task: Task): Result<Unit> = runCatching {
+                  withContext(Dispatchers.IO) {
+                      taskDao.insertTask(task)
+                  }
+              }
+
+              suspend fun removeTask(taskId: String): Result<Int> = runCatching {
+                  withContext(Dispatchers.IO) {
+                     taskDao.deleteTaskById(taskId)
+                  }
+              }
+          }
+
+          // --- ViewModel ---
+          class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
+              // 使用 stateIn 将 Flow 转换为 StateFlow
+              val uiState: StateFlow<TaskUiState> = repository.tasksStream
+                  .map { tasks -> TaskUiState.Success(tasks) as TaskUiState } // 映射到 UI 状态类
+                  .catch { e -> emit(TaskUiState.Error(e.message ?: "Failed to load tasks")) }
+                  .stateIn(
+                      scope = viewModelScope,
+                      started = SharingStarted.WhileSubscribed(5000L),
+                      initialValue = TaskUiState.Loading // 初始状态
+                  )
+
+              fun createTask(task: Task) {
+                  viewModelScope.launch {
+                      repository.addTask(task)
+                          // 可以根据 Result 更新一个单独的事件 Flow 或 LiveData 来通知 UI 操作结果
+                          .onFailure { /* Handle error, e.g., show Snackbar */ }
+                  }
+              }
+
+              fun deleteTask(taskId: String) {
+                  viewModelScope.launch {
+                      repository.removeTask(taskId)
+                          .onFailure { /* Handle error */ }
+                  }
+              }
+          }
+
+          // 定义 UI 状态类
+          sealed interface TaskUiState {
+              object Loading : TaskUiState
+              data class Success(val tasks: List<Task>) : TaskUiState
+              data class Error(val message: String) : TaskUiState
+          }
+
+          // --- UI (Fragment) ---
+          // override fun onViewCreated(...) {
+              viewLifecycleOwner.lifecycleScope.launch {
+                  viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                      viewModel.uiState.collect { state ->
+                          when (state) {
+                              is TaskUiState.Loading -> showLoadingIndicator()
+                              is TaskUiState.Success -> updateRecyclerView(state.tasks)
+                              is TaskUiState.Error -> showError(state.message)
+                          }
+                      }
+                  }
+              }
+          // }
+          // @Entity data class Task(@PrimaryKey val id: String, val title: String, val dueDate: Long) // 示例实体
+          ```

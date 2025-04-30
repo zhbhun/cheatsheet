@@ -321,14 +321,17 @@ async function generateFeatureByRecursion(
     const newFeature = await generateContent(language, feature, []);
     Object.assign(feature, newFeature);
   }
-  await fs.promises.writeFile(
-    filepath,
-    yaml.dump(feature, {
+  let content: string = '';
+  try {
+    content = yaml.dump(feature, {
       lineWidth: -1,
       sortKeys: (a, b) => (keys[a] ?? 999) - (keys[b] ?? 999),
-    }),
-    'utf-8'
-  );
+    });
+  } catch (error) {
+    console.log(JSON.stringify(feature, null, 2));
+    throw error;
+  }
+  await fs.promises.writeFile(filepath, content, 'utf-8');
 }
 
 /**
