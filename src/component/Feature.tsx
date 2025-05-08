@@ -40,7 +40,11 @@ export function Feature({
       onClose={onClose}
     >
       {feature ? (
-        <FeatureContent feature={feature} showOutline={!comparer} />
+        <FeatureContent
+          language={language}
+          feature={feature}
+          showOutline={!comparer}
+        />
       ) : null}
     </FeatureWrapper>
   );

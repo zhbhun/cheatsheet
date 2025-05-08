@@ -24,22 +24,20 @@ export function Highlight({ lang, code }: HighlightProps) {
   }, [lang, code]);
   return (
     <Snippet
-      className="w-full max-w-full p-3 overflow-x-auto"
+      className="w-full max-w-full p-0 overflow-x-auto"
       symbol=""
       hideCopyButton
     >
-      <pre key={`${lang}-${code}`}>
-        <code
-          ref={codeRef}
-          className={lang}
-          style={{
-            padding: 0,
-            backgroundColor: 'transparent',
-          }}
-        >
-          {code}
-        </code>
-      </pre>
+      <code
+        ref={codeRef}
+        className={lang}
+        style={{
+          padding: 0,
+          backgroundColor: 'transparent',
+        }}
+      >
+        {code}
+      </code>
     </Snippet>
   );
 }

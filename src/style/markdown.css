@@ -880,7 +880,7 @@
 }
 
 .markdown-body pre > code {
-  padding: 0;
+  padding: 0 !important;
   margin: 0;
   word-break: normal;
   white-space: pre;

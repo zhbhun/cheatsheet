@@ -12,7 +12,6 @@ import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
 import { LanguageFeauture, LanguageFeautureUsage } from '@/language';
-import { Highlight } from '@/component';
 
 const marked = new Marked(
   markedHighlight({
@@ -185,11 +184,13 @@ function FeatureOutline({ feature }: { feature: LanguageFeauture }) {
 }
 
 export interface FeatureContentProps {
+  language: string;
   feature: LanguageFeauture;
   showOutline?: boolean;
 }
 
 export function FeatureContent({
+  language,
   feature,
   showOutline = true,
 }: FeatureContentProps) {
@@ -210,16 +211,19 @@ export function FeatureContent({
   if (feature) {
     content = (
       <div className="flex">
-        <div className="flex-1 w-full markdown-body">
+        <div className="flex-1 w-full px-4 markdown-body">
           <h1 className="mb-6 pt-2 text-3xl font-semibold">{feature.title}</h1>
           <div
             className="mb-8"
             dangerouslySetInnerHTML={{ __html: description }}
           />
           {typeof usage === 'string' ? (
-            <div className="mb-8">
-              <Highlight lang="kotlin" code={usage as any} />
-            </div>
+            <div
+              className="mb-8"
+              dangerouslySetInnerHTML={{
+                __html: marked.parse(`\`\`\`${language}\n${usage}\`\`\``),
+              }}
+            />
           ) : (
             <div>
               {usage.map((usage, index) => (
