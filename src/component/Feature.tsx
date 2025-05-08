@@ -22,9 +22,9 @@ export function Feature({
   const [feature, setFeature] = useState<LanguageFeauture | null>(null);
   useEffect(() => {
     if (!comparer && language && feature) {
-      document.scrollingElement?.scrollTo(0, 0)
+      document.scrollingElement?.scrollTo(0, 0);
     }
-  }, [comparer, language, feature])
+  }, [comparer, language, feature]);
   useEffect(() => {
     const pathes = index.split('/');
     loadLanguageFeature(pathes[0], pathes.slice(1)).then((data) => {
@@ -39,7 +39,9 @@ export function Feature({
       onSwitch={onSwitch}
       onClose={onClose}
     >
-      {feature ? <FeatureContent feature={feature} /> : null}
+      {feature ? (
+        <FeatureContent feature={feature} showOutline={!comparer} />
+      ) : null}
     </FeatureWrapper>
   );
 }
