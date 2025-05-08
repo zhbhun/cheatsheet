@@ -48,13 +48,13 @@ function FeatureUsage({
       )}
       {description ? (
         <div
-          className="markdown mb-4"
+          className="mb-4"
           dangerouslySetInnerHTML={{ __html: description }}
         />
       ) : null}
       {example ? (
         <div
-          className="markdown mb-4"
+          className="mb-4"
           dangerouslySetInnerHTML={{ __html: example }}
         />
       ) : null}
@@ -90,10 +90,10 @@ export function FeatureContent({ feature }: FeatureContentProps) {
   let content: ReactNode = null;
   if (feature) {
     content = (
-      <>
+      <div className="markdown-body">
         <h1 className="mb-6 pt-2 text-3xl font-semibold">{feature.title}</h1>
         <div
-          className="markdown mb-8"
+          className="mb-8"
           dangerouslySetInnerHTML={{ __html: description }}
         />
         {typeof usage === 'string' ? (
@@ -121,7 +121,7 @@ export function FeatureContent({ feature }: FeatureContentProps) {
             </ul>
           </div>
         ) : null}
-      </>
+      </div>
     );
   }
   return <div className="mx-auto max-w-screen-md p-4 pt-12">{content}</div>;
