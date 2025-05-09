@@ -121,9 +121,10 @@ function FeatureMenu({
           >
             <a
               className={clsx('text-neutral-600 hover:text-blue-600', {
-                'text-blue-600': active === usageIndex,
+                '!text-blue-600': active === usageIndex,
               })}
               href={`#${encodeURIComponent(usage.title)}`}
+              title={usage.title}
             >
               {usage.title}
             </a>
@@ -145,6 +146,7 @@ function FeatureOutline({ feature }: { feature: LanguageFeauture }) {
   const { usage } = feature;
   const container = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState('');
+  console.log('active', active);
   useEffect(() => {
     const containerElement = container.current?.parentElement;
     const scrollingElement = document.scrollingElement;
@@ -175,8 +177,8 @@ function FeatureOutline({ feature }: { feature: LanguageFeauture }) {
     return null;
   }
   return (
-    <div ref={container} className="flex-0 basic-0 max-w-0 pl-4">
-      <div className="sticky top-10 w-[300px] max-h-[calc(100vh-40px)] py-2 border-l border-[#dadde1] text-sm overflow-y-auto">
+    <div ref={container} className="hidden grow-0 shrink basic-[25%] max-w-[25%] pl-4 lg:block">
+      <div className="sticky top-10 max-w-full w-full max-h-[calc(100vh-40px)] py-2 border-l border-[#dadde1] text-sm overflow-y-auto scrollbar-hide">
         <FeatureMenu active={active} usages={usage} />
       </div>
     </div>
@@ -211,7 +213,11 @@ export function FeatureContent({
   if (feature) {
     content = (
       <div className="flex">
-        <div className="flex-1 w-full px-4 markdown-body">
+        <div
+          className={clsx('flex-1 w-full px-4 markdown-body', {
+            'lg:max-w-[75%]': showOutline,
+          })}
+        >
           <h1 className="mb-6 pt-2 text-3xl font-semibold">{feature.title}</h1>
           <div
             className="mb-8"
@@ -255,7 +261,7 @@ export function FeatureContent({
       </div>
     );
   }
-  return <div className="mx-auto max-w-screen-lg p-4 pt-12">{content}</div>;
+  return <div className="mx-auto max-w-screen-xl p-4 pt-12">{content}</div>;
 }
 
 export default FeatureContent;

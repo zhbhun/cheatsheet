@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client';
 import { NextUIProvider } from '@nextui-org/react';
-import './index.css';
 import './style/index.css';
 import App from './App.tsx';
 
