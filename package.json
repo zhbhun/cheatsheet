@@ -8,12 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "cheatsheet:generate": "tsx ./bin/generate.ts",
-    "cheatsheet:outline": "tsx ./bin/outline.ts"
+    "cheatsheet": "tsx ./bin/index.ts"
   },
   "dependencies": {
     "@nextui-org/react": "^2.0.0",
     "clsx": "^2.1.1",
+    "commander": "^13.1.0",
     "devicon": "^2.16.0",
     "framer-motion": "^11.0.0",
     "highlight.js": "^11.10.0",

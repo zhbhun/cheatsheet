@@ -1,4 +1,3 @@
-import process from 'node:process';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
@@ -82,14 +81,12 @@ async function generateOutline(
   };
 }
 
-const languages = process.argv.slice(2); // ['typescript', 'kotlin', 'swift'];
-
-async function main() {
+export default async function processLanguage(
+  languages: string[]
+): Promise<void> {
   for (let index = 0; index < languages.length; index++) {
     const language = languages[index];
     const outline = await generateOutline(language);
     console.log(yaml.dump(outline));
   }
 }
-
-main();

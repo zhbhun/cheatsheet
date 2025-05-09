@@ -339,6 +339,6 @@ async function generateFeatureByRecursion(
  * @param language like typescript
  * @param feature like syntax/modules
  */
-export async function generateFeature(language: string, feature: string) {
+export async function generateUsage(language: string, feature: string) {
   await generateFeatureByRecursion(await getLanguageData(language), feature);
 }
