@@ -1,4 +1,4 @@
-export interface LanguageData {
+export interface Language {
   id: string;
   title: string;
   documents: string[];

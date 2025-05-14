@@ -2,8 +2,138 @@ id: array
 title: 数组
 query: Swift arrays usage and examples
 comment: 介绍 Swift 数组的基本用法，包括创建、访问、修改和删除元素等操作。
-description: 
-  Swift 中的数组（Array）是一种有序集合，能够存储同一类型的多个值。数组的类型可以使用 `Array<Element>` 或其简写 `[Element]` 来表示。数组支持多种操作，例如创建、访问、修改和删除元素。Swift 数组具有自动内存管理的特性，并且采用“拷贝写入”机制来优化性能，即在进行修改操作时会创建数组的独立副本。数组还支持与 Objective-C 的 `NSArray` 进行桥接，方便与其他框架协作。
+description: Swift 中的数组（Array）是一种有序集合，能够存储同一类型的多个值。数组的类型可以使用 `Array<Element>` 或其简写 `[Element]` 来表示。数组支持多种操作，例如创建、访问、修改和删除元素。Swift 数组具有自动内存管理的特性，并且采用“拷贝写入”机制来优化性能，即在进行修改操作时会创建数组的独立副本。数组还支持与 Objective-C 的 `NSArray` 进行桥接，方便与其他框架协作。
+outline:
+  - title: 创建数组 (Initialization)
+    description: '`[]`, `Array()`, `Array<Element>()`, `Array(repeating:count:)`, `Array(sequence)`'
+    children:
+      - title: 创建空数组
+        description: '`var emptyArray: [Int] = []`, `var anotherEmptyArray = [String]()`'
+      - title: 使用字面量创建
+        description: '`let numbers = [1, 2, 3, 4, 5]`, `let vowels: [Character] = ["a", "e", "i", "o", "u"]`'
+      - title: 创建具有默认值的数组
+        description: '`let zeros = Array(repeating: 0, count: 3)`'
+      - title: 通过序列创建
+        description: '`let rangeArray = Array(1...5)`'
+      - title: 混合类型（使用 `[Any]`，谨慎使用）
+        description: '`let mixed: [Any] = [1, "hello", true, 3.14]`'
+  - title: 访问与查询 (Accessing & Querying)
+    description: '`[index]`, `first`, `last`, `count`, `isEmpty`, `randomElement()`'
+    children:
+      - title: 通过索引访问元素
+        description: '`let firstNumber = numbers[0]`, `let thirdVowel = vowels[2]` (注意越界风险)'
+      - title: 安全访问（返回 Optional）
+        description: '`if let first = numbers.first { ... }`, `let last = numbers.last`'
+      - title: 获取数组长度
+        description: '`let numberOfElements = numbers.count`'
+      - title: 检查是否为空
+        description: '`if emptyArray.isEmpty { ... }`'
+      - title: 获取随机元素（返回 Optional）
+        description: '`let randomNum = numbers.randomElement()`'
+  - title: 修改数组 (Modifying)
+    description: '`append(_:)`, `append(contentsOf:)`, `insert(_:at:)`, `+=`, `[index] = newValue`, `remove(at:)`, `removeLast()`, `removeAll()`'
+    children:
+      - title: 添加单个元素
+        description: '`numbers.append(6)`'
+      - title: 添加序列/数组元素
+        description: '`numbers.append(contentsOf: [7, 8])`, `numbers += [9, 10]`'
+      - title: 在指定索引插入元素
+        description: '`numbers.insert(0, at: 0)`'
+      - title: 修改指定索引的元素
+        description: '`numbers[1] = 20`'
+      - title: 删除指定索引的元素
+        description: '`let removedElement = numbers.remove(at: 0)`'
+      - title: 删除最后一个元素
+        description: '`let lastElement = numbers.removeLast()`'
+      - title: 删除所有元素
+        description: '`numbers.removeAll()`, `numbers.removeAll(keepingCapacity: true)`'
+      - title: 条件删除
+        description: '`numbers.removeAll { $0 % 2 == 0 }`'
+  - title: 遍历与迭代 (Iteration)
+    description: '`for-in`, `forEach`, `enumerated()`'
+    children:
+      - title: 基础遍历 (for-in)
+        description: '`for number in numbers { print(number) }`'
+      - title: 带索引遍历 (enumerated)
+        description: '`for (index, value) in numbers.enumerated() { print("Item \(index + 1): \(value)") }`'
+      - title: 函数式遍历 (forEach)
+        description: '`numbers.forEach { print($0) }` (无法使用 `break` 或 `continue`)'
+  - title: 常用高阶函数 (Higher-Order Functions)
+    description: '`map`, `filter`, `reduce`, `compactMap`, `flatMap`'
+    children:
+      - title: 转换元素 (map)
+        description: '`let squaredNumbers = numbers.map { $0 * $0 }`, `let stringNumbers = numbers.map { String($0) }`'
+      - title: 筛选元素 (filter)
+        description: '`let evenNumbers = numbers.filter { $0 % 2 == 0 }`'
+      - title: 聚合计算 (reduce)
+        description: '`let sum = numbers.reduce(0, +)`, `let product = numbers.reduce(1, *)`'
+      - title: 转换并解包可选值 (compactMap)
+        description: '`let strings = ["1", "2", "three", "4"]; let validInts = strings.compactMap { Int($0) }`'
+      - title: 转换并扁平化 (flatMap)
+        description: '`let nested = [[1, 2], [3, 4]]; let flat = nested.flatMap { $0 }`, `let mappedFlat = numbers.flatMap { [$0, $0 * 10] }`'
+  - title: 排序与顺序操作 (Sorting & Ordering)
+    description: '`sort()`, `sorted()`, `reverse()`, `reversed()`, `shuffle()`, `shuffled()`'
+    children:
+      - title: 原地排序 (修改原数组)
+        description: '`numbers.sort()`, `numbers.sort(by: >)`'
+      - title: 返回排序后的新数组
+        description: '`let ascending = numbers.sorted()`, `let descending = numbers.sorted { $0 > $1 }`'
+      - title: 原地反转顺序
+        description: '`numbers.reverse()`'
+      - title: 返回反转顺序的新数组 (Lazy)
+        description: '`let reversedNumbers = numbers.reversed()` (返回 `ReversedCollection`, 需要时可转 `Array(numbers.reversed())`)'
+      - title: 原地随机打乱
+        description: '`numbers.shuffle()`'
+      - title: 返回随机打乱的新数组
+        description: '`let shuffledNumbers = numbers.shuffled()`'
+  - title: 查找与检查 (Searching & Checking)
+    description: '`contains`, `allSatisfy`, `first(where:)`, `firstIndex(of:)`, `firstIndex(where:)`'
+    children:
+      - title: 检查是否包含元素
+        description: '`if numbers.contains(3) { ... }`, `let hasNegative = numbers.contains { $0 < 0 }`'
+      - title: 检查所有元素是否满足条件
+        description: '`let allPositive = numbers.allSatisfy { $0 > 0 }`'
+      - title: 查找第一个满足条件的元素
+        description: '`let firstEven = numbers.first { $0 % 2 == 0 }` (返回 Optional)'
+      - title: 查找元素的第一个索引
+        description: '`let indexOfFive = numbers.firstIndex(of: 5)` (返回 Optional `Int`)'
+      - title: 查找第一个满足条件的元素索引
+        description: '`let indexOfFirstEven = numbers.firstIndex { $0 % 2 == 0 }` (返回 Optional `Int`)'
+      - title: 查找最后一个元素/索引 (last, lastIndex)
+        description: '`let lastEven = numbers.last { $0 % 2 == 0 }`, `let indexOfLastEven = numbers.lastIndex { $0 % 2 == 0 }`'
+  - title: 数组切片 (Slicing)
+    description: '`[range]`, `prefix()`, `suffix()`, `dropFirst()`, `dropLast()` (返回 `ArraySlice`)'
+    children:
+      - title: 通过范围获取切片
+        description: '`let firstThree = numbers[0..<3]`'
+      - title: 获取前缀/后缀切片
+        description: '`let prefix = numbers.prefix(2)`, `let suffix = numbers.suffix(2)`'
+      - title: 丢弃前缀/后缀获取切片
+        description: '`let withoutFirst = numbers.dropFirst()`, `let withoutLastTwo = numbers.dropLast(2)`'
+      - title: 将切片转换回数组
+        description: '`let subArray = Array(numbers[1...3])`'
+  - title: 常见问题与性能 (Common Issues & Performance)
+    description: 索引越界, 值类型与写时复制 (COW), 预分配容量
+    children:
+      - title: 避免索引越界错误
+        description: 访问前检查 `index < array.count`, 使用 `first`, `last` 或安全下标
+      - title: 理解值类型语义（写时复制）
+        description: '`var a = [1, 2]; var b = a; b.append(3)` (此时 `a` 仍为 `[1, 2]`, `b` 发生复制变成 `[1, 2, 3]`)'
+      - title: 预分配容量提高性能
+        description: '`var largeArray = [Int](); largeArray.reserveCapacity(10000)` (当已知大致容量时，避免多次重新分配内存)'
+  - title: 最佳实践 (Best Practices)
+    description: 不可变性, 类型安全, 合适的迭代, 安全解包
+    children:
+      - title: 优先使用 `let` 定义不可变数组
+        description: 如果数组内容不需要改变，使用 `let` 更安全、性能可能更好。
+      - title: 保持数组类型明确单一
+        description: 尽量避免使用 `[Any]`，利用 Swift 的类型系统。
+      - title: 根据需求选择遍历方式
+        description: '`for-in` 最常用，`enumerated` 获取索引，`forEach` 简洁但功能受限。'
+      - title: 安全处理数组中的 Optional 元素
+        description: 如果数组包含 Optional，使用 `compactMap` 或 `for case let` 处理。
+      - title: 使用高阶函数提高代码可读性
+        description: 对于转换、筛选等操作，`map`, `filter` 通常比手动循环更清晰。
 example:
   - title: 创建数组
     content: |
@@ -16,20 +146,18 @@ example:
       var emptyArray = [String]()
       print(emptyArray.isEmpty) // 输出: true
       ```
-  
   - title: 访问数组元素
     content: |
       ```swift
       var languages = ["Swift", "Python", "Java"]
-      
+
       // 访问第一个元素
       print(languages[0]) // 输出: Swift
-      
+
       // 修改第三个元素
       languages[2] = "C++"
       print(languages) // 输出: ["Swift", "Python", "C++"]
       ```
-
   - title: 添加元素到数组
     content: |
       ```swift
@@ -43,17 +171,15 @@ example:
       numbers.append(contentsOf: [5, 6])
       print(numbers) // 输出: [1, 2, 3, 4, 5, 6]
       ```
-
   - title: 插入元素到指定位置
     content: |
       ```swift
       var numbers = [10, 20, 30]
-      
+
       // 在索引1处插入元素
       numbers.insert(15, at: 1)
       print(numbers) // 输出: [10, 15, 20, 30]
       ```
-
   - title: 删除数组元素
     content: |
       ```swift
@@ -70,7 +196,7 @@ example:
 references:
   - title: Arrays
     url: https://docs.swift.org/swift-book/documentation/the-swift-programming-language/collectiontypes/#Arrays
-  - title: "Swift Array - Apple Developer Documentation"
+  - title: Swift Array - Apple Developer Documentation
     url: https://developer.apple.com/documentation/swift/array
-  - title: "Swift Arrays - Swiftdoc.org"
+  - title: Swift Arrays - Swiftdoc.org
     url: https://swiftdoc.org/v4.2/type/Array/

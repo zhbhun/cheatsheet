@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import * as dotenv from 'dotenv';
 import yaml from 'js-yaml';
-import { LanguageData, Reference, Feature } from './types.ts';
+import { FEATURES_KEYS } from './constants.ts';
+import { Language, Reference, Feature } from './types.ts';
 import { context, getLanguageData, loadFeature } from './utils.ts';
 // import { loadReference } from './reference.ts';
 import { getGenai } from './gemini.ts';
@@ -252,7 +253,7 @@ async function complete(
 }
 
 async function generateContent(
-  language: LanguageData,
+  language: Language,
   feature: Feature,
   references: Reference[]
 ): Promise<Feature> {
@@ -297,10 +298,7 @@ async function generateContent(
   };
 }
 
-async function generateFeatureByRecursion(
-  language: LanguageData,
-  target: string
-) {
+async function generateFeatureByRecursion(language: Language, target: string) {
   const { filepath, feature } = await loadFeature(language, target);
   if (feature.children) {
     for (let index = 0; index < feature.children.length; index++) {
@@ -325,7 +323,7 @@ async function generateFeatureByRecursion(
   try {
     content = yaml.dump(feature, {
       lineWidth: -1,
-      sortKeys: (a, b) => (keys[a] ?? 999) - (keys[b] ?? 999),
+      sortKeys: (a, b) => (FEATURES_KEYS[a] ?? 999) - (FEATURES_KEYS[b] ?? 999),
     });
   } catch (error) {
     console.log(JSON.stringify(feature, null, 2));

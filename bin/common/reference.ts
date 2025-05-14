@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import crypto from 'crypto';
-import { Feature, LanguageData, Reference } from './types.ts';
+import { Feature, Language, Reference } from './types.ts';
 import { context, isFileExit } from './utils.ts';
 import { getGenai } from './gemini.ts';
 
@@ -91,7 +91,7 @@ async function scrapePage(url: string) {
 }
 
 export async function loadReference(
-  language: LanguageData,
+  language: Language,
   feature: Feature
 ): Promise<Reference[]> {
   const references: Reference[] = [];

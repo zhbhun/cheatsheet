@@ -1,5 +1,11 @@
+import path from 'node:path';
 import { program } from 'commander';
+import * as dotenv from 'dotenv';
 import processFeature from './feature.ts';
+
+dotenv.config({
+  path: path.resolve(import.meta.dirname, '../.env.local'),
+});
 
 program.name('cheatsheet').description('CLI to some cheatsheet utilities');
 

@@ -1,3 +1,4 @@
+import { generateOutline } from './common/outline.ts';
 import { generateUsage } from './common/usage.ts';
 
 export default async function processFeature(
@@ -9,7 +10,7 @@ export default async function processFeature(
 ) {
   const [language, feature] = target.split(':');
   if (options.outline) {
-    // TODO: Implement outline generation
+    await generateOutline(language, feature);
   }
   if (options.usage) {
     await generateUsage(language, feature);
